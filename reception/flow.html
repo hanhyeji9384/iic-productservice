@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>수리 접수 플로우 — GENTLE MONSTER PS</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --font: 'Noto Sans KR', sans-serif;
+  --black: #111;
+  --gray-100: #f5f5f5;
+  --gray-200: #e8e8e8;
+  --gray-400: #aaa;
+  --gray-600: #666;
+  --green: #1a5c3a;
+  --red: #c8491a;
+  --blue: #1a3a5c;
+  --amber: #7a5a00;
+  --panel-w: 400px;
+}
+body { font-family: var(--font); background: #fff; color: var(--black); min-height: 100vh; display: flex; flex-direction: column; }
+
+/* ── TOP BAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; height: 52px;
+  border-bottom: 1px solid var(--gray-200);
+  background: #fff;
+}
+.topbar-title { font-size: 13px; font-weight: 500; letter-spacing: 0.04em; }
+.topbar-meta { font-size: 11px; color: var(--gray-400); }
+.topbar-actions { display: flex; gap: 8px; }
+.topbar-btn {
+  font-size: 11px; font-family: var(--font); padding: 5px 12px;
+  border: 1px solid var(--gray-200); background: #fff; cursor: pointer;
+  color: var(--gray-600); letter-spacing: 0.04em;
+  transition: all .15s;
+}
+.topbar-btn:hover { border-color: var(--black); color: var(--black); }
+.topbar-btn.lang-active { border-color: var(--black); color: var(--black); background: var(--black); color: #fff; }
+
+/* ── MAIN LAYOUT ── */
+.layout { display: flex; flex: 1; overflow: hidden; }
+
+/* ── LEFT: FLOWCHART ── */
+.flow-area {
+  flex: 1; overflow-y: auto; padding: 48px 40px 80px;
+  transition: padding-right .3s;
+}
+.flow-area.panel-open { padding-right: calc(var(--panel-w) + 40px); }
+
+.flow-wrap { max-width: 680px; margin: 0 auto; }
+
+.flow-legend {
+  display: flex; gap: 20px; margin-bottom: 40px; flex-wrap: wrap;
+}
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--gray-600); }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+/* ── NODE ── */
+.node-row { position: relative; display: flex; justify-content: center; }
+.node-row + .node-row { margin-top: 0; }
+
+.node {
+  position: relative; cursor: pointer;
+  border: 1px solid var(--gray-200);
+  padding: 14px 20px; width: 260px;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+  user-select: none;
+}
+.node:hover { border-color: var(--black); box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+.node.selected { background: var(--black); border-color: var(--black); }
+.node.selected .node-tag { color: rgba(255,255,255,.5); }
+.node.selected .node-label { color: #fff; }
+.node.selected .node-desc { color: rgba(255,255,255,.55); }
+
+.node-tag { font-size: 9px; letter-spacing: 0.1em; color: var(--gray-400); margin-bottom: 4px; font-weight: 500; }
+.node-label { font-size: 13px; font-weight: 500; color: var(--black); line-height: 1.3; }
+.node-desc { font-size: 11px; color: var(--gray-400); margin-top: 3px; line-height: 1.4; }
+.node-arrow-hint {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 11px; color: var(--gray-400); opacity: 0;
+  transition: opacity .15s;
+}
+.node:hover .node-arrow-hint { opacity: 1; }
+.node.selected .node-arrow-hint { color: rgba(255,255,255,.4); opacity: 1; }
+
+/* ── CONNECTOR (vertical line between rows) ── */
+.connector {
+  display: flex; justify-content: center;
+  height: 28px; position: relative;
+}
+.connector::after {
+  content: '';
+  display: block;
+  width: 1px; height: 100%;
+  background: var(--gray-200);
+}
+.connector-arrow {
+  display: flex; justify-content: center;
+  height: 14px; font-size: 10px; color: var(--gray-400);
+  align-items: center;
+}
+
+/* ── BRANCH GROUP ── */
+.branch-group {
+  display: flex; flex-direction: column; align-items: center;
+  margin: 0;
+}
+.branch-label {
+  font-size: 10px; color: var(--gray-400); letter-spacing: 0.06em;
+  text-align: center; margin: 0; padding: 5px 0 0;
+  display: flex; align-items: center; gap: 8px;
+}
+.branch-label::before, .branch-label::after {
+  content: ''; flex: 1; height: 1px; background: var(--gray-200);
+}
+.branch-nodes {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 16px 0;
+}
+.branch-nodes .node { width: 192px; }
+
+/* branch connector lines */
+.branch-top-line {
+  position: relative; width: 100%; height: 20px;
+}
+.branch-top-line::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%; transform: translateX(-50%);
+  width: 1px; height: 100%;
+  background: var(--gray-200);
+}
+
+/* ── MERGE LINE (from branches back to main) ── */
+.merge-row {
+  display: flex; justify-content: center;
+  align-items: center; height: 20px;
+  position: relative;
+}
+
+/* ── END NODES (완료 / 불가) ── */
+.end-group { display: flex; gap: 24px; justify-content: center; padding-top: 16px; }
+.end-group .node { width: 192px; }
+
+.node-complete { border-color: #c3dfd0; }
+.node-complete:hover { border-color: var(--green); }
+.node-complete .node-tag { color: var(--green); }
+.node-complete.selected { background: var(--green); border-color: var(--green); }
+
+.node-close { border-color: #f0cfc4; }
+.node-close:hover { border-color: var(--red); }
+.node-close .node-tag { color: var(--red); }
+.node-close.selected { background: var(--red); border-color: var(--red); }
+
+/* ── RIGHT SPEC PANEL ── */
+.spec-panel {
+  position: fixed; right: 0; top: 52px; bottom: 0;
+  width: var(--panel-w);
+  border-left: 1px solid var(--gray-200);
+  background: #fff;
+  display: flex; flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+  z-index: 50;
+}
+.spec-panel.open { transform: translateX(0); }
+
+.spec-panel-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--gray-200);
+  flex-shrink: 0;
+}
+.spec-panel-tag { font-size: 9px; letter-spacing: 0.1em; color: var(--gray-400); font-weight: 500; margin-bottom: 4px; }
+.spec-panel-title { font-size: 16px; font-weight: 500; }
+.spec-panel-desc { font-size: 12px; color: var(--gray-600); margin-top: 6px; line-height: 1.5; }
+
+.spec-panel-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+
+.spec-section { margin-bottom: 24px; }
+.spec-section-label {
+  font-size: 9px; letter-spacing: 0.1em; color: var(--gray-400); font-weight: 500;
+  margin-bottom: 10px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--gray-200);
+}
+.spec-feature-list { list-style: none; }
+.spec-feature-list li {
+  font-size: 12px; color: var(--gray-600); padding: 4px 0;
+  padding-left: 14px; position: relative; line-height: 1.45;
+}
+.spec-feature-list li::before {
+  content: '·'; position: absolute; left: 0; color: var(--gray-400);
+}
+
+.spec-condition-list { list-style: none; }
+.spec-condition-list li {
+  font-size: 12px; color: var(--black); padding: 5px 0;
+  padding-left: 14px; position: relative; line-height: 1.45;
+  border-bottom: 1px solid var(--gray-100);
+}
+.spec-condition-list li:last-child { border-bottom: none; }
+.spec-condition-list li::before {
+  content: '→'; position: absolute; left: 0; color: var(--gray-400); font-size: 10px;
+}
+
+.spec-panel-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--gray-200);
+  display: flex; flex-direction: column; gap: 8px;
+  flex-shrink: 0;
+}
+.spec-link {
+  display: block; text-align: center; padding: 10px;
+  font-size: 12px; font-family: var(--font);
+  text-decoration: none; letter-spacing: 0.04em;
+  transition: all .15s; cursor: pointer;
+}
+.spec-link-primary {
+  background: var(--black); color: #fff; border: 1px solid var(--black);
+}
+.spec-link-primary:hover { background: #333; }
+.spec-link-secondary {
+  color: var(--gray-600); border: 1px solid var(--gray-200);
+}
+.spec-link-secondary:hover { border-color: var(--black); color: var(--black); }
+
+.spec-panel-close {
+  position: absolute; top: 16px; right: 16px;
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid var(--gray-200); background: #fff;
+  cursor: pointer; font-size: 12px; color: var(--gray-600);
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.spec-panel-close:hover { border-color: var(--black); color: var(--black); }
+
+/* branch color accents */
+.node[data-color="green"] .node-tag { color: var(--green); }
+.node[data-color="green"]:hover { border-color: var(--green); }
+.node[data-color="green"].selected { background: var(--green); border-color: var(--green); }
+.node[data-color="red"] .node-tag { color: var(--red); }
+.node[data-color="blue"] .node-tag { color: var(--blue); }
+
+.divider-line {
+  border: none; border-top: 1px dashed var(--gray-200);
+  margin: 4px 0;
+}
+
+/* entry/pre nodes */
+.node-pre { border-style: dashed; }
+.node-pre .node-tag { color: var(--gray-400); }
+
+/* fork branch list */
+.fork-list { width: 192px; border: 1px solid var(--gray-200); margin-top: 6px; background: #fff; }
+.fork-item { display: flex; align-items: flex-start; gap: 6px; padding: 5px 8px; font-size: 10px; color: var(--gray-600); line-height: 1.4; }
+.fork-item + .fork-item { border-top: 1px solid var(--gray-100); }
+.fork-item::before { content: '↳'; color: var(--gray-400); flex-shrink: 0; font-size: 10px; }
+.fork-cond { flex: 1; }
+.fork-dest { font-size: 9px; padding: 2px 6px; color: #fff; letter-spacing: 0.05em; flex-shrink: 0; white-space: nowrap; align-self: center; }
+.fork-dest-end { background: var(--red); }
+.fork-dest-complete { background: var(--green); }
+
+/* scroll fade top */
+.flow-area::before {
+  content: ''; display: block; height: 1px;
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div>
+    <div class="topbar-title">수리 접수 플로우</div>
+  </div>
+  <div class="topbar-meta">온라인 수리 접수 · B2C · iic-productservice</div>
+  <div class="topbar-actions">
+    <button class="topbar-btn lang-active" id="btn-lang-ko" onclick="setLang('ko')">KR</button>
+    <button class="topbar-btn" id="btn-lang-en" onclick="setLang('en')">EN</button>
+    <button class="topbar-btn" id="btn-close-panel" onclick="closePanel()">패널 닫기</button>
+    <a class="topbar-btn" href="../index.html" target="_blank" style="text-decoration:none;">서비스 홈 ↗</a>
+  </div>
+</div>
+
+<div class="layout">
+
+<!-- ── FLOWCHART ── -->
+<div class="flow-area" id="flowArea">
+<div class="flow-wrap">
+
+  <!-- Legend -->
+  <div class="flow-legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#111;"></div> <span id="leg-main">메인 플로우</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green);"></div> <span id="leg-service">서비스 유형 분기</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue);"></div> <span id="leg-ai">AI 제품 분기</span></div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red);"></div> <span id="leg-close">접수 불가</span></div>
+    <div class="legend-item"><div class="legend-dot" style="border:1px dashed #aaa;background:#fff;"></div> <span id="leg-pre">사전 단계</span></div>
+  </div>
+
+  <!-- 서비스 홈 -->
+  <div class="node-row">
+    <div class="node node-pre" data-id="home" onclick="selectNode(this)">
+      <div class="node-tag">ENTRY</div>
+      <div class="node-label">서비스 홈</div>
+      <div class="node-desc">수리 서비스 진입점 · CTA</div>
+      <div class="node-arrow-hint">→</div>
+    </div>
+  </div>
+  <div class="connector"></div>
+  <div class="connector-arrow">↓</div>
+
+  <!-- 약관 동의 -->
+  <div class="node-row">
+    <div class="node node-pre" data-id="terms" onclick="selectNode(this)">
+      <div class="node-tag">PRE-FLOW</div>
+      <div class="node-label">약관 동의</div>
+      <div class="node-desc">수리 서비스 이용 약관 필수 동의</div>
+      <div class="node-arrow-hint">→</div>
+    </div>
+  </div>
+  <div class="connector"></div>
+  <div class="connector-arrow">↓</div>
+
+  <!-- STEP 1 -->
+  <div class="node-row">
+    <div class="node" data-id="step1" onclick="selectNode(this)">
+      <div class="node-tag">STEP 01</div>
+      <div class="node-label">기본 정보 입력</div>
+      <div class="node-desc">제품 · 구매일 · 매장 선택</div>
+      <div class="node-arrow-hint">→</div>
+    </div>
+  </div>
+  <div class="connector"></div>
+  <div class="connector-arrow">↓</div>
+
+  <!-- STEP 2 서비스 유형 -->
+  <div class="node-row">
+    <div class="node" data-id="step2-type" onclick="selectNode(this)">
+      <div class="node-tag">STEP 02</div>
+      <div class="node-label">서비스 유형 선택</div>
+      <div class="node-desc">일반: 토탈케어 · 수리 · 상담 / AI: 기능이상 · 제품이상 선택</div>
+      <div class="node-arrow-hint">→</div>
+    </div>
+  </div>
+
+  <!-- Branch: 서비스 유형 -->
+  <div class="branch-group">
+    <div class="branch-nodes" style="align-items:flex-start;">
+
+      <div class="node" data-id="step2a" data-color="green" onclick="selectNode(this)">
+        <div class="node-tag">02A · 토탈케어</div>
+        <div class="node-label">토탈 케어 상세</div>
+        <div class="node-desc">클리닝·폴리싱·피팅 · 긴급 옵션</div>
+        <div class="node-arrow-hint">→</div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <div class="node" data-id="step2b" data-color="green" onclick="selectNode(this)">
+          <div class="node-tag">02B · 수리</div>
+          <div class="node-label">제품 수리 상세</div>
+          <div class="node-desc">부위 선택 · 보증연도 분기</div>
+          <div class="node-arrow-hint">→</div>
+        </div>
+        <div class="fork-list">
+          <div class="fork-item">
+            <span class="fork-cond">7년 초과 파손·변형</span>
+            <span class="fork-dest fork-dest-end">END</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <div class="node" data-id="step2c" data-color="green" onclick="selectNode(this)">
+          <div class="node-tag">02C · 상담</div>
+          <div class="node-label">상담 & 기타</div>
+          <div class="node-desc">결함문의 · 부속품 · 상담원</div>
+          <div class="node-arrow-hint">→</div>
+        </div>
+        <div class="fork-list">
+          <div class="fork-item">
+            <span class="fork-cond">결함문의 구매 2년 초과</span>
+            <span class="fork-dest fork-dest-end">END</span>
+          </div>
+          <div class="fork-item">
+            <span class="fork-cond">상담원 연결</span>
+            <span class="fork-dest fork-dest-complete">DONE</span>
+          </div>
+          <div class="fork-item">
+            <span class="fork-cond">부속품 요청</span>
+            <span class="fork-dest" style="background:var(--blue);color:#fff;">STEP 04</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI 기능이상만 shortcut -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <div class="node" data-id="step2-ai" data-color="blue" onclick="selectNode(this)" style="width:192px;border-color:#b0c4d8;">
+          <div class="node-tag">AI · 기능이상만</div>
+          <div class="node-label">기능이상만 선택 시</div>
+          <div class="node-desc">제품이상 미선택</div>
+          <div class="node-arrow-hint">→</div>
+        </div>
+        <div class="fork-list">
+          <div class="fork-item">
+            <span class="fork-cond">기능이상만</span>
+            <span class="fork-dest" style="background:var(--blue);color:#fff;">STEP 04</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <div class="connector-arrow">↓</div>
+
+  <!-- STEP 3 사진·렌즈 -->
+  <div class="node-row">
+    <div class="node" data-id="step3a" onclick="selectNode(this)">
+      <div class="node-tag">STEP 03</div>
+      <div class="node-label">사진 · 렌즈 정보</div>
+      <div class="node-desc">제품 사진 첨부 · 렌즈 상태 선택</div>
+      <div class="node-arrow-hint">→</div>
+    </div>
+  </div>
+  <div class="connector"></div>
+  <div class="connector-arrow">↓</div>
+
+  <!-- STEP 4 배송 -->
+  <div class="node-row">
+    <div class="node" data-id="step3b" onclick="selectNode(this)">
+      <div class="node-tag">STEP 04</div>
+      <div class="node-label">배송 정보</div>
+      <div class="node-desc">발송 · 수령 방법 선택 · KR / INT 분기</div>
+      <div class="node-arrow-hint">→</div>
+    </div>
+  </div>
+  <div class="connector"></div>
+  <div class="connector-arrow">↓</div>
+
+  <!-- STEP 5 견적 -->
+  <div class="node-row">
+    <div class="node" data-id="step4" onclick="selectNode(this)">
+      <div class="node-tag">STEP 05</div>
+      <div class="node-label">수리 안내 확인</div>
+      <div class="node-desc">예상 수리방식 · 비용 · 리드타임</div>
+      <div class="node-arrow-hint">→</div>
+    </div>
+  </div>
+
+  <!-- End group -->
+  <div style="display:flex;justify-content:center;padding:16px 0 0;">
+    <div style="display:flex;gap:48px;">
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div style="width:1px;height:20px;background:var(--gray-200);"></div>
+        <div class="connector-arrow">↓</div>
+        <div class="node node-complete" data-id="complete" onclick="selectNode(this)">
+          <div class="node-tag">COMPLETE</div>
+          <div class="node-label">접수 완료</div>
+          <div class="node-desc">접수번호 발급 · 이메일 발송</div>
+          <div class="node-arrow-hint">→</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;">
+        <div style="width:1px;height:20px;background:var(--gray-200);"></div>
+        <div class="connector-arrow" style="color:var(--red);">↓</div>
+        <div class="node node-close" data-id="close" onclick="selectNode(this)">
+          <div class="node-tag">END</div>
+          <div class="node-label">수리 불가 안내</div>
+          <div class="node-desc">7년 초과 파손·변형 · 별도 화면 없음</div>
+          <div class="node-arrow-hint">→</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- .flow-wrap -->
+</div><!-- .flow-area -->
+
+<!-- ── SPEC PANEL ── -->
+<div class="spec-panel" id="specPanel">
+  <button class="spec-panel-close" onclick="closePanel()">✕</button>
+  <div class="spec-panel-header">
+    <div class="spec-panel-tag" id="panelTag"></div>
+    <div class="spec-panel-title" id="panelTitle"></div>
+    <div class="spec-panel-desc" id="panelDesc"></div>
+  </div>
+  <div class="spec-panel-body">
+    <div class="spec-section" id="panelFeaturesSection">
+      <div class="spec-section-label" id="lbl-features">주요 구성 요소</div>
+      <ul class="spec-feature-list" id="panelFeatures"></ul>
+    </div>
+    <div class="spec-section" id="panelConditionsSection">
+      <div class="spec-section-label" id="lbl-conditions">분기 조건</div>
+      <ul class="spec-condition-list" id="panelConditions"></ul>
+    </div>
+  </div>
+  <div class="spec-panel-footer">
+    <a class="spec-link spec-link-primary" id="panelProtoLink" target="_blank"><span id="lbl-proto">프로토타입 열기 ↗</span></a>
+    <a class="spec-link spec-link-secondary" id="panelSpecLink" target="_blank"><span id="lbl-spec">기획 문서 보기 ↗</span></a>
+  </div>
+</div>
+
+</div><!-- .layout -->
+
+<script>
+const BASE_SPEC = 'file:///Users/hanhyeji/IdeaProjects/iic-ps-spec/ps-user/Reception/';
+const BASE_PROTO = '../';
+
+let currentLang = 'ko';
+
+const UI = {
+  ko: {
+    legMain: '메인 플로우', legService: '서비스 유형 분기', legAi: 'AI 제품 분기', legClose: '접수 불가', legPre: '사전 단계',
+    secFeatures: '주요 구성 요소', secConditions: '분기 조건',
+    lblProto: '프로토타입 열기 ↗', lblSpec: '기획 문서 보기 ↗',
+    btnClose: '패널 닫기',
+  },
+  en: {
+    legMain: 'Main Flow', legService: 'Service Type Branch', legAi: 'AI Product Branch', legClose: 'Not Available', legPre: 'Pre-step',
+    secFeatures: 'Key Components', secConditions: 'Branch Conditions',
+    lblProto: 'Open Prototype ↗', lblSpec: 'View Spec Doc ↗',
+    btnClose: 'Close Panel',
+  },
+};
+
+const NODES = {
+  home: {
+    ko: {
+      tag: 'ENTRY', title: '서비스 홈',
+      desc: '수리 서비스 진입점. 서비스 유형 소개와 접수 시작 CTA를 제공한다.',
+      features: ['서비스 유형 소개 (토탈케어 / 수리 / 상담)', '수리 서비스 접수하기 CTA 버튼', '매장 방문 수리 안내 링크', '다국어 지원 (KR / EN)'],
+      conditions: ['접수하기 클릭 → 약관 동의 화면'],
+    },
+    en: {
+      tag: 'ENTRY', title: 'Service Home',
+      desc: 'Entry point for repair service. Provides service type overview and CTA to start.',
+      features: ['Service type overview (Total Care / Repair / Consultation)', 'Start Repair Request CTA button', 'Country / Language selection (KR · INT)', 'In-store repair guide link'],
+      conditions: ['Click Request → Terms & Conditions screen'],
+    },
+    specFile: '00-service-home.md', proto: 'index.html',
+  },
+  terms: {
+    ko: {
+      tag: 'PRE-FLOW', title: '약관 동의',
+      desc: '수리 서비스 이용 약관에 동의하는 화면. 6개 조항 확인 및 필수 동의.',
+      features: ['수리 서비스 이용약관 6개 조항', '필수 동의 체크박스', '약관 전문 보기 (별도 페이지 이동)', '다국어 지원 (KR / EN)'],
+      conditions: ['동의 완료 → STEP 1 기본정보 이동', '미동의 → 버튼 비활성'],
+    },
+    en: {
+      tag: 'PRE-FLOW', title: 'Terms & Conditions',
+      desc: 'Screen to agree to repair service terms. Review 6 clauses and mandatory consent.',
+      features: ['6 clauses of repair service terms', 'Mandatory consent checkbox', 'View full terms (separate page)', 'Multilingual support (KR / EN)'],
+      conditions: ['Consent complete → STEP 1 Basic Info', 'Not agreed → Button disabled'],
+    },
+    specFile: '01-main-terms.md', proto: 'reception/start.html',
+  },
+  step1: {
+    ko: {
+      tag: 'STEP 01', title: '기본 정보 입력',
+      desc: '수리할 제품의 기본 정보를 입력하는 화면. 구매 이력 유무에 따라 입력 방식이 분기된다.',
+      features: ['이메일 (로그인 시 자동 입력)', '제품 선택 (구매이력 목록 / 수기 입력)', '구매처 · 구매일 · 보증기간 자동 표시', '구매 증빙서류 첨부 (이력 없을 시 필수)', '매장 선택 (드롭다운)', '일련번호 입력 (AI 제품 한정)', '다국어 지원 (KR / EN)'],
+      conditions: ['AI 제품 감지 → AI 전용 STEP 2로 이동', '일반 제품 → STEP 2 서비스 유형 선택', '구매이력 없음 + 증빙 미첨부 → 다음 버튼 비활성'],
+    },
+    en: {
+      tag: 'STEP 01', title: 'Basic Information',
+      desc: 'Enter basic product info for repair. Input method branches based on purchase history.',
+      features: ['Email (auto-filled when logged in)', 'Product selection (purchase history / manual entry)', 'Purchase store · date · warranty auto-display', 'Proof of purchase (required without history)', 'Store selection (dropdown)', 'Serial number input (AI products only)'],
+      conditions: ['AI product detected → AI STEP 2', 'Regular product → STEP 2 Service Type', 'No history + no proof → Next button disabled'],
+    },
+    specFile: '02-step1-basic-info.md', proto: 'reception/step1.html',
+  },
+  'step2-type': {
+    ko: {
+      tag: 'STEP 02', title: '서비스 유형 선택',
+      desc: '토탈케어 / 제품수리 / 상담 중 원하는 서비스 유형을 선택하는 화면. AI 제품은 기능이상·제품이상 선택.',
+      features: ['토탈케어: 전체 클리닝·폴리싱·피팅', '제품 수리: 특정 부위 선택 수리', '상담 & 기타: 결함 문의·부속품·상담원', 'AI 제품: 기능이상·제품이상 선택 (중복 가능)', '다국어 지원 (KR / EN)'],
+      conditions: ['토탈케어 → STEP 2A 토탈케어 상세', '제품 수리 → STEP 2B 수리 상세', '상담 & 기타 → STEP 2C 상담 상세'],
+    },
+    en: {
+      tag: 'STEP 02', title: 'Service Type',
+      desc: 'Select from Total Care / Product Repair / Consultation. AI products also select issue type.',
+      features: ['Total Care: full cleaning · polishing · fitting', 'Product Repair: specific area repair', 'Consultation & Other: defect inquiry · accessories · agent', 'AI products: Functional / Product issue selection (multiple)'],
+      conditions: ['Total Care → STEP 2A Total Care Details', 'Product Repair → STEP 2B Repair Details', 'Consultation → STEP 2C Consultation Details'],
+    },
+    specFile: '02-step1-basic-info.md', proto: 'reception/step2-service-type.html',
+  },
+  'step2-ai': {
+    ko: {
+      tag: 'AI · 기능이상만', title: '기능이상만 선택 시',
+      desc: 'AI 아이웨어에서 기능이상만 선택 시 사진·렌즈 단계를 생략하고 배송정보로 바로 이동한다.',
+      features: ['기능이상 선택 (소프트웨어·센서·연결 등)', '제품이상 미선택', '사진·렌즈 단계 생략', '다국어 지원 (KR / EN)'],
+      conditions: ['기능이상만 → STEP 04 배송정보 직행', '제품이상 추가 선택 → STEP 03 사진·렌즈로 이동'],
+    },
+    en: {
+      tag: 'AI · Func Only', title: 'Functional Issue Only',
+      desc: 'When only Functional issue is selected for AI eyewear, skip photo·lens step and go directly to shipping.',
+      features: ['Functional issue selected (software · sensor · connectivity)', 'Product issue not selected', 'Photo · lens step skipped'],
+      conditions: ['Functional only → Go directly to STEP 04 Shipping', 'Product issue also selected → Move to STEP 03 Photos·Lens'],
+    },
+    specFile: '02-step1-basic-info.md', proto: 'reception/step2-service-type.html?ai=func',
+  },
+  step2a: {
+    ko: {
+      tag: 'STEP 02A · 토탈케어', title: '토탈 케어 상세',
+      desc: '전체 부품 케어(클리닝·폴리싱·피팅) 접수 상세 화면.',
+      features: ['SVG 안경도 — 전체 부품 표시', '기본 피팅 vs 기존 피팅 유지 선택', '긴급 서비스 옵션 (+50,000원, 리드타임 단축)', '배송 희망일 캘린더 (15–20영업일 기준)', '다국어 지원 (KR / EN)'],
+      conditions: ['구매 3년 초과 → 보증 면책 동의 필수', '긴급 선택 시 비용 50,000원 추가'],
+    },
+    en: {
+      tag: 'STEP 02A · Total Care', title: 'Total Care Details',
+      desc: 'Full part care (cleaning · polishing · fitting) reception detail screen.',
+      features: ['SVG eyewear diagram — full parts display', 'Basic fitting vs keep existing fitting', 'Urgent service option (+₩50,000, shortened lead time)', 'Preferred shipping date calendar (15–20 business days)', 'Multilingual support (KR / EN)'],
+      conditions: ['Purchase 3+ years → Warranty disclaimer required', 'Urgent selected → ₩50,000 surcharge'],
+    },
+    specFile: '03-step2-total-care.md', proto: 'reception/step2-total-care.html',
+  },
+  step2b: {
+    ko: {
+      tag: 'STEP 02B · 수리', title: '제품 수리 상세',
+      desc: '특정 부위를 선택하여 수리 접수하는 화면. 보증 연도에 따라 수리 유형이 달라진다.',
+      features: ['SVG 안경도 부품 선택 (다중 선택 가능)', '이슈 유형: 파손&변형 / 장식 / 부속품', '보증 연도별 수리 조건 안내', '파손 면책 동의 (3–7년 복원수리)', '다국어 지원 (KR / EN)'],
+      conditions: ['파손&변형 ~3년 → 부품 교체 (소비자가 20%)', '파손&변형 3~7년 → 복원수리 30,000원', '파손&변형 7년 초과 → 수리 불가 안내', '장식 / 부속품 → 무상'],
+    },
+    en: {
+      tag: 'STEP 02B · Repair', title: 'Product Repair Details',
+      desc: 'Select specific area to file repair request. Repair type differs by warranty years.',
+      features: ['SVG eyewear diagram part selection (multiple allowed)', 'Issue type: Damage & Deformation / Decoration / Accessories', 'Warranty year repair condition guide', 'Damage disclaimer (3–7 year restoration repair)'],
+      conditions: ['Damage <3yr → Part replacement (20% of retail)', 'Damage 3–7yr → Restoration repair ₩30,000', 'Damage 7yr+ → Repair not available', 'Decoration / Accessories → Free'],
+    },
+    specFile: '04-step2-repair.md', proto: 'reception/step2-repair.html',
+  },
+  step2c: {
+    ko: {
+      tag: 'STEP 02C · 상담', title: '상담 & 기타',
+      desc: '제품 결함 문의, 부속품 요청, 상담원 연결을 처리하는 화면.',
+      features: ['제품 결함·이상 문의 (SVG 부품 선택 + 설명)', '부속품 요청 (코패드·경첩나사·고리나사·수량)', '상담원 연결 (전화·이메일·라이브챗)', '라이브챗 실시간 대화 UI', '다국어 지원 (KR / EN)'],
+      conditions: ['제품 결함 구매 2년 초과 → 접수 불가 안내', '부속품 요청 → 사진 단계 생략 후 배송 이동', '상담원 연결 → 견적 없이 상담 진행'],
+    },
+    en: {
+      tag: 'STEP 02C · Consultation', title: 'Consultation & Other',
+      desc: 'Screen handling product defect inquiries, accessory requests, and customer service.',
+      features: ['Defect inquiry (SVG part selection + description)', 'Accessory request (nose pad · hinge screw · hook screw · quantity)', 'Customer service (call · email · live chat)', 'Live chat real-time conversation UI'],
+      conditions: ['Defect purchase 2+ years → Request not available', 'Accessory request → Skip photo step, move to shipping', 'Customer service → Consultation without estimate'],
+    },
+    specFile: '05-step2-consulting.md', proto: 'reception/step2-consulting.html',
+  },
+  step3a: {
+    ko: {
+      tag: 'STEP 03', title: '사진 · 렌즈 정보',
+      desc: '제품 상태 사진을 첨부하고 렌즈 상태를 선택하는 화면.',
+      features: ['제품 사진 첨부 (최대 5장, JPG/PNG, 10MB)', '렌즈 정보: 미삽입 / 별도제작 / 제품기존', '별도제작 렌즈 면책 동의 (필수)', '렌즈 분리 서비스 안내 (KR 전용)', '패키지 동봉 금지 확인 (필수)', '다국어 지원 (KR / EN)'],
+      conditions: ['별도제작 렌즈 → 면책 동의 필수, Drop Off 전용 자동 적용', '상담원연결·부속품 경로 → 사진 첨부 생략', 'INT → 렌즈 분리 서비스 미제공'],
+    },
+    en: {
+      tag: 'STEP 03', title: 'Photos · Lens Info',
+      desc: 'Upload product condition photos and select lens status.',
+      features: ['Product photos (up to 5, JPG/PNG, 10MB)', 'Lens info: None / Custom-made / Original', 'Custom-made lens disclaimer (required)', 'Lens removal service (KR only)', 'No package enclosure confirmation (required)'],
+      conditions: ['Custom-made lens → Disclaimer required, Drop Off only auto-applied', 'Consultation · Accessories path → Skip photo upload', 'INT → Lens removal service not available'],
+    },
+    specFile: '06-step3-shipping.md', proto: 'reception/step3-details.html',
+  },
+  step3b: {
+    ko: {
+      tag: 'STEP 04', title: '배송 정보',
+      desc: '제품 발송 방법과 수령 방법을 선택하는 화면. 국가 및 렌즈 유형에 따라 옵션이 달라진다.',
+      features: ['발송: 자택픽업 / Drop Off / 직접발송', '수령: 자택배송 / 매장픽업', '매장 지도 검색 (Drop Off 선택 시)', '주소 선택 · 추가 (자택 배송)', '다국어 지원 (KR / EN)'],
+      conditions: ['KR: 자택픽업(CJ) + Drop Off', 'INT: 자택픽업(DHL) + Drop Off + 직접발송', '별도제작 렌즈: Drop Off만 표시 · 자동 선택'],
+    },
+    en: {
+      tag: 'STEP 04', title: 'Shipping Info',
+      desc: 'Select product send and receive methods. Options differ by country and lens type.',
+      features: ['Send: Home Pickup / Drop Off / Self-ship', 'Receive: Home Delivery / Store Pickup', 'Store map search (when Drop Off selected)', 'Address selection · add (home delivery)'],
+      conditions: ['KR: Home Pickup (CJ) + Drop Off', 'INT: Home Pickup (DHL) + Drop Off + Self-ship', 'Custom-made lens: Drop Off only, auto-selected'],
+    },
+    specFile: '06-step3-shipping.md', proto: 'reception/step3-shipping.html',
+  },
+  step4: {
+    ko: {
+      tag: 'STEP 05', title: '수리 안내 확인',
+      desc: '예상 수리 방식, 비용, 리드타임을 확인하고 접수를 최종 완료하는 화면.',
+      features: ['접수 정보 요약 카드 (제품·서비스·발송)', '예상 수리 방식 및 비용', '예상 리드타임', 'INT 관세 예상 비용 섹션 (해외 국가)', '다국어 지원 (KR / EN)'],
+      conditions: ['토탈케어 → 무상 / 긴급 선택 시 50,000원 추가', '파손&변형 ~3년 → 소비자가 20%', '파손&변형 3~7년 → 30,000원', '장식·부속품 → 무상'],
+    },
+    en: {
+      tag: 'STEP 05', title: 'Repair Guide Confirmation',
+      desc: 'Confirm expected repair method, cost, and lead time to finalize the request.',
+      features: ['Reception summary card (product · service · shipping)', 'Expected repair method and cost', 'Expected lead time', 'INT customs estimate section (overseas)', 'Multilingual (KR / EN)'],
+      conditions: ['Total Care → Free / Urgent +₩50,000', 'Damage <3yr → 20% of retail', 'Damage 3–7yr → ₩30,000', 'Decoration · Accessories → Free'],
+    },
+    specFile: '07-step4-estimate.md', proto: 'reception/step4-estimate.html',
+  },
+  complete: {
+    ko: {
+      tag: 'COMPLETE', title: '접수 완료',
+      desc: '수리 접수가 완료된 화면. 접수 번호와 발송 방법별 안내를 제공한다.',
+      features: ['접수 번호 발급 (예: 2605060GMP…)', '발송 방법별 안내 (픽업기한 / 방문기한)', '이메일 · 카카오톡 안내 발송', '수리 서비스 내역 보기 링크', '다국어 지원 (KR / EN)'],
+      conditions: ['CJ 픽업: 접수일 +3영업일 이내 수거', 'Drop Off: 접수일 +5영업일 이내 방문', 'INT 직접발송: 접수일 +7일 이내 픽업'],
+    },
+    en: {
+      tag: 'COMPLETE', title: 'Reception Complete',
+      desc: 'Repair reception completion screen. Provides reception number and shipping guidance.',
+      features: ['Reception number issued (e.g., 2605060GMP…)', 'Guidance by shipping method (pickup / visit deadline)', 'Email · KakaoTalk notification sent', 'View repair service details link'],
+      conditions: ['CJ Pickup: Collection within 3 business days', 'Drop Off: Visit within 5 business days', 'INT Self-ship: Pickup within 7 days of reception'],
+    },
+    specFile: '08-complete.md', proto: 'reception/complete.html',
+  },
+  close: {
+    ko: {
+      tag: 'END', title: '수리 불가 안내',
+      desc: '별도 화면 없음. 해당 조건 진입 시 접수를 종료한다.',
+      features: [],
+      conditions: ['파손&변형 7년 초과 → 접수 종료', '결함문의 구매 2년 초과 → 접수 종료'],
+    },
+    en: {
+      tag: 'END', title: 'Repair Not Available',
+      desc: 'No separate screen. Reception is terminated when this condition is met.',
+      features: [],
+      conditions: ['Damage 7yr+ → Terminate', 'Defect inquiry over 2yr from purchase → Terminate'],
+    },
+    specFile: '09-close.md', proto: '',
+  },
+};
+
+let selectedNode = null;
+
+function setLang(lang) {
+  currentLang = lang;
+  document.documentElement.lang = lang === 'ko' ? 'ko' : 'en';
+  document.getElementById('btn-lang-ko').classList.toggle('lang-active', lang === 'ko');
+  document.getElementById('btn-lang-en').classList.toggle('lang-active', lang === 'en');
+
+  const u = UI[lang];
+  document.getElementById('leg-main').textContent = u.legMain;
+  document.getElementById('leg-service').textContent = u.legService;
+  document.getElementById('leg-ai').textContent = u.legAi;
+  document.getElementById('leg-close').textContent = u.legClose;
+  document.getElementById('leg-pre').textContent = u.legPre;
+  document.getElementById('lbl-features').textContent = u.secFeatures;
+  document.getElementById('lbl-conditions').textContent = u.secConditions;
+  document.getElementById('lbl-proto').textContent = u.lblProto;
+  document.getElementById('lbl-spec').textContent = u.lblSpec;
+  document.getElementById('btn-close-panel').textContent = u.btnClose;
+
+  // update flowchart node text
+  document.querySelectorAll('.node[data-id]').forEach(function(el) {
+    var id = el.dataset.id;
+    var node = NODES[id];
+    if (!node) return;
+    var d = node[lang] || node.ko;
+    var tagEl = el.querySelector('.node-tag');
+    var labelEl = el.querySelector('.node-label');
+    var descEl = el.querySelector('.node-desc');
+    if (tagEl) tagEl.textContent = d.tag;
+    if (labelEl) labelEl.textContent = d.title;
+    if (descEl) descEl.textContent = d.desc;
+  });
+
+  // re-render open panel
+  if (selectedNode) selectNode(selectedNode);
+
+  try { localStorage.setItem('ps-lang', lang); } catch(e) {}
+}
+
+function selectNode(el) {
+  const id = el.dataset.id;
+  const node = NODES[id];
+  if (!node) return;
+  const data = node[currentLang] || node.ko;
+
+  if (selectedNode) selectedNode.classList.remove('selected');
+  el.classList.add('selected');
+  selectedNode = el;
+
+  document.getElementById('panelTag').textContent = data.tag;
+  document.getElementById('panelTitle').textContent = data.title;
+  document.getElementById('panelDesc').textContent = data.desc;
+
+  document.getElementById('panelFeatures').innerHTML = data.features.map(f => `<li>${f}</li>`).join('');
+
+  const condEl = document.getElementById('panelConditions');
+  const condSection = document.getElementById('panelConditionsSection');
+  if (data.conditions && data.conditions.length) {
+    condEl.innerHTML = data.conditions.map(c => `<li>${c}</li>`).join('');
+    condSection.style.display = '';
+  } else {
+    condSection.style.display = 'none';
+  }
+
+  const protoLink = document.getElementById('panelProtoLink');
+  if (node.proto) {
+    protoLink.href = BASE_PROTO + node.proto;
+    protoLink.style.display = '';
+  } else {
+    protoLink.style.display = 'none';
+  }
+
+  document.getElementById('panelSpecLink').href = BASE_SPEC + node.specFile;
+
+  document.getElementById('specPanel').classList.add('open');
+  document.getElementById('flowArea').classList.add('panel-open');
+}
+
+function closePanel() {
+  document.getElementById('specPanel').classList.remove('open');
+  document.getElementById('flowArea').classList.remove('panel-open');
+  if (selectedNode) {
+    selectedNode.classList.remove('selected');
+    selectedNode = null;
+  }
+}
+
+window.addEventListener('load', function() {
+  var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
+  if (saved === 'en') setLang('en');
+});
+</script>
+</body>
+</html>

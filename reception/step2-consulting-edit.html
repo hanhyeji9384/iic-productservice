@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>상담/기타 — GENTLE MONSTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/lang-modal.js"></script>
+</head>
+<body>
+
+<header class="gnb">
+  <div class="gnb-inner">
+    <div class="gnb-logo"><a href="../index.html"><img src="../css/gentle-monster-logo.png" alt="GENTLE MONSTER" height="14"></a></div>
+    <nav class="gnb-nav">
+      <a href="#">선글라스</a><a href="#">안경</a><a href="#">컬렉션</a>
+      <a href="#">AI 아이웨어</a><a href="../store.html">스토어</a>
+      <a href="../index.html" class="active">서비스</a><a href="#">더 알아보기</a>
+    </nav>
+    <div class="gnb-actions"><a href="#">검색</a><a href="../my-service/account.html">계정</a></div>
+  </div>
+</header>
+
+<main class="page-wrapper">
+  <div class="content">
+
+    <div class="step-progress">
+      <div class="step-item done"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 01</p><p class="step-label">기본 정보</p></div>
+      <div class="step-item done"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 02</p><p class="step-label">서비스 유형</p></div>
+      <div class="step-item active"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 03</p><p class="step-label">서비스 상세</p></div>
+      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 04</p><p class="step-label">사진·렌즈</p></div>
+      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 05</p><p class="step-label">배송 정보</p></div>
+      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 06</p><p class="step-label">안내 확인</p></div>
+    </div>
+
+    <p class="page-eyebrow">서비스 유형 — 상담/기타</p>
+    <h1 class="page-title">상담 & 기타</h1>
+    <p class="page-desc">무엇을 도와드릴까요? 문의 유형을 선택해 주세요.</p>
+
+    <p class="section-label">문의 유형 <span style="color:#000">*</span></p>
+    <div class="option-cards" style="margin-bottom:32px;">
+      <label id="card-defect" class="check-item" onclick="showType('defect')" style="display:none;">
+        <input type="radio" name="type" value="defect">
+        <div style="flex:1;">
+          <p class="check-item-title">제품 결함 & 이상 문의</p>
+          <p class="check-item-desc">구매일로부터 2년 이내 제품에 한해 제조 결함 여부를 확인해 드립니다.</p>
+        </div>
+      </label>
+      <label id="check-accessory" class="check-item" onclick="showType('accessory')">
+        <input type="radio" name="type" value="accessory" checked>
+        <div>
+          <p class="check-item-title">부속품 요청</p>
+          <p class="check-item-desc">코패드, 나사 등 소모성 부품을 무상으로 보내드립니다.</p>
+        </div>
+      </label>
+      <label id="check-consult" class="check-item" onclick="showType('consult')" style="display:none;">
+        <input type="radio" name="type" value="consult">
+        <div>
+          <p class="check-item-title">상담원 연결</p>
+          <p class="check-item-desc">전문 상담원이 도움을 드립니다.</p>
+        </div>
+      </label>
+    </div>
+
+    <button type="button" id="btn-change-type" onclick="showAllTypes()" style="margin-top:16px;width:100%;padding:14px;background:#fff;border:1px solid #111;font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">문의 유형 변경하기</button>
+
+    <div id="form-defect" style="display:none;">
+      <div class="info-box"><p>구매일로부터 2년 이내 제품은 제조 결함 여부를 확인해 드립니다.</p></div>
+      <p class="section-label">문제 부위 선택 <span style="color:#000">*</span></p>
+      <div class="glasses-wrap">
+        <svg viewBox="0 0 380 135" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+          <g class="gpart" id="gp-front" onclick="togglePart('gp-front')"><rect class="gp-front" x="74" y="24" width="104" height="82" rx="13"/><rect class="gp-front" x="202" y="24" width="104" height="82" rx="13"/><text class="gp-label" x="190" y="122" text-anchor="middle">프론트</text></g>
+          <g class="gpart" id="gp-ll" onclick="togglePart('gp-ll')"><rect class="gp-lens" x="82" y="32" width="88" height="66" rx="9"/><text class="gp-label" x="126" y="66" text-anchor="middle" dominant-baseline="middle">좌렌즈</text></g>
+          <g class="gpart" id="gp-rl" onclick="togglePart('gp-rl')"><rect class="gp-lens" x="210" y="32" width="88" height="66" rx="9"/><text class="gp-label" x="254" y="66" text-anchor="middle" dominant-baseline="middle">우렌즈</text></g>
+          <g class="gpart" id="gp-br" onclick="togglePart('gp-br')"><path class="gp-bridge" d="M178,66 Q190,59 202,66"/><text class="gp-label" x="190" y="15" text-anchor="middle">브릿지</text></g>
+          <g class="gpart" id="gp-lt" onclick="togglePart('gp-lt')"><polygon class="gp-temple" points="0,44 74,54 74,62 0,56"/><text class="gp-label" x="34" y="38" text-anchor="middle">좌템플</text></g>
+          <g class="gpart" id="gp-rt" onclick="togglePart('gp-rt')"><polygon class="gp-temple" points="306,54 380,44 380,56 306,62"/><text class="gp-label" x="346" y="38" text-anchor="middle">우템플</text></g>
+        </svg>
+        <div id="parts-summary-c" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px;padding:10px 0 2px;border-top:1px solid var(--gray-100);"><span style="font-size:12px;color:#bbb;">선택된 부위 없음</span></div>
+      </div>
+      <div class="form-group" style="margin-top:16px;">
+        <label class="form-label">서비스 요청 사항</label>
+        <textarea class="form-input" rows="4" placeholder="불편하신 점을 자세히 적어 주세요." style="resize:vertical;border:1px solid #e0e0e0;padding:12px;font-family:inherit;font-size:14px;width:100%;outline:none;"></textarea>
+      </div>
+    </div>
+
+    <div id="form-accessory" style="display:block;">
+      <div class="info-box"><p>필요한 부속품을 알려 주세요. 코패드, 나사 등 소모성 부품을 무상으로 보내드립니다.</p></div>
+      <div class="form-group">
+        <label class="form-label">부속품 선택 <span class="required-mark">*</span></label>
+        <p style="font-size:12px;color:var(--gray-400);margin-bottom:12px;">원하시는 부속품을 선택해 주세요. (복수 선택 가능)</p>
+        <div style="display:flex;flex-direction:column;gap:0;border:1px solid #e0e0e0;">
+          <div style="padding:14px 16px;border-bottom:1px solid #e0e0e0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <label class="inline-check"><input type="checkbox" onchange="toggleQty('qty-copad', this)"><span>코패드 및 코패드 나사</span></label>
+              <button onclick="toggleImg('img-copad')" style="font-size:11px;color:#888;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;font-family:var(--font);">부속품 모양을 확인하세요.</button>
+            </div>
+            <div id="img-copad" style="display:none;margin-top:10px;background:#f5f5f5;height:80px;align-items:center;justify-content:center;font-size:11px;color:#bbb;border:1px solid #eee;">코패드 & 나사 이미지</div>
+            <div id="qty-copad" style="display:none;margin-top:10px;align-items:center;gap:10px;">
+              <span style="font-size:12px;color:#555;white-space:nowrap;">수량 <span style="color:#000;">*</span></span>
+              <select class="form-select" style="flex:1;margin:0;"><option value="">선택</option><option>1쌍</option><option>2쌍</option><option>3쌍</option></select>
+            </div>
+          </div>
+          <div style="padding:14px 16px;border-bottom:1px solid #e0e0e0;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <label class="inline-check"><input type="checkbox" onchange="toggleQty('qty-hinge', this)"><span>경첩 나사</span></label>
+              <button onclick="toggleImg('img-hinge')" style="font-size:11px;color:#888;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;font-family:var(--font);">부속품 모양을 확인하세요.</button>
+            </div>
+            <div id="img-hinge" style="display:none;margin-top:10px;background:#f5f5f5;height:80px;align-items:center;justify-content:center;font-size:11px;color:#bbb;border:1px solid #eee;">경첩 나사 이미지</div>
+            <div id="qty-hinge" style="display:none;margin-top:10px;align-items:center;gap:10px;">
+              <span style="font-size:12px;color:#555;white-space:nowrap;">수량 <span style="color:#000;">*</span></span>
+              <select class="form-select" style="flex:1;margin:0;"><option value="">선택</option><option>1쌍</option><option>2쌍</option><option>3쌍</option></select>
+            </div>
+          </div>
+          <div style="padding:14px 16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <label class="inline-check"><input type="checkbox" onchange="toggleQty('qty-ring', this)"><span>고리 나사</span></label>
+              <button onclick="toggleImg('img-ring')" style="font-size:11px;color:#888;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;font-family:var(--font);">부속품 모양을 확인하세요.</button>
+            </div>
+            <div id="img-ring" style="display:none;margin-top:10px;background:#f5f5f5;height:80px;align-items:center;justify-content:center;font-size:11px;color:#bbb;border:1px solid #eee;">고리 나사 이미지</div>
+            <div id="qty-ring" style="display:none;margin-top:10px;align-items:center;gap:10px;">
+              <span style="font-size:12px;color:#555;white-space:nowrap;">수량 <span style="color:#000;">*</span></span>
+              <select class="form-select" style="flex:1;margin:0;"><option value="">선택</option><option>1쌍</option><option>2쌍</option><option>3쌍</option></select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">서비스 요청 사항</label>
+        <textarea class="form-input" rows="3" placeholder="추가 요청사항이 있으시면 적어주세요." style="resize:vertical;border:1px solid #e0e0e0;padding:12px;font-family:inherit;font-size:14px;width:100%;outline:none;"></textarea>
+      </div>
+      <div class="notice-box"><p>자가 수리 중 발생한 제품 손상에 대해서는 보증 서비스 적용이 어려울 수 있습니다.</p></div>
+    </div>
+
+    <div id="form-consult" style="display:none;">
+      <div style="border:1px solid #e0e0e0;padding:32px;text-align:center;">
+        <p style="font-size:14px;font-weight:500;margin-bottom:8px;">상담원 연결</p>
+        <p style="font-size:13px;color:#555;line-height:1.8;">전문 상담원이 도움을 드립니다.<br>운영 시간: 평일 10:00 – 18:00</p>
+      </div>
+    </div>
+
+    <div class="btn-wrap" style="margin-top:32px;">
+      <a href="step2-service-type-edit.html" class="btn btn-secondary">이전</a>
+      <a id="btn-next" href="step3-shipping.html" class="btn btn-primary">다음 — 배송 정보</a>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner" style="flex-direction:column;gap:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+      <nav style="display:flex;gap:20px;flex-wrap:wrap;">
+        <a href="../contact.html" style="font-size:12px;color:var(--gray-600);text-decoration:none;">문의하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">고객 서비스</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">스토어 찾기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">법적 고지</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">개인정보 처리방침</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">구독하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">소셜</a>
+        <a href="#" onclick="openLangModal();return false;" style="font-size:12px;color:var(--gray-600);text-decoration:none;cursor:pointer;">국가: South Korea</a>
+      </nav>
+      <p style="font-size:12px;color:var(--gray-600);white-space:nowrap;">© 2026 GENTLE MONSTER</p>
+    </div>
+    <p style="font-size:11px;color:var(--gray-400);line-height:1.8;">
+      주) 아이아이컴바인드 | 대표자명: 김한국 | 사업자번호: 119-86-38589 | 통신판매신고번호: 제 2014-서울마포-1050호 | 이메일 문의: service.kr@gentlemonster.com | 개인정보보호책임자: 정태호 | 주소: 서울특별시 성동구 뚝섬로 433 | 대표번호: 1600-2126<br>
+      고객님의 안전한 현금자산 거래를 위해 하나은행과 채무지급보증계약을 체결하여 보장해드리고 있습니다.
+    </p>
+  </div>
+</footer>
+
+<script>
+function toggleQty(id, checkbox) {
+  const el = document.getElementById(id);
+  el.style.display = checkbox.checked ? 'flex' : 'none';
+}
+function toggleImg(id) {
+  const el = document.getElementById(id);
+  el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'flex' : 'none';
+}
+
+const PART_NAMES = {'gp-lt':'좌템플','gp-front':'프론트','gp-br':'브릿지','gp-ll':'좌렌즈','gp-rl':'우렌즈','gp-rt':'우템플'};
+function togglePart(id) {
+  document.getElementById(id).classList.toggle('sel');
+  const selected = Object.keys(PART_NAMES).filter(k => document.getElementById(k).classList.contains('sel'));
+  const el = document.getElementById('parts-summary-c');
+  el.innerHTML = selected.length === 0
+    ? '<span style="font-size:12px;color:#bbb;">선택된 부위 없음</span>'
+    : selected.map(k => `<span style="font-size:11px;padding:3px 10px;background:#111;color:#fff;letter-spacing:0.04em;">${PART_NAMES[k]}</span>`).join('');
+}
+
+function showType(type) {
+  ['form-defect','form-accessory','form-consult'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  if (type === 'defect') document.getElementById('form-defect').style.display = 'block';
+  else if (type === 'accessory') document.getElementById('form-accessory').style.display = 'block';
+  else if (type === 'consult') document.getElementById('form-consult').style.display = 'block';
+  const nextBtn = document.getElementById('btn-next');
+  const nextMap = {
+    defect:    { href: 'step3-details.html',  label: '다음 — 사진·렌즈' },
+    accessory: { href: 'step3-shipping.html', label: '다음 — 배송 정보' },
+    consult:   { href: 'step4-estimate.html', label: '다음 — 안내 확인' },
+  };
+  if (nextMap[type]) { nextBtn.href = nextMap[type].href; nextBtn.textContent = nextMap[type].label; }
+}
+
+function showAllTypes() {
+  document.getElementById('card-defect').style.display = '';
+  document.getElementById('card-defect').style.opacity = '';
+  document.getElementById('card-defect').style.pointerEvents = '';
+  document.getElementById('check-consult').style.display = '';
+  document.getElementById('btn-change-type').style.display = 'none';
+}
+
+window.addEventListener('load', function() {
+  var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
+});
+</script>
+</body>
+</html>

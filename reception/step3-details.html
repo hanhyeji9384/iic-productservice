@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>사진·렌즈·패키지 — GENTLE MONSTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/lang-modal.js"></script>
+</head>
+<body>
+
+<header class="gnb">
+  <div class="gnb-inner">
+    <div class="gnb-logo"><a href="../index.html"><img src="../css/gentle-monster-logo.png" alt="GENTLE MONSTER" height="14"></a></div>
+    <nav class="gnb-nav">
+      <a href="#">선글라스</a><a href="#">안경</a><a href="#">컬렉션</a>
+      <a href="#">AI 아이웨어</a><a href="../store.html">스토어</a>
+      <a href="../index.html" class="active">서비스</a><a href="#">더 알아보기</a>
+    </nav>
+    <div class="gnb-actions"><a href="#">검색</a><a href="../my-service/account.html">계정</a></div>
+  </div>
+</header>
+
+<main class="page-wrapper">
+  <div class="content">
+
+    <div class="step-progress">
+      <div class="step-item done"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 01</p><p class="step-label" id="sp1">기본 정보</p></div>
+      <div class="step-item done"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 02</p><p class="step-label" id="sp2">서비스 유형</p></div>
+      <div class="step-item done"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 03</p><p class="step-label" id="sp3">서비스 상세</p></div>
+      <div class="step-item active"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 04</p><p class="step-label" id="sp4">사진·렌즈</p></div>
+      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 05</p><p class="step-label" id="sp5">배송 정보</p></div>
+      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 06</p><p class="step-label" id="sp6">안내 확인</p></div>
+    </div>
+
+    <p class="page-eyebrow" id="txt-eyebrow">수리 서비스 접수</p>
+    <h1 class="page-title" id="txt-title">사진 첨부 &amp; 렌즈 정보</h1>
+    <p class="page-desc" id="txt-desc">제품 상태 사진을 첨부하고 렌즈 상태를 확인해 주세요.</p>
+
+    <!-- IMAGE ATTACHMENT -->
+    <div id="image-section">
+      <p class="section-label" id="txt-img-label">제품 사진 첨부 <span style="color:#000">*</span></p>
+      <p id="txt-img-desc" style="font-size:13px;color:#555;margin-bottom:16px;">파손·수리 부위가 잘 보이도록 촬영해 주세요. 여러 장 첨부 가능합니다.</p>
+
+      <input type="file" id="img-input" accept="image/*" multiple style="display:none;" onchange="handleFiles(this.files)">
+
+      <div class="form-upload" id="upload-zone" onclick="document.getElementById('img-input').click()" style="margin-bottom:12px;"
+        ondragover="event.preventDefault();this.style.borderColor='#000';"
+        ondragleave="this.style.borderColor='';"
+        ondrop="event.preventDefault();this.style.borderColor='';handleFiles(event.dataTransfer.files);">
+        <div class="form-upload-icon">↑</div>
+        <p class="form-upload-text" id="txt-upload-main">파일을 선택하거나 여기에 끌어다 놓으세요</p>
+        <p class="form-upload-sub" id="txt-upload-sub">JPG, PNG 지원 · 최대 10MB · 최대 5장</p>
+      </div>
+
+      <div id="file-list" style="display:none;margin-bottom:8px;">
+        <div id="file-items" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px;"></div>
+        <p id="add-more-btn" onclick="document.getElementById('img-input').click()"
+          style="font-size:12px;color:#888;cursor:pointer;text-decoration:underline;display:none;">+ 사진 추가하기</p>
+      </div>
+      <div class="divider"></div>
+    </div>
+
+    <div id="lens-pkg-section">
+    <!-- LENS INFO -->
+    <p class="section-label" id="txt-lens-label">렌즈 정보 <span style="color:#000">*</span></p>
+    <p id="txt-lens-desc" style="font-size:13px;color:#555;margin-bottom:16px;">현재 제품에 삽입된 렌즈 상태를 선택해 주세요.</p>
+    <div class="check-group" style="margin-bottom:0;">
+      <label class="check-item selected" onclick="selectLens(this,'none')">
+        <input type="radio" name="lens" value="none" checked>
+        <div>
+          <p class="check-item-title" id="txt-lens-none-title">미삽입</p>
+          <p class="check-item-desc" id="txt-lens-none-desc">렌즈가 없는 상태로 발송합니다.</p>
+        </div>
+      </label>
+      <label class="check-item" onclick="selectLens(this,'custom')">
+        <input type="radio" name="lens" value="custom">
+        <div>
+          <p class="check-item-title" id="txt-lens-custom-title">별도 제작 렌즈 삽입</p>
+          <p class="check-item-desc" id="txt-lens-custom-desc">도수, 블루라이트 차단 등 별도로 제작된 렌즈</p>
+        </div>
+      </label>
+      <label class="check-item" onclick="selectLens(this,'original')">
+        <input type="radio" name="lens" value="original">
+        <div>
+          <p class="check-item-title" id="txt-lens-orig-title">제품 기존 렌즈</p>
+          <p class="check-item-desc" id="txt-lens-orig-desc">젠틀몬스터 정품 렌즈가 삽입된 상태</p>
+        </div>
+      </label>
+    </div>
+
+    <div id="lens-notice" style="display:none;border:1px solid #000;padding:24px;margin-top:16px;margin-bottom:16px;">
+      <p id="txt-ln-head" style="font-size:14px;font-weight:500;margin-bottom:16px;">꼭 확인해 주세요.</p>
+      <p id="txt-ln-p1" style="font-size:13px;color:#555;margin-bottom:10px;line-height:1.8;">별도로 제작한 렌즈(도수·블루라이트 등)가 장착된 경우, 안전한 수리를 위해 렌즈 분리가 반드시 필요합니다.</p>
+      <p id="txt-ln-p2" style="font-size:13px;color:#555;margin-bottom:10px;line-height:1.8;">별도 제작렌즈가 삽입된 상태로 접수될 경우, 수리가 지연되거나 반송되며, 수리·운송 과정에서 렌즈가 손상되거나 분실되어도 보상하지 않습니다.</p>
+      <p id="txt-ln-p3" style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">따라서 별도로 제작된 렌즈는 꼭 분리하시고 제품만 보내주세요.</p>
+      <a href="#" id="txt-ln-link" style="font-size:12px;color:#555;text-decoration:underline;display:inline-block;margin-bottom:20px;">면책동의 원문 확인하기 →</a>
+
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+        <label class="inline-check">
+          <input type="checkbox" id="chk-lens" onchange="checkNextBtn()">
+          <span id="txt-ln-chk">내용을 확인했으며, 렌즈를 분리하여 제품만 발송합니다.</span>
+        </label>
+      </div>
+
+      <div style="border:1px solid #e0e0e0;padding:20px;background:#fafafa;">
+        <p id="txt-ls-head" style="font-size:12px;font-weight:500;margin-bottom:12px;color:#444;">렌즈 분리 서비스 이용하기</p>
+        <p id="txt-ls-p1" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:6px;">고객님이 별도로 제작하신 렌즈(도수·블루라이트 등)가 삽입된 경우, 수리 전에 렌즈 분리가 반드시 필요합니다.</p>
+        <p id="txt-ls-p2" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:6px;">공식 안경원에서 전문 안경사님이 안전하게 렌즈를 분리해드리니, 수리 접수 후 방문하여 진행해주세요.</p>
+        <p id="txt-ls-p3" style="font-size:12px;color:#888;line-height:1.8;margin-bottom:16px;">※ 젠틀몬스터 제품의 기존 렌즈는 분리 없이 바로 수리 접수가 가능합니다.</p>
+        <p id="txt-ls-p4" style="font-size:13px;color:#555;margin-bottom:16px;">아래 [매장 찾기] 버튼을 눌러 이용 가능한 공식 안경원을 확인해 주세요.</p>
+        <a href="../store.html?filter=simplipair" class="btn btn-secondary" id="txt-ls-btn" style="font-size:12px;display:inline-block;">매장 찾기 →</a>
+      </div>
+    </div>
+
+    <div style="margin-bottom:32px;"></div>
+    <div class="divider"></div>
+
+    <!-- PACKAGE DISCLAIMER -->
+    <p class="section-label" id="txt-pkg-label">패키지 동봉 금지 확인 <span style="color:#000">*</span></p>
+    <div style="border:1px solid #e0e0e0;padding:16px 20px;margin-bottom:40px;">
+      <p id="txt-pkg-desc" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:12px;">제품 본체만 보내주세요. 보증카드, 케이스 등 부속품은 분실 우려가 있으니 함께 보내지 마세요.</p>
+      <label class="inline-check">
+        <input type="checkbox" id="chk-pkg" onchange="checkNextBtn()">
+        <span id="txt-pkg-chk">확인했습니다.</span>
+      </label>
+    </div><!-- /#lens-pkg-section -->
+
+    <div class="btn-wrap">
+      <a href="javascript:history.back()" class="btn btn-secondary" id="txt-btn-prev">이전</a>
+      <a href="step3-shipping.html" class="btn btn-primary" id="btn-next" style="opacity:0.4;pointer-events:none;">다음 — 배송 정보</a>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner" style="flex-direction:column;gap:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+      <nav style="display:flex;gap:20px;flex-wrap:wrap;">
+        <a href="../contact.html" style="font-size:12px;color:var(--gray-600);text-decoration:none;">문의하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">고객 서비스</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">스토어 찾기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">법적 고지</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">개인정보 처리방침</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">구독하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">소셜</a>
+        <a href="#" onclick="openLangModal();return false;" style="font-size:12px;color:var(--gray-600);text-decoration:none;cursor:pointer;">국가: South Korea</a>
+      </nav>
+      <p style="font-size:12px;color:var(--gray-600);white-space:nowrap;">© 2026 GENTLE MONSTER</p>
+    </div>
+    <p style="font-size:11px;color:var(--gray-400);line-height:1.8;">
+      주) 아이아이컴바인드 | 대표자명: 김한국 | 사업자번호: 119-86-38589 | 통신판매신고번호: 제 2014-서울마포-1050호 | 이메일 문의: service.kr@gentlemonster.com | 개인정보보호책임자: 정태호 | 주소: 서울특별시 성동구 뚝섬로 433 | 대표번호: 1600-2126<br>
+      고객님의 안전한 현금자산 거래를 위해 하나은행과 채무지급보증계약을 체결하여 보장해드리고 있습니다.
+    </p>
+  </div>
+</footer>
+
+<script>
+// ─── i18n ───
+let currentLang = 'ko';
+
+const STRINGS = {
+  ko: {
+    sp1: '기본 정보', sp2: '서비스 유형', sp3: '서비스 상세', sp4: '사진·렌즈', sp5: '배송 정보', sp6: '안내 확인',
+    eyebrow: '수리 서비스 접수',
+    title: '사진 첨부 & 렌즈 정보',
+    desc: '제품 상태 사진을 첨부하고 렌즈 상태를 확인해 주세요.',
+    imgLabel: '제품 사진 첨부 <span style="color:#000">*</span>',
+    imgDesc: '파손·수리 부위가 잘 보이도록 촬영해 주세요. 여러 장 첨부 가능합니다.',
+    uploadMain: '파일을 선택하거나 여기에 끌어다 놓으세요',
+    uploadSub: 'JPG, PNG 지원 · 최대 10MB · 최대 5장',
+    addMore: '+ 사진 추가하기',
+    lensLabel: '렌즈 정보 <span style="color:#000">*</span>',
+    lensDesc: '현재 제품에 삽입된 렌즈 상태를 선택해 주세요.',
+    lensNoneTitle: '미삽입', lensNoneDesc: '렌즈가 없는 상태로 발송합니다.',
+    lensCustomTitle: '별도 제작 렌즈 삽입', lensCustomDesc: '도수, 블루라이트 차단 등 별도로 제작된 렌즈',
+    lensOrigTitle: '제품 기존 렌즈', lensOrigDesc: '젠틀몬스터 정품 렌즈가 삽입된 상태',
+    lnHead: '꼭 확인해 주세요.',
+    lnP1: '별도로 제작한 렌즈(도수·블루라이트 등)가 장착된 경우, 안전한 수리를 위해 렌즈 분리가 반드시 필요합니다.',
+    lnP2: '별도 제작렌즈가 삽입된 상태로 접수될 경우, 수리가 지연되거나 반송되며, 수리·운송 과정에서 렌즈가 손상되거나 분실되어도 보상하지 않습니다.',
+    lnP3: '따라서 별도로 제작된 렌즈는 꼭 분리하시고 제품만 보내주세요.',
+    lnLink: '면책동의 원문 확인하기 →',
+    lnChk: '내용을 확인했으며, 렌즈를 분리하여 제품만 발송합니다.',
+    lsHead: '렌즈 분리 서비스 이용하기',
+    lsP1: '고객님이 별도로 제작하신 렌즈(도수·블루라이트 등)가 삽입된 경우, 수리 전에 렌즈 분리가 반드시 필요합니다.',
+    lsP2: '공식 안경원에서 전문 안경사님이 안전하게 렌즈를 분리해드리니, 수리 접수 후 방문하여 진행해주세요.',
+    lsP3: '※ 젠틀몬스터 제품의 기존 렌즈는 분리 없이 바로 수리 접수가 가능합니다.',
+    lsP4: '아래 [매장 찾기] 버튼을 눌러 이용 가능한 공식 안경원을 확인해 주세요.',
+    lsBtn: '매장 찾기 →',
+    pkgLabel: '패키지 동봉 금지 확인 <span style="color:#000">*</span>',
+    pkgDesc: '제품 본체만 보내주세요. 보증카드, 케이스 등 부속품은 분실 우려가 있으니 함께 보내지 마세요.',
+    pkgChk: '확인했습니다.',
+    btnPrev: '이전',
+    btnNext: '다음 — 배송 정보',
+  },
+  en: {
+    sp1: 'Basic Info', sp2: 'Service Type', sp3: 'Service Detail', sp4: 'Photos & Lens', sp5: 'Shipping', sp6: 'Confirmation',
+    eyebrow: 'Repair Service Request',
+    title: 'Photos & Lens Information',
+    desc: 'Please attach photos of your product and confirm the lens status.',
+    imgLabel: 'Product Photos <span style="color:#000">*</span>',
+    imgDesc: 'Please take clear photos of the damaged or repaired area. Multiple photos can be attached.',
+    uploadMain: 'Select a file or drag and drop here',
+    uploadSub: 'JPG, PNG supported · Max 10MB · Up to 5 photos',
+    addMore: '+ Add more photos',
+    lensLabel: 'Lens Information <span style="color:#000">*</span>',
+    lensDesc: 'Please select the current lens status of your product.',
+    lensNoneTitle: 'No Lens', lensNoneDesc: 'Sending without any lens.',
+    lensCustomTitle: 'Custom Lens', lensCustomDesc: 'Prescription, blue light filter, or other custom-made lenses',
+    lensOrigTitle: 'Original Lens', lensOrigDesc: 'Fitted with original Gentle Monster lenses',
+    lnHead: 'Please read carefully.',
+    lnP1: 'If custom lenses (prescription, blue light filter, etc.) are installed, lens removal is required before repair.',
+    lnP2: 'If submitted with custom lenses installed, repairs may be delayed or the product returned. No compensation will be provided for lens damage or loss during repair or shipping.',
+    lnP3: 'Please remove any custom lenses and send only the frame.',
+    lnLink: 'View full disclaimer →',
+    lnChk: 'I have read the above and will remove the lens before shipping.',
+    lsHead: 'Lens Removal Service',
+    lsP1: 'If you have custom lenses (prescription, blue light filter, etc.) installed, lens removal is required before repair.',
+    lsP2: 'A professional optician at an official partner store will safely remove your lenses — please visit after submitting your repair request.',
+    lsP3: '※ Original Gentle Monster lenses do not need to be removed before submitting for repair.',
+    lsP4: 'Click [Find Store] below to find an available official partner store.',
+    lsBtn: 'Find Store →',
+    pkgLabel: 'Package Exclusion Confirmation <span style="color:#000">*</span>',
+    pkgDesc: 'Please send only the product frame. Do not include warranty cards, cases, or accessories as they may be lost.',
+    pkgChk: 'I understand.',
+    btnPrev: 'Previous',
+    btnNext: 'Next — Shipping',
+  }
+};
+
+function setText(id, html) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  try { localStorage.setItem('ps-lang', lang); } catch(e) {}
+  ['ko','en'].forEach(function(l) { var el = document.getElementById('footer-lang-' + l); if (el) { el.style.fontWeight = l === lang ? '500' : '400'; el.style.color = l === lang ? '#111' : ''; } });
+  const s = STRINGS[lang];
+
+  ['ko','en'].forEach(l => {
+    const b = document.getElementById('pb-lang-' + l);
+    if (!b) return;
+    b.style.background = l === lang ? '#111' : '#fff';
+    b.style.color      = l === lang ? '#fff' : '#333';
+    b.style.borderColor= l === lang ? '#111' : '#ccc';
+  });
+
+  setText('sp1', s.sp1); setText('sp2', s.sp2); setText('sp3', s.sp3);
+  setText('sp4', s.sp4); setText('sp5', s.sp5); setText('sp6', s.sp6);
+  setText('txt-eyebrow', s.eyebrow);
+  setText('txt-title', s.title);
+  setText('txt-desc', s.desc);
+  setText('txt-img-label', s.imgLabel);
+  setText('txt-img-desc', s.imgDesc);
+  setText('txt-upload-main', s.uploadMain);
+  setText('txt-upload-sub', s.uploadSub);
+  setText('add-more-btn', s.addMore);
+  setText('txt-lens-label', s.lensLabel);
+  setText('txt-lens-desc', s.lensDesc);
+  setText('txt-lens-none-title', s.lensNoneTitle);
+  setText('txt-lens-none-desc', s.lensNoneDesc);
+  setText('txt-lens-custom-title', s.lensCustomTitle);
+  setText('txt-lens-custom-desc', s.lensCustomDesc);
+  setText('txt-lens-orig-title', s.lensOrigTitle);
+  setText('txt-lens-orig-desc', s.lensOrigDesc);
+  setText('txt-ln-head', s.lnHead);
+  setText('txt-ln-p1', s.lnP1);
+  setText('txt-ln-p2', s.lnP2);
+  setText('txt-ln-p3', s.lnP3);
+  setText('txt-ln-link', s.lnLink);
+  setText('txt-ln-chk', s.lnChk);
+  setText('txt-ls-head', s.lsHead);
+  setText('txt-ls-p1', s.lsP1);
+  setText('txt-ls-p2', s.lsP2);
+  setText('txt-ls-p3', s.lsP3);
+  setText('txt-ls-p4', s.lsP4);
+  setText('txt-ls-btn', s.lsBtn);
+  setText('txt-pkg-label', s.pkgLabel);
+  setText('txt-pkg-desc', s.pkgDesc);
+  setText('txt-pkg-chk', s.pkgChk);
+  setText('txt-btn-prev', s.btnPrev);
+  document.getElementById('btn-next').textContent = s.btnNext;
+  if (document.getElementById('btn-next').style.opacity !== '0.4') {
+    document.getElementById('btn-next').textContent = s.btnNext;
+  }
+}
+
+// ─── 이미지 첨부 ───
+const MAX_FILES = 5;
+let attachedFiles = [];
+
+function handleFiles(fileList) {
+  const remaining = MAX_FILES - attachedFiles.length;
+  const toAdd = Array.from(fileList).slice(0, remaining);
+  toAdd.forEach(file => {
+    const id = Date.now() + Math.random();
+    const reader = new FileReader();
+    reader.onload = e => renderFile(id, file.name, file.size, e.target.result);
+    reader.readAsDataURL(file);
+    attachedFiles.push({ id, name: file.name, size: file.size });
+  });
+  document.getElementById('img-input').value = '';
+}
+
+function renderFile(id, name, size, src) {
+  const sizeStr = size < 1024 * 1024
+    ? (size / 1024).toFixed(0) + ' KB'
+    : (size / 1024 / 1024).toFixed(1) + ' MB';
+  const item = document.createElement('div');
+  item.id = 'file-' + id;
+  item.style.cssText = 'position:relative;width:88px;';
+  item.innerHTML = `
+    <div style="width:88px;height:88px;border:1px solid #e0e0e0;overflow:hidden;background:#f5f5f5;display:flex;align-items:center;justify-content:center;">
+      <img src="${src}" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display='none'">
+    </div>
+    <p style="font-size:10px;color:#666;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:88px;">${name}</p>
+    <p style="font-size:10px;color:#aaa;">${sizeStr}</p>
+    <button onclick="removeFile(${id})" style="position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,0.55);border:none;color:#fff;font-size:10px;cursor:pointer;line-height:1;padding:0;">✕</button>
+  `;
+  document.getElementById('file-items').appendChild(item);
+  updateFileUI();
+}
+
+function removeFile(id) {
+  attachedFiles = attachedFiles.filter(f => f.id !== id);
+  const el = document.getElementById('file-' + id);
+  if (el) el.remove();
+  updateFileUI();
+}
+
+function updateFileUI() {
+  const hasFiles = attachedFiles.length > 0;
+  document.getElementById('upload-zone').style.display = hasFiles ? 'none' : 'block';
+  document.getElementById('file-list').style.display = hasFiles ? 'block' : 'none';
+  document.getElementById('add-more-btn').style.display = (hasFiles && attachedFiles.length < MAX_FILES) ? 'block' : 'none';
+  checkNextBtn();
+}
+
+// ── 제품 선택 ──
+let selectedProductIdx = 0;
+function selectHistoryProduct(idx) {
+  document.querySelectorAll('.product-history-card').forEach(function(card, i) {
+    const isSelected = i === idx;
+    card.style.background = isSelected ? 'var(--gray-50)' : '';
+    card.style.borderLeft = isSelected ? '2px solid #111' : '2px solid transparent';
+    const check = document.getElementById('phc-check-' + i);
+    if (check) check.style.visibility = isSelected ? 'visible' : 'hidden';
+  });
+  selectedProductIdx = idx;
+  // 직접 입력 섹션 닫기
+  document.getElementById('manual-input-section').style.display = 'none';
+  document.getElementById('btn-manual-input').textContent = '직접 입력하기';
+}
+
+function toggleManualInput() {
+  const section = document.getElementById('manual-input-section');
+  const btn = document.getElementById('btn-manual-input');
+  const isOpen = section.style.display !== 'none';
+  section.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? '직접 입력하기' : '직접 입력 닫기';
+  if (!isOpen) {
+    // 직접 입력 열면 구매 이력 선택 해제
+    document.querySelectorAll('.product-history-card').forEach(function(card, i) {
+      card.style.background = '';
+      card.style.borderLeft = '2px solid transparent';
+      const check = document.getElementById('phc-check-' + i);
+      if (check) check.style.visibility = 'hidden';
+    });
+    selectedProductIdx = -1;
+  }
+}
+
+const PB_IDS = ['pb-tc','pb-rp','pb-df','pb-acc','pb-con'];
+const IMAGE_FLOWS = ['total-care','repair','defect'];
+
+function setFlow(flow) {
+  PB_IDS.forEach(id => {
+    const b = document.getElementById(id);
+    if (b) { b.style.background = '#fff'; b.style.color = '#333'; b.style.borderColor = '#ccc'; }
+  });
+  const activeMap = { 'total-care':'pb-tc','repair':'pb-rp','defect':'pb-df','accessory':'pb-acc','consult':'pb-con' };
+  const a = document.getElementById(activeMap[flow]);
+  if (a) { a.style.background = '#111'; a.style.color = '#fff'; a.style.borderColor = '#111'; }
+  const show = IMAGE_FLOWS.includes(flow);
+  document.getElementById('image-section').style.display = show ? 'block' : 'none';
+  document.getElementById('lens-pkg-section').style.display = show ? 'block' : 'none';
+}
+
+let lensType = 'none';
+
+function selectLens(el, type) {
+  el.closest('.check-group').querySelectorAll('.check-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  lensType = type;
+  try {
+    var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
+    state.lensType = type;
+    localStorage.setItem('ps-state', JSON.stringify(state));
+  } catch(e) {}
+  document.getElementById('lens-notice').style.display = (type === 'custom') ? 'block' : 'none';
+  if (type !== 'custom') document.getElementById('chk-lens').checked = false;
+  checkNextBtn();
+}
+
+function checkNextBtn() {
+  const btn = document.getElementById('btn-next');
+  const imgSection = document.getElementById('image-section');
+  const photoOk = !imgSection || imgSection.style.display === 'none' || attachedFiles.length > 0;
+  const lensOk = lensType !== 'custom' || document.getElementById('chk-lens').checked;
+  const pkgOk = document.getElementById('chk-pkg').checked;
+  const ok = photoOk && lensOk && pkgOk;
+  btn.style.opacity = ok ? '' : '0.4';
+  btn.style.pointerEvents = ok ? '' : 'none';
+}
+
+setFlow('total-care');
+
+window.addEventListener('load', function() {
+  var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
+  setLang(saved || 'ko');
+
+});
+</script>
+</body>
+</html>

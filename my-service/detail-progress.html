@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>수리 서비스 상세 — GENTLE MONSTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/lang-modal.js"></script>
+</head>
+<body>
+
+<header class="gnb">
+  <div class="gnb-inner">
+    <div class="gnb-logo"><a href="../index.html"><img src="../css/gentle-monster-logo.png" alt="GENTLE MONSTER" height="14"></a></div>
+    <nav class="gnb-nav">
+      <a href="#">선글라스</a><a href="#">안경</a><a href="#">컬렉션</a>
+      <a href="#">AI 아이웨어</a><a href="../store.html">스토어</a><a href="../index.html">서비스</a><a href="#">더 알아보기</a>
+    </nav>
+    <div class="gnb-actions"><a href="#">검색</a><a href="account.html">계정</a></div>
+  </div>
+</header>
+
+<!-- PILL TABS -->
+<div style="margin-top:var(--gnb-height);">
+  <div class="pill-tabs-wrap">
+    <div class="pill-tabs">
+      <a href="account.html" class="pill-tab">계정</a>
+      <a href="purchased.html" class="pill-tab">구매한 제품</a>
+      <a href="#" class="pill-tab">위시리스트</a>
+      <a href="list.html" class="pill-tab active">수리 서비스 내역</a>
+      <a href="#" class="pill-tab">프로필</a>
+    </div>
+    <a href="#" class="pill-tab-logout">로그아웃</a>
+  </div>
+</div>
+
+<main class="page-gray">
+  <div class="content">
+
+    <a href="list.html" style="font-size:12px;color:#999;text-decoration:none;display:block;margin-bottom:32px;">← 수리 서비스 내역</a>
+
+    <!-- HEADER -->
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+      <div>
+        <p class="page-eyebrow" style="font-family:monospace;letter-spacing:0.06em;">2603120FRDAXMKLZWQ</p>
+        <h1 class="page-title" style="margin-bottom:0;">FRIDA 01</h1>
+      </div>
+      <span class="ticket-status" style="margin-top:8px;">수리 진행 중</span>
+    </div>
+    <p style="font-size:12px;color:#999;margin-bottom:32px;">2026. 03. 12 접수</p>
+
+    <!-- STATUS TRACKER -->
+    <div class="status-track">
+      <div class="status-node done">
+        <div class="status-node-line"></div>
+        <div class="status-node-dot">✓</div>
+        <p class="status-node-label">접수 완료</p>
+      </div>
+      <div class="status-node done">
+        <div class="status-node-line"></div>
+        <div class="status-node-dot">✓</div>
+        <p class="status-node-label">입고</p>
+      </div>
+      <div class="status-node done">
+        <div class="status-node-line"></div>
+        <div class="status-node-dot">✓</div>
+        <p class="status-node-label">진단</p>
+      </div>
+      <div class="status-node current">
+        <div class="status-node-line"></div>
+        <div class="status-node-dot"></div>
+        <p class="status-node-label">수리</p>
+      </div>
+      <div class="status-node">
+        <div class="status-node-line"></div>
+        <div class="status-node-dot"></div>
+        <p class="status-node-label">출고</p>
+      </div>
+    </div>
+
+    <!-- TICKET INFO -->
+    <p class="section-label" style="margin-top:0;">접수 정보</p>
+    <div class="detail-section">
+      <div class="detail-row"><span class="detail-key">티켓 번호</span><span class="detail-val" style="font-family:monospace;letter-spacing:0.06em;">2603120FRDAXMKLZWQ</span></div>
+      <div class="detail-row"><span class="detail-key">현재 상태</span><span class="detail-val">수리 진행 중</span></div>
+      <div class="detail-row"><span class="detail-key">접수일</span><span class="detail-val">2026. 03. 12</span></div>
+      <div class="detail-row"><span class="detail-key">입고 확인일</span><span class="detail-val">2026. 03. 17</span></div>
+    </div>
+
+    <!-- CUSTOMER INFO -->
+    <p class="section-label">고객 정보</p>
+    <div class="detail-section">
+      <div class="detail-row"><span class="detail-key">이메일</span><span class="detail-val">gildong.hong@gmail.com</span></div>
+      <div class="detail-row"><span class="detail-key">연락처</span><span class="detail-val">010-3948-2071</span></div>
+    </div>
+
+    <!-- RECEPTION DETAIL -->
+    <p class="section-label">접수 상세</p>
+    <div class="detail-section">
+      <div class="detail-row"><span class="detail-key">발송 방법</span><span class="detail-val">CJ 택배 픽업</span></div>
+      <div class="detail-row"><span class="detail-key">제품명</span><span class="detail-val">FRIDA 01</span></div>
+      <div class="detail-row"><span class="detail-key">서비스 유형</span><span class="detail-val">제품 수리</span></div>
+      <div class="detail-row"><span class="detail-key">수리 부위</span><span class="detail-val">힌지 파손</span></div>
+      <div class="detail-row"><span class="detail-key">렌즈 유형</span><span class="detail-val">미삽입</span></div>
+      <div class="detail-row"><span class="detail-key">출고 희망일</span><span class="detail-val">2026. 05. 10</span></div>
+      <div class="detail-row"><span class="detail-key">품질 보증 기간</span><span class="detail-val">~2026. 08. 22 (유효)</span></div>
+      <div class="detail-row"><span class="detail-key">서비스 보증 기간</span><span class="detail-val">~2027. 08. 22 (유효)</span></div>
+    </div>
+
+    <!-- CUSTOMER IMAGES -->
+    <p class="section-label">고객 첨부 이미지</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:40px;">
+      <div class="illustration" style="height:100px;">이미지 1</div>
+      <div class="illustration" style="height:100px;">이미지 2</div>
+    </div>
+
+    <!-- DIAGNOSIS RESULT -->
+    <p class="section-label">진단 결과</p>
+    <div class="detail-section">
+      <div class="detail-row"><span class="detail-key">수리 방식</span><span class="detail-val">힌지 부품 교체</span></div>
+      <div class="detail-row"><span class="detail-key">수리 비용</span><span class="detail-val" style="font-weight:500;">₩45,000 (유상)</span></div>
+      <div class="detail-row"><span class="detail-key">고객 동의</span><span class="detail-val">동의 완료 · 2026. 03. 20</span></div>
+      <div class="detail-row"><span class="detail-key">결제 일시</span><span class="detail-val">2026. 03. 20</span></div>
+      <div class="detail-row"><span class="detail-key">예상 출고일</span><span class="detail-val">2026. 04. 10 (예정)</span></div>
+    </div>
+
+    <!-- SERVICE RESULT -->
+    <p class="section-label">서비스 결과</p>
+    <div style="border:1px solid #e0e0e0;padding:24px;text-align:center;color:#999;margin-bottom:40px;background:#fff;">
+      <p style="font-size:13px;">제품이 수리 진행 중입니다.<br>완료 시 이메일과 카카오톡으로 안내드립니다.</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ACTIONS -->
+    <p class="section-label">수령지</p>
+    <div class="detail-section" style="margin-bottom:16px;">
+      <div class="detail-row"><span class="detail-key">수령지</span><span class="detail-val">서울 성동구 왕십리로 83-21</span></div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-bottom:12px;">
+      <button class="btn btn-secondary disabled" style="flex:1;font-size:11px;cursor:not-allowed;opacity:0.4;">수령지 수정</button>
+      <button class="btn btn-secondary disabled" style="flex:1;font-size:11px;cursor:not-allowed;opacity:0.4;">결제 취소</button>
+    </div>
+    <p style="font-size:11px;color:#999;text-align:center;">수리가 시작된 이후에는 수정 및 취소가 불가합니다.</p>
+
+    <div style="margin-top:40px;text-align:center;">
+      <a href="list.html" style="font-size:12px;color:#555;text-decoration:none;">← 내역으로 돌아가기</a>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner" style="flex-direction:column;gap:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+      <nav style="display:flex;gap:20px;flex-wrap:wrap;">
+        <a href="../contact.html" style="font-size:12px;color:var(--gray-600);text-decoration:none;">문의하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">고객 서비스</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">스토어 찾기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">법적 고지</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">개인정보 처리방침</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">구독하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">소셜</a>
+        <a href="#" onclick="openLangModal();return false;" style="font-size:12px;color:var(--gray-600);text-decoration:none;cursor:pointer;">국가: South Korea</a>
+      </nav>
+      <p style="font-size:12px;color:var(--gray-600);white-space:nowrap;">© 2026 GENTLE MONSTER</p>
+    </div>
+    <p style="font-size:11px;color:var(--gray-400);line-height:1.8;">
+      주) 아이아이컴바인드 | 대표자명: 김한국 | 사업자번호: 119-86-38589 | 통신판매신고번호: 제 2014-서울마포-1050호 | 이메일 문의: service.kr@gentlemonster.com | 개인정보보호책임자: 정태호 | 주소: 서울특별시 성동구 뚝섬로 433 | 대표번호: 1600-2126<br>
+      고객님의 안전한 현금자산 거래를 위해 하나은행과 채무지급보증계약을 체결하여 보장해드리고 있습니다.
+    </p>
+  </div>
+</footer>
+<script>
+function setLang(lang) {
+  try { localStorage.setItem('ps-lang', lang); } catch(e) {}
+  ['ko','en'].forEach(function(l) {
+    var el = document.getElementById('footer-lang-' + l);
+    if (el) { el.style.fontWeight = l === lang ? '500' : '400'; el.style.color = l === lang ? '#111' : ''; }
+  });
+}
+window.addEventListener('load', function() {
+  var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
+  setLang(saved || 'ko');
+});
+</script>
+</body>
+</html>

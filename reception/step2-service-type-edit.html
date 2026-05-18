@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>수리 서비스 접수 — GENTLE MONSTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/lang-modal.js"></script>
+</head>
+<body>
+
+<header class="gnb">
+  <div class="gnb-inner">
+    <div class="gnb-logo"><a href="../index.html"><img src="../css/gentle-monster-logo.png" alt="GENTLE MONSTER" height="14"></a></div>
+    <nav class="gnb-nav">
+      <a href="#">선글라스</a><a href="#">안경</a><a href="#">컬렉션</a>
+      <a href="#">AI 아이웨어</a><a href="../store.html">스토어</a><a href="../index.html" class="active">서비스</a><a href="#">더 알아보기</a>
+    </nav>
+    <div class="gnb-actions"><a href="#">검색</a><a href="../my-service/account.html">계정</a></div>
+  </div>
+</header>
+
+<main class="page-wrapper">
+  <div class="content">
+
+    <div class="step-progress">
+      <div class="step-item done"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 01</p><p class="step-label" id="sp1">기본 정보</p></div>
+      <div class="step-item active"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 02</p><p class="step-label" id="sp2">서비스 유형</p></div>
+      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 03</p><p class="step-label" id="sp3">서비스 상세</p></div>
+      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 04</p><p class="step-label" id="sp4">사진·렌즈</p></div>
+      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 05</p><p class="step-label" id="sp5">배송 정보</p></div>
+      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 06</p><p class="step-label" id="sp6">안내 확인</p></div>
+    </div>
+
+    <p class="page-eyebrow" id="txt-eyebrow">수리 서비스 접수</p>
+    <h1 class="page-title" id="txt-title">서비스 유형 선택</h1>
+    <p class="page-desc" id="txt-desc">원하시는 서비스 유형을 선택해주세요.</p>
+
+    <div class="option-cards">
+      <a href="step2-total-care.html" class="option-card" id="card-tc" style="display:none;">
+        <div class="option-card-body">
+          <p class="option-card-title" id="txt-tc-title">토탈 케어</p>
+          <p class="option-card-desc" id="txt-tc-desc">클리닝 · 폴리싱 · 피팅 — 제품 전체를 처음처럼 케어해 드립니다.</p>
+        </div>
+        <span class="option-card-arrow">→</span>
+      </a>
+      <a href="step2-repair-edit.html" class="option-card" id="card-rp" style="border-color:#111;">
+        <div class="option-card-body">
+          <p class="option-card-title" id="txt-rp-title">제품 수리</p>
+          <p class="option-card-desc" id="txt-rp-desc">파손 · 변형 · 장식 문제 등 특정 부위의 수리를 진행합니다.</p>
+        </div>
+        <span class="option-card-arrow" id="card-rp-arrow"><span style="font-size:11px;font-weight:500;color:#111;">선택됨 →</span></span>
+      </a>
+      <a href="step2-consulting-edit.html" class="option-card" id="card-cs" style="display:none;">
+        <div class="option-card-body">
+          <p class="option-card-title" id="txt-cs-title">상담 &amp; 기타</p>
+          <p class="option-card-desc" id="txt-cs-desc">제품 결함 문의 · 부속품 요청 · 상담원 연결</p>
+        </div>
+        <span class="option-card-arrow">→</span>
+      </a>
+    </div>
+
+    <button type="button" id="btn-change-type" onclick="showAllOptions()" style="margin-top:16px;width:100%;padding:14px;background:#fff;border:1px solid #111;font-family:inherit;font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">서비스 유형 변경하기</button>
+
+    <div class="btn-wrap" style="margin-top:48px;">
+      <a href="step1-edit.html" class="btn btn-secondary" id="txt-btn-prev">이전</a>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner" style="flex-direction:column;gap:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+      <nav style="display:flex;gap:20px;flex-wrap:wrap;">
+        <a href="../contact.html" style="font-size:12px;color:var(--gray-600);text-decoration:none;">문의하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">고객 서비스</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">스토어 찾기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">법적 고지</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">개인정보 처리방침</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">구독하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">소셜</a>
+        <a href="#" onclick="openLangModal();return false;" style="font-size:12px;color:var(--gray-600);text-decoration:none;cursor:pointer;">국가: South Korea</a>
+      </nav>
+      <p style="font-size:12px;color:var(--gray-600);white-space:nowrap;">© 2026 GENTLE MONSTER</p>
+    </div>
+    <p style="font-size:11px;color:var(--gray-400);line-height:1.8;">
+      주) 아이아이컴바인드 | 대표자명: 김한국 | 사업자번호: 119-86-38589 | 통신판매신고번호: 제 2014-서울마포-1050호 | 이메일 문의: service.kr@gentlemonster.com | 개인정보보호책임자: 정태호 | 주소: 서울특별시 성동구 뚝섬로 433 | 대표번호: 1600-2126<br>
+      고객님의 안전한 현금자산 거래를 위해 하나은행과 채무지급보증계약을 체결하여 보장해드리고 있습니다.
+    </p>
+  </div>
+</footer>
+
+<script>
+const STRINGS = {
+  ko: {
+    sp1:'기본 정보', sp2:'서비스 유형', sp3:'서비스 상세', sp4:'사진·렌즈', sp5:'배송 정보', sp6:'안내 확인',
+    eyebrow:'수리 서비스 접수', title:'서비스 유형 선택', desc:'원하시는 서비스 유형을 선택해주세요.',
+    tcTitle:'토탈 케어', tcDesc:'클리닝 · 폴리싱 · 피팅 — 제품 전체를 처음처럼 케어해 드립니다.',
+    rpTitle:'제품 수리', rpDesc:'파손 · 변형 · 장식 문제 등 특정 부위의 수리를 진행합니다.',
+    csTitle:'상담 & 기타', csDesc:'제품 결함 문의 · 부속품 요청 · 상담원 연결',
+    btnPrev:'이전',
+  },
+  en: {
+    sp1:'Basic Info', sp2:'Service Type', sp3:'Service Detail', sp4:'Photos & Lens', sp5:'Shipping', sp6:'Confirmation',
+    eyebrow:'Repair Service Request', title:'Select Service Type', desc:'Please select the type of service you need.',
+    tcTitle:'Total Care', tcDesc:'Cleaning · Polishing · Fitting — Complete care to restore your product.',
+    rpTitle:'Product Repair', rpDesc:'Damage · deformation · decoration issues — Repair of specific areas.',
+    csTitle:'Consultation & Other', csDesc:'Product defect inquiry · Accessory request · Customer service',
+    btnPrev:'Previous',
+  }
+};
+
+function setText(id, html) { const el = document.getElementById(id); if (el) el.innerHTML = html; }
+
+function setLang(lang) {
+  try { localStorage.setItem('ps-lang', lang); } catch(e) {}
+  const s = STRINGS[lang];
+  setText('sp1',s.sp1); setText('sp2',s.sp2); setText('sp3',s.sp3);
+  setText('sp4',s.sp4); setText('sp5',s.sp5); setText('sp6',s.sp6);
+  setText('txt-eyebrow',s.eyebrow); setText('txt-title',s.title); setText('txt-desc',s.desc);
+  setText('txt-tc-title',s.tcTitle); setText('txt-tc-desc',s.tcDesc);
+  setText('txt-rp-title',s.rpTitle); setText('txt-rp-desc',s.rpDesc);
+  setText('txt-cs-title',s.csTitle); setText('txt-cs-desc',s.csDesc);
+  setText('txt-btn-prev',s.btnPrev);
+}
+
+function showAllOptions() {
+  document.getElementById('card-tc').style.display = '';
+  document.getElementById('card-cs').style.display = '';
+  var rp = document.getElementById('card-rp');
+  rp.style.borderColor = '';
+  document.getElementById('card-rp-arrow').innerHTML = '→';
+  document.getElementById('btn-change-type').style.display = 'none';
+  document.getElementById('card-tc').href = 'step2-total-care.html';
+  document.getElementById('card-rp').href = 'step2-repair-edit.html';
+  document.getElementById('card-cs').href = 'step2-consulting-edit.html';
+}
+
+window.addEventListener('load', function() {
+  var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
+  setLang(saved || 'ko');
+});
+</script>
+</body>
+</html>

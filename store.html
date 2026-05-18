@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>스토어 — GENTLE MONSTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/lang-modal.js"></script>
+  <style>
+    html, body { height: 100%; overflow: hidden; }
+
+    .store-layout {
+      display: flex;
+      height: 100vh;
+      padding-top: var(--gnb-height);
+      overflow: hidden;
+    }
+
+    /* ── 지도 영역 ── */
+    .store-map {
+      flex: 1;
+      position: relative;
+      background: #e8e8e8;
+      overflow: hidden;
+    }
+
+    .map-grid-h {
+      position: absolute; left: 0; right: 0;
+      height: 1px; background: rgba(255,255,255,0.7);
+    }
+
+    .map-grid-v {
+      position: absolute; top: 0; bottom: 0;
+      width: 1px; background: rgba(255,255,255,0.7);
+    }
+
+    .map-label {
+      position: absolute;
+      font-size: 11px; color: #bbb; font-weight: 500;
+      pointer-events: none; white-space: nowrap;
+    }
+
+    .g-pin {
+      position: absolute;
+      width: 30px; height: 30px; border-radius: 50%;
+      background: #111; color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+      z-index: 2;
+    }
+
+    .g-pin:hover, .g-pin.active {
+      transform: translate(-50%, -50%) scale(1.2);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.35);
+    }
+
+    .g-pin.dimmed { display: none; }
+
+    .s-pin {
+      position: absolute;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #111;
+      transform: translate(-50%, -50%);
+      cursor: pointer;
+      z-index: 2;
+      display: none;
+      transition: transform 0.15s;
+    }
+    .s-pin:hover, .s-pin.active { transform: translate(-50%,-50%) scale(1.6); }
+    .s-pin.dimmed { display: none; }
+
+    .my-loc {
+      position: absolute;
+      width: 14px; height: 14px; border-radius: 50%;
+      background: #4a90d9; border: 2px solid #fff;
+      box-shadow: 0 0 0 5px rgba(74,144,217,0.2);
+      transform: translate(-50%, -50%);
+      z-index: 3;
+    }
+
+    /* ── 우측 패널 ── */
+    .store-panel {
+      width: 420px;
+      flex-shrink: 0;
+      background: #fff;
+      border-left: 1px solid #e8e8e8;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* 패널 공통 */
+    .panel-view { display: flex; flex-direction: column; height: 100%; }
+    .panel-view.hidden { display: none; }
+
+    /* ── 리스트 뷰 ── */
+    .panel-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-bottom: 1px solid #f0f0f0;
+      flex-shrink: 0;
+    }
+
+    .btn-filter {
+      display: flex; align-items: center; gap: 4px;
+      padding: 6px 12px; font-size: 12px;
+      font-family: var(--font);
+      border: 1px solid #ddd; background: #fff;
+      cursor: pointer; letter-spacing: 0.02em;
+      transition: border-color 0.15s;
+    }
+
+    .btn-filter:hover { border-color: #111; }
+
+    .btn-filter.has-filter {
+      background: #111; color: #fff; border-color: #111;
+    }
+
+    .filter-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 16px; height: 16px;
+      border-radius: 50%; background: #111; color: #fff;
+      font-size: 10px; font-weight: 500; padding: 0 3px;
+      display: none;
+    }
+
+    .filter-badge.visible { display: inline-flex; }
+
+    .btn-icon {
+      padding: 6px 10px; font-size: 16px; line-height: 1;
+      border: 1px solid #ddd; background: #fff;
+      cursor: pointer; color: #555;
+      transition: border-color 0.15s;
+    }
+
+    .btn-icon:hover { border-color: #111; }
+
+    .panel-dropdowns {
+      display: flex; gap: 8px;
+      padding: 14px 20px 12px;
+      border-bottom: 1px solid #f0f0f0;
+      flex-shrink: 0;
+    }
+
+    .panel-select-wrap {
+      flex: 1; position: relative;
+    }
+
+    .panel-select-label {
+      font-size: 10px; color: #aaa; margin-bottom: 2px; letter-spacing: 0.04em;
+    }
+
+    .panel-select {
+      width: 100%; -webkit-appearance: none; appearance: none;
+      border: 1px solid #ddd; border-radius: 4px;
+      padding: 8px 28px 8px 10px;
+      font-size: 13px; font-family: var(--font);
+      background: #fff; cursor: pointer; outline: none; color: #111;
+    }
+
+    .panel-select-arrow {
+      position: absolute; right: 10px; bottom: 10px;
+      font-size: 10px; color: #888; pointer-events: none;
+    }
+
+    .panel-location {
+      padding: 10px 20px;
+      font-size: 12px; color: #555;
+      border-bottom: 1px solid #f0f0f0;
+      flex-shrink: 0;
+    }
+
+    .panel-location-pin { color: #4a90d9; margin-right: 4px; }
+
+    .store-list-scroll { flex: 1; overflow-y: auto; }
+
+    /* ── 매장 카드 ── */
+    .store-card {
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid #f0f0f0;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .store-card:hover { background: #fafafa; }
+    .store-card.active { background: #f5f5f5; }
+
+    .store-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 4px;
+    }
+
+    .store-card-name { font-size: 15px; font-weight: 400; color: #111; }
+    .store-card-dist { font-size: 12px; color: #aaa; }
+
+    .store-card-status {
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .status-open { font-size: 12px; color: #2a7c42; font-weight: 500; }
+    .status-closed { font-size: 12px; color: #999; }
+    .status-hours { font-size: 12px; color: #888; }
+
+    .store-card-addr { font-size: 12px; color: #888; margin-bottom: 10px; }
+
+    .store-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+
+    .tag {
+      padding: 3px 8px; font-size: 10px;
+      border: 1px solid #ddd; color: #666;
+      letter-spacing: 0.02em;
+    }
+
+    .tag--simplipair { border-color: #999; color: #333; font-weight: 500; }
+
+    .store-card-img {
+      width: 100%; height: 140px;
+      background: var(--gray-100);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--gray-400); font-size: 11px; letter-spacing: 0.06em;
+    }
+
+    .no-results {
+      padding: 40px 20px;
+      text-align: center; font-size: 13px; color: #aaa;
+    }
+
+    /* ── 필터 뷰 ── */
+    .filter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 24px;
+      border-bottom: 1px solid #f0f0f0;
+      flex-shrink: 0;
+    }
+
+    .filter-title { font-size: 18px; font-weight: 400; letter-spacing: -0.01em; }
+
+    .btn-close-filter {
+      width: 32px; height: 32px;
+      border-radius: 50%; border: 1px solid #ddd;
+      background: #fff; cursor: pointer;
+      font-size: 14px; color: #333;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .filter-body { flex: 1; overflow-y: auto; padding: 24px; }
+
+    .filter-section-label {
+      font-size: 11px; color: #999;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+
+    .filter-check-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 0;
+      cursor: pointer;
+      font-size: 13px; color: #111;
+      border-bottom: 1px solid #f5f5f5;
+    }
+
+    .filter-check-item:last-child { border-bottom: none; }
+
+    .filter-check-item input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: #111;
+      cursor: pointer; flex-shrink: 0;
+    }
+
+    .simplipair-desc {
+      display: none;
+      margin-top: 20px;
+      padding: 16px;
+      background: #f9f9f9;
+      border-left: 2px solid #ddd;
+      font-size: 12px; color: #555;
+      line-height: 1.8;
+    }
+
+    .filter-footer {
+      padding: 16px 24px;
+      border-top: 1px solid #f0f0f0;
+      flex-shrink: 0;
+    }
+
+    .btn-apply {
+      width: 100%; padding: 16px;
+      background: #111; color: #fff;
+      border: none; border-radius: 4px;
+      font-size: 14px; font-family: var(--font);
+      cursor: pointer; letter-spacing: 0.04em;
+      transition: opacity 0.15s;
+    }
+
+    .btn-apply:hover { opacity: 0.85; }
+
+    /* ── 스토어 카드 이미지 hover ── */
+    .store-card-img { position: relative; overflow: hidden; cursor: pointer; }
+    .store-card-img-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0.45);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .store-card-img:hover .store-card-img-overlay { opacity: 1; }
+    .store-card-img-overlay span {
+      color: #fff; font-size: 12px; font-weight: 500;
+      letter-spacing: 0.06em; border: 1px solid rgba(255,255,255,0.7);
+      padding: 8px 18px;
+    }
+
+    /* ── 지도 위 상세 이미지 오버레이 ── */
+    .map-detail-img {
+      position: absolute; inset: 0;
+      background: #222 center/cover no-repeat;
+      display: none; z-index: 5;
+    }
+
+    /* ── 상세 패널 ── */
+    .panel-detail-header {
+      display: flex; justify-content: flex-end;
+      padding: 14px 20px 0;
+      flex-shrink: 0;
+    }
+    .btn-close-detail {
+      width: 32px; height: 32px;
+      border-radius: 50%; border: 1px solid #ddd;
+      background: #fff; cursor: pointer;
+      font-size: 16px; color: #333;
+      display: flex; align-items: center; justify-content: center;
+      text-decoration: none; flex-shrink: 0;
+      transition: border-color 0.15s;
+    }
+    .btn-close-detail:hover { border-color: #111; }
+    .panel-detail-scroll { flex: 1; overflow-y: auto; padding: 20px 24px 40px; }
+    .detail-store-name { font-size: 22px; font-weight: 400; margin-bottom: 8px; }
+    .detail-hours-table { width: 100%; font-size: 12px; color: #555; border-collapse: collapse; margin-bottom: 20px; }
+    .detail-hours-table td { padding: 3px 0; }
+    .detail-hours-table td:first-child { color: #999; width: 60px; }
+    .detail-section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: #aaa; margin: 24px 0 10px; }
+    .detail-service-item { margin-bottom: 14px; }
+    .detail-service-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+    .detail-service-desc { font-size: 12px; color: #888; line-height: 1.7; }
+
+    /* ── 심플리페어 위치 callout ── */
+    .map-callout {
+      position: absolute;
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 10px 14px;
+      font-size: 12px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+      transform: translate(-50%, -140%);
+      white-space: nowrap;
+      z-index: 10;
+      display: none;
+      pointer-events: none;
+    }
+    .map-callout::after {
+      content: '';
+      position: absolute; bottom: -6px; left: 50%;
+      transform: translateX(-50%);
+      width: 10px; height: 10px;
+      background: #fff; border-right: 1px solid #ddd; border-bottom: 1px solid #ddd;
+      transform: translateX(-50%) rotate(45deg);
+    }
+  </style>
+</head>
+<body>
+
+<header class="gnb">
+  <div class="gnb-inner">
+    <div class="gnb-logo">
+      <a href="index.html"><img src="css/gentle-monster-logo.png" alt="GENTLE MONSTER" height="14"></a>
+    </div>
+    <nav class="gnb-nav">
+      <a href="#">선글라스</a>
+      <a href="#">안경</a>
+      <a href="#">컬렉션</a>
+      <a href="#">AI 아이웨어</a>
+      <a href="store.html" class="active">스토어</a>
+      <a href="index.html">서비스</a>
+      <a href="#">더 알아보기</a>
+    </nav>
+    <div class="gnb-actions">
+      <a href="#">검색</a>
+      <a href="my-service/account.html">계정</a>
+    </div>
+  </div>
+</header>
+
+<div class="store-layout">
+
+  <!-- ── 지도 ── -->
+  <div class="store-map" id="store-map">
+    <!-- 격자선 -->
+    <div class="map-grid-h" style="top:20%"></div>
+    <div class="map-grid-h" style="top:35%"></div>
+    <div class="map-grid-h" style="top:50%"></div>
+    <div class="map-grid-h" style="top:65%"></div>
+    <div class="map-grid-h" style="top:80%"></div>
+    <div class="map-grid-v" style="left:20%"></div>
+    <div class="map-grid-v" style="left:35%"></div>
+    <div class="map-grid-v" style="left:50%"></div>
+    <div class="map-grid-v" style="left:65%"></div>
+    <div class="map-grid-v" style="left:80%"></div>
+
+    <!-- 지역 라벨 -->
+    <span class="map-label" style="top:8%;left:12%">고양시</span>
+    <span class="map-label" style="top:8%;left:48%">남양주시</span>
+    <span class="map-label" style="top:38%;left:25%">서울특별시</span>
+    <span class="map-label" style="top:62%;left:14%">광명시</span>
+    <span class="map-label" style="top:62%;left:48%">성남시</span>
+    <span class="map-label" style="top:80%;left:8%">시흥시</span>
+
+    <!-- G 핀 -->
+    <div class="g-pin" id="gpin-0" style="top:42%;left:34%" onclick="focusStore(0)" title="젠틀몬스터 하우스 도산">G</div>
+    <div class="g-pin" id="gpin-1" style="top:48%;left:26%" onclick="focusStore(1)" title="젠틀몬스터 갤러리아 압구정">G</div>
+    <div class="g-pin" id="gpin-2" style="top:52%;left:29%" onclick="focusStore(2)" title="젠틀몬스터 신사">G</div>
+    <div class="g-pin" id="gpin-3" style="top:33%;left:54%" onclick="focusStore(3)" title="젠틀몬스터 성수">G</div>
+    <div class="g-pin" id="gpin-4" style="top:56%;left:49%" onclick="focusStore(4)" title="젠틀몬스터 코엑스">G</div>
+    <div class="g-pin" id="gpin-5" style="top:30%;left:30%" onclick="focusStore(5)" title="젠틀몬스터 홍대">G</div>
+    <div class="g-pin" id="gpin-6" style="top:43%;left:46%" onclick="focusStore(6)" title="젠틀몬스터 명동">G</div>
+    <!-- Stockist dots -->
+    <div class="s-pin" id="spin-7"  style="top:35%;left:57%" onclick="focusStore(7)"  title="디렉토"></div>
+    <div class="s-pin" id="spin-8"  style="top:37%;left:59%" onclick="focusStore(8)"  title="블루선 성수점"></div>
+    <div class="s-pin" id="spin-9"  style="top:39%;left:65%" onclick="focusStore(9)"  title="큐브안경원"></div>
+    <div class="s-pin" id="spin-10" style="top:54%;left:32%" onclick="focusStore(10)" title="리웍스120"></div>
+    <div class="s-pin" id="spin-11" style="top:61%;left:45%" onclick="focusStore(11)" title="자이스비전센터 강남점"></div>
+    <div class="s-pin" id="spin-12" style="top:46%;left:39%" onclick="focusStore(12)" title="이태원블링크 안경"></div>
+    <div class="s-pin" id="spin-13" style="top:45%;left:44%" onclick="focusStore(13)" title="메티스 안경"></div>
+    <div class="s-pin" id="spin-14" style="top:43%;left:45%" onclick="focusStore(14)" title="제우스안경"></div>
+    <div class="s-pin" id="spin-15" style="top:65%;left:62%" onclick="focusStore(15)" title="커스텀아이즈"></div>
+
+    <!-- 현재 위치 -->
+    <div class="my-loc" style="top:36%;left:52%"></div>
+
+    <!-- 지도 출처 표기 -->
+    <div style="position:absolute;bottom:12px;right:16px;font-size:10px;color:#aaa;pointer-events:none;">
+      지도 데이터 ©2025 TMap Mobility
+    </div>
+
+    <!-- 심플리페어 가까운 스토어 callout -->
+    <div class="map-callout" id="simplipair-callout">
+      <strong id="callout-name" style="display:block;font-size:13px;margin-bottom:2px;"></strong>
+      <span id="callout-dist" style="color:#aaa;font-size:11px;"></span>
+      <span style="color:#2a7c42;font-size:11px;margin-left:8px;">심플리페어</span>
+    </div>
+
+    <!-- 상세 보기 시 스토어 이미지 -->
+    <div class="map-detail-img" id="map-detail-img"></div>
+  </div>
+
+  <!-- ── 우측 패널 ── -->
+  <div class="store-panel">
+
+    <!-- 리스트 뷰 -->
+    <div class="panel-view" id="view-list">
+      <div class="panel-toolbar">
+        <button class="btn-filter" id="btn-filter" onclick="openFilter()">
+          필터
+          <span class="filter-badge" id="filter-badge"></span>
+        </button>
+        <button class="btn-icon">≡</button>
+      </div>
+
+      <div class="panel-dropdowns">
+        <div class="panel-select-wrap">
+          <p class="panel-select-label">국가/지역</p>
+          <select class="panel-select">
+            <option>대한민국</option>
+            <option>United States</option>
+          </select>
+          <span class="panel-select-arrow">▾</span>
+        </div>
+        <div class="panel-select-wrap">
+          <p class="panel-select-label">시/군/구</p>
+          <select class="panel-select">
+            <option>서울</option>
+            <option>경기</option>
+            <option>부산</option>
+          </select>
+          <span class="panel-select-arrow">▾</span>
+        </div>
+      </div>
+
+      <div class="panel-location">
+        <span class="panel-location-pin">●</span> 현재 위치: 서울
+      </div>
+
+      <div class="store-list-scroll" id="store-list"></div>
+    </div>
+
+    <!-- 필터 뷰 -->
+    <div class="panel-view hidden" id="view-filter">
+      <div class="filter-header">
+        <span class="filter-title">필터<sup id="pending-count" style="font-size:10px;margin-left:1px;display:none;"></sup></span>
+        <button class="btn-close-filter" onclick="closeFilter()">✕</button>
+      </div>
+
+      <!-- 활성 필터 칩 -->
+      <div id="active-chips" style="display:none;padding:14px 24px 0;gap:8px;flex-wrap:wrap;"></div>
+
+      <div class="filter-body">
+        <p class="filter-section-label">스토어 제공 서비스</p>
+        <div class="filter-grid">
+          <label class="filter-check-item">
+            <input type="checkbox" id="f-fitting">
+            <span>무료 피팅 서비스</span>
+          </label>
+          <label class="filter-check-item">
+            <input type="checkbox" id="f-repair">
+            <span>빠른 간편 수리</span>
+          </label>
+          <label class="filter-check-item">
+            <input type="checkbox" id="f-lens">
+            <span>렌즈 분리</span>
+          </label>
+          <label class="filter-check-item">
+            <input type="checkbox" id="f-simplipair">
+            <span>심플리페어</span>
+          </label>
+        </div>
+
+        <div class="simplipair-desc" id="simplipair-desc">
+          고객님의 편안한 제품 사용을 위해 전 세계 오프라인 스토어에서 커스텀 피팅 서비스 및 부속품(코패드, 나사 등) 교체를 지원합니다.<br><br>
+          심플리페어 안경원에서는 전문적인 피팅과 부속품 교체, 렌즈 분리 및 삽입 등의 간단한 수리를 즉시 받아보실 수 있습니다.
+        </div>
+      </div>
+
+      <div class="filter-footer">
+        <button class="btn-apply" onclick="applyFilter()">적용</button>
+      </div>
+    </div>
+
+    <!-- 상세 뷰 -->
+    <div class="panel-view hidden" id="view-detail">
+      <div class="panel-detail-header">
+        <a href="reception/start.html" class="btn-close-detail" title="접수 화면으로 돌아가기">✕</a>
+      </div>
+      <div class="panel-detail-scroll" id="detail-content"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const WEEKLY_HOURS = [
+  {d:'월요일', t:'11:00am  -  9:00pm'},
+  {d:'화요일', t:'11:00am  -  9:00pm'},
+  {d:'수요일', t:'11:00am  -  9:00pm'},
+  {d:'목요일', t:'11:00am  -  9:00pm'},
+  {d:'금요일', t:'11:00am  -  9:00pm'},
+  {d:'토요일', t:'11:00am  -  9:00pm'},
+  {d:'일요일', t:'11:00am  -  9:00pm'},
+];
+
+const STORE_SERVICES = {
+  fitting: { title: '피팅 서비스', desc: '각 제품을 완벽히 착용할 수 있도록 개인 피팅 서비스를 제공합니다.' },
+  repair:  { title: '간편 수리',   desc: '코패드 교체, 나사 조임, 경첩 조정 등 간단한 수리를 즉시 제공합니다.' },
+  lens:    { title: '렌즈 분리',   desc: '도수 렌즈 삽입을 위한 렌즈 분리 서비스를 제공합니다.' },
+  pickup:  { title: '수리 제품 픽업', desc: '온라인 수리 접수 후 가까운 스토어에 제품을 맡겨 픽업할 수 있습니다.' },
+};
+
+const STORES = [
+  {
+    id: 0, pin: 'gpin-0',
+    name: '젠틀몬스터 하우스 도산',
+    dist: '1.2km', open: true,
+    hours: '오후 9:00시까지 영업',
+    addr: '서울특별시 강남구 도산대로 82',
+    phone: '+82 2-3444-5555',
+    tags: ['fitting', 'repair', 'pickup'],
+  },
+  {
+    id: 1, pin: 'gpin-1',
+    name: '젠틀몬스터 갤러리아 압구정',
+    dist: '2.0km', open: false,
+    hours: '내일 오전 10:30 오픈',
+    addr: '서울특별시 강남구 압구정로 343, 갤러리아백화점 WEST 4F',
+    phone: '+82 2-3445-6666',
+    tags: ['fitting', 'repair', 'pickup'],
+  },
+  {
+    id: 2, pin: 'gpin-2',
+    name: '젠틀몬스터 신사',
+    dist: '2.8km', open: true,
+    hours: '오후 9:00시까지 영업',
+    addr: '서울특별시 강남구 도산대로26길 18',
+    phone: '+82 2-3446-7777',
+    tags: ['fitting', 'pickup'],
+  },
+  {
+    id: 3, pin: 'gpin-3',
+    name: '젠틀몬스터 성수',
+    dist: '3.2km', open: true,
+    hours: '오후 9:00시까지 영업',
+    addr: '서울특별시 성동구 왕십리로 83',
+    phone: '+82 2-3447-8888',
+    tags: ['pickup'],
+  },
+  {
+    id: 4, pin: 'gpin-4',
+    name: '젠틀몬스터 코엑스',
+    dist: '5.1km', open: false,
+    hours: '내일 오전 11:00 오픈',
+    addr: '서울특별시 강남구 영동대로 513, 코엑스몰',
+    phone: '+82 2-3448-9999',
+    tags: ['lens', 'pickup'],
+  },
+  {
+    id: 5, pin: 'gpin-5',
+    name: '젠틀몬스터 홍대',
+    dist: '6.3km', open: true,
+    hours: '오후 9:00시까지 영업',
+    addr: '서울특별시 마포구 어울마당로 35',
+    phone: '+82 2-1644-5704',
+    tags: ['fitting', 'repair', 'lens', 'pickup'],
+  },
+  {
+    id: 6, pin: 'gpin-6',
+    name: '젠틀몬스터 명동',
+    dist: '4.8km', open: true,
+    hours: '오후 9:00시까지 영업',
+    addr: '서울특별시 중구 명동8길 27',
+    phone: '+82 2-3449-0000',
+    tags: ['pickup'],
+  },
+  // ── Stockist (심플리페어 안경원) ──
+  { id: 7,  pin: 'spin-7',  name: '디렉토',              dist: '612m',  open: true,  hours: '오후 9:00시까지 영업', addr: '서울 성동구 성수이로 7길 30 1층 (성수동2가, 빌딩8)',              phone: '', tags: ['lens', 'simplipair'] },
+  { id: 8,  pin: 'spin-8',  name: '블루선 성수점',        dist: '1.7km', open: true,  hours: '오후 9:00시까지 영업', addr: '서울특별시 성동구 서울숲4길 18-6 1층 블루선',                   phone: '', tags: ['lens', 'simplipair'] },
+  { id: 9,  pin: 'spin-9',  name: '큐브안경원',           dist: '3.6km', open: true,  hours: '오후 9:00시까지 영업', addr: '서울 광진구 아차산로 537-17, 1호(광장동, 광장힐스테이트상가)', phone: '', tags: ['lens', 'simplipair'] },
+  { id: 10, pin: 'spin-10', name: '리웍스120',            dist: '3.9km', open: true,  hours: '오후 9:00시까지 영업', addr: '서울특별시 강남구 강남대로162길 24, 1층(신사동)',               phone: '', tags: ['lens', 'simplipair'] },
+  { id: 11, pin: 'spin-11', name: '자이스비전센터 강남점', dist: '4.2km', open: true,  hours: '오후 9:00시까지 영업', addr: '서울특별시 강남구 대치동 984-12 1층, 2층',                     phone: '', tags: ['lens', 'simplipair'] },
+  { id: 12, pin: 'spin-12', name: '이태원블링크 안경',    dist: '5.9km', open: true,  hours: '오후 9:00시까지 영업', addr: '서울 용산구 이태원로20가길 9-5, 1,2층 (이태원동)',              phone: '', tags: ['lens', 'simplipair'] },
+  { id: 13, pin: 'spin-13', name: '메티스 안경',          dist: '7.0km', open: true,  hours: '오후 9:00시까지 영업', addr: '서울 중구 퇴계로 105 2층',                                     phone: '', tags: ['lens', 'simplipair'] },
+  { id: 14, pin: 'spin-14', name: '제우스안경',           dist: '7.0km', open: true,  hours: '오후 9:00시까지 영업', addr: '서울 중구 명동8길 37-5 1층',                                   phone: '', tags: ['lens', 'simplipair'] },
+  { id: 15, pin: 'spin-15', name: '커스텀아이즈',         dist: '7.9km', open: true,  hours: '오후 9:00시까지 영업', addr: '서울 송파구 동남로 159, 1층(가락동, 한흥빌딩)',                phone: '', tags: ['lens', 'simplipair'] },
+];
+
+const TAG_LABEL = {
+  fitting:    '무료 피팅 서비스',
+  repair:     '빠른 간편 수리',
+  lens:       '렌즈 분리',
+  pickup:     '수리 제품 픽업',
+  simplipair: '심플리페어',
+};
+
+let activeFilters = new Set();
+let pendingFilters = new Set();
+let focusedId = null;
+
+// ── 매장 카드 렌더링 ──
+function renderStores() {
+  const list = document.getElementById('store-list');
+  list.innerHTML = '';
+
+  const filtered = STORES.filter(s => {
+    if (activeFilters.size === 0) return true;
+    return [...activeFilters].every(f => {
+      return s.tags.includes(f);
+    });
+  });
+
+  // 지도 핀 표시/숨김
+  STORES.forEach(s => {
+    const pin = document.getElementById(s.pin);
+    if (!pin) return;
+    const visible = filtered.some(f => f.id === s.id);
+    if (pin.classList.contains('s-pin')) {
+      pin.style.display = (activeFilters.size > 0 && visible) ? 'block' : 'none';
+    } else {
+      pin.classList.toggle('dimmed', !visible);
+    }
+  });
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="no-results">조건에 맞는 매장이 없습니다.</div>';
+    return;
+  }
+
+  filtered.forEach(s => {
+    const tagParts = [];
+    if (s.tags.includes('simplipair')) tagParts.push(`<span class="tag tag--simplipair">${TAG_LABEL['simplipair']}</span>`);
+    if (s.tags.includes('fitting'))    tagParts.push(`<span class="tag">${TAG_LABEL['fitting']}</span>`);
+    if (s.tags.includes('repair'))     tagParts.push(`<span class="tag">${TAG_LABEL['repair']}</span>`);
+    if (s.tags.includes('lens'))       tagParts.push(`<span class="tag">${TAG_LABEL['lens']}</span>`);
+    if (s.tags.includes('pickup'))     tagParts.push(`<span class="tag">${TAG_LABEL['pickup']}</span>`);
+    const tagHtml = tagParts.join('');
+
+    const card = document.createElement('div');
+    card.className = 'store-card' + (focusedId === s.id ? ' active' : '');
+    card.id = 'card-' + s.id;
+    card.onclick = () => focusStore(s.id);
+    card.innerHTML = `
+      <div class="store-card-header">
+        <span class="store-card-name">${s.name}</span>
+        <span class="store-card-dist">${s.dist}</span>
+      </div>
+      <div class="store-card-status">
+        <span class="${s.open ? 'status-open' : 'status-closed'}">${s.open ? '오픈' : '영업 종료'}</span>
+        <span class="status-hours">· ${s.hours}</span>
+      </div>
+      <p class="store-card-addr">${s.addr}</p>
+      <div class="store-tags">${tagHtml}</div>
+      ${!s.tags.includes('simplipair') ? `
+      <div class="store-card-img" onclick="openDetail(${s.id})">
+        <div style="width:100%;height:100%;background:var(--gray-100);display:flex;align-items:center;justify-content:center;color:var(--gray-400);font-size:11px;letter-spacing:0.06em;">STORE IMAGE</div>
+        <div class="store-card-img-overlay"><span>스토어 세부 정보 보기</span></div>
+      </div>` : ''}
+    `;
+    list.appendChild(card);
+  });
+}
+
+// ── 핀/카드 포커스 ──
+function focusStore(id) {
+  focusedId = id;
+
+  // 핀 활성화
+  STORES.forEach(s => {
+    const pin = document.getElementById(s.pin);
+    if (pin) pin.classList.toggle('active', s.id === id);
+  });
+
+  // 카드 활성화 + 스크롤
+  document.querySelectorAll('.store-card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('card-' + id);
+  if (card) {
+    card.classList.add('active');
+    card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+// ── 스토어 상세 열기/닫기 ──
+function openDetail(id) {
+  const s = STORES.find(x => x.id === id);
+  if (!s) return;
+
+  const serviceHtml = s.tags
+    .filter(t => STORE_SERVICES[t])
+    .map(t => `
+      <div class="detail-service-item">
+        <p class="detail-service-title">${STORE_SERVICES[t].title}</p>
+        <p class="detail-service-desc">${STORE_SERVICES[t].desc}</p>
+      </div>
+    `).join('');
+
+  const hoursHtml = WEEKLY_HOURS.map(h =>
+    `<tr><td>${h.d}</td><td>${h.t}</td></tr>`
+  ).join('');
+
+  const tagParts = [];
+  if (s.tags.includes('fitting') || s.tags.includes('repair')) tagParts.push(`<span class="tag tag--simplipair">심플리페어</span>`);
+  if (s.tags.includes('lens')) tagParts.push(`<span class="tag">${TAG_LABEL['lens']}</span>`);
+  if (s.tags.includes('pickup')) tagParts.push(`<span class="tag">${TAG_LABEL['pickup']}</span>`);
+
+  document.getElementById('detail-content').innerHTML = `
+    <p class="detail-store-name">${s.name}</p>
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+      <span class="${s.open ? 'status-open' : 'status-closed'}">${s.open ? '오픈' : '영업 종료'}</span>
+      <span class="status-hours">· ${s.hours}</span>
+    </div>
+    <div class="store-tags" style="margin-bottom:20px;">${tagParts.join('')}</div>
+    <p style="font-size:14px;color:#111;margin-bottom:8px;">${s.addr} ↗</p>
+    <button onclick="alert('[지도 보기]')" style="width:100%;padding:12px;border:1px solid #ddd;background:#fff;font-family:var(--font);font-size:13px;cursor:pointer;margin-bottom:24px;">지도 보기</button>
+    <p class="detail-section-label">스토어 영업시간</p>
+    <table class="detail-hours-table">${hoursHtml}</table>
+    <p class="detail-section-label">문의하기</p>
+    <p style="font-size:14px;color:#111;margin-bottom:24px;">${s.phone || '+82 1644-5704'}</p>
+    <p class="detail-section-label">스토어 제공 서비스</p>
+    ${serviceHtml}
+  `;
+
+  document.getElementById('map-detail-img').style.display = 'block';
+  document.getElementById('view-list').classList.add('hidden');
+  document.getElementById('view-filter').classList.add('hidden');
+  document.getElementById('view-detail').classList.remove('hidden');
+
+  // 지도 핀 포커스
+  STORES.forEach(x => {
+    const pin = document.getElementById(x.pin);
+    if (pin) pin.classList.toggle('active', x.id === id);
+  });
+}
+
+function closeDetail() {
+  document.getElementById('view-detail').classList.add('hidden');
+  document.getElementById('view-list').classList.remove('hidden');
+  document.getElementById('map-detail-img').style.display = 'none';
+}
+
+// ── 필터 패널 열기/닫기 ──
+function openFilter() {
+  pendingFilters = new Set(activeFilters);
+  syncCheckboxes();
+  updatePendingCount();
+  renderChips();
+
+  document.getElementById('view-list').classList.add('hidden');
+  document.getElementById('view-filter').classList.remove('hidden');
+}
+
+function closeFilter() {
+  document.getElementById('view-filter').classList.add('hidden');
+  document.getElementById('view-list').classList.remove('hidden');
+}
+
+function applyFilter() {
+  activeFilters = new Set(pendingFilters);
+
+  // 뱃지 업데이트
+  const badge = document.getElementById('filter-badge');
+  const btn = document.getElementById('btn-filter');
+  if (activeFilters.size > 0) {
+    badge.textContent = activeFilters.size;
+    badge.classList.add('visible');
+    btn.classList.add('has-filter');
+  } else {
+    badge.classList.remove('visible');
+    btn.classList.remove('has-filter');
+  }
+
+  renderStores();
+  closeFilter();
+}
+
+// ── 체크박스 동기화 ──
+function syncCheckboxes() {
+  document.getElementById('f-fitting').checked = pendingFilters.has('fitting');
+  document.getElementById('f-repair').checked = pendingFilters.has('repair');
+  document.getElementById('f-lens').checked = pendingFilters.has('lens');
+  document.getElementById('f-simplipair').checked = pendingFilters.has('simplipair');
+  document.getElementById('simplipair-desc').style.display = pendingFilters.has('simplipair') ? 'block' : 'none';
+}
+
+function updatePendingCount() {
+  const el = document.getElementById('pending-count');
+  if (pendingFilters.size > 0) {
+    el.textContent = pendingFilters.size;
+    el.style.display = 'inline';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+const CHIP_LABELS = { fitting: '무료 피팅 서비스', repair: '빠른 간편 수리', lens: '렌즈 분리', simplipair: '심플리페어' };
+
+function renderChips() {
+  const container = document.getElementById('active-chips');
+  if (pendingFilters.size === 0) {
+    container.style.display = 'none';
+    container.innerHTML = '';
+    return;
+  }
+  container.style.display = 'flex';
+  container.innerHTML = [...pendingFilters].map(f =>
+    `<span style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid #aaa;font-size:12px;background:#fff;cursor:pointer;" onclick="removeChip('${f}')">${CHIP_LABELS[f] || f} <span style="font-size:13px;line-height:1;">×</span></span>`
+  ).join('');
+}
+
+function removeChip(f) {
+  pendingFilters.delete(f);
+  const cb = document.getElementById('f-' + f);
+  if (cb) cb.checked = false;
+  updatePendingCount();
+  renderChips();
+}
+
+// ── 체크박스 이벤트 ──
+['fitting', 'repair', 'lens', 'simplipair'].forEach(function(key) {
+  document.getElementById('f-' + key).addEventListener('change', function () {
+    if (this.checked) pendingFilters.add(key);
+    else pendingFilters.delete(key);
+    if (key === 'simplipair') {
+      document.getElementById('simplipair-desc').style.display = this.checked ? 'block' : 'none';
+    }
+    updatePendingCount();
+    renderChips();
+  });
+});
+
+// ── 초기 렌더 ──
+renderStores();
+
+// ── 언어 설정 ──
+window.addEventListener('load', function () {
+  var saved; try { saved = localStorage.getItem('ps-lang'); } catch (e) {}
+  if (typeof window.setLang === 'function') window.setLang(saved || 'ko');
+
+  var urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('filter') === 'simplipair') {
+    document.getElementById('f-simplipair').checked = true;
+    pendingFilters.add('simplipair');
+    applyFilter();
+  }
+});
+</script>
+
+</body>
+</html>

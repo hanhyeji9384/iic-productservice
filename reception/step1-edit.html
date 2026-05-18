@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>수리 서비스 접수 — GENTLE MONSTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/lang-modal.js"></script>
+</head>
+<body>
+
+<header class="gnb">
+  <div class="gnb-inner">
+    <div class="gnb-logo"><a href="../index.html"><img src="../css/gentle-monster-logo.png" alt="GENTLE MONSTER" height="14"></a></div>
+    <nav class="gnb-nav">
+      <a href="#">선글라스</a>
+      <a href="#">안경</a>
+      <a href="#">컬렉션</a>
+      <a href="#">AI 아이웨어</a><a href="../store.html">스토어</a>
+      <a href="../index.html" class="active">서비스</a><a href="#">더 알아보기</a>
+    </nav>
+    <div class="gnb-actions">
+      <a href="#">검색</a>
+      <a href="../my-service/list.html">계정</a>
+    </div>
+  </div>
+</header>
+
+<main class="page-wrapper">
+  <div class="content">
+
+    <!-- STEP PROGRESS -->
+    <div class="step-progress">
+      <div class="step-item active"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 01</p><p class="step-label" id="sp1">기본 정보</p></div>
+      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 02</p><p class="step-label" id="sp2">서비스 유형</p></div>
+      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 03</p><p class="step-label" id="sp3">서비스 상세</p></div>
+      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 04</p><p class="step-label" id="sp4">사진·렌즈</p></div>
+      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 05</p><p class="step-label" id="sp5">배송 정보</p></div>
+      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 06</p><p class="step-label" id="sp6">안내 확인</p></div>
+    </div>
+
+    <p class="page-eyebrow" id="txt-eyebrow">접수 정보 수정</p>
+    <h1 class="page-title" id="txt-title">기본 정보 수정</h1>
+    <p class="page-desc" id="txt-desc">접수할 제품 정보를 입력해주세요.</p>
+
+    <!-- EMAIL -->
+    <div class="form-group">
+      <label class="form-label" id="txt-email-label">이메일 <span class="required-mark">*</span></label>
+      <input type="email" class="form-input" value="gildong.hong@gmail.com" placeholder="이메일 주소" disabled style="color:var(--gray-400);cursor:not-allowed;">
+    </div>
+
+    <!-- PHONE -->
+    <div class="form-group">
+      <label class="form-label" id="txt-phone-label">연락처 <span class="required-mark">*</span></label>
+      <input type="tel" class="form-input" value="010-3948-2071" placeholder="연락처" disabled style="color:var(--gray-400);cursor:not-allowed;">
+    </div>
+
+    <!-- PRODUCT -->
+    <p class="section-label" id="txt-product-section">제품 정보 <span class="required-mark">*</span></p>
+
+    <!-- 잠금 카드 (edit 모드 고정) -->
+    <div id="locked-product-card" style="border:1px solid var(--gray-200);padding:16px;margin-bottom:0;border-left:3px solid #111;">
+      <div style="display:flex;gap:16px;align-items:flex-start;">
+        <div class="illustration" style="width:64px;height:64px;flex-shrink:0;font-size:10px;">IMG</div>
+        <div style="flex:1;">
+          <p id="lpc-name" style="font-size:14px;font-weight:500;margin-bottom:10px;">MUSTANG 01</p>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px;color:#666;">
+            <span style="color:#999;">주문번호</span><span id="lpc-order" style="font-family:monospace;letter-spacing:0.03em;">ORD-20230315-4821</span>
+            <span style="color:#999;">구매처</span><span id="lpc-store">온라인</span>
+            <span style="color:#999;">구매일</span><span id="lpc-date">2023. 03. 15</span>
+            <span style="color:#999;">품질 보증</span><span id="lpc-qw">~2025. 03. 15 (만료)</span>
+            <span style="color:#999;">서비스 보증</span><span id="lpc-sw" style="font-weight:500;color:#111;">~2026. 03. 15 (유효)</span>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--gray-400);margin-top:12px;">구매내역에서 선택된 제품입니다. 변경이 필요하면 <a href="../../my-service/purchased.html" style="color:#111;text-decoration:underline;">구매한 제품</a>으로 돌아가세요.</p>
+    </div>
+
+    <div class="btn-wrap" style="margin-top:48px;">
+      <a href="../my-service/detail.html" class="btn btn-secondary" id="txt-btn-prev">이전</a>
+      <a href="step2-service-type-edit.html" class="btn btn-primary" id="txt-btn-next">다음</a>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <p class="footer-logo">Gentle Monster</p>
+      <p class="footer-info">(주) 아이아이컴바인드 · © 2026 GENTLE MONSTER</p>
+    </div>
+    <nav class="footer-nav">
+      <a href="#">개인정보 처리방침</a>
+      <a href="#">이용약관</a>
+      <a href="#" onclick="openLangModal();return false;" style="cursor:pointer;">국가: South Korea</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+let currentLang = 'ko';
+
+const STRINGS = {
+  ko: {
+    sp1: '기본 정보', sp2: '서비스 유형', sp3: '서비스 상세', sp4: '사진·렌즈', sp5: '배송 정보', sp6: '안내 확인',
+    eyebrow: '접수 정보 수정',
+    title: '기본 정보 수정',
+    desc: '접수할 제품 정보를 입력해주세요.',
+    emailLabel: '이메일 <span class="required-mark">*</span>',
+    phoneLabel: '연락처 <span class="required-mark">*</span>',
+    productSection: '제품 정보 <span class="required-mark">*</span>',
+    btnPrev: '이전', btnNext: '다음',
+  },
+  en: {
+    sp1: 'Basic Info', sp2: 'Service Type', sp3: 'Service Detail', sp4: 'Photos & Lens', sp5: 'Shipping', sp6: 'Confirmation',
+    eyebrow: 'Edit Request',
+    title: 'Edit Basic Information',
+    desc: 'Please enter the product information for your repair request.',
+    emailLabel: 'Email <span class="required-mark">*</span>',
+    phoneLabel: 'Phone <span class="required-mark">*</span>',
+    productSection: 'Product Information <span class="required-mark">*</span>',
+    btnPrev: 'Previous', btnNext: 'Next',
+  }
+};
+
+function setText(id, html) {
+  const el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  try { localStorage.setItem('ps-lang', lang); } catch(e) {}
+  const s = STRINGS[lang];
+  setText('sp1', s.sp1); setText('sp2', s.sp2); setText('sp3', s.sp3);
+  setText('sp4', s.sp4); setText('sp5', s.sp5); setText('sp6', s.sp6);
+  setText('txt-eyebrow', s.eyebrow);
+  setText('txt-title', s.title);
+  setText('txt-desc', s.desc);
+  setText('txt-email-label', s.emailLabel);
+  setText('txt-phone-label', s.phoneLabel);
+  setText('txt-product-section', s.productSection);
+  setText('txt-btn-prev', s.btnPrev);
+  setText('txt-btn-next', s.btnNext);
+}
+
+window.addEventListener('load', function() {
+  var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
+  setLang(saved || 'ko');
+});
+</script>
+</body>
+</html>

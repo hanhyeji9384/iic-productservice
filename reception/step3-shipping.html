@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>배송 정보 — GENTLE MONSTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/lang-modal.js"></script>
+</head>
+<body>
+
+<header class="gnb">
+  <div class="gnb-inner">
+    <div class="gnb-logo"><a href="../index.html"><img src="../css/gentle-monster-logo.png" alt="GENTLE MONSTER" height="14"></a></div>
+    <nav class="gnb-nav">
+      <a href="#">선글라스</a><a href="#">안경</a><a href="#">컬렉션</a>
+      <a href="#">AI 아이웨어</a><a href="../store.html">스토어</a>
+      <a href="../index.html" class="active">서비스</a><a href="#">더 알아보기</a>
+    </nav>
+    <div class="gnb-actions"><a href="#">검색</a><a href="../my-service/account.html">계정</a></div>
+  </div>
+</header>
+
+<main class="page-wrapper">
+  <div class="content">
+
+    <div class="step-progress">
+      <div class="step-item done"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 01</p><p class="step-label">기본 정보</p></div>
+      <div class="step-item done"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 02</p><p class="step-label">서비스 유형</p></div>
+      <div class="step-item done"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 03</p><p class="step-label">서비스 상세</p></div>
+      <div class="step-item done"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 04</p><p class="step-label">사진·렌즈</p></div>
+      <div class="step-item active"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 05</p><p class="step-label">배송 정보</p></div>
+      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 06</p><p class="step-label">안내 확인</p></div>
+    </div>
+
+    <p class="page-eyebrow">수리 서비스 접수</p>
+    <h1 id="pg-title" class="page-title">배송 정보</h1>
+
+    <!-- SEND METHOD -->
+    <div id="send-method-wrap">
+    <p id="lbl-send" class="section-label">발송 방법 <span style="color:#000">*</span></p>
+    <div class="check-group" style="margin-bottom:24px;">
+      <label id="send-pickup-opt" class="check-item" onclick="selectSend(this,'pickup')">
+        <input type="radio" name="send" value="pickup">
+        <div>
+          <p id="title-pickup" class="check-item-title">자택 픽업</p>
+          <p id="desc-pickup" class="check-item-desc">택배 기사가 직접 방문하여 제품을 수거합니다.<br>
+            <span style="font-size:11px;color:#999;">CJ 대한통운 · 접수일 +3영업일 이내 수거</span>
+          </p>
+        </div>
+      </label>
+      <label id="send-self-opt" class="check-item" style="display:none;" onclick="selectSend(this,'self')">
+        <input type="radio" name="send" value="self">
+        <div>
+          <p id="title-self" class="check-item-title">직접 발송</p>
+          <p id="desc-self" class="check-item-desc">원하시는 택배사를 이용해 직접 보내주셔도 됩니다.<br>
+            <span style="font-size:11px;color:#999;">발송 주소와 방법은 이메일로 안내드립니다</span>
+          </p>
+        </div>
+      </label>
+      <label id="send-store-opt" class="check-item" onclick="selectSend(this,'store')">
+        <input type="radio" name="send" value="store">
+        <div>
+          <p id="title-dropoff" class="check-item-title">매장 Drop Off</p>
+          <p id="desc-dropoff" class="check-item-desc">가까운 젠틀몬스터 직영매장에 직접 방문하여 제품을 맡겨주세요.<br>
+            <span style="font-size:11px;color:#999;">접수 후 5영업일 이내 방문 권장</span>
+          </p>
+        </div>
+      </label>
+      <label id="send-dhl-opt" class="check-item" style="display:none;" onclick="selectSend(this,'dhl')">
+        <input type="radio" name="send" value="dhl">
+        <div>
+          <p id="title-dhl" class="check-item-title">DHL 발송</p>
+          <p id="desc-dhl" class="check-item-desc">DHL을 통해 발송해 주세요. 발송 주소와 방법은 이메일로 안내드립니다.</p>
+        </div>
+      </label>
+    </div>
+
+    <!-- 자택 픽업 섹션 -->
+    <div id="pickup-section" style="display:none;margin-bottom:32px;">
+      <p class="section-label" style="margin-top:0;">회수 주소 <span style="color:#000">*</span></p>
+      <div id="pickup-addr-list">
+        <div onclick="selectPickupAddr(0)" style="padding:16px 0;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer;">
+          <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
+            <input type="radio" name="pickup-addr" style="margin-top:3px;flex-shrink:0;">
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:4px;">홍길동</p>
+              <p style="font-size:12px;color:var(--gray-500);margin-bottom:2px;">서울특별시 강남구 테헤란로 427 (삼성동, 위워크타워), 12층, 06158</p>
+              <p style="font-size:12px;color:var(--gray-500);">010-2134-5678</p>
+            </div>
+          </div>
+        </div>
+        <div onclick="selectPickupAddr(1)" style="padding:16px 0;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer;">
+          <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
+            <input type="radio" name="pickup-addr" checked style="margin-top:3px;flex-shrink:0;">
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:4px;">한혜지 <span style="font-size:11px;color:#999;font-weight:400;margin-left:4px;">기본 배송지</span></p>
+              <p style="font-size:12px;color:var(--gray-500);margin-bottom:2px;">서울특별시 성동구 왕십리로 83-21 (성수동2가, 성수아이파크), 203동 1502호, 04784</p>
+              <p style="font-size:12px;color:var(--gray-500);">010-8565-9384</p>
+            </div>
+          </div>
+        </div>
+        <button onclick="alert('[새 주소 추가]')" style="width:100%;padding:18px;font-size:13px;font-family:var(--font);color:var(--gray-800);background:var(--white);border:1px solid var(--gray-200);cursor:pointer;margin-top:8px;letter-spacing:0.02em;">새로운 주소 추가하기</button>
+      </div>
+      <div class="notice-box" style="margin-top:0;">
+        <p>· CJ 대한통운 택배 기사가 방문하여 제품을 수거합니다.</p>
+        <p>· 수거 당일 부재 시 문자로 재방문 일정을 협의합니다.</p>
+        <p>· 케이스, 케이블, 보증서는 동봉하지 마세요.</p>
+      </div>
+    </div>
+
+    <!-- DROP OFF 매장 선택 -->
+    <div id="send-store-section" style="display:none;margin-bottom:32px;">
+      <p id="lbl-dropoff-store" class="section-label" style="margin-top:0;">Drop Off 매장 선택 <span style="color:#000">*</span></p>
+      <div id="drop-store-picker">
+        <div style="position:relative;margin-bottom:12px;">
+          <div style="display:flex;gap:8px;">
+            <input id="drop-store-search" type="text" class="form-input" style="flex:1;" placeholder="매장명 또는 지역 검색" autocomplete="off" oninput="searchDropStore(this.value)">
+            <button id="btn-loc-drop" style="flex-shrink:0;padding:0 16px;font-size:12px;font-family:var(--font);border:1px solid var(--gray-300);background:var(--white);cursor:pointer;white-space:nowrap;letter-spacing:0.02em;">현재 위치</button>
+          </div>
+          <div id="drop-store-dropdown" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-top:none;z-index:20;max-height:240px;overflow-y:auto;"></div>
+        </div>
+        <div style="position:relative;height:280px;background:#e8e8e8;border:1px solid #ddd;overflow:hidden;">
+          <div style="position:absolute;top:35%;left:0;right:0;height:2px;background:#fff;opacity:0.7;"></div>
+          <div style="position:absolute;top:56%;left:0;right:0;height:2px;background:#fff;opacity:0.7;"></div>
+          <div style="position:absolute;left:38%;top:0;bottom:0;width:2px;background:#fff;opacity:0.7;"></div>
+          <div style="position:absolute;left:60%;top:0;bottom:0;width:2px;background:#fff;opacity:0.7;"></div>
+          <span style="position:absolute;top:14%;left:14%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">압구정동</span>
+          <span style="position:absolute;top:38%;left:20%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">청담동</span>
+          <span style="position:absolute;top:25%;left:52%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">성수동</span>
+          <span style="position:absolute;top:57%;left:46%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">삼성동</span>
+          <div id="gpin-0" style="position:absolute;top:40%;left:32%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;" onclick="selectDropStore(0)">G</div>
+          <div id="gpin-1" style="position:absolute;top:22%;left:20%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;" onclick="selectDropStore(1)">G</div>
+          <div id="gpin-2" style="position:absolute;top:50%;left:27%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;" onclick="selectDropStore(2)">G</div>
+          <div id="gpin-3" style="position:absolute;top:32%;left:52%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;" onclick="selectDropStore(3)">G</div>
+          <div id="gpin-4" style="position:absolute;top:54%;left:47%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;" onclick="selectDropStore(4)">G</div>
+          <div style="position:absolute;top:36%;left:50%;width:14px;height:14px;border-radius:50%;background:#4a90d9;border:2px solid #fff;box-shadow:0 0 0 4px rgba(74,144,217,0.2);transform:translate(-50%,-50%);"></div>
+        </div>
+      </div>
+      <div id="drop-store-selected" style="display:none;margin-top:12px;padding:16px 20px;border:1px solid #e0e0e0;">
+        <p id="lbl-selected-drop" style="font-size:10px;color:#aaa;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">선택된 매장</p>
+        <p id="dss-name" style="font-size:14px;font-weight:500;margin-bottom:4px;"></p>
+        <p id="dss-status" style="font-size:12px;margin-bottom:4px;"></p>
+        <p id="dss-addr" style="font-size:12px;color:var(--gray-500);margin-bottom:14px;"></p>
+        <button id="btn-change-drop" onclick="changeDropStore()" style="font-size:12px;padding:8px 16px;border:1px solid var(--gray-300);background:var(--white);font-family:var(--font);cursor:pointer;">변경하기</button>
+      </div>
+    </div>
+    </div><!-- /send-method-wrap -->
+
+    <!-- RECEIVE METHOD -->
+    <p id="lbl-recv" class="section-label">수령 방법 <span style="color:#000">*</span></p>
+    <div class="check-group" style="margin-bottom:8px;">
+      <label id="recv-home-opt" class="check-item" onclick="selectReceive(this,'home')">
+        <input type="radio" name="receive" value="home">
+        <div>
+          <p id="title-home-delivery" class="check-item-title">자택 배송</p>
+          <p id="desc-home-delivery" class="check-item-desc">수리 완료 후 자택으로 배송해 드립니다.</p>
+        </div>
+      </label>
+      <label id="recv-store-opt" class="check-item" onclick="selectReceive(this,'store')">
+        <input type="radio" name="receive" value="store">
+        <div>
+          <p id="title-store-pickup" class="check-item-title">매장 픽업</p>
+          <p id="desc-store-pickup" class="check-item-desc">수리 완료 후 선택한 매장에서 수령합니다.</p>
+        </div>
+      </label>
+    </div>
+
+    <!-- ADDRESS BOOK -->
+    <div id="address-section" style="display:none;margin-top:24px;">
+      <p id="lbl-addr" class="section-label">수령 주소 <span style="color:#000">*</span></p>
+
+      <div id="addr-list-view">
+        <div id="addr-0" onclick="selectAddr(0)" style="padding:16px 0;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer;">
+          <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
+            <input type="radio" name="addr" style="margin-top:3px;flex-shrink:0;">
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:4px;">홍길동</p>
+              <p style="font-size:12px;color:var(--gray-500);margin-bottom:2px;">서울특별시 강남구 테헤란로 427 (삼성동, 위워크타워), 12층, 06158, 대한민국</p>
+              <p style="font-size:12px;color:var(--gray-500);">010 2134 5678</p>
+            </div>
+          </div>
+          <button onclick="event.stopPropagation();openEdit(0)" class="btn-edit-addr" style="flex-shrink:0;margin-left:12px;font-size:11px;padding:5px 10px;border:1px solid var(--gray-300);background:var(--white);color:var(--gray-600);cursor:pointer;font-family:var(--font);">편집하기</button>
+        </div>
+        <div id="addr-1" onclick="selectAddr(1)" style="padding:16px 0;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer;">
+          <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
+            <input type="radio" name="addr" checked style="margin-top:3px;flex-shrink:0;">
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:4px;">한혜지 <span style="font-size:11px;color:#999;font-weight:400;margin-left:4px;" id="lbl-default-addr">기본 배송지</span></p>
+              <p style="font-size:12px;color:var(--gray-500);margin-bottom:2px;">서울특별시 성동구 왕십리로 83-21 (성수동2가, 성수아이파크), 203동 1502호, 04784, 대한민국</p>
+              <p style="font-size:12px;color:var(--gray-500);">010 8565 9384</p>
+            </div>
+          </div>
+          <button onclick="event.stopPropagation();openEdit(1)" class="btn-edit-addr" style="flex-shrink:0;margin-left:12px;font-size:11px;padding:5px 10px;border:1px solid var(--gray-300);background:var(--white);color:var(--gray-600);cursor:pointer;font-family:var(--font);">편집하기</button>
+        </div>
+        <div id="addr-2" onclick="selectAddr(2)" style="padding:16px 0;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer;">
+          <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
+            <input type="radio" name="addr" style="margin-top:3px;flex-shrink:0;">
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:4px;">이준혁</p>
+              <p style="font-size:12px;color:var(--gray-500);margin-bottom:2px;">경기도 수원시 영통구 월드컵로 164 (매탄동, e편한세상영통), 101동 304호, 16705, 대한민국</p>
+              <p style="font-size:12px;color:var(--gray-500);">010 7654 3210</p>
+            </div>
+          </div>
+          <button onclick="event.stopPropagation();openEdit(2)" class="btn-edit-addr" style="flex-shrink:0;margin-left:12px;font-size:11px;padding:5px 10px;border:1px solid var(--gray-300);background:var(--white);color:var(--gray-600);cursor:pointer;font-family:var(--font);">편집하기</button>
+        </div>
+        <button id="btn-add-addr" onclick="openAdd()" style="width:100%;padding:18px;font-size:13px;font-family:var(--font);color:var(--gray-800);background:var(--white);border:1px solid var(--gray-200);cursor:pointer;margin-top:8px;letter-spacing:0.02em;">새로운 주소 추가하기</button>
+      </div>
+
+      <!-- 편집 뷰 -->
+      <div id="addr-edit-view" style="display:none;">
+        <p style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-align:center;margin-bottom:24px;">EDIT AN ADDRESS</p>
+        <p style="font-size:11px;color:var(--gray-400);text-align:right;margin-bottom:12px;" id="lbl-required">*필수 입력 항목</p>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <div style="flex:1;background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;">
+            <p id="lbl-last" style="font-size:11px;color:#aaa;margin-bottom:4px;">성 *</p>
+            <input id="edit-last" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;" value="한">
+          </div>
+          <div style="flex:1;background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;">
+            <p id="lbl-first" style="font-size:11px;color:#aaa;margin-bottom:4px;">이름 *</p>
+            <input id="edit-first" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;" value="혜지">
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;margin-bottom:8px;">
+          <p id="lbl-addr-field" style="font-size:11px;color:#aaa;margin-bottom:4px;">주소 *</p>
+          <input id="edit-addr" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;" value="서울특별시 성동구 왕십리로 83-21 (성수동2가, 성수아이파크)">
+        </div>
+        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;margin-bottom:8px;">
+          <p id="lbl-zip" style="font-size:11px;color:#aaa;margin-bottom:4px;">우편번호 *</p>
+          <input id="edit-zip" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;" value="04784">
+        </div>
+        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;margin-bottom:8px;">
+          <p id="lbl-detail" style="font-size:11px;color:#aaa;margin-bottom:4px;">상세주소</p>
+          <input id="edit-detail" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;" value="203동 1502호">
+        </div>
+        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;margin-bottom:24px;">
+          <p id="lbl-tel" style="font-size:11px;color:#aaa;margin-bottom:4px;">전화번호 *</p>
+          <input id="edit-tel" type="tel" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;" value="010 8565 9384">
+        </div>
+        <div style="display:flex;gap:12px;">
+          <button id="btn-edit-back" onclick="closeAddrForm()" style="flex:1;padding:18px;font-size:13px;font-family:var(--font);background:#fff;border:1px solid var(--gray-300);cursor:pointer;border-radius:2px;">뒤로가기</button>
+          <button id="btn-edit-save" onclick="saveEdit()" style="flex:1;padding:18px;font-size:13px;font-family:var(--font);background:#111;color:#fff;border:1px solid #111;cursor:pointer;border-radius:2px;">저장 &amp; 계속하기</button>
+        </div>
+      </div>
+
+      <!-- 추가 뷰 -->
+      <div id="addr-add-view" style="display:none;">
+        <p id="lbl-add-title" style="font-size:13px;font-weight:500;letter-spacing:0.02em;text-align:center;margin-bottom:24px;">새로운 주소 추가하기</p>
+        <p style="font-size:11px;color:var(--gray-400);text-align:right;margin-bottom:12px;" id="lbl-required-add">*필수 입력 항목</p>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <div style="flex:1;background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;">
+            <p id="lbl-last-add" style="font-size:11px;color:#aaa;margin-bottom:4px;">성 *</p>
+            <input id="add-last" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;">
+          </div>
+          <div style="flex:1;background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;">
+            <p id="lbl-first-add" style="font-size:11px;color:#aaa;margin-bottom:4px;">이름 *</p>
+            <input id="add-first" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;">
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+          <span style="font-size:14px;color:#ccc;">⌕</span>
+          <div style="flex:1;">
+            <p id="lbl-addr-search" style="font-size:11px;color:#aaa;margin-bottom:4px;">주소 찾기 *</p>
+            <input id="add-addr" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;" oninput="checkAddForm()">
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;margin-bottom:24px;">
+          <p id="lbl-tel-add" style="font-size:11px;color:#aaa;margin-bottom:4px;">전화번호 *</p>
+          <input id="add-tel" type="tel" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;" oninput="checkAddForm()">
+        </div>
+        <div style="display:flex;gap:12px;">
+          <button id="btn-add-back" onclick="closeAddrForm()" style="flex:1;padding:18px;font-size:13px;font-family:var(--font);background:#fff;border:1px solid var(--gray-300);cursor:pointer;border-radius:2px;">뒤로가기</button>
+          <button id="add-save-btn" onclick="saveAdd()" style="flex:1;padding:18px;font-size:13px;font-family:var(--font);background:#aaa;color:#fff;border:1px solid #aaa;cursor:not-allowed;border-radius:2px;" disabled>저장 &amp; 계속하기</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 수령 매장 선택 -->
+    <div id="store-section" style="display:none;margin-top:24px;">
+      <p id="lbl-recv-store" class="section-label" style="margin-top:0;">수령 매장 선택 <span style="color:#000">*</span></p>
+      <div id="recv-store-picker">
+        <div style="position:relative;margin-bottom:12px;">
+          <div style="display:flex;gap:8px;">
+            <input id="recv-store-search" type="text" class="form-input" style="flex:1;" placeholder="매장명 또는 지역 검색" autocomplete="off" oninput="searchRecvStore(this.value)">
+            <button id="btn-loc-recv" style="flex-shrink:0;padding:0 16px;font-size:12px;font-family:var(--font);border:1px solid var(--gray-300);background:var(--white);cursor:pointer;white-space:nowrap;letter-spacing:0.02em;">현재 위치</button>
+          </div>
+          <div id="recv-store-dropdown" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-top:none;z-index:20;max-height:240px;overflow-y:auto;"></div>
+        </div>
+        <div style="position:relative;height:280px;background:#e8e8e8;border:1px solid #ddd;overflow:hidden;">
+          <div style="position:absolute;top:35%;left:0;right:0;height:2px;background:#fff;opacity:0.7;"></div>
+          <div style="position:absolute;top:56%;left:0;right:0;height:2px;background:#fff;opacity:0.7;"></div>
+          <div style="position:absolute;left:38%;top:0;bottom:0;width:2px;background:#fff;opacity:0.7;"></div>
+          <div style="position:absolute;left:60%;top:0;bottom:0;width:2px;background:#fff;opacity:0.7;"></div>
+          <span style="position:absolute;top:14%;left:14%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">압구정동</span>
+          <span style="position:absolute;top:38%;left:20%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">청담동</span>
+          <span style="position:absolute;top:25%;left:52%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">성수동</span>
+          <span style="position:absolute;top:57%;left:46%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">삼성동</span>
+          <div id="rpin-0" style="position:absolute;top:40%;left:32%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;" onclick="selectRecvStore(0)">G</div>
+          <div id="rpin-1" style="position:absolute;top:22%;left:20%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;" onclick="selectRecvStore(1)">G</div>
+          <div id="rpin-2" style="position:absolute;top:50%;left:27%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;" onclick="selectRecvStore(2)">G</div>
+          <div id="rpin-3" style="position:absolute;top:32%;left:52%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;" onclick="selectRecvStore(3)">G</div>
+          <div id="rpin-4" style="position:absolute;top:54%;left:47%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;" onclick="selectRecvStore(4)">G</div>
+          <div style="position:absolute;top:36%;left:50%;width:14px;height:14px;border-radius:50%;background:#4a90d9;border:2px solid #fff;box-shadow:0 0 0 4px rgba(74,144,217,0.2);transform:translate(-50%,-50%);"></div>
+        </div>
+      </div>
+      <div id="recv-store-selected" style="display:none;margin-top:12px;padding:16px 20px;border:1px solid #e0e0e0;">
+        <p id="lbl-selected-recv" style="font-size:10px;color:#aaa;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">선택된 수령 매장</p>
+        <p id="rss-name" style="font-size:14px;font-weight:500;margin-bottom:4px;"></p>
+        <p id="rss-status" style="font-size:12px;margin-bottom:4px;"></p>
+        <p id="rss-addr" style="font-size:12px;color:var(--gray-500);margin-bottom:14px;"></p>
+        <button id="btn-change-recv" onclick="changeRecvStore()" style="font-size:12px;padding:8px 16px;border:1px solid var(--gray-300);background:var(--white);font-family:var(--font);cursor:pointer;">변경하기</button>
+      </div>
+      <div class="notice-box" style="margin-top:16px;">
+        <p id="notice-store-recv">수리 완료 후 안내 연락을 드립니다. 수령 가능일로부터 30일 이내에 방문해 주세요.</p>
+      </div>
+    </div>
+
+    <div class="btn-wrap" style="margin-top:40px;">
+      <a id="btn-prev" href="step3-details.html" class="btn btn-secondary">이전</a>
+      <a id="btn-next" href="step4-estimate.html" class="btn btn-primary" style="opacity:0.4;pointer-events:none;" onclick="saveShippingState()">다음 — 안내 확인</a>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner" style="flex-direction:column;gap:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+      <nav style="display:flex;gap:20px;flex-wrap:wrap;">
+        <a href="../contact.html" style="font-size:12px;color:var(--gray-600);text-decoration:none;">문의하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">고객 서비스</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">스토어 찾기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">법적 고지</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">개인정보 처리방침</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">구독하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">소셜</a>
+        <a href="#" onclick="openLangModal();return false;" style="font-size:12px;color:var(--gray-600);text-decoration:none;cursor:pointer;">국가: South Korea</a>
+      </nav>
+      <p style="font-size:12px;color:var(--gray-600);white-space:nowrap;">© 2026 GENTLE MONSTER</p>
+    </div>
+    <p style="font-size:11px;color:var(--gray-400);line-height:1.8;">
+      주) 아이아이컴바인드 | 대표자명: 김한국 | 사업자번호: 119-86-38589 | 통신판매신고번호: 제 2014-서울마포-1050호 | 이메일 문의: service.kr@gentlemonster.com | 개인정보보호책임자: 정태호 | 주소: 서울특별시 성동구 뚝섬로 433 | 대표번호: 1600-2126<br>
+      고객님의 안전한 현금자산 거래를 위해 하나은행과 채무지급보증계약을 체결하여 보장해드리고 있습니다.
+    </p>
+  </div>
+</footer>
+
+<script>
+// ─── 언어 ───
+const STRINGS = {
+  ko: {
+    title: '배송 정보',
+    lblSend: '발송 방법', lblRecv: '수령 방법', lblAddr: '수령 주소',
+    lblDropoffStore: 'Drop Off 매장 선택', lblRecvStore: '수령 매장 선택',
+    titlePickup: '자택 픽업', descPickup: '운송사가 방문하여 수거해 드립니다.',
+    titleDropoff: '매장 Drop Off', descDropoff: '가까운 매장에 직접 방문하여 제품을 맡겨주세요.',
+    titleSelf: '직접 발송', descSelf: '원하시는 운송사를 이용해 직접 보내주셔도 됩니다. 발송 주소와 방법은 이메일로 안내드립니다.',
+    titleDhl: 'DHL 발송', descDhl: 'DHL을 통해 발송해 주세요. 발송 주소와 방법은 이메일로 안내드립니다.',
+    titleHomeDelivery: '자택 배송', descHomeDelivery: '수리 완료 후 자택으로 배송해 드립니다.',
+    titleStorePickup: '매장 픽업', descStorePickup: '수리 완료 후 선택한 매장에서 수령합니다.',
+    btnLocDrop: '현재 위치', btnLocRecv: '현재 위치',
+    lblSelectedDrop: '선택된 매장', lblSelectedRecv: '선택된 수령 매장',
+    btnChangeDrop: '변경하기', btnChangeRecv: '변경하기',
+    lblDefaultAddr: '기본 배송지',
+    btnAddAddr: '새로운 주소 추가하기',
+    btnEditAddr: '편집하기',
+    required: '*필수 입력 항목',
+    lblLast: '성 *', lblFirst: '이름 *',
+    lblAddrField: '주소 *', lblZip: '우편번호 *',
+    lblDetail: '상세주소', lblTel: '전화번호 *',
+    lblAddrSearch: '주소 찾기 *',
+    lblAddTitle: '새로운 주소 추가하기',
+    btnBack: '뒤로가기', btnSave: '저장 & 계속하기',
+    noticeStoreRecv: '수리 완료 후 안내 연락을 드립니다. 수령 가능일로부터 30일 이내에 방문해 주세요.',
+    btnPrev: '이전', btnNext: '다음 — 안내 확인',
+    searchPlaceholder: '매장명 또는 지역 검색',
+  },
+  en: {
+    title: 'Shipping Information',
+    lblSend: 'Shipping Method', lblRecv: 'Return Method', lblAddr: 'Return Address',
+    lblDropoffStore: 'Select Drop Off Store', lblRecvStore: 'Select Pickup Store',
+    titlePickup: 'Home Pickup', descPickup: 'A courier will visit your home for pickup.',
+    titleDropoff: 'Store Drop Off', descDropoff: 'Please visit your nearest store and drop off your product.',
+    titleSelf: 'Direct Shipment', descSelf: 'You may send the product using your preferred carrier. We\'ll email you the shipping address and instructions.',
+    titleDhl: 'DHL Shipment', descDhl: 'Please send via DHL. We\'ll email you the shipping address and instructions.',
+    titleHomeDelivery: 'Home Delivery', descHomeDelivery: 'Your repaired product will be delivered to your home.',
+    titleStorePickup: 'Store Pickup', descStorePickup: 'Collect your repaired product at your selected store.',
+    btnLocDrop: 'Current Location', btnLocRecv: 'Current Location',
+    lblSelectedDrop: 'Selected Store', lblSelectedRecv: 'Selected Pickup Store',
+    btnChangeDrop: 'Change', btnChangeRecv: 'Change',
+    lblDefaultAddr: 'Default',
+    btnAddAddr: 'Add New Address',
+    btnEditAddr: 'Edit',
+    required: '*Required fields',
+    lblLast: 'Last Name *', lblFirst: 'First Name *',
+    lblAddrField: 'Address *', lblZip: 'Postal Code *',
+    lblDetail: 'Apt / Suite', lblTel: 'Phone *',
+    lblAddrSearch: 'Search Address *',
+    lblAddTitle: 'Add New Address',
+    btnBack: 'Back', btnSave: 'Save & Continue',
+    noticeStoreRecv: 'We\'ll contact you when your repair is ready. Please collect within 30 days of the available date.',
+    btnPrev: 'Back', btnNext: 'Next — Confirm',
+    searchPlaceholder: 'Search store name or area',
+  },
+};
+
+let currentLang = 'ko';
+
+function setText(id, text) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  try { localStorage.setItem('ps-lang', lang); } catch(e) {}
+  ['ko','en'].forEach(function(l) { var el = document.getElementById('footer-lang-' + l); if (el) { el.style.fontWeight = l === lang ? '500' : '400'; el.style.color = l === lang ? '#111' : ''; } });
+  const st = STRINGS[lang];
+
+  ['ko','en'].forEach(l => {
+    const btn = document.getElementById('pb-lang-' + l);
+    if (!btn) return;
+    const active = l === lang;
+    btn.style.background = active ? '#111' : '#fff';
+    btn.style.color = active ? '#fff' : '#333';
+    btn.style.borderColor = active ? '#111' : '#ccc';
+  });
+
+  setText('pg-title', st.title);
+  setText('lbl-send', st.lblSend);
+  setText('lbl-recv', st.lblRecv);
+  setText('lbl-addr', st.lblAddr);
+  setText('lbl-dropoff-store', st.lblDropoffStore);
+  setText('lbl-recv-store', st.lblRecvStore);
+  setText('title-pickup', st.titlePickup);
+  setText('desc-pickup', st.descPickup);
+  setText('title-dropoff', st.titleDropoff);
+  setText('desc-dropoff', st.descDropoff);
+  setText('title-self', st.titleSelf);
+  setText('desc-self', st.descSelf);
+  setText('title-dhl', st.titleDhl);
+  setText('desc-dhl', st.descDhl);
+  setText('title-home-delivery', st.titleHomeDelivery);
+  setText('desc-home-delivery', st.descHomeDelivery);
+  setText('title-store-pickup', st.titleStorePickup);
+  setText('desc-store-pickup', st.descStorePickup);
+  setText('title-intl', st.titleIntl);
+  setText('desc-intl', st.descIntl);
+  setText('btn-loc-drop', st.btnLocDrop);
+  setText('btn-loc-recv', st.btnLocRecv);
+  setText('lbl-selected-drop', st.lblSelectedDrop);
+  setText('lbl-selected-recv', st.lblSelectedRecv);
+  setText('btn-change-drop', st.btnChangeDrop);
+  setText('btn-change-recv', st.btnChangeRecv);
+  setText('lbl-default-addr', st.lblDefaultAddr);
+  setText('btn-add-addr', st.btnAddAddr);
+  setText('lbl-required', st.required);
+  setText('lbl-required-add', st.required);
+  setText('lbl-last', st.lblLast);
+  setText('lbl-first', st.lblFirst);
+  setText('lbl-addr-field', st.lblAddrField);
+  setText('lbl-zip', st.lblZip);
+  setText('lbl-detail', st.lblDetail);
+  setText('lbl-tel', st.lblTel);
+  setText('lbl-addr-search', st.lblAddrSearch);
+  setText('lbl-last-add', st.lblLast);
+  setText('lbl-first-add', st.lblFirst);
+  setText('lbl-tel-add', st.lblTel);
+  setText('lbl-add-title', st.lblAddTitle);
+  setText('btn-edit-back', st.btnBack);
+  setText('btn-add-back', st.btnBack);
+  setText('btn-edit-save', st.btnSave + ' &');
+  setText('notice-store-recv', st.noticeStoreRecv);
+  setText('btn-prev', st.btnPrev);
+  setText('btn-next', st.btnNext);
+
+  // 편집하기 버튼 (여러 개)
+  document.querySelectorAll('.btn-edit-addr').forEach(b => b.textContent = st.btnEditAddr);
+
+  // 저장 & 계속하기 (add 폼)
+  const addSaveBtn = document.getElementById('add-save-btn');
+  if (addSaveBtn) addSaveBtn.innerHTML = st.btnSave.replace('&', '&amp;');
+  const editSaveBtn = document.getElementById('btn-edit-save');
+  if (editSaveBtn) editSaveBtn.innerHTML = st.btnSave.replace('&', '&amp;');
+
+  // 검색 placeholder
+  const dss = document.getElementById('drop-store-search');
+  if (dss) dss.placeholder = st.searchPlaceholder;
+  const rss = document.getElementById('recv-store-search');
+  if (rss) rss.placeholder = st.searchPlaceholder;
+}
+
+// ─── 발송/수령 방법 ───
+var currentSend = null;
+var currentReceive = null;
+var currentDropStore = null;
+var currentRecvStore = null;
+
+function checkShippingNextBtn() {
+  var sendWrap = document.getElementById('send-method-wrap');
+  var sendSectionHidden = !sendWrap || sendWrap.style.display === 'none';
+  var sendOk = sendSectionHidden || (
+    currentSend !== null &&
+    (currentSend !== 'store' || currentDropStore !== null)
+  );
+  var recvOk = currentReceive !== null && (
+    currentReceive !== 'store' || currentRecvStore !== null
+  );
+  var btn = document.getElementById('btn-next');
+  if (!btn) return;
+  btn.style.opacity = (sendOk && recvOk) ? '' : '0.4';
+  btn.style.pointerEvents = (sendOk && recvOk) ? '' : 'none';
+}
+
+function saveShippingState() {
+  try {
+    var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
+    var sendWrap = document.getElementById('send-method-wrap');
+    var sendHidden = !sendWrap || sendWrap.style.display === 'none';
+    state.sendMethod = sendHidden ? 'accessory' : currentSend;
+    state.receiveMethod = currentReceive;
+    if (currentDropStore !== null && DROP_STORES[currentDropStore]) {
+      state.dropStoreName = DROP_STORES[currentDropStore].name;
+    }
+    if (currentRecvStore !== null && DROP_STORES[currentRecvStore]) {
+      state.recvStoreName = DROP_STORES[currentRecvStore].name;
+    }
+    localStorage.setItem('ps-state', JSON.stringify(state));
+  } catch(e) {}
+}
+
+function selectSend(el, type) {
+  currentSend = type;
+  el.closest('.check-group').querySelectorAll('.check-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('pickup-section').style.display = (type === 'pickup') ? 'block' : 'none';
+  document.getElementById('send-store-section').style.display = (type === 'store') ? 'block' : 'none';
+  checkShippingNextBtn();
+}
+
+function applyLensServiceMode() {
+  ['send-pickup-opt','send-self-opt'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  var storeOpt = document.getElementById('send-store-opt');
+  if (storeOpt) { storeOpt.classList.add('selected'); selectSend(storeOpt, 'store'); }
+}
+
+function applyIntMode(isInt) {
+  // 자택픽업·Drop Off: 국내만 / 직접발송: INT만
+  var selfOpt = document.getElementById('send-self-opt');
+  if (selfOpt) selfOpt.style.display = isInt ? '' : 'none';
+}
+
+function selectPickupAddr(idx) {
+  document.querySelectorAll('input[name="pickup-addr"]').forEach(function(r, i) { r.checked = (i === idx); });
+}
+
+function selectReceive(el, type) {
+  currentReceive = type;
+  el.closest('.check-group').querySelectorAll('.check-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('address-section').style.display = (type === 'home') ? 'block' : 'none';
+  document.getElementById('store-section').style.display = (type === 'store') ? 'block' : 'none';
+  checkShippingNextBtn();
+}
+
+// ─── 매장 데이터 ───
+const DROP_STORES = [
+  { name:'젠틀몬스터 청담', status:'영업 중', statusColor:'#2aa050', addr:'서울 강남구 도산대로 82' },
+  { name:'젠틀몬스터 갤러리아 압구정', status:'영업 종료 — 내일 오전 10:30에 다시 오픈', statusColor:'#999', addr:'서울 강남구 압구정로 343, 갤러리아백화점 WEST 4F' },
+  { name:'젠틀몬스터 신사', status:'영업 중', statusColor:'#2aa050', addr:'서울 강남구 도산대로26길 18' },
+  { name:'젠틀몬스터 성수', status:'영업 중', statusColor:'#2aa050', addr:'서울 성동구 왕십리로 83' },
+  { name:'젠틀몬스터 코엑스', status:'영업 종료 — 내일 오전 11:00에 다시 오픈', statusColor:'#999', addr:'서울 강남구 영동대로 513, 코엑스몰' },
+];
+
+function searchDropStore(val) {
+  const dd = document.getElementById('drop-store-dropdown');
+  if (val.trim().length < 3) { dd.style.display = 'none'; return; }
+  const results = DROP_STORES.map((s, i) => ({...s, idx: i}))
+    .filter(s => s.name.includes(val) || s.addr.includes(val));
+  if (results.length === 0) { dd.style.display = 'none'; return; }
+  dd.innerHTML = results.map(s => `
+    <div onclick="selectDropStore(${s.idx})"
+      style="padding:12px 16px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--gray-100);"
+      onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'">
+      <span style="font-weight:500;">${s.name}</span>
+      <span style="font-size:11px;color:#999;margin-left:8px;">${s.addr}</span>
+    </div>
+  `).join('');
+  dd.style.display = 'block';
+}
+
+function _updatePins(selectedIdx) {
+  DROP_STORES.forEach((_, i) => {
+    const pin = document.getElementById('gpin-' + i);
+    if (!pin) return;
+    if (selectedIdx === null) {
+      pin.style.transform = 'translate(-50%,-50%) scale(1)';
+      pin.style.boxShadow = '';
+      pin.style.opacity = '1';
+    } else if (i === selectedIdx) {
+      pin.style.transform = 'translate(-50%,-50%) scale(1.35)';
+      pin.style.boxShadow = '0 0 0 3px #fff, 0 0 0 5px #111';
+      pin.style.opacity = '1';
+    } else {
+      pin.style.transform = 'translate(-50%,-50%) scale(1)';
+      pin.style.boxShadow = '';
+      pin.style.opacity = '0.3';
+    }
+  });
+}
+
+function selectDropStore(idx) {
+  currentDropStore = idx;
+  const s = DROP_STORES[idx];
+  document.getElementById('drop-store-search').value = s.name;
+  document.getElementById('drop-store-dropdown').style.display = 'none';
+  _updatePins(idx);
+  setTimeout(() => {
+    document.getElementById('dss-name').textContent = s.name;
+    document.getElementById('dss-status').textContent = s.status;
+    document.getElementById('dss-status').style.color = s.statusColor;
+    document.getElementById('dss-addr').textContent = s.addr;
+    document.getElementById('drop-store-picker').style.display = 'none';
+    document.getElementById('drop-store-selected').style.display = 'block';
+    checkShippingNextBtn();
+  }, 300);
+}
+
+function changeDropStore() {
+  currentDropStore = null;
+  _updatePins(null);
+  document.getElementById('drop-store-search').value = '';
+  document.getElementById('drop-store-picker').style.display = 'block';
+  document.getElementById('drop-store-selected').style.display = 'none';
+  checkShippingNextBtn();
+}
+
+function searchRecvStore(val) {
+  const dd = document.getElementById('recv-store-dropdown');
+  if (val.trim().length < 3) { dd.style.display = 'none'; return; }
+  const results = DROP_STORES.map((s, i) => ({...s, idx: i}))
+    .filter(s => s.name.includes(val) || s.addr.includes(val));
+  if (results.length === 0) { dd.style.display = 'none'; return; }
+  dd.innerHTML = results.map(s => `
+    <div onclick="selectRecvStore(${s.idx})"
+      style="padding:12px 16px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--gray-100);"
+      onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'">
+      <span style="font-weight:500;">${s.name}</span>
+      <span style="font-size:11px;color:#999;margin-left:8px;">${s.addr}</span>
+    </div>
+  `).join('');
+  dd.style.display = 'block';
+}
+
+function _updateRpins(selectedIdx) {
+  DROP_STORES.forEach((_, i) => {
+    const pin = document.getElementById('rpin-' + i);
+    if (!pin) return;
+    if (selectedIdx === null) {
+      pin.style.transform = 'translate(-50%,-50%) scale(1)';
+      pin.style.boxShadow = '';
+      pin.style.opacity = '1';
+    } else if (i === selectedIdx) {
+      pin.style.transform = 'translate(-50%,-50%) scale(1.35)';
+      pin.style.boxShadow = '0 0 0 3px #fff, 0 0 0 5px #111';
+      pin.style.opacity = '1';
+    } else {
+      pin.style.transform = 'translate(-50%,-50%) scale(1)';
+      pin.style.boxShadow = '';
+      pin.style.opacity = '0.3';
+    }
+  });
+}
+
+function selectRecvStore(idx) {
+  currentRecvStore = idx;
+  const s = DROP_STORES[idx];
+  document.getElementById('recv-store-search').value = s.name;
+  document.getElementById('recv-store-dropdown').style.display = 'none';
+  _updateRpins(idx);
+  setTimeout(() => {
+    document.getElementById('rss-name').textContent = s.name;
+    document.getElementById('rss-status').textContent = s.status;
+    document.getElementById('rss-status').style.color = s.statusColor;
+    document.getElementById('rss-addr').textContent = s.addr;
+    document.getElementById('recv-store-picker').style.display = 'none';
+    document.getElementById('recv-store-selected').style.display = 'block';
+    checkShippingNextBtn();
+  }, 300);
+}
+
+function changeRecvStore() {
+  currentRecvStore = null;
+  _updateRpins(null);
+  document.getElementById('recv-store-search').value = '';
+  document.getElementById('recv-store-picker').style.display = 'block';
+  document.getElementById('recv-store-selected').style.display = 'none';
+  checkShippingNextBtn();
+}
+
+// ─── 주소록 ───
+let selectedAddrIdx = 1;
+
+function selectAddr(idx) {
+  selectedAddrIdx = idx;
+  document.querySelectorAll('input[name="addr"]').forEach((r, i) => r.checked = (i === idx));
+}
+
+function openEdit(idx) {
+  const data = [
+    { last:'홍', first:'길동', addr:'서울특별시 강남구 테헤란로 427 (삼성동, 위워크타워)', zip:'06158', detail:'12층', tel:'010 2134 5678' },
+    { last:'한', first:'혜지', addr:'서울특별시 성동구 왕십리로 83-21 (성수동2가, 성수아이파크)', zip:'04784', detail:'203동 1502호', tel:'010 8565 9384' },
+    { last:'이', first:'준혁', addr:'경기도 수원시 영통구 월드컵로 164 (매탄동, e편한세상영통)', zip:'16705', detail:'101동 304호', tel:'010 7654 3210' },
+  ];
+  const d = data[idx];
+  document.getElementById('edit-last').value   = d.last;
+  document.getElementById('edit-first').value  = d.first;
+  document.getElementById('edit-addr').value   = d.addr;
+  document.getElementById('edit-zip').value    = d.zip;
+  document.getElementById('edit-detail').value = d.detail;
+  document.getElementById('edit-tel').value    = d.tel;
+  document.getElementById('addr-list-view').style.display = 'none';
+  document.getElementById('addr-edit-view').style.display = 'block';
+  document.getElementById('addr-add-view').style.display  = 'none';
+}
+
+function openAdd() {
+  document.getElementById('add-addr').value = '';
+  document.getElementById('add-tel').value  = '';
+  checkAddForm();
+  document.getElementById('addr-list-view').style.display = 'none';
+  document.getElementById('addr-edit-view').style.display = 'none';
+  document.getElementById('addr-add-view').style.display  = 'block';
+}
+
+function closeAddrForm() {
+  document.getElementById('addr-list-view').style.display = 'block';
+  document.getElementById('addr-edit-view').style.display = 'none';
+  document.getElementById('addr-add-view').style.display  = 'none';
+}
+
+function saveEdit() { closeAddrForm(); }
+
+function saveAdd() {
+  const btn = document.getElementById('add-save-btn');
+  if (btn.disabled) return;
+  closeAddrForm();
+}
+
+function checkAddForm() {
+  const ok = document.getElementById('add-addr').value.trim().length > 0
+          && document.getElementById('add-tel').value.trim().length > 0;
+  const btn = document.getElementById('add-save-btn');
+  btn.disabled = !ok;
+  btn.style.background = ok ? '#111' : '#aaa';
+  btn.style.borderColor = ok ? '#111' : '#aaa';
+  btn.style.cursor = ok ? 'pointer' : 'not-allowed';
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#drop-store-search') && !e.target.closest('#drop-store-dropdown')) {
+    const dd = document.getElementById('drop-store-dropdown');
+    if (dd) dd.style.display = 'none';
+  }
+  if (!e.target.closest('#recv-store-search') && !e.target.closest('#recv-store-dropdown')) {
+    const rd = document.getElementById('recv-store-dropdown');
+    if (rd) rd.style.display = 'none';
+  }
+});
+
+window.setCountry = function(country) {
+  applyIntMode(country === 'us');
+};
+
+function applyAccessoryMode() {
+  currentSend = 'accessory';
+  var wrap = document.getElementById('send-method-wrap');
+  if (wrap) wrap.style.display = 'none';
+  var el;
+  el = document.getElementById('desc-home-delivery');
+  if (el) el.textContent = currentLang === 'en' ? 'Your product will be delivered to your home.' : '자택으로 배송해 드립니다.';
+  el = document.getElementById('desc-store-pickup');
+  if (el) el.textContent = currentLang === 'en' ? 'Collect your product at your selected store.' : '선택한 매장에서 수령합니다.';
+  el = document.getElementById('notice-store-recv');
+  if (el) el.textContent = currentLang === 'en' ? "We'll contact you when your product is ready. Please collect within 30 days of the available date." : '안내 연락을 드립니다. 수령 가능일로부터 30일 이내에 방문해 주세요.';
+}
+
+window.addEventListener('load', function() {
+  var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
+  setLang(saved || 'ko');
+  var d = new Date(); d.setDate(d.getDate() + 2);
+  var minDate = d.toISOString().split('T')[0];
+  var pdEl = document.getElementById('pickup-date-send');
+  if (pdEl) { pdEl.min = minDate; pdEl.value = minDate; }
+
+  var savedCountry; try { savedCountry = localStorage.getItem('ps-country'); } catch(e) {}
+  if (savedCountry === 'us') applyIntMode(true);
+
+  try {
+    var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
+    if (state.lensType === 'custom') applyLensServiceMode();
+    if (state.serviceType === 'accessory') applyAccessoryMode();
+  } catch(e) {}
+});
+</script>
+</body>
+</html>

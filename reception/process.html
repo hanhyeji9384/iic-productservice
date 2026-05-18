@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>접수 프로세스 — GENTLE MONSTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/lang-modal.js"></script>
+  <style>
+    .process-content {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    .process-intro {
+      max-width: 620px;
+      margin-bottom: 36px;
+    }
+
+    .process-alert {
+      border: 1px solid var(--gray-200);
+      background: var(--gray-50);
+      padding: 18px 20px;
+      margin-bottom: 36px;
+    }
+
+    .process-alert p {
+      font-size: 12px;
+      color: var(--gray-600);
+      line-height: 1.8;
+    }
+
+    .process-flow {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 44px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid var(--gray-200);
+    }
+
+    .process-flow a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 8px 14px;
+      border: 1px solid var(--gray-300);
+      color: var(--gray-600);
+      text-decoration: none;
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+
+    .process-flow a:hover {
+      border-color: var(--black);
+      color: var(--black);
+      background: var(--gray-50);
+    }
+
+    .process-section {
+      margin-bottom: 44px;
+    }
+
+    .process-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .process-card {
+      border: 1px solid var(--gray-200);
+      padding: 22px 24px;
+      display: grid;
+      grid-template-columns: 76px minmax(0, 1fr) auto;
+      gap: 20px;
+      align-items: center;
+      background: var(--white);
+    }
+
+    .process-step {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      color: var(--gray-400);
+      text-transform: uppercase;
+    }
+
+    .process-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .process-desc {
+      font-size: 12px;
+      color: var(--gray-500);
+      line-height: 1.7;
+    }
+
+    .process-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .process-tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 22px;
+      padding: 3px 8px;
+      border: 1px solid var(--gray-200);
+      color: var(--gray-500);
+      font-size: 10px;
+      letter-spacing: 0.04em;
+      background: var(--gray-50);
+    }
+
+    .process-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .process-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 88px;
+      min-height: 36px;
+      padding: 8px 12px;
+      border: 1px solid var(--black);
+      color: var(--black);
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .process-link.primary {
+      background: var(--black);
+      color: var(--white);
+    }
+
+    .process-link:hover {
+      background: var(--gray-50);
+    }
+
+    .process-link.primary:hover {
+      background: var(--gray-800);
+    }
+
+    @media (max-width: 760px) {
+      .process-card {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .process-actions {
+        justify-content: flex-start;
+      }
+
+      .process-link {
+        flex: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="gnb">
+  <div class="gnb-inner">
+    <div class="gnb-logo"><a href="../index.html"><img src="../css/gentle-monster-logo.png" alt="GENTLE MONSTER" height="14"></a></div>
+    <nav class="gnb-nav">
+      <a href="#">선글라스</a><a href="#">안경</a><a href="#">컬렉션</a>
+      <a href="#">AI 아이웨어</a><a href="../store.html">스토어</a>
+      <a href="../index.html" class="active">서비스</a><a href="#">더 알아보기</a>
+    </nav>
+    <div class="gnb-actions"><a href="#">검색</a><a href="../my-service/account.html">계정</a></div>
+  </div>
+</header>
+
+<main class="page-wrapper">
+  <div class="process-content">
+    <div class="process-intro">
+      <p class="page-eyebrow">Prototype Review</p>
+      <h1 class="page-title">수리 접수 프로세스</h1>
+      <p class="page-desc">노션 요구사항과 프로토타입 화면을 같은 순서로 확인하기 위한 검수용 화면입니다.</p>
+    </div>
+
+    <div class="process-alert">
+      <p>이 화면은 고객에게 노출되는 서비스 화면이 아니라, 접수 플로우와 분기 화면을 빠르게 확인하기 위한 프로토타입 목차입니다.</p>
+    </div>
+
+    <p class="section-label" style="margin-top:0;">빠른 이동</p>
+    <nav class="process-flow" aria-label="접수 프로세스 빠른 이동">
+      <a href="../index.html">서비스 홈</a>
+      <a href="start.html">약관</a>
+      <a href="step1.html">기본 정보</a>
+      <a href="step2-service-type.html">유형 선택</a>
+      <a href="step3-details.html">상세 입력</a>
+      <a href="step3-shipping.html">배송 정보</a>
+      <a href="step4-estimate.html">안내 확인</a>
+      <a href="complete.html">접수 완료</a>
+      <a href="close.html">접수 불가</a>
+    </nav>
+
+    <section class="process-section">
+      <p class="section-label" style="margin-top:0;">공통 접수 흐름</p>
+      <div class="process-grid">
+        <article class="process-card">
+          <p class="process-step">HOME</p>
+          <div>
+            <p class="process-title">서비스 홈</p>
+            <p class="process-desc">GNB 서비스 진입 후 수리 서비스 접수와 상담 접수로 이동하는 시작 화면입니다.</p>
+            <div class="process-tags">
+              <span class="process-tag">진입</span>
+              <span class="process-tag">CTA</span>
+            </div>
+          </div>
+          <div class="process-actions">
+            <a class="process-link primary" href="../index.html">화면 보기</a>
+            <a class="process-link" href="https://www.notion.so/351bdf641e4c80a5b16ec403700ff78e?v=351bdf641e4c80d5b288000c866ed8d8&source=copy_link" target="_blank" rel="noopener">노션 보기</a>
+          </div>
+        </article>
+
+        <article class="process-card">
+          <p class="process-step">STEP 01</p>
+          <div>
+            <p class="process-title">수리 서비스 약관</p>
+            <p class="process-desc">온라인 접수 전 필수 약관과 수리 서비스 유의사항을 확인합니다.</p>
+            <div class="process-tags">
+              <span class="process-tag">필수 동의</span>
+              <span class="process-tag">약관</span>
+            </div>
+          </div>
+          <div class="process-actions">
+            <a class="process-link primary" href="start.html">화면 보기</a>
+            <a class="process-link" href="https://www.notion.so/351bdf641e4c80a5b16ec403700ff78e?v=351bdf641e4c80d5b288000c866ed8d8&source=copy_link" target="_blank" rel="noopener">노션 보기</a>
+          </div>
+        </article>
+
+        <article class="process-card">
+          <p class="process-step">STEP 02</p>
+          <div>
+            <p class="process-title">기본 정보 입력</p>
+            <p class="process-desc">구매 내역 기반 또는 직접 입력 방식으로 제품과 구매 정보를 입력합니다.</p>
+            <div class="process-tags">
+              <span class="process-tag">제품 정보</span>
+              <span class="process-tag">구매 정보</span>
+            </div>
+          </div>
+          <div class="process-actions">
+            <a class="process-link primary" href="step1.html">화면 보기</a>
+            <a class="process-link" href="https://www.notion.so/351bdf641e4c80a5b16ec403700ff78e?v=351bdf641e4c80d5b288000c866ed8d8&source=copy_link" target="_blank" rel="noopener">노션 보기</a>
+          </div>
+        </article>
+
+        <article class="process-card">
+          <p class="process-step">STEP 03</p>
+          <div>
+            <p class="process-title">서비스 유형 선택</p>
+            <p class="process-desc">토탈 케어, 제품 수리, 상담/기타 중 고객의 접수 목적에 맞는 유형을 선택합니다.</p>
+            <div class="process-tags">
+              <span class="process-tag">분기 시작</span>
+              <span class="process-tag">서비스 유형</span>
+            </div>
+          </div>
+          <div class="process-actions">
+            <a class="process-link primary" href="step2-service-type.html">화면 보기</a>
+            <a class="process-link" href="https://www.notion.so/351bdf641e4c80b89681fd85ce75867f?v=351bdf641e4c80d5b288000c866ed8d8&source=copy_link" target="_blank" rel="noopener">노션 보기</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="process-section">
+      <p class="section-label">서비스 유형별 상세</p>
+      <div class="process-grid">
+        <article class="process-card">
+          <p class="process-step">TYPE A</p>
+          <div>
+            <p class="process-title">토탈 케어</p>
+            <p class="process-desc">제품 전체 케어, 피팅 여부, 출고 희망일, 긴급 서비스 옵션을 선택합니다.</p>
+            <div class="process-tags">
+              <span class="process-tag">토탈 케어</span>
+              <span class="process-tag">긴급 서비스</span>
+            </div>
+          </div>
+          <div class="process-actions">
+            <a class="process-link primary" href="step2-total-care.html">화면 보기</a>
+            <a class="process-link" href="https://www.notion.so/352bdf641e4c8045b7c7f3e9d61ca6d5?v=351bdf641e4c80d5b288000c866ed8d8&source=copy_link" target="_blank" rel="noopener">노션 보기</a>
+          </div>
+        </article>
+
+        <article class="process-card">
+          <p class="process-step">TYPE B</p>
+          <div>
+            <p class="process-title">제품 수리</p>
+            <p class="process-desc">파손/변형, 장식 문제, 부속품 문제 등 제품 수리 사유와 수리 가능 분기를 확인합니다.</p>
+            <div class="process-tags">
+              <span class="process-tag">제품 수리</span>
+              <span class="process-tag">수리 불가 분기</span>
+            </div>
+          </div>
+          <div class="process-actions">
+            <a class="process-link primary" href="step2-repair.html">화면 보기</a>
+            <a class="process-link" href="https://www.notion.so/352bdf641e4c80d2baddc95928ba9f93?v=351bdf641e4c80d5b288000c866ed8d8&source=copy_link" target="_blank" rel="noopener">노션 보기</a>
+          </div>
+        </article>
+
+        <article class="process-card">
+          <p class="process-step">TYPE C</p>
+          <div>
+            <p class="process-title">상담/기타</p>
+            <p class="process-desc">제품 결함/이상, 부속품 요청, 상담원 연결 등 수리 외 상담성 접수를 처리합니다.</p>
+            <div class="process-tags">
+              <span class="process-tag">상담</span>
+              <span class="process-tag">기타 요청</span>
+            </div>
+          </div>
+          <div class="process-actions">
+            <a class="process-link primary" href="step2-consulting.html">화면 보기</a>
+            <a class="process-link" href="https://www.notion.so/352bdf641e4c8052a654d851df4a05eb?v=351bdf641e4c80d5b288000c866ed8d8&source=copy_link" target="_blank" rel="noopener">노션 보기</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="process-section">
+      <p class="section-label">상세 입력 및 안내</p>
+      <div class="process-grid">
+        <article class="process-card">
+          <p class="process-step">STEP 04</p>
+          <div>
+            <p class="process-title">사진·렌즈·패키지 정보</p>
+            <p class="process-desc">제품 상태 사진, 렌즈 포함 여부, 케이스/보증 카드 미동봉 안내를 확인합니다.</p>
+            <div class="process-tags">
+              <span class="process-tag">첨부</span>
+              <span class="process-tag">렌즈</span>
+              <span class="process-tag">패키지</span>
+            </div>
+          </div>
+          <div class="process-actions">
+            <a class="process-link primary" href="step3-details.html">화면 보기</a>
+            <a class="process-link" href="https://www.notion.so/351bdf641e4c80b89681fd85ce75867f?v=351bdf641e4c80d5b288000c866ed8d8&source=copy_link" target="_blank" rel="noopener">노션 보기</a>
+          </div>
+        </article>
+
+        <article class="process-card">
+          <p class="process-step">STEP 05</p>
+          <div>
+            <p class="process-title">배송 정보</p>
+            <p class="process-desc">방문, 자택 픽업, 매장 수령, 자택 배송 등 발송/수령 방식을 입력합니다.</p>
+            <div class="process-tags">
+              <span class="process-tag">CJ</span>
+              <span class="process-tag">DHL</span>
+              <span class="process-tag">매장</span>
+            </div>
+          </div>
+          <div class="process-actions">
+            <a class="process-link primary" href="step3-shipping.html">화면 보기</a>
+            <a class="process-link" href="https://www.notion.so/351bdf641e4c80b89681fd85ce75867f?v=351bdf641e4c80d5b288000c866ed8d8&source=copy_link" target="_blank" rel="noopener">노션 보기</a>
+          </div>
+        </article>
+
+        <article class="process-card">
+          <p class="process-step">STEP 06</p>
+          <div>
+            <p class="process-title">수리 안내 확인</p>
+            <p class="process-desc">접수 정보, 예상 수리 방식, 비용, 리드타임, 관세 고지 옵션을 확인합니다.</p>
+            <div class="process-tags">
+              <span class="process-tag">예상 비용</span>
+              <span class="process-tag">리드타임</span>
+              <span class="process-tag">관세</span>
+            </div>
+          </div>
+          <div class="process-actions">
+            <a class="process-link primary" href="step4-estimate.html">화면 보기</a>
+            <a class="process-link" href="https://www.notion.so/351bdf641e4c80b89681fd85ce75867f?v=351bdf641e4c80d5b288000c866ed8d8&source=copy_link" target="_blank" rel="noopener">노션 보기</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="process-section" style="margin-bottom:0;">
+      <p class="section-label">최종 화면</p>
+      <div class="process-grid">
+        <article class="process-card">
+          <p class="process-step">DONE</p>
+          <div>
+            <p class="process-title">접수 완료</p>
+            <p class="process-desc">접수 번호, 접수 요약, 이후 진행 안내를 확인하는 완료 화면입니다.</p>
+            <div class="process-tags">
+              <span class="process-tag">완료</span>
+              <span class="process-tag">접수 번호</span>
+            </div>
+          </div>
+          <div class="process-actions">
+            <a class="process-link primary" href="complete.html">화면 보기</a>
+            <a class="process-link" href="https://www.notion.so/352bdf641e4c80fa8e51e115c1b5f615?v=351bdf641e4c80d5b288000c866ed8d8&source=copy_link" target="_blank" rel="noopener">노션 보기</a>
+          </div>
+        </article>
+
+        <article class="process-card">
+          <p class="process-step">CLOSE</p>
+          <div>
+            <p class="process-title">접수 불가 안내</p>
+            <p class="process-desc">7년 초과 또는 수리 가능 범위 초과로 온라인 접수가 어려운 경우 상담 접수로 연결합니다.</p>
+            <div class="process-tags">
+              <span class="process-tag">수리 불가</span>
+              <span class="process-tag">상담 접수</span>
+            </div>
+          </div>
+          <div class="process-actions">
+            <a class="process-link primary" href="close.html">화면 보기</a>
+            <a class="process-link" href="https://www.notion.so/352bdf641e4c80d2baddc95928ba9f93?v=351bdf641e4c80d5b288000c866ed8d8&source=copy_link" target="_blank" rel="noopener">노션 보기</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner" style="flex-direction:column;gap:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+      <nav style="display:flex;gap:20px;flex-wrap:wrap;">
+        <a href="../contact.html" style="font-size:12px;color:var(--gray-600);text-decoration:none;">문의하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">고객 서비스</a>
+        <a href="../store.html" style="font-size:12px;color:var(--gray-600);text-decoration:none;">스토어 찾기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">법적 고지</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">개인정보 처리방침</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">구독하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">소셜</a>
+        <a href="#" onclick="openLangModal();return false;" style="font-size:12px;color:var(--gray-600);text-decoration:none;cursor:pointer;">국가: South Korea</a>
+      </nav>
+      <p style="font-size:12px;color:var(--gray-600);white-space:nowrap;">© 2026 GENTLE MONSTER</p>
+    </div>
+    <p style="font-size:11px;color:var(--gray-400);line-height:1.8;">
+      주) 아이아이컴바인드 | 대표자명: 김한국 | 사업자번호: 119-86-38589 | 통신판매신고번호: 제 2014-서울마포-1050호 | 이메일 문의: service.kr@gentlemonster.com | 개인정보보호책임자: 정태호 | 주소: 서울특별시 성동구 뚝섬로 433 | 대표번호: 1600-2126<br>
+      고객님의 안전한 현금자산 거래를 위해 하나은행과 채무지급보증계약을 체결하여 보장해드리고 있습니다.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>고객 서비스 — GENTLE MONSTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/lang-modal.js"></script>
+  <style>
+    .cs-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+      padding-top: calc(var(--gnb-height) + 48px);
+      padding-bottom: 80px;
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 64px;
+      align-items: start;
+    }
+
+    /* ─── 페이지 타이틀 ─── */
+    .cs-page-title {
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      text-align: center;
+      color: var(--gray-600);
+      padding: calc(var(--gnb-height) + 32px) 0 32px;
+      border-bottom: 1px solid var(--gray-200);
+      margin-bottom: 0;
+    }
+
+    /* ─── FAQ 섹션 ─── */
+    .cs-section { margin-bottom: 56px; }
+    #faq { scroll-margin-top: calc(var(--gnb-height) + 24px); }
+    .cs-section-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    .cs-section-desc {
+      font-size: 13px;
+      color: var(--gray-600);
+      margin-bottom: 20px;
+    }
+
+    /* ─── FAQ 1단계 (카테고리) ─── */
+    .faq-list { border-top: 1px solid var(--gray-200); }
+    .faq-item { border-bottom: 1px solid var(--gray-200); }
+    .faq-trigger {
+      width: 100%;
+      display: block;
+      position: relative;
+      padding: 18px 32px 18px 0;
+      background: none;
+      border: none;
+      font-family: var(--font);
+      font-size: 14px;
+      text-align: left;
+      cursor: pointer;
+      color: var(--black);
+    }
+    .faq-trigger:hover { color: var(--gray-600); }
+    .faq-arrow {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: var(--gray-400);
+      transition: transform 0.2s;
+      line-height: 1;
+    }
+    .faq-item.open .faq-arrow { transform: translateY(-50%) rotate(90deg); }
+    .faq-body {
+      display: none;
+      padding-bottom: 8px;
+    }
+    .faq-item.open .faq-body { display: block; }
+
+    /* ─── FAQ 2단계 (세부 질문) ─── */
+    .sub-faq-item { border-top: 1px solid var(--gray-100); }
+    .sub-faq-trigger {
+      width: 100%;
+      display: block;
+      position: relative;
+      padding: 14px 32px 14px 0;
+      background: none;
+      border: none;
+      font-family: var(--font);
+      font-size: 13px;
+      text-align: left;
+      cursor: pointer;
+      color: var(--black);
+      line-height: 1.6;
+    }
+    .sub-faq-trigger:hover { color: var(--gray-600); }
+    .sub-faq-icon {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      font-weight: 300;
+      color: var(--gray-400);
+      line-height: 1;
+    }
+    .sub-faq-item.open .sub-faq-icon { content: '−'; }
+    .sub-faq-body {
+      display: none;
+      padding: 4px 0 20px;
+      font-size: 13px;
+      color: var(--gray-600);
+      line-height: 1.9;
+      white-space: pre-line;
+    }
+    .sub-faq-item.open .sub-faq-body { display: block; }
+    .sub-faq-item.open .sub-faq-trigger { font-weight: 500; }
+
+    /* ─── 주문 추적 / 시리얼 조회 ─── */
+    .cs-btn-outline {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      border: 1px solid var(--gray-300);
+      background: var(--white);
+      font-family: var(--font);
+      font-size: 13px;
+      text-align: center;
+      cursor: pointer;
+      color: var(--black);
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .cs-btn-outline:hover { border-color: var(--black); }
+
+    .cs-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid var(--gray-300);
+      font-family: var(--font);
+      font-size: 13px;
+      outline: none;
+      color: var(--black);
+      margin-bottom: 8px;
+      transition: border-color 0.2s;
+    }
+    .cs-input:focus { border-color: var(--black); }
+    .cs-input::placeholder { color: var(--gray-400); }
+
+    .cs-btn-primary {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      background: var(--gray-400);
+      border: none;
+      font-family: var(--font);
+      font-size: 13px;
+      text-align: center;
+      cursor: pointer;
+      color: var(--white);
+      transition: background 0.2s;
+    }
+    .cs-btn-primary:hover { background: var(--black); }
+
+    /* ─── 우측 사이드바 ─── */
+    .cs-sidebar {
+      position: sticky;
+      top: calc(var(--gnb-height) + 48px);
+    }
+    .cs-sidebar-title {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+    .cs-sidebar-desc {
+      font-size: 12px;
+      color: var(--gray-600);
+      line-height: 1.8;
+      margin-bottom: 24px;
+    }
+    .cs-sidebar-label {
+      font-size: 12px;
+      color: var(--gray-600);
+      margin-bottom: 8px;
+    }
+    .cs-select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--gray-300);
+      background: var(--white);
+      font-family: var(--font);
+      font-size: 13px;
+      color: var(--gray-400);
+      cursor: pointer;
+      outline: none;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+    .cs-select:focus { border-color: var(--black); }
+  </style>
+</head>
+<body>
+
+<header class="gnb">
+  <div class="gnb-inner">
+    <div class="gnb-logo"><a href="index.html"><img src="css/gentle-monster-logo.png" alt="GENTLE MONSTER" height="14"></a></div>
+    <nav class="gnb-nav">
+      <a href="#">선글라스</a><a href="#">안경</a><a href="#">컬렉션</a>
+      <a href="#">AI 아이웨어</a><a href="store.html">스토어</a><a href="index.html">서비스</a><a href="#">더 알아보기</a>
+    </nav>
+    <div class="gnb-actions"><a href="#">검색</a><a href="my-service/account.html">계정</a></div>
+  </div>
+</header>
+
+<!-- 페이지 타이틀 -->
+<p class="cs-page-title">고객 서비스</p>
+
+<div class="cs-wrap">
+
+  <!-- ── 좌측 메인 ── -->
+  <main>
+
+    <!-- 자주 묻는 질문 -->
+    <section class="cs-section" id="faq">
+      <h2 class="cs-section-title">자주 묻는 질문</h2>
+      <p class="cs-section-desc">자주 묻는 질문에 대한 답변을 자세히 확인해 보세요.</p>
+
+      <div class="faq-list" id="faq-list">
+
+        <!-- 하우스 노웨어 -->
+        <div class="faq-item">
+          <button class="faq-trigger" onclick="toggleFaq(this)">하우스 노웨어<span class="faq-arrow">›</span></button>
+          <div class="faq-body">
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">젠틀몬스터 제품은 어떻게 보관해야 하나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">제품은 직사광선과 고온다습한 환경을 피하여 보관해 주세요. 케이스에 넣어 보관하시면 스크래치와 변형을 방지할 수 있습니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">렌즈는 어떻게 닦아야 하나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">전용 클리닝 천(마이크로파이버)으로 부드럽게 닦아 주세요. 거친 천이나 화학 세제는 렌즈 코팅을 손상시킬 수 있습니다.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 계정 -->
+        <div class="faq-item">
+          <button class="faq-trigger" onclick="toggleFaq(this)">계정<span class="faq-arrow">›</span></button>
+          <div class="faq-body">
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">비밀번호를 잊어버렸어요.<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">로그인 화면에서 '비밀번호 찾기'를 클릭하시면 가입하신 이메일로 재설정 링크를 보내드립니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">회원 정보(이름, 연락처 등)를 변경하고 싶어요.<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">내 계정 > 계정 정보에서 직접 수정하실 수 있습니다. 이메일 주소 변경은 고객 서비스로 문의해 주세요.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">회원 탈퇴는 어떻게 하나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">내 계정 > 설정에서 회원 탈퇴를 신청하실 수 있습니다. 탈퇴 후 90일간 재가입이 제한됩니다.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 제품 -->
+        <div class="faq-item">
+          <button class="faq-trigger" onclick="toggleFaq(this)">제품<span class="faq-arrow">›</span></button>
+          <div class="faq-body">
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">정품 여부를 확인하고 싶어요.<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">제품 내부 템플에 각인된 시리얼 번호로 정품 여부를 확인하실 수 있습니다. 이 페이지 하단 '시리얼 넘버 조회'를 이용해 주세요.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">단종된 제품도 구매할 수 있나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">단종 제품은 재고 소진 시 구매가 어렵습니다. 일부 제품은 리미티드 재출시될 수 있으니 뉴스레터를 구독해 소식을 받아보세요.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 결제 & 주문 -->
+        <div class="faq-item">
+          <button class="faq-trigger" onclick="toggleFaq(this)">결제 &amp; 주문<span class="faq-arrow">›</span></button>
+          <div class="faq-body">
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">주문을 취소하고 싶어요.<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">배송 시작 전까지 내 계정 > 주문 내역에서 직접 취소하실 수 있습니다. 배송 시작 이후에는 반품 절차를 이용해 주세요.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">사용 가능한 결제 수단이 궁금해요.<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">신용/체크카드, 카카오페이, 네이버페이, 무통장 입금을 지원합니다. 일부 카드사 할부 혜택도 적용됩니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">현금영수증 또는 세금계산서 발급이 가능한가요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">주문 완료 시 현금영수증을 자동 발급해 드립니다. 사업자 세금계산서는 고객 서비스로 문의해 주세요.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 배송 -->
+        <div class="faq-item">
+          <button class="faq-trigger" onclick="toggleFaq(this)">배송<span class="faq-arrow">›</span></button>
+          <div class="faq-body">
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">배송 기간은 얼마나 걸리나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">국내 배송은 결제 완료 후 영업일 기준 2~4일 소요됩니다. 도서산간 지역은 추가 1~2일이 소요될 수 있습니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">해외 배송도 되나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">현재 국내 배송만 지원합니다. 해외 구매는 각 국가의 젠틀몬스터 공식 온라인 스토어를 이용해 주세요.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 반품 & 교환 -->
+        <div class="faq-item">
+          <button class="faq-trigger" onclick="toggleFaq(this)">반품 &amp; 교환<span class="faq-arrow">›</span></button>
+          <div class="faq-body">
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">반품 및 교환 신청은 어떻게 하나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">수령 후 7일 이내에 내 계정 > 주문 내역에서 신청하실 수 있습니다. 제품이 미사용 상태이며 포장이 손상되지 않아야 합니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">반품 배송비는 누가 부담하나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">제품 불량·오배송의 경우 왕복 배송비를 부담해 드립니다. 단순 변심 반품의 경우 고객 부담입니다.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 프로덕트 서비스 & A/S -->
+        <div class="faq-item">
+          <button class="faq-trigger" onclick="toggleFaq(this)">프로덕트 서비스 &amp; A/S<span class="faq-arrow">›</span></button>
+          <div class="faq-body">
+
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">예상 수리 비용 확인<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body" style="white-space:normal;line-height:1.5;color:var(--black);">
+                <p style="font-size:12px;color:var(--gray-400);margin-bottom:14px;">제품 정보와 증상을 입력하시면 예상 수리 비용을 안내해 드립니다.</p>
+                <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+                  <div style="position:relative;">
+                    <label style="font-size:12px;color:var(--gray-600);display:block;margin-bottom:5px;">제품명</label>
+                    <div style="position:relative;">
+                      <input type="text" id="cost-product" class="cs-input" style="margin-bottom:0;padding-right:32px;"
+                        placeholder="제품명을 검색하세요" autocomplete="off"
+                        oninput="searchCostProduct(this.value)" onblur="setTimeout(function(){document.getElementById('cost-product-dd').style.display='none'},150)">
+                      <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--gray-400);font-size:13px;pointer-events:none;">↑↓</span>
+                    </div>
+                    <div id="cost-product-dd" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-top:none;z-index:20;max-height:200px;overflow-y:auto;"></div>
+                  </div>
+                  <div>
+                    <label style="font-size:12px;color:var(--gray-600);display:block;margin-bottom:5px;">구매일자</label>
+                    <input type="date" id="cost-date" class="cs-input" style="margin-bottom:0;" onchange="calcCost()">
+                  </div>
+                  <div>
+                    <label style="font-size:12px;color:var(--gray-600);display:block;margin-bottom:5px;">현상</label>
+                    <select id="cost-symptom" class="cs-select" style="color:var(--black);" onchange="calcCost()">
+                      <option value="" disabled selected style="color:var(--gray-400);">현상을 선택하세요</option>
+                      <option value="pad">코패드 / 나사 교체</option>
+                      <option value="fitting">피팅 조정 (프레임 교정)</option>
+                      <option value="hinge">힌지 수리</option>
+                      <option value="lens">렌즈 교체 (정품)</option>
+                      <option value="temple">템플 교체</option>
+                      <option value="frame">프레임 파손 / 변형</option>
+                      <option value="deco">장식 탈락 / 파손</option>
+                      <option value="cleaning">클리닝 / 폴리싱</option>
+                      <option value="totalcare">토탈케어 (종합 케어 서비스)</option>
+                      <option value="fullrepair">종합 수리</option>
+                      <option value="coating">렌즈 코팅 불량</option>
+                    </select>
+                  </div>
+                </div>
+                <button onclick="calcCost()" style="width:100%;padding:13px;background:var(--black);border:none;font-family:var(--font);font-size:13px;color:#fff;cursor:pointer;margin-bottom:12px;">예상 비용 확인하기</button>
+                <div id="cost-result" style="display:none;padding:20px;border:1px solid var(--gray-200);text-align:center;background:var(--gray-50);">
+                  <p style="font-size:11px;color:var(--gray-400);margin-bottom:6px;">예상 수리 비용</p>
+                  <p id="cr-cost" style="font-size:24px;font-weight:500;"></p>
+                  <p id="cr-note" style="font-size:11px;color:var(--gray-400);margin-top:8px;line-height:1.6;"></p>
+                </div>
+              </div>
+            </div>
+
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">수리 접수는 어떻게 하나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">[오프라인 프로덕트 서비스 접수 방법]
+
+젠틀몬스터 직영 오프라인 스토어(백화점 및 플래그십 스토어) 또는 공식 판매처 안경원 방문을 통해서도 수리 접수가 가능합니다.
+* 보증카드가 없는 경우 서비스에 제한이 있을 수 있으니 보증카드(혹은 영수증 및 구매 증빙 자료)를 지참하여 방문해 주시기를 바랍니다.
+* 공식 판매처(안경원)을 통해 접수하실 경우, 배송 비용을 포함한 서비스 비용이 부과될 수 있습니다.
+
+[온라인 프로덕트 서비스 접수]
+
+오프라인 스토어 방문이 어려운 경우, 온라인 서비스 접수를 통해 진행 가능합니다.
+공식 온라인 홈페이지 상단의 [더 알아보기] → [서비스] 메뉴에서 접수하실 수 있습니다. 접수가 완료되면 카카오톡 또는 이메일로 안내받은 주소지로 제품을 발송해 주시면 됩니다. (선불 택배)</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">수리 진행상황을 알고 싶어요.<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">온라인 접수 고객은 내 계정 > 수리 서비스 내역에서 실시간으로 진행 상태를 확인하실 수 있습니다. 주요 단계마다 이메일 또는 카카오톡으로도 알림을 드립니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">제품이 망가졌어요, 수리 가능할까요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">수리 가능 여부는 제품 상태를 직접 확인한 후 판단해 드립니다. 먼저 수리 접수를 진행해 주시면 전문 기술자가 진단 후 수리 가능 여부와 비용을 안내해 드립니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">젠틀몬스터에서 제공하고 있는 수리 서비스 항목을 알고 싶어요.<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">프레임 교정, 코패드·나사 교체, 힌지 수리, 템플 교체, 렌즈 교체 등 다양한 수리 서비스를 제공합니다. 제품 상태에 따라 수리 항목이 달라질 수 있습니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">다른 컬러의 렌즈나 다른 제품의 부품으로 교체가 가능한가요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">원칙적으로 동일 모델의 정품 부품으로만 교체해 드립니다. 타 컬러 렌즈 또는 타 모델 부품으로의 교체는 지원하지 않습니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">제품을 받았는데 수평이 맞지 않아요.<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">직영 매장 방문 시 전문 피터가 무료로 피팅 서비스를 제공해 드립니다. 온라인 접수 후 수리센터로 발송하셔도 교정해 드릴 수 있습니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">제품 착용 시 얼굴에 맞지 않아 불편합니다. 어떻게 해야 할까요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">젠틀몬스터 직영 스토어를 방문하시면 전문 피터가 얼굴 형태에 맞게 피팅 조정을 해드립니다. 피팅 서비스는 무료로 제공됩니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">근처에 젠틀몬스터 직영 오프라인 스토어가 없습니다. 안경원에서도 피팅 혹은 수리 접수가 가능한가요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">공식 판매처(안경원)에서도 피팅 및 수리 접수가 가능합니다. 단, 서비스 비용과 배송비가 추가될 수 있습니다. 가까운 공식 판매처는 스토어 찾기에서 확인해 주세요.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">수리 비용 결제 수단 및 스토어 결제 가능여부가 궁금합니다.<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">온라인 수리 비용은 카드 결제(카카오페이, 네이버페이 포함)로 진행됩니다. 직영 스토어 방문 접수 시에는 현장 결제도 가능합니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">젠틀몬스터 스토어에서도 수리 서비스를 받을 수 있나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">직영 스토어에서는 간단한 피팅 조정 및 코패드·나사 교체 등 간편 수리를 제공합니다. 정밀 수리가 필요한 경우 수리센터로 접수됩니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">수리비 결제 영수증 발급이 가능한가요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">결제 완료 후 이메일로 영수증을 발송해 드립니다. 내 계정 > 수리 서비스 내역에서도 영수증을 확인하고 출력하실 수 있습니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">패키지를 구매하거나 수리가 가능한가요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">패키지(케이스, 클리닝 키트 등 부속품)는 별도 구매 가능합니다. 패키지 자체의 수리는 지원하지 않습니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">제품을 직접 수리하고 싶은데 부품을 보내주실 수 있나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">개인 수리를 위한 부품 판매는 지원하지 않습니다. 안전한 수리를 위해 공식 수리 서비스 이용을 권장합니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">젠틀몬스터 본사로 방문해서 접수 혹은 수리가 가능한가요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">본사 방문 접수는 지원하지 않습니다. 가까운 직영 스토어 방문 또는 온라인 접수를 이용해 주세요.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">품질보증기간 이내에는 무상 수리인가요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">구매일로부터 2년 이내 제조 결함이 확인된 경우 무상 수리를 제공합니다. 단, 분실·파손·사용자 과실에 의한 손상은 유상 수리됩니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">젠틀몬스터 제품의 수리 기간은 얼마나 걸리나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">수리 내용에 따라 다르며, 일반적으로 접수 후 2~4주 소요됩니다. 부품 수급 상황에 따라 기간이 연장될 수 있으며, 변동 시 별도로 안내드립니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">프로덕트 서비스 보증이란 무엇인가요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">수리 완료 후 출고일로부터 3개월간 동일 부위 재발 시 무상으로 재수리해 드리는 서비스 보증 제도입니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">젠틀몬스터 제품 해외에서 수리도 가능한가요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">해외 직영 스토어에서도 수리 접수가 가능합니다. 단, 서비스 가능 항목과 비용은 국가별로 상이하며, 한국 보증 조건이 적용되지 않을 수 있습니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">수리 후 제품을 해외에서 수령이 가능한가요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">현재 수리 완료 제품의 해외 배송은 지원하지 않습니다. 국내 주소로만 반송 가능하며, 해외 수령을 원하시면 별도 문의 바랍니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">수리를 취소하고 싶어요.<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">접수 완료 상태에서는 내 계정 > 수리 서비스 내역에서 직접 취소하실 수 있습니다. 제품이 이미 이동 중인 경우 고객 서비스로 문의해 주세요.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">무료로 제공되는 수리 서비스는 어떤 것이 있나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">코패드·나사 등 소모성 부속품 교체, 피팅 조정, 클리닝은 직영 스토어에서 무료로 제공합니다. 품질보증기간 내 제조 결함 수리도 무상입니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">젠틀몬스터 직영 오프라인 스토어나 온라인으로 제품에 도수 렌즈를 맞출 수 있나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">젠틀몬스터는 도수 렌즈 제작 서비스를 직접 제공하지 않습니다. 구매하신 제품을 공식 판매 안경원에 가져가시면 도수 렌즈 삽입 서비스를 받으실 수 있습니다.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">수리받은 제품이 다시 망가졌어요. 어떻게 하면 될까요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">수리 완료 후 3개월 이내 동일 부위에 동일 증상이 재발한 경우 서비스 보증에 따라 무상으로 재수리해 드립니다. 수리 내역을 확인할 수 있도록 수리 완료 안내 메일을 지참해 주세요.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">렌즈 기능이 떨어진 것 같아요. 확인 가능한가요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">렌즈 코팅 열화나 기능 저하가 의심되는 경우, 직영 스토어 방문 또는 온라인 수리 접수를 통해 전문 기술자가 확인해 드립니다.</div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- 제품 관리 방법 -->
+        <div class="faq-item">
+          <button class="faq-trigger" onclick="toggleFaq(this)">제품 관리 방법<span class="faq-arrow">›</span></button>
+          <div class="faq-body">
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">안경을 세척하는 올바른 방법이 궁금해요.<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">미지근한 물로 헹군 후 중성 세제로 부드럽게 닦고 마이크로파이버 천으로 물기를 제거해 주세요. 뜨거운 물이나 알코올 성분 세제는 피해 주세요.</div>
+            </div>
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">제품 보관 시 주의사항이 있나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">직사광선, 고온(60°C 이상), 고습 환경에서 보관하지 마세요. 반드시 전용 케이스에 넣어 보관하시길 권장합니다.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 기업 문의 -->
+        <div class="faq-item">
+          <button class="faq-trigger" onclick="toggleFaq(this)">기업 문의<span class="faq-arrow">›</span></button>
+          <div class="faq-body">
+            <div class="sub-faq-item">
+              <button class="sub-faq-trigger" onclick="toggleSubFaq(this)">B2B 구매 또는 협업 문의는 어떻게 하나요?<span class="sub-faq-icon">+</span></button>
+              <div class="sub-faq-body">기업 구매, 협찬, 콜라보레이션 등의 문의는 biz.kr@gentlemonster.com으로 연락해 주세요. 담당자가 순차적으로 답변드립니다.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 주문 추적하기 -->
+    <section class="cs-section">
+      <h2 class="cs-section-title">주문 추적하기</h2>
+      <p class="cs-section-desc">주문 현황을 확인하거나 반품을 진행하시려면 주문 번호와 이메일 주소를 입력해 주세요. 젠틀몬스터 회원은 내 계정에서 언제든 주문 현황을 추적 및 관리할 수 있습니다.</p>
+      <button class="cs-btn-outline" onclick="alert('[주문 추적 페이지로 이동]')">주문 추적하기</button>
+    </section>
+
+    <!-- 시리얼 넘버 조회 -->
+    <section class="cs-section" style="margin-bottom:0;">
+      <h2 class="cs-section-title">시리얼 넘버 조회</h2>
+      <p class="cs-section-desc">젠틀몬스터는 공식 온라인 사이트, 오프라인 스토어, 그리고 판매점을 통해 구매하신 정품에 대해 전 세계 어디에서나 수리 서비스를 제공합니다. 시리얼 번호를 조회하여 정품 여부를 확인해 주세요.</p>
+      <input type="text" class="cs-input" id="serial-input" placeholder="시리얼 번호*" oninput="updateSearchBtn(this.value)">
+      <button class="cs-btn-primary" id="serial-btn" onclick="searchSerial()">검색하기</button>
+    </section>
+
+  </main>
+
+  <!-- ── 우측 사이드바 ── -->
+  <aside class="cs-sidebar">
+    <p class="cs-sidebar-title">언제든 자유롭게 문의해 주세요</p>
+    <p class="cs-sidebar-desc">추가 질문이 있으시거나 기타 도움이 필요하시면 이메일, 라이브 챗 또는 전화로 문의해 주세요.</p>
+    <p class="cs-sidebar-label">문의하시는 주제를 선택해주세요.</p>
+    <select class="cs-select" onchange="this.style.color = this.value ? 'var(--black)' : 'var(--gray-400)'">
+      <option value="" disabled selected>주제를 선택하세요*</option>
+      <option value="account">계정</option>
+      <option value="product">제품</option>
+      <option value="order">결제 &amp; 주문</option>
+      <option value="delivery">배송</option>
+      <option value="return">반품 &amp; 교환</option>
+      <option value="as">프로덕트 서비스 &amp; A/S</option>
+      <option value="care">제품 관리 방법</option>
+      <option value="biz">기업 문의</option>
+      <option value="other">기타</option>
+    </select>
+  </aside>
+
+</div>
+
+<footer class="site-footer">
+  <div class="footer-inner" style="flex-direction:column;gap:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+      <nav style="display:flex;gap:20px;flex-wrap:wrap;">
+        <a href="contact.html" style="font-size:12px;color:var(--gray-600);text-decoration:none;">문의하기</a>
+        <a href="contact.html" style="font-size:12px;color:var(--gray-600);text-decoration:none;">고객 서비스</a>
+        <a href="store.html"   style="font-size:12px;color:var(--gray-600);text-decoration:none;">스토어 찾기</a>
+        <a href="#"            style="font-size:12px;color:var(--gray-600);text-decoration:none;">법적 고지</a>
+        <a href="#"            style="font-size:12px;color:var(--gray-600);text-decoration:none;">개인정보 처리방침</a>
+        <a href="#"            style="font-size:12px;color:var(--gray-600);text-decoration:none;">구독하기</a>
+        <a href="#"            style="font-size:12px;color:var(--gray-600);text-decoration:none;">소셜</a>
+        <a href="#" onclick="openLangModal();return false;" style="font-size:12px;color:var(--gray-600);text-decoration:none;cursor:pointer;">국가: South Korea</a>
+      </nav>
+      <p style="font-size:12px;color:var(--gray-600);white-space:nowrap;">© 2026 GENTLE MONSTER</p>
+    </div>
+    <p style="font-size:11px;color:var(--gray-400);line-height:1.8;">
+      주) 아이아이컴바인드 | 대표자명: 김한국 | 사업자번호: 119-86-38589 | 통신판매신고번호: 제 2014-서울마포-1050호 | 이메일 문의: service.kr@gentlemonster.com | 개인정보보호책임자: 정태호 | 주소: 서울특별시 성동구 뚝섬로 433 | 대표번호: 1600-2126<br>
+      고객님의 안전한 현금자산 거래를 위해 하나은행과 채무지급보증계약을 체결하여 보장해드리고 있습니다.
+    </p>
+  </div>
+</footer>
+
+<script>
+function toggleFaq(btn) {
+  var item = btn.closest('.faq-item');
+  var isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(function(el) { el.classList.remove('open'); });
+  if (!isOpen) item.classList.add('open');
+}
+
+function toggleSubFaq(btn) {
+  var item = btn.closest('.sub-faq-item');
+  var isOpen = item.classList.contains('open');
+  btn.closest('.faq-body').querySelectorAll('.sub-faq-item.open').forEach(function(el) { el.classList.remove('open'); });
+  if (!isOpen) {
+    item.classList.add('open');
+    btn.querySelector('.sub-faq-icon').textContent = '−';
+  }
+  btn.closest('.faq-body').querySelectorAll('.sub-faq-item:not(.open) .sub-faq-icon').forEach(function(el) { el.textContent = '+'; });
+}
+
+// ─── 제품명 검색 (비용 계산용) ───
+var GM_PRODUCTS_ALL = [
+  'MUSTANG 01','MUSTANG 02','MUSTANG 03',
+  'FRIDA 01','FRIDA 02','FRIDA 03',
+  'MATIN 01','MATIN 02',
+  'ABSENTE 01','ABSENTE 02',
+  'LIQUET 01','LIQUET 02',
+  'DREAMER 01','DREAMER 02',
+  'PELLA 01','FLAT 03',
+  'LANG 01','MUSEE 01',
+  'BRISK 01','BRISK 02',
+  'VOGO 01','VOGO 02',
+  'LAYER 01','LAYER 02',
+  'HEIZER 01','HEIZER 02',
+  'TILDA 01','TILDA 02',
+  'BLAR 01','BLAR 02',
+  'COMO 01','COMO 02',
+  'DAYDREAM 01','DAYDREAM 02',
+  'FINN 01','FINN 02',
+  'RANNY 01','RANNY 02',
+  'MUSEE 02','MUSEE 03',
+];
+
+function searchCostProduct(val) {
+  var dd = document.getElementById('cost-product-dd');
+  if (val.trim().length < 3) {
+    dd.style.display = 'none';
+  } else {
+    var filtered = GM_PRODUCTS_ALL.filter(function(p) { return p.toLowerCase().includes(val.toLowerCase()); }).slice(0, 3);
+    if (filtered.length === 0) {
+      dd.style.display = 'none';
+    } else {
+      dd.innerHTML = filtered.map(function(p) {
+        return '<div onclick="selectCostProduct(\'' + p + '\')" style="padding:11px 16px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--gray-100);" onmouseover="this.style.background=\'#f5f5f5\'" onmouseout="this.style.background=\'#fff\'">' + p + '</div>';
+      }).join('');
+      dd.style.display = 'block';
+    }
+  }
+  calcCost();
+}
+
+function selectCostProduct(name) {
+  document.getElementById('cost-product').value = name;
+  document.getElementById('cost-product-dd').style.display = 'none';
+  calcCost();
+}
+
+// ─── 예상 수리 비용 계산 (기준 제품가 370,000원) ───
+var BASE_PRICE = 370000;
+
+function fmt(won) {
+  return won === 0 ? '무상' : won.toLocaleString('ko-KR') + '원~';
+}
+
+// pct: [품질보증 내 비율, 서비스보증 내 비율, 보증 외 비율]
+// free: 항상 무상 여부
+var COST_DEF = {
+  pad:       { free: true,  method: '코패드 / 나사 교체',       note: '소모성 부속품은 보증 기간과 관계없이 무상으로 교체해 드립니다.' },
+  fitting:   { free: true,  method: '피팅 조정',                note: '피팅 조정은 직영 스토어 방문 시 무상으로 제공합니다.' },
+  cleaning:  { free: true,  method: '클리닝 & 폴리싱',          note: '클리닝 및 폴리싱은 직영 스토어 방문 시 무상으로 제공합니다.' },
+  hinge:     { free: false, pct: [0.05, 0.06, 0.08], method: '힌지 수리',          note: '품질보증기간 내 제조 결함으로 확인되면 무상 처리될 수 있습니다. 실제 비용은 입고 후 정밀 진단 결과에 따라 결정됩니다.' },
+  lens:      { free: false, pct: [0.12, 0.15, 0.15], method: '렌즈 교체 (정품)',   note: '정품 렌즈 기준입니다. 렌즈 종류 및 모델에 따라 실제 비용이 달라질 수 있습니다.' },
+  temple:    { free: false, pct: [0.06, 0.08, 0.10], method: '템플 교체',          note: '단종 모델은 부품 수급 상황에 따라 수리가 불가할 수 있습니다.' },
+  frame:     { free: false, pct: [0.14, 0.18, 0.22], method: '프레임 수리 / 교체', note: '파손 범위에 따라 수리 불가 판정이 날 수 있습니다. 제조 결함으로 확인된 경우 무상 처리됩니다.' },
+  deco:      { free: false, pct: [0.06, 0.08, 0.10], method: '장식 수리 / 교체',   note: '장식 종류·파손 정도에 따라 비용이 달라집니다. 제조 결함으로 확인된 경우 무상 처리됩니다.' },
+  coating:   { free: false, pct: [0.10, 0.12, 0.15], method: '렌즈 코팅 재처리',   note: '코팅 불량이 제조 결함으로 확인된 경우 무상 처리됩니다. 사용환경에 의한 자연 마모는 유상입니다.' },
+  totalcare: { free: false, pct: [0.08, 0.10, 0.12], method: '토탈케어 (클리닝 + 피팅 + 부품 점검)', note: '프레임 교정·클리닝·나사 조임·코패드 교체 등 종합 케어 서비스입니다. 추가 부품 교체 시 비용이 발생할 수 있습니다.' },
+  fullrepair:{ free: false, pct: [0.20, 0.25, 0.30], method: '종합 수리',           note: '복합 손상 또는 전체적 수리가 필요한 경우 적용됩니다. 입고 후 정밀 진단을 통해 최종 비용이 결정됩니다.' },
+};
+
+function calcCost() {
+  var product = document.getElementById('cost-product').value.trim();
+  var dateVal = document.getElementById('cost-date').value;
+  var symptom = document.getElementById('cost-symptom').value;
+  var result  = document.getElementById('cost-result');
+
+  if (!product || !dateVal || !symptom) { result.style.display = 'none'; return; }
+
+  var purchaseDate = new Date(dateVal);
+  var today        = new Date();
+  if (purchaseDate > today) { result.style.display = 'none'; return; }
+
+  var months = (today.getFullYear() - purchaseDate.getFullYear()) * 12 + (today.getMonth() - purchaseDate.getMonth());
+  var def = COST_DEF[symptom];
+  var symptomLabel = document.getElementById('cost-symptom').options[document.getElementById('cost-symptom').selectedIndex].text;
+
+  var warrantyText, warrantyColor, costWon;
+
+  if (def.free) {
+    warrantyText  = months <= 24 ? '품질 보증 기간 내' : months <= 36 ? '서비스 보증 기간 내' : '보증 기간 만료';
+    warrantyColor = months <= 24 ? '#2aa050' : months <= 36 ? '#1a6fd4' : 'var(--gray-400)';
+    costWon = 0;
+  } else {
+    var pctIdx = months <= 24 ? 0 : months <= 36 ? 1 : 2;
+    warrantyText  = months <= 24 ? '품질 보증 기간 내 (구매 후 ' + months + '개월)' : months <= 36 ? '서비스 보증 기간 내 (구매 후 ' + months + '개월)' : '보증 기간 만료 (구매 후 ' + months + '개월)';
+    warrantyColor = months <= 24 ? '#2aa050' : months <= 36 ? '#1a6fd4' : 'var(--gray-400)';
+    costWon = Math.round(BASE_PRICE * def.pct[pctIdx] / 1000) * 1000;
+  }
+
+  document.getElementById('cr-cost').textContent = fmt(costWon);
+  document.getElementById('cr-note').textContent = def.note;
+  result.style.display = 'block';
+  result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function updateSearchBtn(val) {
+  document.getElementById('serial-btn').style.background = val.trim() ? 'var(--black)' : 'var(--gray-400)';
+}
+
+function searchSerial() {
+  var val = document.getElementById('serial-input').value.trim();
+  if (!val) return;
+  alert('[시리얼 번호 조회: ' + val + ']');
+}
+
+window.addEventListener('load', function() {
+  var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
+});
+</script>
+</body>
+</html>

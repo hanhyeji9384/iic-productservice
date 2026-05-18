@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>접수 완료 — GENTLE MONSTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/lang-modal.js"></script>
+</head>
+<body>
+
+<header class="gnb">
+  <div class="gnb-inner">
+    <div class="gnb-logo"><a href="../index.html"><img src="../css/gentle-monster-logo.png" alt="GENTLE MONSTER" height="14"></a></div>
+    <nav class="gnb-nav">
+      <a href="#">선글라스</a><a href="#">안경</a><a href="#">컬렉션</a>
+      <a href="#">AI 아이웨어</a><a href="../store.html">스토어</a>
+      <a href="../index.html" class="active">서비스</a><a href="#">더 알아보기</a>
+    </nav>
+    <div class="gnb-actions"><a href="#">검색</a><a href="../my-service/account.html">계정</a></div>
+  </div>
+</header>
+
+<main class="page-wrapper">
+  <div class="content">
+
+    <div style="text-align:center;">
+
+      <div class="complete-icon" style="margin-top:40px;">✓</div>
+
+      <p class="page-eyebrow">접수 완료</p>
+      <h1 class="page-title" id="cpl-title">수리 서비스 접수가<br>완료되었습니다.</h1>
+      <p class="page-desc" style="margin-bottom:40px;">
+        접수 정보와 이후 안내를 이메일과 카카오톡으로 발송했습니다.
+      </p>
+
+      <div class="summary-card" style="text-align:left;margin-bottom:32px;" id="summary-card">
+        <!-- 동적 렌더링 -->
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <a href="../my-service/list.html" class="btn btn-primary btn-full" id="btn-history">수리 서비스 내역 보기</a>
+        <a href="../index.html" class="btn btn-secondary btn-full">홈으로</a>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner" style="flex-direction:column;gap:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+      <nav style="display:flex;gap:20px;flex-wrap:wrap;">
+        <a href="../contact.html" style="font-size:12px;color:var(--gray-600);text-decoration:none;">문의하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">고객 서비스</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">스토어 찾기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">법적 고지</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">개인정보 처리방침</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">구독하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">소셜</a>
+        <a href="#" onclick="openLangModal();return false;" style="font-size:12px;color:var(--gray-600);text-decoration:none;cursor:pointer;">국가: South Korea</a>
+      </nav>
+      <p style="font-size:12px;color:var(--gray-600);white-space:nowrap;">© 2026 GENTLE MONSTER</p>
+    </div>
+    <p style="font-size:11px;color:var(--gray-400);line-height:1.8;">
+      주) 아이아이컴바인드 | 대표자명: 김한국 | 사업자번호: 119-86-38589 | 통신판매신고번호: 제 2014-서울마포-1050호 | 이메일 문의: service.kr@gentlemonster.com | 개인정보보호책임자: 정태호 | 주소: 서울특별시 성동구 뚝섬로 433 | 대표번호: 1600-2126<br>
+      고객님의 안전한 현금자산 거래를 위해 하나은행과 채무지급보증계약을 체결하여 보장해드리고 있습니다.
+    </p>
+  </div>
+</footer>
+
+<script>
+// ─── 영업일 계산 (토·일 제외) ───
+function addBusinessDays(date, days) {
+  var d = new Date(date);
+  var added = 0;
+  while (added < days) {
+    d.setDate(d.getDate() + 1);
+    var dow = d.getDay();
+    if (dow !== 0 && dow !== 6) added++;
+  }
+  return d;
+}
+function formatDate(d) {
+  return d.getFullYear() + '. ' +
+    String(d.getMonth() + 1).padStart(2, '0') + '. ' +
+    String(d.getDate()).padStart(2, '0');
+}
+
+// ─── 서비스 유형 라벨 ───
+function serviceTypeLabel(state) {
+  switch (state.serviceType) {
+    case 'total-care': return '토탈 케어';
+    case 'repair':     return '제품 수리';
+    case 'accessory':  return '부속품 요청';
+    case 'consulting':
+      switch (state.consultDetail) {
+        case 'defect':         return '결함 문의';
+        case 'defect-expired': return '결함 문의 (보증 만료)';
+        default:               return '상담 / 기타';
+      }
+    default: return '수리 서비스';
+  }
+}
+
+// ─── 발송 방법 라벨 ───
+function sendMethodLabel(method) {
+  switch (method) {
+    case 'pickup': return 'CJ 택배 픽업';
+    case 'self':   return '직접 발송';
+    case 'store':  return '매장 Drop Off';
+    case 'dhl':    return 'DHL 발송';
+    default:       return method || '—';
+  }
+}
+
+// ─── 수령 방법 라벨 ───
+function receiveMethodLabel(method) {
+  switch (method) {
+    case 'home':  return '택배 수령';
+    case 'store': return '매장 픽업';
+    default:      return method || '—';
+  }
+}
+
+// ─── 접수 번호 생성 (mock) ───
+function genReceiptNo() {
+  var d = new Date();
+  var yy = String(d.getFullYear()).slice(2);
+  var mm = String(d.getMonth() + 1).padStart(2, '0');
+  var dd = String(d.getDate()).padStart(2, '0');
+  var rand = Math.random().toString(36).slice(2, 10).toUpperCase();
+  return yy + mm + dd + 'GMP' + rand;
+}
+
+// ─── summary row 헬퍼 ───
+function row(key, val, extraStyle) {
+  return '<div class="summary-row" style="' + (extraStyle || '') + '">' +
+    '<span class="summary-key">' + key + '</span>' +
+    '<span class="summary-val">' + val + '</span>' +
+    '</div>';
+}
+function subRow(key, val) {
+  return row(key, val, 'padding-top:4px;');
+}
+function divider() {
+  return '<div style="border-top:1px solid var(--gray-200);margin:8px 0;"></div>';
+}
+
+// ─── 메인 렌더 ───
+function renderComplete() {
+  var state;
+  try { state = JSON.parse(localStorage.getItem('ps-state') || '{}'); } catch(e) { state = {}; }
+
+  var today = new Date();
+  var deadline = addBusinessDays(today, 3);
+
+  // 제목
+  var isAccessory = state.serviceType === 'accessory';
+  var isConsulting = state.serviceType === 'consulting';
+  var titleEl = document.getElementById('cpl-title');
+  if (isAccessory) {
+    titleEl.innerHTML = '부속품 요청 접수가<br>완료되었습니다.';
+  } else if (isConsulting) {
+    titleEl.innerHTML = '상담 요청이<br>접수되었습니다.';
+  }
+
+  // summary 카드 구성
+  var html = '';
+
+  html += row('접수 번호',
+    '<span style="font-family:monospace;letter-spacing:0.06em;font-size:13px;">' + genReceiptNo() + '</span>');
+
+  html += row('제품', state.productName || '—');
+  html += row('서비스 유형', serviceTypeLabel(state));
+
+  // 발송 방법 (부속품·상담은 없음)
+  if (!isAccessory && !isConsulting) {
+    html += divider();
+    var sendMethod = state.sendMethod;
+    html += row('발송 방법', sendMethodLabel(sendMethod));
+
+    if (sendMethod === 'pickup') {
+      html += subRow('픽업 기한',
+        formatDate(deadline) + ' <span style="color:var(--gray-400);font-size:12px;">(접수일 +3영업일)</span>');
+    } else if (sendMethod === 'store') {
+      html += subRow('방문 매장', state.dropStoreName || '—');
+      html += subRow('방문 기한',
+        formatDate(deadline) + ' <span style="color:var(--gray-400);font-size:12px;">(접수일 +3영업일)</span>');
+    } else if (sendMethod === 'self') {
+      html += subRow('발송 주소',
+        '서울특별시 성동구 뚝섬로 433 젠틀몬스터 본사 PS파트 <span style="color:var(--gray-400);font-size:12px;">(등기·택배 모두 가능)</span>');
+    } else if (sendMethod === 'dhl') {
+      html += subRow('발송 방법',
+        '수신지 주소는 확인 이메일에서 DHL 상세 안내를 확인해 주세요.');
+    }
+  }
+
+  // 수령 방법
+  html += divider();
+  var recvMethod = state.receiveMethod;
+  html += row('수령 방법', receiveMethodLabel(recvMethod));
+  if (recvMethod === 'store') {
+    html += subRow('수령 매장', state.recvStoreName || '—');
+  }
+
+  document.getElementById('summary-card').innerHTML = html;
+
+  // 부속품·상담은 내역 버튼 숨김
+  if (isAccessory || isConsulting) {
+    var histBtn = document.getElementById('btn-history');
+    if (histBtn) histBtn.style.display = 'none';
+  }
+}
+
+// ─── 언어 ───
+function setLang(lang) {
+  try { localStorage.setItem('ps-lang', lang); } catch(e) {}
+}
+window.addEventListener('load', function() {
+  var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
+  setLang(saved || 'ko');
+  renderComplete();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>접수 정보 수정 — GENTLE MONSTER</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/lang-modal.js"></script>
+</head>
+<body>
+
+<header class="gnb">
+  <div class="gnb-inner">
+    <div class="gnb-logo"><a href="../index.html"><img src="../css/gentle-monster-logo.png" alt="GENTLE MONSTER" height="14"></a></div>
+    <nav class="gnb-nav">
+      <a href="#">선글라스</a><a href="#">안경</a><a href="#">컬렉션</a>
+      <a href="#">AI 아이웨어</a><a href="../store.html">스토어</a><a href="../index.html">서비스</a><a href="#">더 알아보기</a>
+    </nav>
+    <div class="gnb-actions"><a href="#">검색</a><a href="account.html">계정</a></div>
+  </div>
+</header>
+
+<!-- PILL TABS -->
+<div style="margin-top:var(--gnb-height);">
+  <div class="pill-tabs-wrap">
+    <div class="pill-tabs">
+      <a href="account.html"   class="pill-tab" id="tab-account">계정</a>
+      <a href="purchased.html" class="pill-tab" id="tab-purchased">구매한 제품</a>
+      <a href="#"              class="pill-tab" id="tab-wishlist">위시리스트</a>
+      <a href="list.html"      class="pill-tab active" id="tab-repair">수리 서비스 내역</a>
+      <a href="#"              class="pill-tab" id="tab-profile">프로필</a>
+    </div>
+    <a href="#" class="pill-tab-logout" id="tab-logout">로그아웃</a>
+  </div>
+</div>
+
+<main class="page-gray">
+  <div class="content">
+
+    <!-- 뒤로 가기 -->
+    <a href="detail.html" id="txt-back" style="font-size:12px;color:#999;text-decoration:none;display:block;margin-bottom:32px;">← 접수 상세로 돌아가기</a>
+
+    <!-- 페이지 헤더 -->
+    <p class="page-eyebrow" id="txt-eyebrow">2605060GMPSVKJTXQN</p>
+    <h1 class="page-title" id="txt-title" style="margin-bottom:8px;">접수 정보 수정</h1>
+    <p class="page-desc" id="txt-desc" style="margin-bottom:40px;">접수 완료 상태에서만 전체 수정이 가능합니다.</p>
+
+    <form onsubmit="handleSave(event)">
+
+      <!-- ① 발송 방법 -->
+      <p class="section-label" id="lbl-send" style="margin-top:0;">발송 방법</p>
+      <div class="check-group" id="send-group" style="margin-bottom:0;">
+        <label class="check-item selected" onclick="selectSend(this,'pickup')">
+          <input type="radio" name="send" value="pickup" checked>
+          <div>
+            <p class="check-item-title" id="title-pickup">CJ 택배 픽업</p>
+            <p class="check-item-desc" id="desc-pickup">원하시는 날짜에 CJ 택배 기사가 방문하여 제품을 수거합니다.</p>
+          </div>
+        </label>
+        <label class="check-item" onclick="selectSend(this,'dropoff')">
+          <input type="radio" name="send" value="dropoff">
+          <div>
+            <p class="check-item-title" id="title-dropoff">매장 Drop Off</p>
+            <p class="check-item-desc" id="desc-dropoff">가까운 젠틀몬스터 매장에 직접 방문하여 제품을 전달합니다.</p>
+          </div>
+        </label>
+        <label class="check-item" onclick="selectSend(this,'self')">
+          <input type="radio" name="send" value="self">
+          <div>
+            <p class="check-item-title" id="title-self">택배 발송</p>
+            <p class="check-item-desc" id="desc-self">고객님이 직접 택배를 통해 제품을 발송합니다. 발송 주소와 방법은 이메일로 안내드립니다.</p>
+          </div>
+        </label>
+      </div>
+
+      <!-- CJ 택배 픽업 → 픽업 주소 입력 -->
+      <div id="send-pickup-section" style="margin-top:16px;margin-bottom:32px;">
+        <p class="section-label" style="margin-top:0;">픽업 주소 <span style="color:#000">*</span></p>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label class="form-label">수령인 이름</label>
+          <input type="text" class="form-input" value="한혜지" placeholder="이름">
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label class="form-label">연락처</label>
+          <input type="tel" class="form-input" value="010 8565 9384" placeholder="010-0000-0000">
+        </div>
+        <div class="form-group" style="margin-bottom:12px;">
+          <label class="form-label">주소</label>
+          <input type="text" class="form-input" value="서울특별시 성동구 왕십리로 83-21 (성수동2가, 성수아이파크)" placeholder="기본 주소">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">상세주소</label>
+          <input type="text" class="form-input" value="203동 1502호" placeholder="상세 주소">
+        </div>
+      </div>
+
+      <!-- 매장 Drop Off → 매장 선택 UI -->
+      <div id="send-dropoff-section" style="display:none;margin-top:16px;margin-bottom:32px;">
+        <p class="section-label" style="margin-top:0;">Drop Off 매장 선택 <span style="color:#000">*</span></p>
+        <div id="drop-store-picker">
+          <div style="position:relative;margin-bottom:12px;">
+            <div style="display:flex;gap:8px;">
+              <input id="drop-store-search" type="text" class="form-input" style="flex:1;" placeholder="매장명 또는 지역 검색" autocomplete="off" oninput="searchDropStore(this.value)">
+              <button type="button" style="flex-shrink:0;padding:0 16px;font-size:12px;font-family:var(--font);border:1px solid var(--gray-300);background:var(--white);cursor:pointer;white-space:nowrap;letter-spacing:0.02em;">현재 위치</button>
+            </div>
+            <div id="drop-store-dropdown" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-top:none;z-index:20;max-height:240px;overflow-y:auto;"></div>
+          </div>
+          <div style="position:relative;height:280px;background:#e8e8e8;border:1px solid #ddd;overflow:hidden;">
+            <div style="position:absolute;top:35%;left:0;right:0;height:2px;background:#fff;opacity:0.7;"></div>
+            <div style="position:absolute;top:56%;left:0;right:0;height:2px;background:#fff;opacity:0.7;"></div>
+            <div style="position:absolute;left:38%;top:0;bottom:0;width:2px;background:#fff;opacity:0.7;"></div>
+            <div style="position:absolute;left:60%;top:0;bottom:0;width:2px;background:#fff;opacity:0.7;"></div>
+            <span style="position:absolute;top:14%;left:14%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">압구정동</span>
+            <span style="position:absolute;top:38%;left:20%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">청담동</span>
+            <span style="position:absolute;top:25%;left:52%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">성수동</span>
+            <span style="position:absolute;top:57%;left:46%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">삼성동</span>
+            <div id="epin-0" style="position:absolute;top:40%;left:32%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;" onclick="selectDropStore(0)">G</div>
+            <div id="epin-1" style="position:absolute;top:22%;left:20%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;" onclick="selectDropStore(1)">G</div>
+            <div id="epin-2" style="position:absolute;top:50%;left:27%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;" onclick="selectDropStore(2)">G</div>
+            <div id="epin-3" style="position:absolute;top:32%;left:52%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;" onclick="selectDropStore(3)">G</div>
+            <div id="epin-4" style="position:absolute;top:54%;left:47%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;" onclick="selectDropStore(4)">G</div>
+            <div style="position:absolute;top:36%;left:50%;width:14px;height:14px;border-radius:50%;background:#4a90d9;border:2px solid #fff;box-shadow:0 0 0 4px rgba(74,144,217,0.2);transform:translate(-50%,-50%);"></div>
+          </div>
+        </div>
+        <!-- 선택된 매장 표시 (초기값: 젠틀몬스터 하우스 도산 선택됨) -->
+        <div id="drop-store-selected" style="margin-top:12px;padding:16px 20px;border:1px solid #e0e0e0;">
+          <p style="font-size:10px;color:#aaa;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">선택된 매장</p>
+          <p id="dss-name" style="font-size:14px;font-weight:500;margin-bottom:4px;">젠틀몬스터 하우스 도산</p>
+          <p id="dss-status" style="font-size:12px;margin-bottom:4px;color:#2aa050;">영업 중</p>
+          <p id="dss-addr" style="font-size:12px;color:var(--gray-500);margin-bottom:14px;">서울 강남구 도산대로 82</p>
+          <button type="button" onclick="changeDropStore()" style="font-size:12px;padding:8px 16px;border:1px solid var(--gray-300);background:var(--white);font-family:var(--font);cursor:pointer;">변경하기</button>
+        </div>
+      </div>
+
+      <!-- 택배 발송 → 추가 UI 없음, 32px 마진만 -->
+      <div id="send-self-section" style="display:none;margin-bottom:32px;"></div>
+
+      <div class="divider"></div>
+
+      <!-- ② 서비스 유형 -->
+      <p class="section-label" id="lbl-svctype" style="margin-top:0;">서비스 유형</p>
+      <div class="check-group" id="svc-group" style="margin-bottom:0;">
+        <label class="check-item selected" onclick="selectSvc(this,'total-care')">
+          <input type="radio" name="svctype" value="total-care" checked>
+          <div>
+            <p class="check-item-title" id="title-totalcare">토탈 케어</p>
+            <p class="check-item-desc" id="desc-totalcare">클리닝 · 폴리싱 · 피팅 — 제품 전체를 처음처럼 케어해 드립니다.</p>
+          </div>
+        </label>
+        <label class="check-item" onclick="selectSvc(this,'repair')">
+          <input type="radio" name="svctype" value="repair">
+          <div>
+            <p class="check-item-title" id="title-repair">제품 수리</p>
+            <p class="check-item-desc" id="desc-repair">파손 · 변형 · 장식 문제 등 특정 부위의 수리를 진행합니다.</p>
+          </div>
+        </label>
+        <label class="check-item" onclick="selectSvc(this,'consult')">
+          <input type="radio" name="svctype" value="consult">
+          <div>
+            <p class="check-item-title" id="title-consult">상담 &amp; 기타</p>
+            <p class="check-item-desc" id="desc-consult">제품 결함 문의 · 부속품 요청 · 상담원 연결</p>
+          </div>
+        </label>
+      </div>
+
+      <!-- 서비스 유형별 세부 항목 -->
+
+      <!-- 토탈 케어 세부 -->
+      <div id="svc-totalcare-section" style="margin-top:24px;margin-bottom:32px;">
+        <p class="section-label" style="margin-top:0;">수리 부위</p>
+        <div class="glasses-wrap">
+          <svg viewBox="0 0 380 135" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+            <g class="gpart sel" id="tc-gp-front">
+              <rect class="gp-front" x="74" y="24" width="104" height="82" rx="13"/>
+              <rect class="gp-front" x="202" y="24" width="104" height="82" rx="13"/>
+              <text class="gp-label" x="190" y="122" text-anchor="middle">프론트</text>
+            </g>
+            <g class="gpart sel" id="tc-gp-ll">
+              <rect class="gp-lens" x="82" y="32" width="88" height="66" rx="9"/>
+              <text class="gp-label" x="126" y="66" text-anchor="middle" dominant-baseline="middle">좌렌즈</text>
+            </g>
+            <g class="gpart sel" id="tc-gp-rl">
+              <rect class="gp-lens" x="210" y="32" width="88" height="66" rx="9"/>
+              <text class="gp-label" x="254" y="66" text-anchor="middle" dominant-baseline="middle">우렌즈</text>
+            </g>
+            <g class="gpart sel" id="tc-gp-br">
+              <path class="gp-bridge" d="M178,66 Q190,59 202,66"/>
+              <text class="gp-label" x="190" y="15" text-anchor="middle">브릿지</text>
+            </g>
+            <g class="gpart sel" id="tc-gp-lt">
+              <polygon class="gp-temple" points="0,44 74,54 74,62 0,56"/>
+              <text class="gp-label" x="34" y="38" text-anchor="middle">좌템플</text>
+            </g>
+            <g class="gpart sel" id="tc-gp-rt">
+              <polygon class="gp-temple" points="306,54 380,44 380,56 306,62"/>
+              <text class="gp-label" x="346" y="38" text-anchor="middle">우템플</text>
+            </g>
+          </svg>
+          <p style="font-size:11px;color:#999;text-align:center;margin-top:4px;">전체 부위 케어 (모두 선택됨)</p>
+        </div>
+
+        <p class="section-label">피팅 옵션 <span style="color:#000">*</span></p>
+        <p style="font-size:13px;color:#555;margin-bottom:16px;">수리 후 제품의 피팅 상태를 선택해 주세요.</p>
+        <div class="check-group" style="margin-bottom:0;" id="fitting-group">
+          <label class="check-item selected" onclick="selectCheckItem(this,'fitting-group')">
+            <input type="radio" name="fitting" value="basic" checked>
+            <div>
+              <p class="check-item-title">기본 피팅</p>
+              <p class="check-item-desc">새 상품 출고 형태로 복구합니다.</p>
+            </div>
+          </label>
+          <label class="check-item" onclick="selectCheckItem(this,'fitting-group')">
+            <input type="radio" name="fitting" value="keep">
+            <div>
+              <p class="check-item-title">기존 피팅 유지</p>
+              <p class="check-item-desc">발송 시 피팅된 형태를 최대한 유지합니다.</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- 제품 수리 세부 -->
+      <div id="svc-repair-section" style="display:none;margin-top:24px;margin-bottom:32px;">
+        <p class="section-label" style="margin-top:0;">수리 부위 선택 <span style="color:#000">*</span></p>
+        <div class="glasses-wrap">
+          <svg viewBox="0 0 380 135" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
+            <g class="gpart" id="rp-gp-front" onclick="toggleRepairPart('rp-gp-front')">
+              <rect class="gp-front" x="74" y="24" width="104" height="82" rx="13"/>
+              <rect class="gp-front" x="202" y="24" width="104" height="82" rx="13"/>
+              <text class="gp-label" x="190" y="122" text-anchor="middle">프론트</text>
+            </g>
+            <g class="gpart" id="rp-gp-ll" onclick="toggleRepairPart('rp-gp-ll')">
+              <rect class="gp-lens" x="82" y="32" width="88" height="66" rx="9"/>
+              <text class="gp-label" x="126" y="66" text-anchor="middle" dominant-baseline="middle">좌렌즈</text>
+            </g>
+            <g class="gpart" id="rp-gp-rl" onclick="toggleRepairPart('rp-gp-rl')">
+              <rect class="gp-lens" x="210" y="32" width="88" height="66" rx="9"/>
+              <text class="gp-label" x="254" y="66" text-anchor="middle" dominant-baseline="middle">우렌즈</text>
+            </g>
+            <g class="gpart" id="rp-gp-br" onclick="toggleRepairPart('rp-gp-br')">
+              <path class="gp-bridge" d="M178,66 Q190,59 202,66"/>
+              <text class="gp-label" x="190" y="15" text-anchor="middle">브릿지</text>
+            </g>
+            <g class="gpart" id="rp-gp-lt" onclick="toggleRepairPart('rp-gp-lt')">
+              <polygon class="gp-temple" points="0,44 74,54 74,62 0,56"/>
+              <text class="gp-label" x="34" y="38" text-anchor="middle">좌템플</text>
+            </g>
+            <g class="gpart" id="rp-gp-rt" onclick="toggleRepairPart('rp-gp-rt')">
+              <polygon class="gp-temple" points="306,54 380,44 380,56 306,62"/>
+              <text class="gp-label" x="346" y="38" text-anchor="middle">우템플</text>
+            </g>
+          </svg>
+          <p style="font-size:11px;color:#999;text-align:center;margin-top:4px;">탭하여 선택 · 복수 선택 가능</p>
+          <div id="rp-parts-summary" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px;padding:10px 0 2px;border-top:1px solid var(--gray-100);">
+            <span style="font-size:12px;color:#bbb;">선택된 부위 없음</span>
+          </div>
+        </div>
+
+        <p class="section-label">문제 현상 <span style="color:#000">*</span></p>
+        <div class="check-group" style="margin-bottom:0;" id="repair-issue-group">
+          <label class="check-item" onclick="selectCheckItem(this,'repair-issue-group')">
+            <input type="radio" name="repair-issue" value="damage">
+            <div>
+              <p class="check-item-title">파손 &amp; 변형</p>
+              <p class="check-item-desc">프레임 파손, 경첩 변형/변색, 렌즈 스크래치/균열</p>
+            </div>
+          </label>
+          <label class="check-item" onclick="selectCheckItem(this,'repair-issue-group')">
+            <input type="radio" name="repair-issue" value="decoration">
+            <div>
+              <p class="check-item-title">장식 문제</p>
+              <p class="check-item-desc">장식 탈락, 장식 파손, 장식 변색</p>
+            </div>
+          </label>
+          <label class="check-item" onclick="selectCheckItem(this,'repair-issue-group')">
+            <input type="radio" name="repair-issue" value="accessory">
+            <div>
+              <p class="check-item-title">부속품 문제</p>
+              <p class="check-item-desc">코패드, 나사 등 소모품 부품 손상/분실</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- 상담 & 기타 세부 -->
+      <div id="svc-consult-section" style="display:none;margin-top:24px;margin-bottom:32px;">
+        <p class="section-label" style="margin-top:0;">문의 유형 <span style="color:#000">*</span></p>
+        <div class="check-group" style="margin-bottom:16px;" id="consult-type-group">
+          <label class="check-item" onclick="selectCheckItem(this,'consult-type-group')">
+            <input type="radio" name="consult-type" value="defect">
+            <div>
+              <p class="check-item-title">제품 결함 &amp; 이상 문의</p>
+              <p class="check-item-desc">구매일로부터 2년 이내 제품에 한해 제조 결함 여부를 확인해 드립니다.</p>
+            </div>
+          </label>
+          <label class="check-item" onclick="selectCheckItem(this,'consult-type-group')">
+            <input type="radio" name="consult-type" value="accessory">
+            <div>
+              <p class="check-item-title">부속품 요청</p>
+              <p class="check-item-desc">코패드, 나사 등 소모성 부품을 무상으로 보내드립니다.</p>
+            </div>
+          </label>
+          <label class="check-item" onclick="selectCheckItem(this,'consult-type-group')">
+            <input type="radio" name="consult-type" value="consult">
+            <div>
+              <p class="check-item-title">상담원 연결</p>
+              <p class="check-item-desc">전문 상담원이 도움을 드립니다.</p>
+            </div>
+          </label>
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label class="form-label">서비스 요청 사항</label>
+          <textarea class="form-input" rows="4" placeholder="불편하신 점을 자세히 적어 주세요." style="resize:vertical;border:1px solid #e0e0e0;padding:12px;font-family:inherit;font-size:14px;width:100%;outline:none;box-sizing:border-box;"></textarea>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- ③ 제품 정보 -->
+      <p class="section-label" id="lbl-product-section" style="margin-top:0;">제품 정보</p>
+
+      <!-- 구매 이력 카드 -->
+      <div id="product-history-list" style="margin-bottom:0;max-height:220px;overflow-y:auto;border:1px solid var(--gray-200);">
+        <div class="product-history-card selected" id="phc-0" onclick="selectHistoryProduct(0)" style="display:flex;gap:16px;padding:16px;border-bottom:1px solid var(--gray-200);cursor:pointer;background:var(--gray-50);border-left:2px solid #111;">
+          <div class="illustration" style="width:64px;height:64px;flex-shrink:0;font-size:10px;">IMG</div>
+          <div style="flex:1;">
+            <p style="font-size:14px;font-weight:500;margin-bottom:10px;">MUSTANG 01</p>
+            <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px;color:#666;">
+              <span style="color:#999;">주문번호</span><span style="font-family:monospace;letter-spacing:0.03em;">ORD-20230315-4821</span>
+              <span style="color:#999;">구매처</span><span>온라인</span>
+              <span style="color:#999;">구매일</span><span>2023. 03. 15</span>
+              <span style="color:#999;">품질 보증</span><span>~2025. 03. 15 <span style="color:#999;">(만료)</span></span>
+              <span style="color:#999;">서비스 보증</span><span style="font-weight:500;color:#111;">~2026. 03. 15 <span style="font-size:11px;">(유효)</span></span>
+            </div>
+          </div>
+          <span id="phc-check-0" style="color:#111;font-size:18px;align-self:center;">✓</span>
+        </div>
+        <div class="product-history-card" id="phc-1" onclick="selectHistoryProduct(1)" style="display:flex;gap:16px;padding:16px;border-bottom:1px solid var(--gray-200);cursor:pointer;border-left:2px solid transparent;">
+          <div class="illustration" style="width:64px;height:64px;flex-shrink:0;font-size:10px;">IMG</div>
+          <div style="flex:1;">
+            <p style="font-size:14px;font-weight:500;margin-bottom:10px;">FRIDA 01</p>
+            <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px;color:#666;">
+              <span style="color:#999;">주문번호</span><span style="font-family:monospace;letter-spacing:0.03em;">ORD-20221108-3057</span>
+              <span style="color:#999;">구매처</span><span>온라인</span>
+              <span style="color:#999;">구매일</span><span>2022. 11. 08</span>
+              <span style="color:#999;">품질 보증</span><span>~2024. 11. 08 <span style="color:#999;">(만료)</span></span>
+              <span style="color:#999;">서비스 보증</span><span>~2025. 11. 08 <span style="color:#999;">(만료)</span></span>
+            </div>
+          </div>
+          <span id="phc-check-1" style="color:#111;font-size:18px;align-self:center;visibility:hidden;">✓</span>
+        </div>
+      </div>
+
+      <!-- 직접 입력 안내 -->
+      <div style="padding:20px 0 4px;border-top:1px solid var(--gray-200);">
+        <p style="font-size:13px;font-weight:500;margin-bottom:6px;">구매 이력이 조회되지 않나요?</p>
+        <p style="font-size:12px;color:#888;line-height:1.7;margin-bottom:14px;">제품명, 구매 정보를 직접 입력하고 구매 증빙 이미지를 필수 첨부해 주세요.</p>
+        <button type="button" id="btn-manual-input" onclick="toggleManualInput()" style="font-size:12px;border:1px solid #111;background:#fff;padding:8px 18px;cursor:pointer;font-family:var(--font);">직접 입력하기</button>
+      </div>
+
+      <!-- 직접 입력 섹션 -->
+      <div id="manual-input-section" style="display:none;padding-top:20px;border-top:1px solid var(--gray-200);margin-top:4px;margin-bottom:16px;">
+        <div class="form-group">
+          <label class="form-label">제품명 <span style="color:#000">*</span></label>
+          <input type="text" class="form-input" id="input-product-manual" placeholder="제품명을 입력해주세요">
+        </div>
+        <div class="form-group">
+          <label class="form-label">구매처 <span style="color:#000">*</span></label>
+          <input type="text" class="form-input" id="input-purchase-place" placeholder="예: 온라인, 면세점, 해외직구 등">
+        </div>
+        <div class="form-group">
+          <label class="form-label">구매일 <span style="color:#000">*</span></label>
+          <input type="date" class="form-input" id="input-purchase-date">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <p class="form-label">구매 증빙 이미지 <span style="color:#000">*</span></p>
+          <p style="font-size:12px;color:#888;margin-bottom:10px;">영수증, 주문확인서 등 구매를 증빙할 수 있는 이미지를 첨부해 주세요.</p>
+          <div class="form-upload" onclick="alert('[구매 증빙 이미지 업로드]')" style="cursor:pointer;">
+            <div class="form-upload-icon">↑</div>
+            <p class="form-upload-text">파일을 선택하거나 여기에 끌어다 놓으세요</p>
+            <p class="form-upload-sub">JPG, PNG 지원 · 최대 10MB</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 요청사항 -->
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label" for="input-request" id="lbl-request">요청사항</label>
+        <textarea id="input-request" class="form-input" rows="3"
+          style="resize:vertical;border:1px solid #e0e0e0;padding:12px;font-family:inherit;font-size:14px;width:100%;outline:none;box-sizing:border-box;"
+          placeholder="추가 요청사항을 입력해주세요.">전체 클리닝 후 코 받침 교체 요청드립니다.</textarea>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- ④ 렌즈 -->
+      <p class="section-label" id="lbl-lens" style="margin-top:0;">렌즈</p>
+      <p style="font-size:13px;color:#555;margin-bottom:16px;">현재 제품에 삽입된 렌즈 상태를 선택해 주세요.</p>
+      <div class="check-group" style="margin-bottom:16px;" id="lens-group">
+        <label class="check-item selected" onclick="selectLens(this,'none')">
+          <input type="radio" name="lens" value="none" checked>
+          <div>
+            <p class="check-item-title">미삽입</p>
+            <p class="check-item-desc">렌즈가 없는 상태로 발송합니다.</p>
+          </div>
+        </label>
+        <label class="check-item" onclick="selectLens(this,'custom')">
+          <input type="radio" name="lens" value="custom">
+          <div>
+            <p class="check-item-title">별도 제작 렌즈 삽입</p>
+            <p class="check-item-desc">도수, 블루라이트 차단 등 별도로 제작된 렌즈</p>
+          </div>
+        </label>
+        <label class="check-item" onclick="selectLens(this,'original')">
+          <input type="radio" name="lens" value="original">
+          <div>
+            <p class="check-item-title">제품 기존 렌즈</p>
+            <p class="check-item-desc">젠틀몬스터 정품 렌즈가 삽입된 상태</p>
+          </div>
+        </label>
+      </div>
+
+      <!-- 별도 제작 렌즈 선택 시 안내 -->
+      <div id="lens-notice" style="display:none;border:1px solid #000;padding:20px;margin-bottom:16px;">
+        <p style="font-size:14px;font-weight:500;margin-bottom:12px;">꼭 확인해 주세요.</p>
+        <p style="font-size:13px;color:#555;margin-bottom:10px;line-height:1.8;">별도로 제작한 렌즈(도수·블루라이트 등)가 장착된 경우, 안전한 수리를 위해 렌즈 분리가 반드시 필요합니다.</p>
+        <p style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">별도 제작렌즈가 삽입된 상태로 접수될 경우, 수리가 지연되거나 반송될 수 있습니다.</p>
+        <label class="inline-check">
+          <input type="checkbox" id="chk-lens-notice">
+          <span>내용을 확인했으며, 렌즈를 분리하여 제품만 발송합니다.</span>
+        </label>
+      </div>
+
+      <!-- 렌즈 동의 여부 -->
+      <div class="form-group" style="margin-bottom:0;">
+        <p class="form-label" id="lbl-lens-consent">렌즈 동의 여부</p>
+        <label class="inline-check">
+          <input type="checkbox" id="input-lens-consent" checked>
+          <span id="txt-lens-consent">렌즈 분리 및 처리에 동의합니다. 수리 과정에서 렌즈가 분리될 수 있으며, 이로 인한 렌즈 손상에 대해 동의합니다.</span>
+        </label>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- ⑤ 출고 희망일 -->
+      <p class="section-label" id="lbl-desired" style="margin-top:0;">출고 희망일</p>
+      <div class="form-group" style="margin-bottom:0;">
+        <input type="date" id="input-desired" class="form-input" value="2026-06-25">
+      </div>
+      <p class="form-hint" style="margin-top:8px;margin-bottom:0;">선택하신 날짜는 수리 완료 후 희망 출고일로, 수리 내용에 따라 변동될 수 있습니다.</p>
+
+      <div class="divider"></div>
+
+      <!-- ⑥ 고객 첨부 이미지 -->
+      <p class="section-label" id="lbl-images" style="margin-top:0;">고객 첨부 이미지</p>
+      <p class="form-hint" id="txt-images-hint" style="margin-bottom:16px;">이미지를 클릭하면 교체할 수 있습니다. 최대 5장까지 첨부 가능합니다.</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:40px;">
+        <div style="cursor:pointer;" onclick="alert('[이미지 1 교체]')" title="클릭하여 교체">
+          <div class="illustration" style="height:90px;font-size:10px;" id="img-slot-1">이미지 1</div>
+          <p style="font-size:10px;color:var(--gray-400);text-align:center;margin-top:4px;">이미지 1</p>
+        </div>
+        <div style="cursor:pointer;" onclick="alert('[이미지 2 교체]')" title="클릭하여 교체">
+          <div class="illustration" style="height:90px;font-size:10px;" id="img-slot-2">이미지 2</div>
+          <p style="font-size:10px;color:var(--gray-400);text-align:center;margin-top:4px;">이미지 2</p>
+        </div>
+        <div style="cursor:pointer;" onclick="alert('[이미지 3 교체]')" title="클릭하여 교체">
+          <div class="illustration" style="height:90px;font-size:10px;" id="img-slot-3">이미지 3</div>
+          <p style="font-size:10px;color:var(--gray-400);text-align:center;margin-top:4px;">이미지 3</p>
+        </div>
+        <!-- 추가 슬롯 -->
+        <div onclick="alert('[이미지 추가]')"
+          style="height:90px;border:1px dashed var(--gray-300);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--gray-300);font-size:28px;background:var(--white);transition:border-color 0.2s,color 0.2s;"
+          onmouseover="this.style.borderColor='var(--black)';this.style.color='var(--gray-400)';"
+          onmouseout="this.style.borderColor='var(--gray-300)';this.style.color='var(--gray-300)';"
+          id="img-slot-add" title="이미지 추가">+</div>
+      </div>
+
+      <!-- 하단 버튼 -->
+      <div class="btn-wrap" style="margin-top:0;">
+        <a href="detail.html" class="btn btn-secondary" id="txt-btn-cancel">취소</a>
+        <button type="submit" class="btn btn-primary" id="txt-btn-save">수정 완료</button>
+      </div>
+
+    </form>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner" style="flex-direction:column;gap:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+      <nav style="display:flex;gap:20px;flex-wrap:wrap;">
+        <a href="../contact.html" style="font-size:12px;color:var(--gray-600);text-decoration:none;">문의하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">고객 서비스</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">스토어 찾기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">법적 고지</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">개인정보 처리방침</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">구독하기</a>
+        <a href="#" style="font-size:12px;color:var(--gray-600);text-decoration:none;">소셜</a>
+        <a href="#" onclick="openLangModal();return false;" style="font-size:12px;color:var(--gray-600);text-decoration:none;cursor:pointer;">국가: South Korea</a>
+      </nav>
+      <p style="font-size:12px;color:var(--gray-600);white-space:nowrap;">© 2026 GENTLE MONSTER</p>
+    </div>
+    <p style="font-size:11px;color:var(--gray-400);line-height:1.8;">
+      주) 아이아이컴바인드 | 대표자명: 김한국 | 사업자번호: 119-86-38589 | 통신판매신고번호: 제 2014-서울마포-1050호 | 이메일 문의: service.kr@gentlemonster.com | 개인정보보호책임자: 정태호 | 주소: 서울특별시 성동구 뚝섬로 433 | 대표번호: 1600-2126<br>
+      고객님의 안전한 현금자산 거래를 위해 하나은행과 채무지급보증계약을 체결하여 보장해드리고 있습니다.
+    </p>
+  </div>
+</footer>
+
+<script>
+// ─── 발송 방법 선택 ───
+function selectSend(el, type) {
+  el.closest('#send-group').querySelectorAll('.check-item').forEach(function(i) { i.classList.remove('selected'); });
+  el.classList.add('selected');
+  var radio = el.querySelector('input[type="radio"]');
+  if (radio) radio.checked = true;
+
+  document.getElementById('send-pickup-section').style.display  = (type === 'pickup')  ? 'block' : 'none';
+  document.getElementById('send-dropoff-section').style.display = (type === 'dropoff') ? 'block' : 'none';
+  document.getElementById('send-self-section').style.display    = (type === 'self')    ? 'block' : 'none';
+}
+
+// ─── 서비스 유형 선택 ───
+function selectSvc(el, type) {
+  el.closest('#svc-group').querySelectorAll('.check-item').forEach(function(i) { i.classList.remove('selected'); });
+  el.classList.add('selected');
+  var radio = el.querySelector('input[type="radio"]');
+  if (radio) radio.checked = true;
+
+  document.getElementById('svc-totalcare-section').style.display = (type === 'total-care') ? 'block' : 'none';
+  document.getElementById('svc-repair-section').style.display    = (type === 'repair')     ? 'block' : 'none';
+  document.getElementById('svc-consult-section').style.display   = (type === 'consult')    ? 'block' : 'none';
+}
+
+// ─── 일반 check-item 선택 (그룹 내 단일 선택) ───
+function selectCheckItem(el, groupId) {
+  var group = document.getElementById(groupId);
+  if (!group) return;
+  group.querySelectorAll('.check-item').forEach(function(i) { i.classList.remove('selected'); });
+  el.classList.add('selected');
+  var radio = el.querySelector('input[type="radio"]');
+  if (radio) radio.checked = true;
+}
+
+// ─── 렌즈 선택 ───
+function selectLens(el, type) {
+  el.closest('#lens-group').querySelectorAll('.check-item').forEach(function(i) { i.classList.remove('selected'); });
+  el.classList.add('selected');
+  var radio = el.querySelector('input[type="radio"]');
+  if (radio) radio.checked = true;
+  document.getElementById('lens-notice').style.display = (type === 'custom') ? 'block' : 'none';
+  if (type !== 'custom') {
+    var chk = document.getElementById('chk-lens-notice');
+    if (chk) chk.checked = false;
+  }
+}
+
+// ─── 구매 이력 카드 선택 ───
+var selectedProductIdx = 0;
+
+function selectHistoryProduct(idx) {
+  document.querySelectorAll('.product-history-card').forEach(function(card, i) {
+    var isSelected = i === idx;
+    card.style.background  = isSelected ? 'var(--gray-50)' : '';
+    card.style.borderLeft  = isSelected ? '2px solid #111' : '2px solid transparent';
+    var check = document.getElementById('phc-check-' + i);
+    if (check) check.style.visibility = isSelected ? 'visible' : 'hidden';
+  });
+  selectedProductIdx = idx;
+  document.getElementById('manual-input-section').style.display = 'none';
+  document.getElementById('btn-manual-input').textContent = '직접 입력하기';
+}
+
+function toggleManualInput() {
+  var section = document.getElementById('manual-input-section');
+  var btn = document.getElementById('btn-manual-input');
+  var isOpen = section.style.display !== 'none';
+  section.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? '직접 입력하기' : '직접 입력 닫기';
+  if (!isOpen) {
+    document.querySelectorAll('.product-history-card').forEach(function(card, i) {
+      card.style.background = '';
+      card.style.borderLeft = '2px solid transparent';
+      var check = document.getElementById('phc-check-' + i);
+      if (check) check.style.visibility = 'hidden';
+    });
+    selectedProductIdx = null;
+  }
+}
+
+// ─── 제품 수리 부위 토글 ───
+var RP_PART_NAMES = {
+  'rp-gp-lt':'좌템플','rp-gp-front':'프론트','rp-gp-br':'브릿지',
+  'rp-gp-ll':'좌렌즈','rp-gp-rl':'우렌즈','rp-gp-rt':'우템플'
+};
+
+function toggleRepairPart(id) {
+  document.getElementById(id).classList.toggle('sel');
+  var selected = Object.keys(RP_PART_NAMES).filter(function(k) {
+    return document.getElementById(k) && document.getElementById(k).classList.contains('sel');
+  });
+  var el = document.getElementById('rp-parts-summary');
+  if (selected.length === 0) {
+    el.innerHTML = '<span style="font-size:12px;color:#bbb;">선택된 부위 없음</span>';
+  } else {
+    el.innerHTML = selected.map(function(k) {
+      return '<span style="font-size:11px;padding:3px 10px;background:#111;color:#fff;letter-spacing:0.04em;">' + RP_PART_NAMES[k] + '</span>';
+    }).join('');
+  }
+}
+
+// ─── Drop Off 매장 데이터 & 검색 ───
+var DROP_STORES = [
+  { name:'젠틀몬스터 청담', status:'영업 중', statusColor:'#2aa050', addr:'서울 강남구 도산대로 82' },
+  { name:'젠틀몬스터 갤러리아 압구정', status:'영업 종료', statusColor:'#999', addr:'서울 강남구 압구정로 343, 갤러리아백화점 WEST 4F' },
+  { name:'젠틀몬스터 신사', status:'영업 중', statusColor:'#2aa050', addr:'서울 강남구 도산대로26길 18' },
+  { name:'젠틀몬스터 성수', status:'영업 중', statusColor:'#2aa050', addr:'서울 성동구 왕십리로 83' },
+  { name:'젠틀몬스터 하우스 도산', status:'영업 중', statusColor:'#2aa050', addr:'서울 강남구 도산대로 82' },
+];
+
+function searchDropStore(val) {
+  var dd = document.getElementById('drop-store-dropdown');
+  if (val.trim().length < 2) { dd.style.display = 'none'; return; }
+  var results = DROP_STORES.map(function(s, i) { return Object.assign({}, s, {idx: i}); })
+    .filter(function(s) { return s.name.indexOf(val) !== -1 || s.addr.indexOf(val) !== -1; });
+  if (results.length === 0) { dd.style.display = 'none'; return; }
+  dd.innerHTML = results.map(function(s) {
+    return '<div onclick="selectDropStore(' + s.idx + ')" style="padding:12px 16px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--gray-100);" onmouseover="this.style.background=\'#f5f5f5\'" onmouseout="this.style.background=\'#fff\'">' +
+      '<span style="font-weight:500;">' + s.name + '</span>' +
+      '<span style="font-size:11px;color:#999;margin-left:8px;">' + s.addr + '</span>' +
+      '</div>';
+  }).join('');
+  dd.style.display = 'block';
+}
+
+function _updateEpins(selectedIdx) {
+  DROP_STORES.forEach(function(_, i) {
+    var pin = document.getElementById('epin-' + i);
+    if (!pin) return;
+    if (selectedIdx === null) {
+      pin.style.transform = 'translate(-50%,-50%) scale(1)';
+      pin.style.boxShadow = '';
+      pin.style.opacity = '1';
+    } else if (i === selectedIdx) {
+      pin.style.transform = 'translate(-50%,-50%) scale(1.35)';
+      pin.style.boxShadow = '0 0 0 3px #fff, 0 0 0 5px #111';
+      pin.style.opacity = '1';
+    } else {
+      pin.style.transform = 'translate(-50%,-50%) scale(1)';
+      pin.style.boxShadow = '';
+      pin.style.opacity = '0.3';
+    }
+  });
+}
+
+function selectDropStore(idx) {
+  var s = DROP_STORES[idx];
+  var input = document.getElementById('drop-store-search');
+  if (input) input.value = s.name;
+  document.getElementById('drop-store-dropdown').style.display = 'none';
+  _updateEpins(idx);
+  setTimeout(function() {
+    document.getElementById('dss-name').textContent = s.name;
+    document.getElementById('dss-status').textContent = s.status;
+    document.getElementById('dss-status').style.color = s.statusColor;
+    document.getElementById('dss-addr').textContent = s.addr;
+    document.getElementById('drop-store-picker').style.display = 'none';
+    document.getElementById('drop-store-selected').style.display = 'block';
+  }, 300);
+}
+
+function changeDropStore() {
+  _updateEpins(null);
+  var input = document.getElementById('drop-store-search');
+  if (input) input.value = '';
+  document.getElementById('drop-store-picker').style.display = 'block';
+  document.getElementById('drop-store-selected').style.display = 'none';
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#drop-store-search') && !e.target.closest('#drop-store-dropdown')) {
+    var dd = document.getElementById('drop-store-dropdown');
+    if (dd) dd.style.display = 'none';
+  }
+});
+
+// ─── 수정 완료 ───
+function handleSave(e) {
+  e.preventDefault();
+  alert('수정이 완료되었습니다.');
+  window.location.href = 'detail.html';
+}
+
+// ─── i18n ───
+var STRINGS = {
+  ko: {
+    back: '← 접수 상세로 돌아가기',
+    tabAccount: '계정', tabPurchased: '구매한 제품', tabWishlist: '위시리스트',
+    tabRepair: '수리 서비스 내역', tabProfile: '프로필', tabLogout: '로그아웃',
+    eyebrow: '2605060GMPSVKJTXQN',
+    title: '접수 정보 수정',
+    desc: '접수 완료 상태에서만 전체 수정이 가능합니다.',
+    lblSend: '발송 방법',
+    titlePickup: 'CJ 택배 픽업', descPickup: '원하시는 날짜에 CJ 택배 기사가 방문하여 제품을 수거합니다.',
+    titleDropoff: '매장 Drop Off', descDropoff: '가까운 젠틀몬스터 매장에 직접 방문하여 제품을 전달합니다.',
+    titleSelf: '택배 발송', descSelf: '고객님이 직접 택배를 통해 제품을 발송합니다. 발송 주소와 방법은 이메일로 안내드립니다.',
+    lblSvctype: '서비스 유형',
+    titleTotalcare: '토탈 케어', descTotalcare: '클리닝 · 폴리싱 · 피팅 — 제품 전체를 처음처럼 케어해 드립니다.',
+    titleRepair: '제품 수리', descRepair: '파손 · 변형 · 장식 문제 등 특정 부위의 수리를 진행합니다.',
+    titleConsult: '상담 & 기타', descConsult: '제품 결함 문의 · 부속품 요청 · 상담원 연결',
+    lblProductSection: '제품 정보',
+    lblRequest: '요청사항',
+    lblLens: '렌즈', lblLensConsent: '렌즈 동의 여부',
+    txtLensConsent: '렌즈 분리 및 처리에 동의합니다. 수리 과정에서 렌즈가 분리될 수 있으며, 이로 인한 렌즈 손상에 대해 동의합니다.',
+    lblDesired: '출고 희망일',
+    lblImages: '고객 첨부 이미지',
+    txtImagesHint: '이미지를 클릭하면 교체할 수 있습니다. 최대 5장까지 첨부 가능합니다.',
+    img1: '이미지 1', img2: '이미지 2', img3: '이미지 3',
+    btnCancel: '취소', btnSave: '수정 완료',
+  },
+  en: {
+    back: '← Back to Detail',
+    tabAccount: 'Account', tabPurchased: 'Purchases', tabWishlist: 'Wishlist',
+    tabRepair: 'Repair History', tabProfile: 'Profile', tabLogout: 'Sign Out',
+    eyebrow: '2605060GMPSVKJTXQN',
+    title: 'Edit Request',
+    desc: 'Full edits are available in Submitted status only.',
+    lblSend: 'Shipping Method',
+    titlePickup: 'CJ Courier Pickup', descPickup: 'A CJ courier will visit on your preferred date to collect the product.',
+    titleDropoff: 'Store Drop Off', descDropoff: 'Please visit your nearest Gentle Monster store and hand over the product.',
+    titleSelf: 'Direct Shipment', descSelf: 'You may ship the product using any carrier. We\'ll send the address and instructions by email.',
+    lblSvctype: 'Service Type',
+    titleTotalcare: 'Total Care', descTotalcare: 'Cleaning · Polishing · Fitting — complete care to restore your product.',
+    titleRepair: 'Product Repair', descRepair: 'Targeted repairs for damage, deformation, or decoration issues.',
+    titleConsult: 'Consultation & Other', descConsult: 'Defect inquiry · Accessory request · Customer support',
+    lblProductSection: 'Product Information',
+    lblRequest: 'Request',
+    lblLens: 'Lens', lblLensConsent: 'Lens Consent',
+    txtLensConsent: 'I agree to lens removal and handling. Lenses may be removed during repair; I accept responsibility for any resulting lens damage.',
+    lblDesired: 'Preferred Ship-out Date',
+    lblImages: 'Customer Photos',
+    txtImagesHint: 'Click an image to replace it. Up to 5 photos can be attached.',
+    img1: 'Image 1', img2: 'Image 2', img3: 'Image 3',
+    btnCancel: 'Cancel', btnSave: 'Save Changes',
+  }
+};
+
+function setText(id, text) {
+  var el = document.getElementById(id);
+  if (el) el.textContent = text;
+}
+
+function setLang(lang) {
+  try { localStorage.setItem('ps-lang', lang); } catch(e) {}
+  var s = STRINGS[lang] || STRINGS['ko'];
+
+  ['ko','en'].forEach(function(l) {
+    var el = document.getElementById('footer-lang-' + l);
+    if (el) { el.style.fontWeight = l === lang ? '500' : '400'; el.style.color = l === lang ? '#111' : ''; }
+  });
+
+  ['ko','en'].forEach(function(l) {
+    var btn = document.getElementById('pb-lang-' + l);
+    if (!btn) return;
+    btn.style.background   = l === lang ? '#111' : '#fff';
+    btn.style.color        = l === lang ? '#fff' : '#333';
+    btn.style.borderColor  = l === lang ? '#111' : '#ccc';
+  });
+
+  setText('txt-back',           s.back);
+  setText('tab-account',        s.tabAccount);
+  setText('tab-purchased',      s.tabPurchased);
+  setText('tab-wishlist',       s.tabWishlist);
+  setText('tab-repair',         s.tabRepair);
+  setText('tab-profile',        s.tabProfile);
+  setText('tab-logout',         s.tabLogout);
+  setText('txt-eyebrow',        s.eyebrow);
+  setText('txt-title',          s.title);
+  setText('txt-desc',           s.desc);
+  setText('lbl-send',           s.lblSend);
+  setText('title-pickup',       s.titlePickup);
+  setText('desc-pickup',        s.descPickup);
+  setText('title-dropoff',      s.titleDropoff);
+  setText('desc-dropoff',       s.descDropoff);
+  setText('title-self',         s.titleSelf);
+  setText('desc-self',          s.descSelf);
+  setText('lbl-svctype',        s.lblSvctype);
+  setText('title-totalcare',    s.titleTotalcare);
+  setText('desc-totalcare',     s.descTotalcare);
+  setText('title-repair',       s.titleRepair);
+  setText('desc-repair',        s.descRepair);
+  setText('title-consult',      s.titleConsult);
+  setText('desc-consult',       s.descConsult);
+  setText('lbl-product-section',s.lblProductSection);
+  setText('lbl-request',        s.lblRequest);
+  setText('lbl-lens',           s.lblLens);
+  setText('lbl-lens-consent',   s.lblLensConsent);
+  setText('txt-lens-consent',   s.txtLensConsent);
+  setText('lbl-desired',        s.lblDesired);
+  setText('lbl-images',         s.lblImages);
+  setText('txt-images-hint',    s.txtImagesHint);
+  setText('img-slot-1',         s.img1);
+  setText('img-slot-2',         s.img2);
+  setText('img-slot-3',         s.img3);
+  setText('txt-btn-cancel',     s.btnCancel);
+  setText('txt-btn-save',       s.btnSave);
+}
+
+window.addEventListener('load', function() {
+  var saved;
+  try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
+  setLang(saved || 'ko');
+});
+</script>
+</body>
+</html>
