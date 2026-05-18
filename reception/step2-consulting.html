@@ -236,119 +236,119 @@
       <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 06</p><p class="step-label">안내 확인</p></div>
     </div>
 
-    <p class="page-eyebrow">서비스 유형 — 상담/기타</p>
-    <h1 class="page-title">상담 & 기타</h1>
-    <p class="page-desc">무엇을 도와드릴까요? 문의 유형을 선택해 주세요.</p>
+    <p class="page-eyebrow" id="page-eyebrow">서비스 유형 — 상담/기타</p>
+    <h1 class="page-title" id="page-title">상담 & 기타</h1>
+    <p class="page-desc" id="page-desc">무엇을 도와드릴까요? 문의 유형을 선택해 주세요.</p>
 
     <!-- TYPE SELECTION -->
-    <p class="section-label">문의 유형 <span style="color:#000">*</span></p>
+    <p class="section-label" id="lbl-type">문의 유형 <span style="color:#000">*</span></p>
     <div class="option-cards" style="margin-bottom:32px;">
       <label id="card-defect" class="check-item" onclick="showType('defect')">
         <input type="radio" name="type" value="defect">
         <div style="flex:1;">
-          <p class="check-item-title">제품 결함 & 이상 문의</p>
-          <p class="check-item-desc">구매일로부터 2년 이내 제품에 한해 제조 결함 여부를 확인해 드립니다.</p>
+          <p class="check-item-title" id="defect-title">제품 결함 & 이상 문의</p>
+          <p class="check-item-desc" id="defect-desc">구매일로부터 2년 이내 제품에 한해 제조 결함 여부를 확인해 드립니다.</p>
           <div id="expired-inline" style="display:none;margin-top:10px;padding:10px 12px;background:#f5f5f5;font-size:12px;color:#555;line-height:1.7;">
-            품질 보증 기간(2년)이 만료된 제품은 결함 문의를 접수하기 어렵습니다.<br>
-            다른 메뉴를 선택하시거나 상담원 연결을 이용해 주세요.
+            <span id="expired-inline-text">품질 보증 기간(2년)이 만료된 제품은 결함 문의를 접수하기 어렵습니다.<br>
+            다른 메뉴를 선택하시거나 상담원 연결을 이용해 주세요.</span>
           </div>
         </div>
       </label>
       <label id="check-accessory" class="check-item" onclick="showType('accessory')">
         <input type="radio" name="type" value="accessory">
         <div>
-          <p class="check-item-title">부속품 요청</p>
-          <p class="check-item-desc">코패드, 나사 등 소모성 부품을 무상으로 보내드립니다.</p>
+          <p class="check-item-title" id="acc-type-title">부속품 요청</p>
+          <p class="check-item-desc" id="acc-type-desc">코패드, 나사 등 소모성 부품을 무상으로 보내드립니다.</p>
         </div>
       </label>
       <label id="check-consult" class="check-item" onclick="showType('consult')">
         <input type="radio" name="type" value="consult">
         <div>
-          <p class="check-item-title">상담원 연결</p>
-          <p class="check-item-desc">전문 상담원이 도움을 드립니다.</p>
+          <p class="check-item-title" id="consult-type-title">상담원 연결</p>
+          <p class="check-item-desc" id="consult-type-desc">전문 상담원이 도움을 드립니다.</p>
         </div>
       </label>
     </div>
 
-    <button type="button" id="btn-change-type" onclick="showAllTypes()" style="display:none;margin-top:16px;width:100%;padding:14px;background:#fff;border:1px solid #111;font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;">문의 유형 변경하기</button>
+    <button type="button" id="btn-change-type" onclick="showAllTypes()" style="display:none;margin-top:16px;width:100%;padding:14px;background:#fff;border:1px solid #111;font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;"><span id="btn-change-type-label">문의 유형 변경하기</span></button>
 
     <!-- DEFECT FORM -->
     <div id="form-defect" style="display:none;">
       <div class="info-box">
-        <p>구매일로부터 2년 이내 제품은 제조 결함 여부를 확인해 드립니다.<br>수리 내용과 비용은 제품 입고 후 정밀 점검을 통해 별도로 안내드립니다.</p>
+        <p id="defect-info-text">구매일로부터 2년 이내 제품은 제조 결함 여부를 확인해 드립니다.<br>수리 내용과 비용은 제품 입고 후 정밀 점검을 통해 별도로 안내드립니다.</p>
       </div>
-      <p class="section-label">문제 부위 선택 <span style="color:#000">*</span></p>
+      <p class="section-label" id="lbl-defect-parts">문제 부위 선택 <span style="color:#000">*</span></p>
       <div class="glasses-wrap">
         <svg viewBox="0 0 380 135" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
           <g class="gpart" id="gp-front" onclick="togglePart('gp-front')">
             <rect class="gp-front" x="74" y="24" width="104" height="82" rx="13"/>
             <rect class="gp-front" x="202" y="24" width="104" height="82" rx="13"/>
-            <text class="gp-label" x="190" y="122" text-anchor="middle">프론트</text>
+            <text class="gp-label" id="gp-front-lbl" x="190" y="122" text-anchor="middle">프론트</text>
           </g>
           <g class="gpart" id="gp-ll" onclick="togglePart('gp-ll')">
             <rect class="gp-lens" x="82" y="32" width="88" height="66" rx="9"/>
-            <text class="gp-label" x="126" y="66" text-anchor="middle" dominant-baseline="middle">좌렌즈</text>
+            <text class="gp-label" id="gp-ll-lbl" x="126" y="66" text-anchor="middle" dominant-baseline="middle">좌렌즈</text>
           </g>
           <g class="gpart" id="gp-rl" onclick="togglePart('gp-rl')">
             <rect class="gp-lens" x="210" y="32" width="88" height="66" rx="9"/>
-            <text class="gp-label" x="254" y="66" text-anchor="middle" dominant-baseline="middle">우렌즈</text>
+            <text class="gp-label" id="gp-rl-lbl" x="254" y="66" text-anchor="middle" dominant-baseline="middle">우렌즈</text>
           </g>
           <g class="gpart" id="gp-br" onclick="togglePart('gp-br')">
             <path class="gp-bridge" d="M178,66 Q190,59 202,66"/>
-            <text class="gp-label" x="190" y="15" text-anchor="middle">브릿지</text>
+            <text class="gp-label" id="gp-br-lbl" x="190" y="15" text-anchor="middle">브릿지</text>
           </g>
           <g class="gpart" id="gp-lt" onclick="togglePart('gp-lt')">
             <polygon class="gp-temple" points="0,44 74,54 74,62 0,56"/>
-            <text class="gp-label" x="34" y="38" text-anchor="middle">좌템플</text>
+            <text class="gp-label" id="gp-lt-lbl" x="34" y="38" text-anchor="middle">좌템플</text>
           </g>
           <g class="gpart" id="gp-rt" onclick="togglePart('gp-rt')">
             <polygon class="gp-temple" points="306,54 380,44 380,56 306,62"/>
-            <text class="gp-label" x="346" y="38" text-anchor="middle">우템플</text>
+            <text class="gp-label" id="gp-rt-lbl" x="346" y="38" text-anchor="middle">우템플</text>
           </g>
         </svg>
-        <p style="font-size:11px;color:#999;text-align:center;margin-top:4px;">탭하여 선택 · 복수 선택 가능</p>
+        <p id="parts-hint" style="font-size:11px;color:#999;text-align:center;margin-top:4px;">탭하여 선택 · 복수 선택 가능</p>
         <div id="parts-summary-c" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px;padding:10px 0 2px;border-top:1px solid var(--gray-100);">
           <span style="font-size:12px;color:#bbb;">선택된 부위 없음</span>
         </div>
       </div>
       <div class="form-group" style="margin-top:16px;">
-        <label class="form-label">서비스 요청 사항</label>
-        <textarea class="form-input" rows="4" placeholder="불편하신 점을 자세히 적어 주세요. 구체적으로 작성해주시면 더 정확한 점검이 가능합니다." style="resize:vertical;border:1px solid #e0e0e0;padding:12px;font-family:inherit;font-size:14px;width:100%;outline:none;"></textarea>
+        <label class="form-label" id="defect-request-label">서비스 요청 사항</label>
+        <textarea id="defect-request-textarea" class="form-input" rows="4" placeholder="불편하신 점을 자세히 적어 주세요. 구체적으로 작성해주시면 더 정확한 점검이 가능합니다." style="resize:vertical;border:1px solid #e0e0e0;padding:12px;font-family:inherit;font-size:14px;width:100%;outline:none;"></textarea>
       </div>
     </div>
 
     <!-- 2년 초과 비활성화 안내 -->
     <div id="form-defect-expired" style="display:none;">
       <div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
-        <p style="font-size:14px;font-weight:500;margin-bottom:12px;">결함 문의 접수가 어렵습니다</p>
-        <p style="font-size:13px;color:#555;line-height:1.8;">품질 보증 기간(2년)이 만료된 제품은 제품 결함 문의를 접수하기 어렵습니다.<br>다른 메뉴를 선택하시거나, 자세한 상담이 필요하시다면 상담원 연결을 진행해주세요.</p>
+        <p id="expired-title" style="font-size:14px;font-weight:500;margin-bottom:12px;">결함 문의 접수가 어렵습니다</p>
+        <p id="expired-body" style="font-size:13px;color:#555;line-height:1.8;">품질 보증 기간(2년)이 만료된 제품은 제품 결함 문의를 접수하기 어렵습니다.<br>다른 메뉴를 선택하시거나, 자세한 상담이 필요하시다면 상담원 연결을 진행해주세요.</p>
       </div>
     </div>
 
     <!-- ACCESSORY FORM -->
     <div id="form-accessory" style="display:none;">
       <div class="info-box">
-        <p>필요한 부속품을 알려 주세요. 코패드, 나사 등 소모성 부품을 무상으로 보내드립니다.</p>
+        <p id="acc-info-text">필요한 부속품을 알려 주세요. 코패드, 나사 등 소모성 부품을 무상으로 보내드립니다.</p>
       </div>
       <div class="form-group">
-        <label class="form-label">부속품 선택 <span class="required-mark">*</span></label>
-        <p style="font-size:12px;color:var(--gray-400);margin-bottom:12px;">원하시는 부속품을 선택해 주세요. (복수 선택 가능)</p>
+        <label class="form-label" id="acc-parts-label">부속품 선택 <span class="required-mark">*</span></label>
+        <p id="acc-parts-hint" style="font-size:12px;color:var(--gray-400);margin-bottom:12px;">원하시는 부속품을 선택해 주세요. (복수 선택 가능)</p>
         <div style="display:flex;flex-direction:column;gap:0;border:1px solid #e0e0e0;">
 
           <!-- 코패드 -->
           <div style="padding:14px 16px;border-bottom:1px solid #e0e0e0;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
-              <label class="inline-check"><input type="checkbox" onchange="toggleQty('qty-copad', this)"><span>코패드 및 코패드 나사</span></label>
-              <button onclick="toggleImg('img-copad')" style="font-size:11px;color:#888;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;font-family:var(--font);">부속품 모양을 확인하세요.</button>
+              <label class="inline-check"><input type="checkbox" onchange="toggleQty('qty-copad', this)"><span id="acc-copad-name">코패드 및 코패드 나사</span></label>
+              <button id="acc-copad-img-btn" onclick="toggleImg('img-copad')" style="font-size:11px;color:#888;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;font-family:var(--font);">부속품 모양을 확인하세요.</button>
             </div>
             <div id="img-copad" style="display:none;margin-top:10px;background:#f5f5f5;height:80px;align-items:center;justify-content:center;font-size:11px;color:#bbb;border:1px solid #eee;">코패드 & 나사 이미지</div>
             <div id="qty-copad" style="display:none;margin-top:10px;display:none;align-items:center;gap:10px;">
-              <span style="font-size:12px;color:#555;white-space:nowrap;">수량 <span style="color:#000;">*</span></span>
+              <span id="acc-qty-copad-label" style="font-size:12px;color:#555;white-space:nowrap;">수량 <span style="color:#000;">*</span></span>
               <select class="form-select" style="flex:1;margin:0;" onchange="checkAccessoryNextBtn()">
-                <option value="">선택</option>
-                <option value="1">1쌍</option>
-                <option value="2">2쌍</option>
-                <option value="3">3쌍</option>
+                <option value="" id="acc-qty-placeholder-copad">선택</option>
+                <option value="1" id="acc-qty-1-copad">1쌍</option>
+                <option value="2" id="acc-qty-2-copad">2쌍</option>
+                <option value="3" id="acc-qty-3-copad">3쌍</option>
               </select>
             </div>
           </div>
@@ -356,17 +356,17 @@
           <!-- 경첩 나사 -->
           <div style="padding:14px 16px;border-bottom:1px solid #e0e0e0;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
-              <label class="inline-check"><input type="checkbox" onchange="toggleQty('qty-hinge', this)"><span>경첩 나사</span></label>
-              <button onclick="toggleImg('img-hinge')" style="font-size:11px;color:#888;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;font-family:var(--font);">부속품 모양을 확인하세요.</button>
+              <label class="inline-check"><input type="checkbox" onchange="toggleQty('qty-hinge', this)"><span id="acc-hinge-name">경첩 나사</span></label>
+              <button id="acc-hinge-img-btn" onclick="toggleImg('img-hinge')" style="font-size:11px;color:#888;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;font-family:var(--font);">부속품 모양을 확인하세요.</button>
             </div>
             <div id="img-hinge" style="display:none;margin-top:10px;background:#f5f5f5;height:80px;align-items:center;justify-content:center;font-size:11px;color:#bbb;border:1px solid #eee;">경첩 나사 이미지</div>
             <div id="qty-hinge" style="display:none;margin-top:10px;align-items:center;gap:10px;">
-              <span style="font-size:12px;color:#555;white-space:nowrap;">수량 <span style="color:#000;">*</span></span>
+              <span id="acc-qty-hinge-label" style="font-size:12px;color:#555;white-space:nowrap;">수량 <span style="color:#000;">*</span></span>
               <select class="form-select" style="flex:1;margin:0;" onchange="checkAccessoryNextBtn()">
-                <option value="">선택</option>
-                <option value="1">1쌍</option>
-                <option value="2">2쌍</option>
-                <option value="3">3쌍</option>
+                <option value="" id="acc-qty-placeholder-hinge">선택</option>
+                <option value="1" id="acc-qty-1-hinge">1쌍</option>
+                <option value="2" id="acc-qty-2-hinge">2쌍</option>
+                <option value="3" id="acc-qty-3-hinge">3쌍</option>
               </select>
             </div>
           </div>
@@ -374,90 +374,90 @@
           <!-- 고리 나사 -->
           <div style="padding:14px 16px;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
-              <label class="inline-check"><input type="checkbox" onchange="toggleQty('qty-ring', this)"><span>고리 나사</span></label>
-              <button onclick="toggleImg('img-ring')" style="font-size:11px;color:#888;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;font-family:var(--font);">부속품 모양을 확인하세요.</button>
+              <label class="inline-check"><input type="checkbox" onchange="toggleQty('qty-ring', this)"><span id="acc-ring-name">고리 나사</span></label>
+              <button id="acc-ring-img-btn" onclick="toggleImg('img-ring')" style="font-size:11px;color:#888;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;font-family:var(--font);">부속품 모양을 확인하세요.</button>
             </div>
             <div id="img-ring" style="display:none;margin-top:10px;background:#f5f5f5;height:80px;align-items:center;justify-content:center;font-size:11px;color:#bbb;border:1px solid #eee;">고리 나사 이미지</div>
             <div id="qty-ring" style="display:none;margin-top:10px;align-items:center;gap:10px;">
-              <span style="font-size:12px;color:#555;white-space:nowrap;">수량 <span style="color:#000;">*</span></span>
+              <span id="acc-qty-ring-label" style="font-size:12px;color:#555;white-space:nowrap;">수량 <span style="color:#000;">*</span></span>
               <select class="form-select" style="flex:1;margin:0;" onchange="checkAccessoryNextBtn()">
-                <option value="">선택</option>
-                <option value="1">1쌍</option>
-                <option value="2">2쌍</option>
-                <option value="3">3쌍</option>
+                <option value="" id="acc-qty-placeholder-ring">선택</option>
+                <option value="1" id="acc-qty-1-ring">1쌍</option>
+                <option value="2" id="acc-qty-2-ring">2쌍</option>
+                <option value="3" id="acc-qty-3-ring">3쌍</option>
               </select>
             </div>
           </div>
 
         </div>
       </div>
-<div class="form-group">
-        <label class="form-label">서비스 요청 사항</label>
-        <textarea class="form-input" rows="3" placeholder="추가 요청사항이 있으시면 적어주세요." style="resize:vertical;border:1px solid #e0e0e0;padding:12px;font-family:inherit;font-size:14px;width:100%;outline:none;"></textarea>
+      <div class="form-group">
+        <label class="form-label" id="acc-request-label">서비스 요청 사항</label>
+        <textarea id="acc-request-textarea" class="form-input" rows="3" placeholder="추가 요청사항이 있으시면 적어주세요." style="resize:vertical;border:1px solid #e0e0e0;padding:12px;font-family:inherit;font-size:14px;width:100%;outline:none;"></textarea>
       </div>
       <div class="notice-box">
-        <p>자가 수리 중 발생한 제품 손상에 대해서는 보증 서비스 적용이 어려울 수 있습니다.</p>
+        <p id="acc-notice-text">자가 수리 중 발생한 제품 손상에 대해서는 보증 서비스 적용이 어려울 수 있습니다.</p>
       </div>
     </div>
 
     <!-- CONSULT -->
     <div id="form-consult" style="display:none;">
       <div class="consult-box">
-        <p class="consult-title">상담원 연결</p>
-        <p class="consult-desc">문의하실 채널을 선택해 주세요. 전문 상담원이 도움을 드립니다.</p>
+        <p class="consult-title" id="consult-box-title">상담원 연결</p>
+        <p class="consult-desc" id="consult-box-desc">문의하실 채널을 선택해 주세요. 전문 상담원이 도움을 드립니다.</p>
 
         <div class="consult-channel-grid">
           <label class="consult-channel-card selected" id="consult-card-call" onclick="selectConsultChannel('call')">
             <input type="radio" name="consult-channel" value="call" checked>
             <div>
-              <p class="consult-channel-title">콜</p>
-              <p class="consult-channel-desc">운영 시간 내 전화 상담</p>
+              <p class="consult-channel-title" id="ch-call-title">콜</p>
+              <p class="consult-channel-desc" id="ch-call-desc">운영 시간 내 전화 상담</p>
             </div>
           </label>
           <label class="consult-channel-card" id="consult-card-email" onclick="selectConsultChannel('email')">
             <input type="radio" name="consult-channel" value="email">
             <div>
-              <p class="consult-channel-title">이메일</p>
-              <p class="consult-channel-desc">문의 내용 작성 후 접수</p>
+              <p class="consult-channel-title" id="ch-email-title">이메일</p>
+              <p class="consult-channel-desc" id="ch-email-desc">문의 내용 작성 후 접수</p>
             </div>
           </label>
           <label class="consult-channel-card" id="consult-card-chat" onclick="selectConsultChannel('chat')">
             <input type="radio" name="consult-channel" value="chat">
             <div>
-              <p class="consult-channel-title">라이브챗</p>
-              <p class="consult-channel-desc">채팅 상담 바로 시작</p>
+              <p class="consult-channel-title" id="ch-chat-title">라이브챗</p>
+              <p class="consult-channel-desc" id="ch-chat-desc">채팅 상담 바로 시작</p>
             </div>
           </label>
         </div>
 
         <div class="consult-panel" id="consult-panel-call">
-          <p class="consult-panel-title">전화 상담</p>
-          <p style="font-size:13px;color:#555;line-height:1.8;margin-bottom:18px;">운영 시간: 평일 10:00 - 18:00<br>제품 상태와 접수 상황을 빠르게 확인하실 수 있습니다.</p>
+          <p class="consult-panel-title" id="call-panel-title">전화 상담</p>
+          <p id="call-panel-desc" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:18px;">운영 시간: 평일 10:00 - 18:00<br>제품 상태와 접수 상황을 빠르게 확인하실 수 있습니다.</p>
           <a href="tel:16002126" class="btn btn-primary" style="display:inline-flex;min-width:180px;">1600-2126</a>
         </div>
 
         <div class="consult-panel" id="consult-panel-email" style="display:none;">
-          <p class="consult-panel-title">이메일 문의하기</p>
-          <p style="font-size:13px;color:#555;line-height:1.8;margin-bottom:20px;">연락처와 세부 정보를 보내주시면 영업일 기준 48시간 이내에 연락드리겠습니다.</p>
+          <p class="consult-panel-title" id="email-panel-title">이메일 문의하기</p>
+          <p id="email-panel-desc" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:20px;">연락처와 세부 정보를 보내주시면 영업일 기준 48시간 이내에 연락드리겠습니다.</p>
 
           <div class="form-group">
-            <label class="form-label">이메일 주소 <span class="required-mark">*</span></label>
+            <label class="form-label" id="email-lbl-email">이메일 주소 <span class="required-mark">*</span></label>
             <input type="email" class="form-input" value="hhj3489@naver.com">
           </div>
 
           <div class="consult-field-grid">
             <div class="form-group">
-              <label class="form-label">이름 <span class="required-mark">*</span></label>
+              <label class="form-label" id="email-lbl-firstname">이름 <span class="required-mark">*</span></label>
               <input type="text" class="form-input" value="혜지">
             </div>
             <div class="form-group">
-              <label class="form-label">성 <span class="required-mark">*</span></label>
+              <label class="form-label" id="email-lbl-lastname">성 <span class="required-mark">*</span></label>
               <input type="text" class="form-input" value="한">
             </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label">국가 <span class="required-mark">*</span></label>
+            <label class="form-label" id="email-lbl-country">국가 <span class="required-mark">*</span></label>
             <select class="form-select">
               <option>대한민국</option>
               <option>United States</option>
@@ -467,41 +467,41 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">문의 주제 <span class="required-mark">*</span></label>
-            <select class="form-select">
-              <option>프로덕트 서비스 & A/S</option>
-              <option>제품 결함 문의</option>
-              <option>부속품 요청</option>
-              <option>기타</option>
+            <label class="form-label" id="email-lbl-subject">문의 주제 <span class="required-mark">*</span></label>
+            <select class="form-select" id="email-subject-select">
+              <option id="email-subj-ps">프로덕트 서비스 & A/S</option>
+              <option id="email-subj-defect">제품 결함 문의</option>
+              <option id="email-subj-acc">부속품 요청</option>
+              <option id="email-subj-other">기타</option>
             </select>
           </div>
 
           <div class="form-group">
-            <label class="form-label">메시지 <span class="required-mark">*</span></label>
-            <textarea class="form-input" rows="4" placeholder="메시지를 입력해 주세요." style="resize:vertical;"></textarea>
+            <label class="form-label" id="email-lbl-message">메시지 <span class="required-mark">*</span></label>
+            <textarea id="email-message-textarea" class="form-input" rows="4" placeholder="메시지를 입력해 주세요." style="resize:vertical;"></textarea>
           </div>
 
           <input type="file" id="consult-image-input" accept="image/*" style="display:none;">
-          <button type="button" class="consult-file-btn" onclick="document.getElementById('consult-image-input').click()">이미지 업로드하기</button>
+          <button id="email-upload-btn" type="button" class="consult-file-btn" onclick="document.getElementById('consult-image-input').click()">이미지 업로드하기</button>
 
           <label class="inline-check" style="margin-top:20px;margin-bottom:20px;align-items:center;">
             <input type="checkbox" class="consult-toggle" id="consult-email-consent" onchange="updateEmailSubmit()">
-            <span>고객 서비스에 연락하기 위해 입력한 데이터를 국외로 전송하는 데 동의합니다.</span>
+            <span id="email-consent-text">고객 서비스에 연락하기 위해 입력한 데이터를 국외로 전송하는 데 동의합니다.</span>
           </label>
 
-          <button type="button" class="btn btn-primary" id="consult-email-submit" onclick="alert('이메일 문의가 접수되었습니다.')" style="width:100%;opacity:0.45;pointer-events:none;">제출하기</button>
+          <button type="button" class="btn btn-primary" id="consult-email-submit" onclick="alert('이메일 문의가 접수되었습니다.')" style="width:100%;opacity:0.45;pointer-events:none;"><span id="email-submit-label">제출하기</span></button>
         </div>
 
         <div class="consult-panel" id="consult-panel-chat" style="display:none;">
-          <p class="consult-panel-title">라이브챗</p>
-          <p style="font-size:13px;color:#555;line-height:1.8;margin-bottom:18px;">상담 가능한 시간이면 실시간 채팅으로 문의하실 수 있습니다.</p>
-          <button type="button" class="btn btn-primary" onclick="openLiveChat()" style="min-width:180px;">라이브챗 시작하기</button>
+          <p class="consult-panel-title" id="chat-panel-title">라이브챗</p>
+          <p id="chat-panel-desc" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:18px;">상담 가능한 시간이면 실시간 채팅으로 문의하실 수 있습니다.</p>
+          <button id="chat-start-btn" type="button" class="btn btn-primary" onclick="openLiveChat()" style="min-width:180px;">라이브챗 시작하기</button>
         </div>
       </div>
     </div>
 
     <div class="btn-wrap" style="margin-top:32px;">
-      <a href="step1.html" class="btn btn-secondary">이전</a>
+      <a id="btn-prev" href="step1.html" class="btn btn-secondary">이전</a>
       <a id="btn-next" href="step3-details.html" class="btn btn-primary" style="opacity:0.4;pointer-events:none;">다음 — 사진·렌즈</a>
     </div>
 
@@ -511,17 +511,17 @@
 <div class="live-chat-widget" id="live-chat-widget">
   <div class="live-chat-header">
     <div>
-      <p style="font-size:14px;font-weight:500;">GENTLE MONSTER 라이브챗</p>
-      <p style="font-size:11px;color:#777;">상담 가능 · 평균 응답 2분</p>
+      <p id="livechat-header-title" style="font-size:14px;font-weight:500;">GENTLE MONSTER 라이브챗</p>
+      <p id="livechat-header-status" style="font-size:11px;color:#777;">상담 가능 · 평균 응답 2분</p>
     </div>
     <button type="button" onclick="closeLiveChat()" style="border:none;background:none;font-size:18px;cursor:pointer;padding:4px;">×</button>
   </div>
   <div class="live-chat-body" id="live-chat-body">
-    <div class="live-chat-message">안녕하세요. 젠틀몬스터 프로덕트 서비스입니다. 어떤 도움이 필요하신가요?</div>
+    <div id="livechat-greeting" class="live-chat-message">안녕하세요. 젠틀몬스터 프로덕트 서비스입니다. 어떤 도움이 필요하신가요?</div>
   </div>
   <div class="live-chat-input">
     <input type="text" id="live-chat-input" placeholder="메시지를 입력해 주세요" onkeydown="if(event.key === 'Enter') sendLiveChatMessage()">
-    <button type="button" onclick="sendLiveChatMessage()">전송</button>
+    <button id="livechat-send-btn" type="button" onclick="sendLiveChatMessage()">전송</button>
   </div>
 </div>
 
@@ -560,15 +560,175 @@ function toggleImg(id) {
   el.style.display = isHidden ? 'flex' : 'none';
 }
 
-const PART_NAMES = {'gp-lt':'좌템플','gp-front':'프론트','gp-br':'브릿지','gp-ll':'좌렌즈','gp-rl':'우렌즈','gp-rt':'우템플'};
+const PART_NAMES    = {'gp-lt':'좌템플','gp-front':'프론트','gp-br':'브릿지','gp-ll':'좌렌즈','gp-rl':'우렌즈','gp-rt':'우템플'};
+const PART_NAMES_EN = {'gp-lt':'L Temple','gp-front':'Front','gp-br':'Bridge','gp-ll':'L Lens','gp-rl':'R Lens','gp-rt':'R Temple'};
+
+var currentLang = 'ko';
+
+var STRINGS = {
+  ko: {
+    stepLabels: ['기본 정보','서비스 유형','서비스 상세','사진·렌즈','배송 정보','안내 확인'],
+    pageEyebrow: '서비스 유형 — 상담/기타',
+    pageTitle: '상담 & 기타',
+    pageDesc: '무엇을 도와드릴까요? 문의 유형을 선택해 주세요.',
+    lblType: '문의 유형 <span style="color:#000">*</span>',
+    defectTitle: '제품 결함 & 이상 문의',
+    defectDesc: '구매일로부터 2년 이내 제품에 한해 제조 결함 여부를 확인해 드립니다.',
+    expiredInlineText: '품질 보증 기간(2년)이 만료된 제품은 결함 문의를 접수하기 어렵습니다.<br>다른 메뉴를 선택하시거나 상담원 연결을 이용해 주세요.',
+    accTypeTitle: '부속품 요청',
+    accTypeDesc: '코패드, 나사 등 소모성 부품을 무상으로 보내드립니다.',
+    consultTypeTitle: '상담원 연결',
+    consultTypeDesc: '전문 상담원이 도움을 드립니다.',
+    btnChangeTypeLabel: '문의 유형 변경하기',
+    btnPrev: '이전',
+    btnNextDefect: '다음 — 사진·렌즈',
+    btnNextAcc: '다음 — 배송 정보',
+    defectInfoText: '구매일로부터 2년 이내 제품은 제조 결함 여부를 확인해 드립니다.<br>수리 내용과 비용은 제품 입고 후 정밀 점검을 통해 별도로 안내드립니다.',
+    lblDefectParts: '문제 부위 선택 <span style="color:#000">*</span>',
+    partsHint: '탭하여 선택 · 복수 선택 가능',
+    svgLabels: { 'gp-front-lbl':'프론트','gp-ll-lbl':'좌렌즈','gp-rl-lbl':'우렌즈','gp-br-lbl':'브릿지','gp-lt-lbl':'좌템플','gp-rt-lbl':'우템플' },
+    partsSummaryEmpty: '<span style="font-size:12px;color:#bbb;">선택된 부위 없음</span>',
+    defectRequestLabel: '서비스 요청 사항',
+    defectRequestPlaceholder: '불편하신 점을 자세히 적어 주세요. 구체적으로 작성해주시면 더 정확한 점검이 가능합니다.',
+    expiredTitle: '결함 문의 접수가 어렵습니다',
+    expiredBody: '품질 보증 기간(2년)이 만료된 제품은 제품 결함 문의를 접수하기 어렵습니다.<br>다른 메뉴를 선택하시거나, 자세한 상담이 필요하시다면 상담원 연결을 진행해주세요.',
+    accInfoText: '필요한 부속품을 알려 주세요. 코패드, 나사 등 소모성 부품을 무상으로 보내드립니다.',
+    accPartsLabel: '부속품 선택 <span class="required-mark">*</span>',
+    accPartsHint: '원하시는 부속품을 선택해 주세요. (복수 선택 가능)',
+    accCopadName: '코패드 및 코패드 나사',
+    accHingeName: '경첩 나사',
+    accRingName: '고리 나사',
+    accImgBtn: '부속품 모양을 확인하세요.',
+    accQtyLabel: '수량 <span style="color:#000;">*</span>',
+    accQtyPlaceholder: '선택',
+    accQty1: '1쌍',
+    accQty2: '2쌍',
+    accQty3: '3쌍',
+    accRequestLabel: '서비스 요청 사항',
+    accRequestPlaceholder: '추가 요청사항이 있으시면 적어주세요.',
+    accNoticeText: '자가 수리 중 발생한 제품 손상에 대해서는 보증 서비스 적용이 어려울 수 있습니다.',
+    consultBoxTitle: '상담원 연결',
+    consultBoxDesc: '문의하실 채널을 선택해 주세요. 전문 상담원이 도움을 드립니다.',
+    chCallTitle: '콜',
+    chCallDesc: '운영 시간 내 전화 상담',
+    chEmailTitle: '이메일',
+    chEmailDesc: '문의 내용 작성 후 접수',
+    chChatTitle: '라이브챗',
+    chChatDesc: '채팅 상담 바로 시작',
+    callPanelTitle: '전화 상담',
+    callPanelDesc: '운영 시간: 평일 10:00 - 18:00<br>제품 상태와 접수 상황을 빠르게 확인하실 수 있습니다.',
+    emailPanelTitle: '이메일 문의하기',
+    emailPanelDesc: '연락처와 세부 정보를 보내주시면 영업일 기준 48시간 이내에 연락드리겠습니다.',
+    emailLblEmail: '이메일 주소 <span class="required-mark">*</span>',
+    emailLblFirstname: '이름 <span class="required-mark">*</span>',
+    emailLblLastname: '성 <span class="required-mark">*</span>',
+    emailLblCountry: '국가 <span class="required-mark">*</span>',
+    emailLblSubject: '문의 주제 <span class="required-mark">*</span>',
+    emailSubjPs: '프로덕트 서비스 & A/S',
+    emailSubjDefect: '제품 결함 문의',
+    emailSubjAcc: '부속품 요청',
+    emailSubjOther: '기타',
+    emailLblMessage: '메시지 <span class="required-mark">*</span>',
+    emailMessagePlaceholder: '메시지를 입력해 주세요.',
+    emailUploadBtn: '이미지 업로드하기',
+    emailConsentText: '고객 서비스에 연락하기 위해 입력한 데이터를 국외로 전송하는 데 동의합니다.',
+    emailSubmitLabel: '제출하기',
+    chatPanelTitle: '라이브챗',
+    chatPanelDesc: '상담 가능한 시간이면 실시간 채팅으로 문의하실 수 있습니다.',
+    chatStartBtn: '라이브챗 시작하기',
+    livechatHeaderTitle: 'GENTLE MONSTER 라이브챗',
+    livechatHeaderStatus: '상담 가능 · 평균 응답 2분',
+    livechatGreeting: '안녕하세요. 젠틀몬스터 프로덕트 서비스입니다. 어떤 도움이 필요하신가요?',
+    livechatInputPlaceholder: '메시지를 입력해 주세요',
+    livechatSendBtn: '전송',
+  },
+  en: {
+    stepLabels: ['Basic Info','Service Type','Service Details','Photos & Lens','Shipping','Review'],
+    pageEyebrow: 'Service Type — Other',
+    pageTitle: 'Inquiries & Other',
+    pageDesc: 'How can we help? Please select an inquiry type.',
+    lblType: 'Inquiry Type <span style="color:#000">*</span>',
+    defectTitle: 'Product Defect Inquiry',
+    defectDesc: 'We verify manufacturing defects for products purchased within the last 2 years.',
+    expiredInlineText: 'The quality warranty period (2 years) has expired. We are unable to accept defect inquiries for this product.<br>Please select another option or connect with a consultant.',
+    accTypeTitle: 'Component Request',
+    accTypeDesc: 'Nose pads, screws, and other consumable parts are provided free of charge.',
+    consultTypeTitle: 'Connect with Consultant',
+    consultTypeDesc: 'Our specialists are here to help.',
+    btnChangeTypeLabel: 'CHANGE INQUIRY TYPE',
+    btnPrev: 'BACK',
+    btnNextDefect: 'NEXT — PHOTOS & LENS',
+    btnNextAcc: 'NEXT — SHIPPING',
+    defectInfoText: 'We verify manufacturing defects for products purchased within the last 2 years.<br>Repair details and costs will be provided after a detailed inspection upon receipt.',
+    lblDefectParts: 'Select Part <span style="color:#000">*</span>',
+    partsHint: 'Tap to select · Multiple selection',
+    svgLabels: { 'gp-front-lbl':'Front','gp-ll-lbl':'L Lens','gp-rl-lbl':'R Lens','gp-br-lbl':'Bridge','gp-lt-lbl':'L Temple','gp-rt-lbl':'R Temple' },
+    partsSummaryEmpty: '<span style="font-size:12px;color:#bbb;">No parts selected</span>',
+    defectRequestLabel: 'Service Request Details',
+    defectRequestPlaceholder: 'Please describe the issue in detail. The more specific, the more accurate our assessment.',
+    expiredTitle: 'Defect Inquiry Unavailable',
+    expiredBody: 'The quality warranty period (2 years) has expired. We are unable to accept product defect inquiries for this product.<br>Please select another option, or connect with a consultant for further assistance.',
+    accInfoText: 'Let us know what you need. Nose pads, screws, and other consumable parts are provided free of charge.',
+    accPartsLabel: 'Select Components <span class="required-mark">*</span>',
+    accPartsHint: 'Select the components you need. (Multiple selection available)',
+    accCopadName: 'Nose Pad & Nose Pad Screws',
+    accHingeName: 'Hinge Screw',
+    accRingName: 'Ring Screw',
+    accImgBtn: 'View component image',
+    accQtyLabel: 'Qty <span style="color:#000;">*</span>',
+    accQtyPlaceholder: 'Select',
+    accQty1: '1 pair',
+    accQty2: '2 pairs',
+    accQty3: '3 pairs',
+    accRequestLabel: 'Additional Request',
+    accRequestPlaceholder: 'Any additional requests?',
+    accNoticeText: 'Warranty service may not apply to product damage caused by self-repair.',
+    consultBoxTitle: 'Connect with Consultant',
+    consultBoxDesc: 'Choose your preferred contact channel. Our specialists are here to help.',
+    chCallTitle: 'Call',
+    chCallDesc: 'Phone consultation during operating hours',
+    chEmailTitle: 'Email',
+    chEmailDesc: 'Submit your inquiry via email',
+    chChatTitle: 'Live Chat',
+    chChatDesc: 'Start a chat session immediately',
+    callPanelTitle: 'Phone Consultation',
+    callPanelDesc: 'Operating hours: Mon–Fri 10:00–18:00<br>Get a quick update on your product status and service progress.',
+    emailPanelTitle: 'Email Inquiry',
+    emailPanelDesc: 'Send us your contact details and we\'ll get back to you within 48 business hours.',
+    emailLblEmail: 'Email Address <span class="required-mark">*</span>',
+    emailLblFirstname: 'First Name <span class="required-mark">*</span>',
+    emailLblLastname: 'Last Name <span class="required-mark">*</span>',
+    emailLblCountry: 'Country <span class="required-mark">*</span>',
+    emailLblSubject: 'Subject <span class="required-mark">*</span>',
+    emailSubjPs: 'Product Service & After-Sales',
+    emailSubjDefect: 'Product Defect Inquiry',
+    emailSubjAcc: 'Component Request',
+    emailSubjOther: 'Other',
+    emailLblMessage: 'Message <span class="required-mark">*</span>',
+    emailMessagePlaceholder: 'Please enter your message.',
+    emailUploadBtn: 'Upload Image',
+    emailConsentText: 'I agree to the transfer of my data outside my country for the purpose of contacting customer service.',
+    emailSubmitLabel: 'SUBMIT',
+    chatPanelTitle: 'Live Chat',
+    chatPanelDesc: 'During operating hours, you can contact us via real-time chat.',
+    chatStartBtn: 'START LIVE CHAT',
+    livechatHeaderTitle: 'GENTLE MONSTER Live Chat',
+    livechatHeaderStatus: 'Available · Avg. response 2 min',
+    livechatGreeting: 'Hello. Welcome to GENTLE MONSTER Product Service. How can we help you?',
+    livechatInputPlaceholder: 'Type a message',
+    livechatSendBtn: 'SEND',
+  }
+};
 
 function togglePart(id) {
   document.getElementById(id).classList.toggle('sel');
   const selected = Object.keys(PART_NAMES).filter(k => document.getElementById(k).classList.contains('sel'));
   const el = document.getElementById('parts-summary-c');
+  var s = STRINGS[currentLang] || STRINGS.ko;
+  var nameMap = currentLang === 'en' ? PART_NAMES_EN : PART_NAMES;
   el.innerHTML = selected.length === 0
-    ? '<span style="font-size:12px;color:#bbb;">선택된 부위 없음</span>'
-    : selected.map(k => `<span style="font-size:11px;padding:3px 10px;background:#111;color:#fff;letter-spacing:0.04em;">${PART_NAMES[k]}</span>`).join('');
+    ? s.partsSummaryEmpty
+    : selected.map(k => `<span style="font-size:11px;padding:3px 10px;background:#111;color:#fff;letter-spacing:0.04em;">${nameMap[k]}</span>`).join('');
   checkDefectNextBtn();
 }
 
@@ -615,10 +775,11 @@ function showType(type) {
   }
 
   const nextBtn = document.getElementById('btn-next');
+  var sN = STRINGS[currentLang] || STRINGS.ko;
   const nextMap = {
-    defect:   { href: 'step3-details.html',  label: '다음 — 사진·렌즈' },
-    'defect-expired': { href: 'step3-details.html', label: '다음 — 사진·렌즈' },
-    accessory: { href: 'step3-shipping.html', label: '다음 — 배송 정보' },
+    defect:   { href: 'step3-details.html',  label: sN.btnNextDefect },
+    'defect-expired': { href: 'step3-details.html', label: sN.btnNextDefect },
+    accessory: { href: 'step3-shipping.html', label: sN.btnNextAcc },
   };
   nextBtn.style.display = type === 'consult' ? 'none' : '';
   if (type !== 'consult' && nextMap[type]) {
@@ -698,11 +859,133 @@ function sendLiveChatMessage() {
 }
 
 function setLang(lang) {
+  currentLang = lang;
   try { localStorage.setItem('ps-lang', lang); } catch(e) {}
   ['ko','en'].forEach(function(l) {
     var el = document.getElementById('footer-lang-' + l);
     if (el) { el.style.fontWeight = l === lang ? '500' : '400'; el.style.color = l === lang ? '#111' : ''; }
   });
+
+  var s = STRINGS[lang] || STRINGS.ko;
+
+  var setText = function(id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
+  var setHTML = function(id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
+  var setAttr = function(id, attr, val) { var el = document.getElementById(id); if (el) el.setAttribute(attr, val); };
+
+  // Step labels
+  var stepEls = document.querySelectorAll('.step-item .step-label');
+  s.stepLabels.forEach(function(txt, i) { if (stepEls[i]) stepEls[i].textContent = txt; });
+
+  // Page header
+  setText('page-eyebrow', s.pageEyebrow);
+  setText('page-title', s.pageTitle);
+  setText('page-desc', s.pageDesc);
+  setHTML('lbl-type', s.lblType);
+
+  // Type cards
+  setText('defect-title', s.defectTitle);
+  setText('defect-desc', s.defectDesc);
+  setHTML('expired-inline-text', s.expiredInlineText);
+  setText('acc-type-title', s.accTypeTitle);
+  setText('acc-type-desc', s.accTypeDesc);
+  setText('consult-type-title', s.consultTypeTitle);
+  setText('consult-type-desc', s.consultTypeDesc);
+  setText('btn-change-type-label', s.btnChangeTypeLabel);
+
+  // Nav buttons
+  setText('btn-prev', s.btnPrev);
+  // btn-next label is set by showType, but translate current state
+  var btnNext = document.getElementById('btn-next');
+  if (btnNext && btnNext.style.display !== 'none') {
+    var checkedType = document.querySelector('input[name="type"]:checked');
+    if (checkedType) {
+      if (checkedType.value === 'accessory') btnNext.textContent = s.btnNextAcc;
+      else if (checkedType.value === 'defect') btnNext.textContent = s.btnNextDefect;
+    } else {
+      btnNext.textContent = s.btnNextDefect;
+    }
+  }
+
+  // Defect form
+  setHTML('defect-info-text', s.defectInfoText);
+  setHTML('lbl-defect-parts', s.lblDefectParts);
+  setText('parts-hint', s.partsHint);
+  setText('defect-request-label', s.defectRequestLabel);
+  setAttr('defect-request-textarea', 'placeholder', s.defectRequestPlaceholder);
+
+  // SVG labels
+  Object.keys(s.svgLabels).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = s.svgLabels[id];
+  });
+
+  // Parts summary empty state
+  var psum = document.getElementById('parts-summary-c');
+  if (psum) {
+    var hasSelected = Object.keys(PART_NAMES).some(function(pid) {
+      return document.getElementById(pid) && document.getElementById(pid).classList.contains('sel');
+    });
+    if (!hasSelected) psum.innerHTML = s.partsSummaryEmpty;
+  }
+
+  // Expired panel
+  setText('expired-title', s.expiredTitle);
+  setHTML('expired-body', s.expiredBody);
+
+  // Accessory form
+  setText('acc-info-text', s.accInfoText);
+  setHTML('acc-parts-label', s.accPartsLabel);
+  setText('acc-parts-hint', s.accPartsHint);
+  setText('acc-copad-name', s.accCopadName);
+  setText('acc-hinge-name', s.accHingeName);
+  setText('acc-ring-name', s.accRingName);
+  ['acc-copad-img-btn','acc-hinge-img-btn','acc-ring-img-btn'].forEach(function(id) { setText(id, s.accImgBtn); });
+  ['acc-qty-copad-label','acc-qty-hinge-label','acc-qty-ring-label'].forEach(function(id) { setHTML(id, s.accQtyLabel); });
+  ['acc-qty-placeholder-copad','acc-qty-placeholder-hinge','acc-qty-placeholder-ring'].forEach(function(id) { setText(id, s.accQtyPlaceholder); });
+  ['acc-qty-1-copad','acc-qty-1-hinge','acc-qty-1-ring'].forEach(function(id) { setText(id, s.accQty1); });
+  ['acc-qty-2-copad','acc-qty-2-hinge','acc-qty-2-ring'].forEach(function(id) { setText(id, s.accQty2); });
+  ['acc-qty-3-copad','acc-qty-3-hinge','acc-qty-3-ring'].forEach(function(id) { setText(id, s.accQty3); });
+  setText('acc-request-label', s.accRequestLabel);
+  setAttr('acc-request-textarea', 'placeholder', s.accRequestPlaceholder);
+  setText('acc-notice-text', s.accNoticeText);
+
+  // Consult form
+  setText('consult-box-title', s.consultBoxTitle);
+  setText('consult-box-desc', s.consultBoxDesc);
+  setText('ch-call-title', s.chCallTitle);
+  setText('ch-call-desc', s.chCallDesc);
+  setText('ch-email-title', s.chEmailTitle);
+  setText('ch-email-desc', s.chEmailDesc);
+  setText('ch-chat-title', s.chChatTitle);
+  setText('ch-chat-desc', s.chChatDesc);
+  setText('call-panel-title', s.callPanelTitle);
+  setHTML('call-panel-desc', s.callPanelDesc);
+  setText('email-panel-title', s.emailPanelTitle);
+  setText('email-panel-desc', s.emailPanelDesc);
+  setHTML('email-lbl-email', s.emailLblEmail);
+  setHTML('email-lbl-firstname', s.emailLblFirstname);
+  setHTML('email-lbl-lastname', s.emailLblLastname);
+  setHTML('email-lbl-country', s.emailLblCountry);
+  setHTML('email-lbl-subject', s.emailLblSubject);
+  setText('email-subj-ps', s.emailSubjPs);
+  setText('email-subj-defect', s.emailSubjDefect);
+  setText('email-subj-acc', s.emailSubjAcc);
+  setText('email-subj-other', s.emailSubjOther);
+  setHTML('email-lbl-message', s.emailLblMessage);
+  setAttr('email-message-textarea', 'placeholder', s.emailMessagePlaceholder);
+  setText('email-upload-btn', s.emailUploadBtn);
+  setText('email-consent-text', s.emailConsentText);
+  setText('email-submit-label', s.emailSubmitLabel);
+  setText('chat-panel-title', s.chatPanelTitle);
+  setText('chat-panel-desc', s.chatPanelDesc);
+  setText('chat-start-btn', s.chatStartBtn);
+
+  // Live chat widget
+  setText('livechat-header-title', s.livechatHeaderTitle);
+  setText('livechat-header-status', s.livechatHeaderStatus);
+  setText('livechat-greeting', s.livechatGreeting);
+  setAttr('live-chat-input', 'placeholder', s.livechatInputPlaceholder);
+  setText('livechat-send-btn', s.livechatSendBtn);
 }
 function showAllTypes() {
   document.getElementById('card-defect').style.display = '';
@@ -718,7 +1001,8 @@ function showAllTypes() {
 
 window.addEventListener('load', function() {
   var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
-  setLang(saved || 'ko');
+  var country; try { country = localStorage.getItem('ps-country'); } catch(e) {}
+  setLang(country === 'us' ? 'en' : (saved || 'ko'));
 
   // ps-state.purchaseDate 기반 자동 2년 체크
   try {

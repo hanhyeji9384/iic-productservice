@@ -36,41 +36,41 @@
       <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 06</p><p class="step-label">안내 확인</p></div>
     </div>
 
-    <p class="page-eyebrow">서비스 유형 — 제품 수리</p>
-    <h1 class="page-title">제품 수리</h1>
-    <p class="page-desc">어떤 문제가 있으신가요? 해당되는 문제를 선택해주세요.</p>
+    <p class="page-eyebrow" id="page-eyebrow">서비스 유형 — 제품 수리</p>
+    <h1 class="page-title" id="page-title">제품 수리</h1>
+    <p class="page-desc" id="page-desc">어떤 문제가 있으신가요? 해당되는 문제를 선택해주세요.</p>
 
     <!-- PART ILLUSTRATION -->
-    <p class="section-label">수리 부위 선택 <span style="color:#000">*</span></p>
+    <p class="section-label" id="lbl-parts">수리 부위 선택 <span style="color:#000">*</span></p>
     <div class="glasses-wrap">
       <svg viewBox="0 0 380 135" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
         <g class="gpart" id="gp-front" onclick="togglePart('gp-front')">
           <rect class="gp-front" x="74" y="24" width="104" height="82" rx="13"/>
           <rect class="gp-front" x="202" y="24" width="104" height="82" rx="13"/>
-          <text class="gp-label" x="190" y="122" text-anchor="middle">프론트</text>
+          <text class="gp-label" id="gp-front-lbl" x="190" y="122" text-anchor="middle">프론트</text>
         </g>
         <g class="gpart" id="gp-ll" onclick="togglePart('gp-ll')">
           <rect class="gp-lens" x="82" y="32" width="88" height="66" rx="9"/>
-          <text class="gp-label" x="126" y="66" text-anchor="middle" dominant-baseline="middle">좌렌즈</text>
+          <text class="gp-label" id="gp-ll-lbl" x="126" y="66" text-anchor="middle" dominant-baseline="middle">좌렌즈</text>
         </g>
         <g class="gpart" id="gp-rl" onclick="togglePart('gp-rl')">
           <rect class="gp-lens" x="210" y="32" width="88" height="66" rx="9"/>
-          <text class="gp-label" x="254" y="66" text-anchor="middle" dominant-baseline="middle">우렌즈</text>
+          <text class="gp-label" id="gp-rl-lbl" x="254" y="66" text-anchor="middle" dominant-baseline="middle">우렌즈</text>
         </g>
         <g class="gpart" id="gp-br" onclick="togglePart('gp-br')">
           <path class="gp-bridge" d="M178,66 Q190,59 202,66"/>
-          <text class="gp-label" x="190" y="15" text-anchor="middle">브릿지</text>
+          <text class="gp-label" id="gp-br-lbl" x="190" y="15" text-anchor="middle">브릿지</text>
         </g>
         <g class="gpart" id="gp-lt" onclick="togglePart('gp-lt')">
           <polygon class="gp-temple" points="0,44 74,54 74,62 0,56"/>
-          <text class="gp-label" x="34" y="38" text-anchor="middle">좌템플</text>
+          <text class="gp-label" id="gp-lt-lbl" x="34" y="38" text-anchor="middle">좌템플</text>
         </g>
         <g class="gpart" id="gp-rt" onclick="togglePart('gp-rt')">
           <polygon class="gp-temple" points="306,54 380,44 380,56 306,62"/>
-          <text class="gp-label" x="346" y="38" text-anchor="middle">우템플</text>
+          <text class="gp-label" id="gp-rt-lbl" x="346" y="38" text-anchor="middle">우템플</text>
         </g>
       </svg>
-      <p style="font-size:11px;color:#999;text-align:center;margin-top:4px;">탭하여 선택 · 복수 선택 가능</p>
+      <p id="parts-hint" style="font-size:11px;color:#999;text-align:center;margin-top:4px;">탭하여 선택 · 복수 선택 가능</p>
       <div id="parts-summary" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px;padding:10px 0 2px;border-top:1px solid var(--gray-100);">
         <span style="font-size:12px;color:#bbb;">선택된 부위 없음</span>
       </div>
@@ -78,27 +78,27 @@
     <p id="parts-error" style="display:none;font-size:11px;color:#c00;margin-bottom:16px;">수리 부위를 하나 이상 선택해 주세요.</p>
 
     <!-- ISSUE TYPE -->
-    <p class="section-label">문제 현상 <span style="color:#000">*</span></p>
+    <p class="section-label" id="lbl-issue">문제 현상 <span style="color:#000">*</span></p>
     <div class="option-cards" style="margin-bottom:0;">
       <label id="check-damage" class="check-item" onclick="showResult('damage')">
         <input type="radio" name="issue" value="damage">
         <div>
-          <p class="check-item-title">파손 & 변형</p>
-          <p class="check-item-desc">프레임 파손, 경첩 변형/변색, 렌즈 스크래치/균열</p>
+          <p class="check-item-title" id="damage-title">파손 & 변형</p>
+          <p class="check-item-desc" id="damage-desc">프레임 파손, 경첩 변형/변색, 렌즈 스크래치/균열</p>
         </div>
       </label>
       <label id="check-decoration" class="check-item" onclick="showResult('decoration')">
         <input type="radio" name="issue" value="decoration">
         <div>
-          <p class="check-item-title">장식 문제</p>
-          <p class="check-item-desc">장식 탈락, 장식 파손, 장식 변색</p>
+          <p class="check-item-title" id="deco-title">장식 문제</p>
+          <p class="check-item-desc" id="deco-desc">장식 탈락, 장식 파손, 장식 변색</p>
         </div>
       </label>
       <label id="check-accessory" class="check-item" onclick="showResult('accessory')">
         <input type="radio" name="issue" value="accessory">
         <div>
-          <p class="check-item-title">부속품 문제</p>
-          <p class="check-item-desc">코패드, 나사 등 소모품 부품 손상/분실</p>
+          <p class="check-item-title" id="acc-title">부속품 문제</p>
+          <p class="check-item-desc" id="acc-desc">코패드, 나사 등 소모품 부품 손상/분실</p>
         </div>
       </label>
     </div>
@@ -145,8 +145,8 @@
       <!-- 파손 3~7년: 복원 수리 Y/N -->
       <div id="result-damage-restoration" style="display:none;">
         <div style="border:1px solid #e0e0e0;padding:20px;margin-bottom:16px;">
-          <p style="font-size:13px;font-weight:500;margin-bottom:8px;">복원 수리로 진행하시겠습니까?</p>
-          <p style="font-size:12px;color:#555;margin-bottom:16px;line-height:1.7;">부품 교체가 어려운 경우, 용접/도금 방식으로 원형에 가깝게 복원하는 수리입니다.</p>
+          <p id="resto-question" style="font-size:13px;font-weight:500;margin-bottom:8px;">복원 수리로 진행하시겠습니까?</p>
+          <p id="resto-desc" style="font-size:12px;color:#555;margin-bottom:16px;line-height:1.7;">부품 교체가 어려운 경우, 용접/도금 방식으로 원형에 가깝게 복원하는 수리입니다.</p>
           <div style="display:flex;gap:8px;">
             <button onclick="setRestoAvail(true)" id="resto-y" style="flex:1;padding:10px;font-size:12px;border:1px solid #ccc;background:#fff;cursor:pointer;font-family:var(--font);">예</button>
             <button onclick="setRestoAvail(false)" id="resto-n" style="flex:1;padding:10px;font-size:12px;border:1px solid #ccc;background:#fff;cursor:pointer;font-family:var(--font);">아니오 — 수리 불가</button>
@@ -164,9 +164,9 @@
             </p>
           </div>
           <div id="disclaimer-box" style="border:1px solid #000;padding:20px;margin-bottom:24px;">
-            <p class="section-label" style="margin-top:0;">파손 면책 동의 <span style="color:#000">*</span></p>
-            <p style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">보증 기간이 만료된 제품입니다. 오래 사용한 제품은 소재가 굳거나 약해져 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
-            <label class="inline-check"><input type="checkbox" id="chk-resto" onchange="checkBtnState()"><span>내용을 확인했으며, 손상 가능성을 이해하고 수리를 신청합니다.</span></label>
+            <p class="section-label" id="resto-disclaimer-label" style="margin-top:0;">파손 면책 동의 <span style="color:#000">*</span></p>
+            <p id="resto-disclaimer-desc" style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">보증 기간이 만료된 제품입니다. 오래 사용한 제품은 소재가 굳거나 약해져 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
+            <label class="inline-check"><input type="checkbox" id="chk-resto" onchange="checkBtnState()"><span id="resto-disclaimer-check">내용을 확인했으며, 손상 가능성을 이해하고 수리를 신청합니다.</span></label>
           </div>
         </div>
 
@@ -203,7 +203,7 @@
       <!-- 장식 문제 3년~: 장식 보유 여부 → Y면 파손 면책 동의 -->
       <div id="result-decoration-3yr" style="display:none;">
         <div style="border:1px solid #e0e0e0;padding:16px;margin-bottom:16px;">
-          <p style="font-size:13px;font-weight:500;margin-bottom:12px;">장식 부품 보유 여부를 확인해 주세요.</p>
+          <p id="deco-check-question" style="font-size:13px;font-weight:500;margin-bottom:12px;">장식 부품 보유 여부를 확인해 주세요.</p>
           <div style="display:flex;gap:8px;">
             <button onclick="setDecoAvail(true)" id="deco-y" style="flex:1;padding:10px;font-size:12px;border:1px solid #ccc;background:#fff;cursor:pointer;font-family:var(--font);">보유 — 수리 접수</button>
             <button onclick="setDecoAvail(false)" id="deco-n" style="flex:1;padding:10px;font-size:12px;border:1px solid #ccc;background:#fff;cursor:pointer;font-family:var(--font);">미보유 — 수리 불가</button>
@@ -218,12 +218,12 @@
 
       <!-- 부속품 문제 3년~: 파손 면책 + 토탈케어 유도 -->
       <div id="result-accessory-3yr" style="display:none;">
-        <div style="border:1px solid #000;padding:20px;margin-bottom:16px;">
-          <p class="section-label" style="margin-top:0;">파손 면책 동의 <span style="color:#000">*</span></p>
-          <p style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">보증 기간이 만료된 제품입니다. 오래 사용한 제품은 소재가 굳거나 약해져 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
-          <label class="inline-check"><input type="checkbox" id="chk-acc" onchange="checkBtnState()"><span>내용을 확인했으며, 손상 가능성을 이해하고 수리를 신청합니다.</span></label>
+        <div id="acc-disclaimer-box" style="border:1px solid #000;padding:20px;margin-bottom:16px;">
+          <p class="section-label" id="acc-disclaimer-label" style="margin-top:0;">파손 면책 동의 <span style="color:#000">*</span></p>
+          <p id="acc-disclaimer-desc" style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">보증 기간이 만료된 제품입니다. 오래 사용한 제품은 소재가 굳거나 약해져 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
+          <label class="inline-check"><input type="checkbox" id="chk-acc" onchange="checkBtnState()"><span id="acc-disclaimer-check">내용을 확인했으며, 손상 가능성을 이해하고 수리를 신청합니다.</span></label>
         </div>
-        <div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
+        <div id="acc-total-care-box" class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
           <strong style="color:#888;">토탈 케어 추천</strong>
           <p style="margin-bottom:16px;">선택하신 부속품만 교체해드립니다.<br>제품 전체의 케어를 희망하시면 토탈 케어를 추천드립니다.<br>클리닝·폴리싱·피팅까지 한 번에 케어해 드립니다.</p>
           <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈 케어로 변경</a>
@@ -233,7 +233,7 @@
     </div>
 
     <div class="btn-wrap" style="margin-top:32px;">
-      <a href="step2-service-type.html" class="btn btn-secondary">이전</a>
+      <a href="step2-service-type.html" id="btn-prev" class="btn btn-secondary">이전</a>
       <a href="step3-details.html" class="btn btn-primary" id="btn-next" style="opacity:0.4;pointer-events:none;">다음 — 사진·렌즈</a>
     </div>
 
@@ -263,7 +263,189 @@
 </footer>
 
 <script>
-const PART_NAMES = {'gp-lt':'좌템플','gp-front':'프론트','gp-br':'브릿지','gp-ll':'좌렌즈','gp-rl':'우렌즈','gp-rt':'우템플'};
+const PART_NAMES    = {'gp-lt':'좌템플','gp-front':'프론트','gp-br':'브릿지','gp-ll':'좌렌즈','gp-rl':'우렌즈','gp-rt':'우템플'};
+const PART_NAMES_EN = {'gp-lt':'L Temple','gp-front':'Front','gp-br':'Bridge','gp-ll':'L Lens','gp-rl':'R Lens','gp-rt':'R Temple'};
+
+var currentLang = 'ko';
+
+var STRINGS = {
+  ko: {
+    stepLabels: ['기본 정보','서비스 유형','서비스 상세','사진·렌즈','배송 정보','안내 확인'],
+    pageEyebrow: '서비스 유형 — 제품 수리',
+    pageTitle: '제품 수리',
+    pageDesc: '어떤 문제가 있으신가요? 해당되는 문제를 선택해주세요.',
+    lblParts: '수리 부위 선택 <span style="color:#000">*</span>',
+    svgLabels: { 'gp-front-lbl':'프론트','gp-ll-lbl':'좌렌즈','gp-rl-lbl':'우렌즈','gp-br-lbl':'브릿지','gp-lt-lbl':'좌템플','gp-rt-lbl':'우템플' },
+    partsHint: '탭하여 선택 · 복수 선택 가능',
+    lblIssue: '문제 현상 <span style="color:#000">*</span>',
+    damageTitle: '파손 & 변형',
+    damageDesc: '프레임 파손, 경첩 변형/변색, 렌즈 스크래치/균열',
+    decoTitle: '장식 문제',
+    decoDesc: '장식 탈락, 장식 파손, 장식 변색',
+    accTitle: '부속품 문제',
+    accDesc: '코패드, 나사 등 소모품 부품 손상/분실',
+    btnChangeIssue: '수리 내용 변경하기',
+    partsError: '수리 부위를 하나 이상 선택해 주세요.',
+    issueError: '문제 현상을 선택해 주세요.',
+    btnPrev: '이전',
+    btnNext: '다음 — 사진·렌즈',
+    restoQuestion: '복원 수리로 진행하시겠습니까?',
+    restoDesc: '부품 교체가 어려운 경우, 용접/도금 방식으로 원형에 가깝게 복원하는 수리입니다.',
+    restoY: '예',
+    restoN: '아니오 — 수리 불가',
+    decoCheckQuestion: '장식 부품 보유 여부를 확인해 주세요.',
+    decoY: '보유 — 수리 접수',
+    decoN: '미보유 — 수리 불가',
+    restoDisclaimerLabel: '파손 면책 동의 <span style="color:#000">*</span>',
+    restoDisclaimerDesc: '보증 기간이 만료된 제품입니다. 오래 사용한 제품은 소재가 굳거나 약해져 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.',
+    restoDisclaimerCheck: '내용을 확인했으며, 손상 가능성을 이해하고 수리를 신청합니다.',
+    partsSummaryEmpty: '<span style="font-size:12px;color:#bbb;">선택된 부위 없음</span>',
+    resultDamageNormal: `<div class="notice-box">
+          <strong>수리 안내</strong>
+          <p>예상 수리 방식: <strong>부품 교체</strong></p>
+          <p>예상 비용: <strong>소비자가의 20%</strong></p>
+          <p style="font-size:12px;color:#999;margin-top:8px;">실제 비용은 입고 후 정밀 점검을 통해 결정됩니다.</p>
+        </div>
+        <div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
+          <strong style="color:#888;">토탈 케어 추천</strong>
+          <p style="margin-bottom:16px;">선택하신 부위만 신속하게 수리해드립니다.<br>제품 전체의 케어를 희망하시면 토탈 케어를 추천드립니다.<br>클리닝·폴리싱·피팅까지 한 번에 케어해 드립니다.</p>
+          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈 케어로 변경</a>
+        </div>`,
+    resultDecorationNormal: `<div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
+          <strong style="color:#888;">토탈 케어 추천</strong>
+          <p style="margin-bottom:16px;">선택하신 장식 문제만 신속하게 수리해드립니다.<br>제품 전체의 케어를 희망하시면 토탈 케어를 추천드립니다.<br>클리닝·폴리싱·피팅까지 한 번에 케어해 드립니다.</p>
+          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈 케어로 변경</a>
+        </div>`,
+    resultAccessoryNormal: `<div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
+          <strong style="color:#888;">토탈 케어 추천</strong>
+          <p style="margin-bottom:16px;">선택하신 부속품만 교체해드립니다.<br>제품 전체의 케어를 희망하시면 토탈 케어를 추천드립니다.<br>클리닝·폴리싱·피팅까지 한 번에 케어해 드립니다.</p>
+          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈 케어로 변경</a>
+        </div>`,
+    restorationDetail: `<div class="notice-box">
+            <strong>복원 수리 안내</strong>
+            <p style="margin-top:8px;color:#555;line-height:2;">
+              - 메탈 소재에만 적용 가능하며, 실물 확인 후 수리 가능 여부가 결정됩니다.<br>
+              - 예상 비용: 3만원<br>
+              - 예상 소요 기간: 입고일로부터 약 15 영업일
+            </p>
+          </div>`,
+    restorationUnavailable: `<div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
+            <p style="font-size:14px;font-weight:500;margin-bottom:12px;">수리가 어렵습니다</p>
+            <p style="font-size:13px;color:#555;line-height:1.8;">복원 수리를 원하지 않으시면 수리를 진행하기 어렵습니다.<br>아래 서비스는 계속 이용하실 수 있습니다.</p>
+            <div class="divider" style="margin:16px 0;"></div>
+            <p style="font-size:13px;">· 토탈 케어 (클리닝·폴리싱·피팅)<br>· 부속품 교체 (코패드, 나사 등)</p>
+            <div style="display:flex;gap:12px;margin-top:20px;">
+              <a href="step2-total-care.html" class="btn btn-secondary" style="flex:1;font-size:11px;">토탈 케어로 변경</a>
+              <a href="step2-consulting.html" class="btn btn-secondary" style="flex:1;font-size:11px;">부속품 요청</a>
+            </div>
+          </div>`,
+    resultUnavailable: `<div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
+          <p style="font-size:14px;font-weight:500;margin-bottom:12px;">수리가 어렵습니다</p>
+          <p style="font-size:13px;color:#555;line-height:1.8;">프로덕트 서비스 보증기간이 경과한 제품은 교체 및 장식 부품 제공이 어려워 수리를 진행하기 어렵습니다.</p>
+          <div class="divider" style="margin:16px 0;"></div>
+          <p style="font-size:12px;color:#888;">다음 서비스는 계속 이용하실 수 있습니다.</p>
+          <p style="font-size:13px;margin-top:8px;">· 토탈 케어 (클리닝·폴리싱·피팅)<br>· 부속품 교체 (코패드, 나사 등)</p>
+          <div style="display:flex;gap:12px;margin-top:20px;">
+            <a href="step2-total-care.html" class="btn btn-secondary" style="flex:1;font-size:11px;">토탈 케어로 변경</a>
+            <a href="step2-consulting.html" class="btn btn-secondary" style="flex:1;font-size:11px;">부속품 요청</a>
+          </div>
+        </div>`,
+    decoDisclaimer: `<p class="section-label" style="margin-top:0;">파손 면책 동의 <span style="color:#000">*</span></p>
+          <p style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">보증 기간이 만료된 제품입니다. 오래 사용한 제품은 소재가 굳거나 약해져 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
+          <label class="inline-check"><input type="checkbox" id="chk-deco" onchange="checkBtnState()"><span>내용을 확인했으며, 손상 가능성을 이해하고 수리를 신청합니다.</span></label>`,
+    accTotalCare: `<strong style="color:#888;">토탈 케어 추천</strong>
+          <p style="margin-bottom:16px;">선택하신 부속품만 교체해드립니다.<br>제품 전체의 케어를 희망하시면 토탈 케어를 추천드립니다.<br>클리닝·폴리싱·피팅까지 한 번에 케어해 드립니다.</p>
+          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈 케어로 변경</a>`
+  },
+  en: {
+    stepLabels: ['Basic Info','Service Type','Service Details','Photos & Lens','Shipping','Review'],
+    pageEyebrow: 'Service Type — Repair',
+    pageTitle: 'Repair Service',
+    pageDesc: 'What issue are you experiencing? Select all that apply.',
+    lblParts: 'Select Part <span style="color:#000">*</span>',
+    svgLabels: { 'gp-front-lbl':'Front','gp-ll-lbl':'L Lens','gp-rl-lbl':'R Lens','gp-br-lbl':'Bridge','gp-lt-lbl':'L Temple','gp-rt-lbl':'R Temple' },
+    partsHint: 'Tap to select · Multiple selection',
+    lblIssue: 'Issue Type <span style="color:#000">*</span>',
+    damageTitle: 'Damage & Deformation',
+    damageDesc: 'Frame damage, hinge deformation/discolouration, lens scratches/cracks',
+    decoTitle: 'Decoration Issue',
+    decoDesc: 'Decoration loss, damage, or discolouration',
+    accTitle: 'Component Issue',
+    accDesc: 'Nose pad, screws, or other consumable parts damaged/lost',
+    btnChangeIssue: 'CHANGE REPAIR DETAILS',
+    partsError: 'Please select at least one part.',
+    issueError: 'Please select an issue type.',
+    btnPrev: 'BACK',
+    btnNext: 'NEXT — PHOTOS & LENS',
+    restoQuestion: 'Would you like to proceed with restoration repair?',
+    restoDesc: 'When part replacement is not feasible, we restore the product using welding or plating techniques.',
+    restoY: 'Yes',
+    restoN: 'No — Cannot Repair',
+    decoCheckQuestion: 'Please check if the decoration parts are in stock.',
+    decoY: 'In Stock — Proceed',
+    decoN: 'Out of Stock — Cannot Repair',
+    restoDisclaimerLabel: 'Damage Waiver <span style="color:#000">*</span>',
+    restoDisclaimerDesc: 'The warranty period for this product has expired. Aged products may develop micro-cracks or damage during disassembly/assembly.',
+    restoDisclaimerCheck: 'I have read and understood the above, and agree to proceed with the repair.',
+    partsSummaryEmpty: '<span style="font-size:12px;color:#bbb;">No parts selected</span>',
+    resultDamageNormal: `<div class="notice-box">
+          <strong>Repair Guide</strong>
+          <p>Estimated repair: <strong>Part Replacement</strong></p>
+          <p>Estimated cost: <strong>20% of retail price</strong></p>
+          <p style="font-size:12px;color:#999;margin-top:8px;">Actual cost will be determined after detailed inspection upon receipt.</p>
+        </div>
+        <div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
+          <strong style="color:#888;">Total Care Recommended</strong>
+          <p style="margin-bottom:16px;">We'll repair the selected parts promptly.<br>For full product care, we recommend Total Care.<br>Cleaning, polishing, and fitting — all in one service.</p>
+          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">Switch to Total Care</a>
+        </div>`,
+    resultDecorationNormal: `<div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
+          <strong style="color:#888;">Total Care Recommended</strong>
+          <p style="margin-bottom:16px;">We'll repair the selected decoration issue promptly.<br>For full product care, we recommend Total Care.<br>Cleaning, polishing, and fitting — all in one service.</p>
+          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">Switch to Total Care</a>
+        </div>`,
+    resultAccessoryNormal: `<div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
+          <strong style="color:#888;">Total Care Recommended</strong>
+          <p style="margin-bottom:16px;">We'll replace the selected components promptly.<br>For full product care, we recommend Total Care.<br>Cleaning, polishing, and fitting — all in one service.</p>
+          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">Switch to Total Care</a>
+        </div>`,
+    restorationDetail: `<div class="notice-box">
+            <strong>Restoration Repair Guide</strong>
+            <p style="margin-top:8px;color:#555;line-height:2;">
+              - Applicable to metal frames only. Repairability is confirmed after physical inspection.<br>
+              - Estimated cost: KRW 30,000<br>
+              - Estimated turnaround: approx. 15 business days from receipt
+            </p>
+          </div>`,
+    restorationUnavailable: `<div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
+            <p style="font-size:14px;font-weight:500;margin-bottom:12px;">Repair Not Available</p>
+            <p style="font-size:13px;color:#555;line-height:1.8;">If you do not wish to proceed with restoration repair, we are unable to carry out the repair.<br>The following services are still available.</p>
+            <div class="divider" style="margin:16px 0;"></div>
+            <p style="font-size:13px;">· Total Care (cleaning, polishing, fitting)<br>· Component replacement (nose pads, screws, etc.)</p>
+            <div style="display:flex;gap:12px;margin-top:20px;">
+              <a href="step2-total-care.html" class="btn btn-secondary" style="flex:1;font-size:11px;">Switch to Total Care</a>
+              <a href="step2-consulting.html" class="btn btn-secondary" style="flex:1;font-size:11px;">Component Request</a>
+            </div>
+          </div>`,
+    resultUnavailable: `<div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
+          <p style="font-size:14px;font-weight:500;margin-bottom:12px;">Repair Not Available</p>
+          <p style="font-size:13px;color:#555;line-height:1.8;">Products outside the Product Service warranty period cannot be repaired due to unavailability of replacement and decoration parts.</p>
+          <div class="divider" style="margin:16px 0;"></div>
+          <p style="font-size:12px;color:#888;">The following services are still available.</p>
+          <p style="font-size:13px;margin-top:8px;">· Total Care (cleaning, polishing, fitting)<br>· Component replacement (nose pads, screws, etc.)</p>
+          <div style="display:flex;gap:12px;margin-top:20px;">
+            <a href="step2-total-care.html" class="btn btn-secondary" style="flex:1;font-size:11px;">Switch to Total Care</a>
+            <a href="step2-consulting.html" class="btn btn-secondary" style="flex:1;font-size:11px;">Component Request</a>
+          </div>
+        </div>`,
+    decoDisclaimer: `<p class="section-label" style="margin-top:0;">Damage Waiver <span style="color:#000">*</span></p>
+          <p style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">The warranty period for this product has expired. Aged products may develop micro-cracks or damage during disassembly/assembly.</p>
+          <label class="inline-check"><input type="checkbox" id="chk-deco" onchange="checkBtnState()"><span>I have read and understood the above, and agree to proceed with the repair.</span></label>`,
+    accTotalCare: `<strong style="color:#888;">Total Care Recommended</strong>
+          <p style="margin-bottom:16px;">We'll replace the selected components promptly.<br>For full product care, we recommend Total Care.<br>Cleaning, polishing, and fitting — all in one service.</p>
+          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">Switch to Total Care</a>`
+  }
+};
 
 function togglePart(id) {
   document.getElementById(id).classList.toggle('sel');
@@ -277,11 +459,13 @@ function togglePart(id) {
 function updatePartsSummary() {
   const selected = Object.keys(PART_NAMES).filter(id => document.getElementById(id).classList.contains('sel'));
   const el = document.getElementById('parts-summary');
+  var s = STRINGS[currentLang] || STRINGS.ko;
   if (selected.length === 0) {
-    el.innerHTML = '<span style="font-size:12px;color:#bbb;">선택된 부위 없음</span>';
+    el.innerHTML = s.partsSummaryEmpty;
   } else {
+    var nameMap = currentLang === 'en' ? PART_NAMES_EN : PART_NAMES;
     el.innerHTML = selected.map(id =>
-      `<span style="font-size:11px;padding:3px 10px;background:#111;color:#fff;letter-spacing:0.04em;">${PART_NAMES[id]}</span>`
+      `<span style="font-size:11px;padding:3px 10px;background:#111;color:#fff;letter-spacing:0.04em;">${nameMap[id]}</span>`
     ).join('');
   }
 }
@@ -415,11 +599,99 @@ function updateNextBtn(issueType) {
 }
 
 function setLang(lang) {
+  currentLang = lang;
   try { localStorage.setItem('ps-lang', lang); } catch(e) {}
   ['ko','en'].forEach(function(l) {
     var el = document.getElementById('footer-lang-' + l);
     if (el) { el.style.fontWeight = l === lang ? '500' : '400'; el.style.color = l === lang ? '#111' : ''; }
   });
+
+  var s = STRINGS[lang] || STRINGS.ko;
+
+  // Step labels
+  var stepEls = document.querySelectorAll('.step-item .step-label');
+  s.stepLabels.forEach(function(txt, i) { if (stepEls[i]) stepEls[i].textContent = txt; });
+
+  // Static page header
+  var setText = function(id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
+  var setHTML = function(id, html) { var el = document.getElementById(id); if (el) el.innerHTML = html; };
+
+  setText('page-eyebrow', s.pageEyebrow);
+  setText('page-title', s.pageTitle);
+  setText('page-desc', s.pageDesc);
+  setHTML('lbl-parts', s.lblParts);
+  setText('parts-hint', s.partsHint);
+  setHTML('lbl-issue', s.lblIssue);
+
+  // SVG part labels
+  Object.keys(s.svgLabels).forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = s.svgLabels[id];
+  });
+
+  // Issue card text
+  setText('damage-title', s.damageTitle);
+  setText('damage-desc', s.damageDesc);
+  setText('deco-title', s.decoTitle);
+  setText('deco-desc', s.decoDesc);
+  setText('acc-title', s.accTitle);
+  setText('acc-desc', s.accDesc);
+
+  // Buttons & errors
+  setText('btn-change-issue', s.btnChangeIssue);
+  setText('parts-error', s.partsError);
+  setText('issue-error', s.issueError);
+  setText('btn-prev', s.btnPrev);
+  var btnNext = document.getElementById('btn-next');
+  if (btnNext) btnNext.textContent = s.btnNext;
+
+  // Restoration section (per-element, preserves visibility state)
+  setText('resto-question', s.restoQuestion);
+  setText('resto-desc', s.restoDesc);
+  setText('resto-y', s.restoY);
+  setText('resto-n', s.restoN);
+  setText('deco-check-question', s.decoCheckQuestion);
+  setText('deco-y', s.decoY);
+  setText('deco-n', s.decoN);
+  setHTML('resto-disclaimer-label', s.restoDisclaimerLabel);
+  setText('resto-disclaimer-desc', s.restoDisclaimerDesc);
+  setText('resto-disclaimer-check', s.restoDisclaimerCheck);
+
+  // Result container boxes (safe: hidden on page load, shown only after user interaction)
+  setHTML('result-damage-normal', s.resultDamageNormal);
+  setHTML('result-decoration-normal', s.resultDecorationNormal);
+  setHTML('result-accessory-normal', s.resultAccessoryNormal);
+
+  // restoration-detail: translate only the notice-box inner content, preserve disclaimer-box state
+  var rdEl = document.getElementById('restoration-detail');
+  if (rdEl) {
+    var rdNotice = rdEl.querySelector('.notice-box');
+    if (rdNotice) rdNotice.innerHTML = lang === 'en'
+      ? '<strong>Restoration Repair Guide</strong><p style="margin-top:8px;color:#555;line-height:2;">- Applicable to metal frames only. Repairability is confirmed after physical inspection.<br>- Estimated cost: KRW 30,000<br>- Estimated turnaround: approx. 15 business days from receipt</p>'
+      : '<strong>복원 수리 안내</strong><p style="margin-top:8px;color:#555;line-height:2;">- 메탈 소재에만 적용 가능하며, 실물 확인 후 수리 가능 여부가 결정됩니다.<br>- 예상 비용: 3만원<br>- 예상 소요 기간: 입고일로부터 약 15 영업일</p>';
+  }
+
+  setHTML('restoration-unavailable', s.restorationUnavailable);
+  setHTML('result-unavailable', s.resultUnavailable);
+
+  // deco-disclaimer: replace inner content but re-add checkbox (id needed by setDecoAvail)
+  var decoDisclaimerEl = document.getElementById('deco-disclaimer');
+  if (decoDisclaimerEl) decoDisclaimerEl.innerHTML = s.decoDisclaimer;
+
+  // result-accessory-3yr: translate disclaimer text and total-care box (preserves checkbox state)
+  setHTML('acc-disclaimer-label', s.restoDisclaimerLabel);
+  setText('acc-disclaimer-desc', s.restoDisclaimerDesc);
+  setText('acc-disclaimer-check', s.restoDisclaimerCheck);
+  setHTML('acc-total-care-box', s.accTotalCare);
+
+  // Update parts-summary empty text if currently empty
+  var psum = document.getElementById('parts-summary');
+  if (psum) {
+    var hasSelected = Object.keys(PART_NAMES).some(function(pid) {
+      return document.getElementById(pid) && document.getElementById(pid).classList.contains('sel');
+    });
+    if (!hasSelected) psum.innerHTML = s.partsSummaryEmpty;
+  }
 }
 
 function openLangModal() {
@@ -448,7 +720,8 @@ function initRepairPage() {
   if (repairPageInitialized) return;
   repairPageInitialized = true;
   var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
-  setLang(saved || 'ko');
+  var country; try { country = localStorage.getItem('ps-country'); } catch(e) {}
+  setLang(country === 'us' ? 'en' : (saved || 'ko'));
 
   // ps-state.purchaseDate 기반 자동 연식 판단
   try {

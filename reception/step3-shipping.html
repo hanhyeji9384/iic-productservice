@@ -69,13 +69,6 @@
           </p>
         </div>
       </label>
-      <label id="send-dhl-opt" class="check-item" style="display:none;" onclick="selectSend(this,'dhl')">
-        <input type="radio" name="send" value="dhl">
-        <div>
-          <p id="title-dhl" class="check-item-title">DHL 발송</p>
-          <p id="desc-dhl" class="check-item-desc">DHL을 통해 발송해 주세요. 발송 주소와 방법은 이메일로 안내드립니다.</p>
-        </div>
-      </label>
     </div>
 
     <!-- 자택 픽업 섹션 -->
@@ -104,10 +97,9 @@
         </div>
         <button onclick="alert('[새 주소 추가]')" style="width:100%;padding:18px;font-size:13px;font-family:var(--font);color:var(--gray-800);background:var(--white);border:1px solid var(--gray-200);cursor:pointer;margin-top:8px;letter-spacing:0.02em;">새로운 주소 추가하기</button>
       </div>
-      <div class="notice-box" style="margin-top:0;">
-        <p>· CJ 대한통운 택배 기사가 방문하여 제품을 수거합니다.</p>
-        <p>· 수거 당일 부재 시 문자로 재방문 일정을 협의합니다.</p>
-        <p>· 케이스, 케이블, 보증서는 동봉하지 마세요.</p>
+      <div class="notice-box" id="pickup-notice-box" style="margin-top:0;">
+        <p>· 접수 완료 후 영업일 3일 이내 방문 수거해 드립니다.</p>
+        <p>· 수거 전 기사님께서 미리 연락드립니다.</p>
       </div>
     </div>
 
@@ -145,6 +137,20 @@
         <p id="dss-status" style="font-size:12px;margin-bottom:4px;"></p>
         <p id="dss-addr" style="font-size:12px;color:var(--gray-500);margin-bottom:14px;"></p>
         <button id="btn-change-drop" onclick="changeDropStore()" style="font-size:12px;padding:8px 16px;border:1px solid var(--gray-300);background:var(--white);font-family:var(--font);cursor:pointer;">변경하기</button>
+      </div>
+      <div class="notice-box" id="store-notice-box" style="margin-top:16px;">
+        <p>· 접수 후 5일 이내에 선택하신 매장에 제품을 맡겨주세요.</p>
+        <p>· 기한 내 미방문 시 접수가 자동으로 취소됩니다.</p>
+      </div>
+    </div>
+
+    <!-- 직접 발송 안내 (US 기타) -->
+    <div id="self-ship-section" style="display:none;margin-bottom:32px;">
+      <div class="notice-box" id="self-notice-box">
+        <p>· You may send the product using your preferred carrier.</p>
+        <p>· Ship to: 2211 E. Howell Ave. Anaheim, CA 92806 — include your ticket number and name inside the package.</p>
+        <p>· Detailed shipping instructions will also be sent to your email.</p>
+        <p>· If the product is not received within 14 days of submission, your service request will be automatically cancelled.</p>
       </div>
     </div>
     </div><!-- /send-method-wrap -->
@@ -357,7 +363,6 @@ const STRINGS = {
     titlePickup: '자택 픽업', descPickup: '운송사가 방문하여 수거해 드립니다.',
     titleDropoff: '매장 Drop Off', descDropoff: '가까운 매장에 직접 방문하여 제품을 맡겨주세요.',
     titleSelf: '직접 발송', descSelf: '원하시는 운송사를 이용해 직접 보내주셔도 됩니다. 발송 주소와 방법은 이메일로 안내드립니다.',
-    titleDhl: 'DHL 발송', descDhl: 'DHL을 통해 발송해 주세요. 발송 주소와 방법은 이메일로 안내드립니다.',
     titleHomeDelivery: '자택 배송', descHomeDelivery: '수리 완료 후 자택으로 배송해 드립니다.',
     titleStorePickup: '매장 픽업', descStorePickup: '수리 완료 후 선택한 매장에서 수령합니다.',
     btnLocDrop: '현재 위치', btnLocRecv: '현재 위치',
@@ -384,7 +389,6 @@ const STRINGS = {
     titlePickup: 'Home Pickup', descPickup: 'A courier will visit your home for pickup.',
     titleDropoff: 'Store Drop Off', descDropoff: 'Please visit your nearest store and drop off your product.',
     titleSelf: 'Direct Shipment', descSelf: 'You may send the product using your preferred carrier. We\'ll email you the shipping address and instructions.',
-    titleDhl: 'DHL Shipment', descDhl: 'Please send via DHL. We\'ll email you the shipping address and instructions.',
     titleHomeDelivery: 'Home Delivery', descHomeDelivery: 'Your repaired product will be delivered to your home.',
     titleStorePickup: 'Store Pickup', descStorePickup: 'Collect your repaired product at your selected store.',
     btnLocDrop: 'Current Location', btnLocRecv: 'Current Location',
@@ -440,8 +444,6 @@ function setLang(lang) {
   setText('desc-dropoff', st.descDropoff);
   setText('title-self', st.titleSelf);
   setText('desc-self', st.descSelf);
-  setText('title-dhl', st.titleDhl);
-  setText('desc-dhl', st.descDhl);
   setText('title-home-delivery', st.titleHomeDelivery);
   setText('desc-home-delivery', st.descHomeDelivery);
   setText('title-store-pickup', st.titleStorePickup);
@@ -537,6 +539,8 @@ function selectSend(el, type) {
   el.classList.add('selected');
   document.getElementById('pickup-section').style.display = (type === 'pickup') ? 'block' : 'none';
   document.getElementById('send-store-section').style.display = (type === 'store') ? 'block' : 'none';
+  var selfSec = document.getElementById('self-ship-section');
+  if (selfSec) selfSec.style.display = (type === 'self') ? 'block' : 'none';
   checkShippingNextBtn();
 }
 
@@ -549,10 +553,55 @@ function applyLensServiceMode() {
   if (storeOpt) { storeOpt.classList.add('selected'); selectSend(storeOpt, 'store'); }
 }
 
-function applyIntMode(isInt) {
-  // 자택픽업·Drop Off: 국내만 / 직접발송: INT만
+function applyKrMode() {
+  setLang('ko');
+  document.getElementById('send-pickup-opt').style.display = '';
+  document.getElementById('send-self-opt').style.display = 'none';
+  var selfSec = document.getElementById('self-ship-section');
+  if (selfSec) selfSec.style.display = 'none';
+  var titleEl = document.getElementById('title-pickup');
+  var descEl = document.getElementById('desc-pickup');
+  if (titleEl) titleEl.textContent = STRINGS.ko.titlePickup;
+  if (descEl) descEl.textContent = STRINGS.ko.descPickup;
+  var nb = document.getElementById('pickup-notice-box');
+  if (nb) nb.innerHTML = '<p>· 접수 완료 후 영업일 3일 이내 방문 수거해 드립니다.</p><p>· 수거 전 기사님께서 미리 연락드립니다.</p>';
+  var sn = document.getElementById('store-notice-box');
+  if (sn) sn.innerHTML = '<p>· 접수 후 5일 이내에 선택하신 매장에 제품을 맡겨주세요.</p><p>· 기한 내 미방문 시 접수가 자동으로 취소됩니다.</p>';
+}
+
+function applyUsDefectMode() {
+  // US 결함·이상: 픽업 + 매장 Drop Off
+  setLang('en');
+  document.getElementById('send-pickup-opt').style.display = '';
+  document.getElementById('send-self-opt').style.display = 'none';
+  var selfSec = document.getElementById('self-ship-section');
+  if (selfSec) selfSec.style.display = 'none';
+  var titleEl = document.getElementById('title-pickup');
+  var descEl = document.getElementById('desc-pickup');
+  if (titleEl) titleEl.textContent = 'Courier Pickup';
+  if (descEl) descEl.innerHTML = 'A courier will visit your address to collect the product.<br><span style="font-size:11px;color:#999;">Within 14 days of submission</span>';
+  var nb = document.getElementById('pickup-notice-box');
+  if (nb) nb.innerHTML = '<p>· After submission, FedEx will email you your pickup schedule and prepaid shipping label. (Check your spam folder too)</p><p>· If the pickup is not completed, your submission will be automatically cancelled.</p>';
+  var sn = document.getElementById('store-notice-box');
+  if (sn) sn.innerHTML = '<p>· Please bring your product to the selected store within 5 days of submission.</p><p>· Failure to visit within the deadline will result in automatic cancellation.</p>';
+}
+
+function applyUsOtherMode() {
+  // US 결함·이상 외: 직접 발송만
+  setLang('en');
+  document.getElementById('send-pickup-opt').style.display = 'none';
+  document.getElementById('send-self-opt').style.display = '';
+  document.getElementById('send-store-opt').style.display = 'none';
   var selfOpt = document.getElementById('send-self-opt');
-  if (selfOpt) selfOpt.style.display = isInt ? '' : 'none';
+  if (selfOpt) { selfOpt.classList.add('selected'); var r = selfOpt.querySelector('input[type="radio"]'); if (r) r.checked = true; }
+  var selfSec = document.getElementById('self-ship-section');
+  if (selfSec) selfSec.style.display = 'block';
+  document.getElementById('pickup-section').style.display = 'none';
+  document.getElementById('send-store-section').style.display = 'none';
+}
+
+function applyIntMode(isInt) {
+  if (isInt) applyUsDefectMode();
 }
 
 function selectPickupAddr(idx) {
@@ -798,13 +847,21 @@ window.addEventListener('load', function() {
   var pdEl = document.getElementById('pickup-date-send');
   if (pdEl) { pdEl.min = minDate; pdEl.value = minDate; }
 
-  var savedCountry; try { savedCountry = localStorage.getItem('ps-country'); } catch(e) {}
-  if (savedCountry === 'us') applyIntMode(true);
-
   try {
     var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
-    if (state.lensType === 'custom') applyLensServiceMode();
-    if (state.serviceType === 'accessory') applyAccessoryMode();
+    var country = localStorage.getItem('ps-country') || 'kr';
+
+    if (country === 'us') {
+      if (state.serviceType === 'repair') {
+        applyUsDefectMode();
+      } else {
+        applyUsOtherMode();
+      }
+    } else if (state.lensType === 'custom') {
+      applyLensServiceMode();
+    } else if (state.serviceType === 'accessory') {
+      applyAccessoryMode();
+    }
   } catch(e) {}
 });
 </script>

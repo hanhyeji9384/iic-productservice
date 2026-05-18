@@ -124,26 +124,6 @@
       </div>
     </div>
 
-    <!-- INT 관세 예상 비용 — est-section 바깥에 위치하여 시나리오와 독립적으로 토글 -->
-    <div id="int-tariff-notice" style="display:none;margin-bottom:24px;">
-      <p id="lbl-int" class="section-label" style="margin-top:0;">INT — 관세 예상 비용</p>
-      <div class="summary-card">
-        <div class="summary-row">
-          <span id="key-int-repair" class="summary-key">수리 예상 비용</span>
-          <span id="int-repair-cost" class="summary-val">—</span>
-        </div>
-        <div class="summary-row">
-          <span id="key-int-tariff" class="summary-key">예상 관세</span>
-          <span id="int-tariff-cost" class="summary-val">—</span>
-        </div>
-        <div class="summary-row" style="border-top:1px solid var(--gray-200);margin-top:4px;padding-top:12px;">
-          <span id="key-int-total" class="summary-key" style="font-weight:500;color:#111;">예상 합계</span>
-          <span id="int-total-cost" class="summary-val" style="font-size:16px;font-weight:500;">—</span>
-        </div>
-      </div>
-      <p id="int-footnote" style="font-size:11px;color:var(--gray-400);margin-top:-12px;margin-bottom:24px;line-height:1.8;">실제 관세는 수령 국가 및 통관 신고 금액에 따라 변동될 수 있습니다.</p>
-    </div>
-
     <div class="btn-wrap">
       <a id="btn-prev" href="step3-shipping.html" class="btn btn-secondary">이전</a>
       <a id="btn-complete" href="complete.html" class="btn btn-primary">접수 완료하기</a>
@@ -175,8 +155,6 @@
 </footer>
 
 <script>
-const TARIFF_RATE = 0.10;
-
 const STRINGS = {
   ko: {
     eyebrow: '수리 서비스 접수', title: '수리 안내 확인',
@@ -192,11 +170,7 @@ const STRINGS = {
     keyEstCost: '예상 비용', keyEstLeadtime: '예상 리드타임',
     noticeMain: '실제 수리 내용과 비용은 제품 입고 후 프로덕트 서비스팀의 정밀 점검을 통해 최종 결정됩니다.',
     noticePaid: '유상 수리의 경우 결제 완료 후 수리가 시작됩니다.',
-    lblInt: 'INT — 관세 예상 비용',
-    keyIntRepair: '수리 예상 비용', keyIntTariff: '예상 관세', keyIntTotal: '예상 합계',
-    intFootnote: '실제 관세는 수령 국가 및 통관 신고 금액에 따라 변동될 수 있습니다.',
     btnPrev: '이전', btnComplete: '접수 완료하기',
-    intPending: '판정 후 확정', intNA: '해당 없음',
   },
   en: {
     eyebrow: 'Repair Service', title: 'Service Confirmation',
@@ -204,7 +178,7 @@ const STRINGS = {
     lblReception: 'Service Details', keyProduct: 'Product',
     keySvcType: 'Service Type', keySvcDetail: 'Detail',
     keyUrgentOpt: 'Add-on', valUrgent: 'Urgent Service',
-    urgentFeeLabel: '+ Urgent Service ₩50,000',
+    urgentFeeLabel: '+ Urgent Service $37',
     keySend: 'Shipping', valSend: 'Home Pickup (CJ Logistics)',
     keyRecv: 'Return', valRecv: 'Home Delivery',
     keyAddr: 'Address',
@@ -212,11 +186,7 @@ const STRINGS = {
     keyEstCost: 'Est. Cost', keyEstLeadtime: 'Est. Lead Time',
     noticeMain: 'Actual repair details and costs will be finalized after inspection by the Product Service team.',
     noticePaid: 'For paid repairs, service will begin after payment is completed.',
-    lblInt: 'INT — Est. Customs',
-    keyIntRepair: 'Est. Repair Cost', keyIntTariff: 'Est. Customs', keyIntTotal: 'Est. Total',
-    intFootnote: 'Actual customs fees may vary depending on the destination country and declared value.',
     btnPrev: 'Back', btnComplete: 'Confirm & Submit',
-    intPending: 'TBD after inspection', intNA: 'N/A',
   },
 };
 
@@ -232,13 +202,13 @@ const SCENARIOS = {
     urgent: true, baseCost: 100000,
   },
   'repair-break3': {
-    ko: { type: '제품 수리', detail: '파손 & 변형 (구매 3년 이내)', method: '부품 교체', cost: '소비자가의 20%', leadtime: '입고 후 10~15 영업일' },
-    en: { type: 'Product Repair', detail: 'Damage & Deformation (within 3 yrs)', method: 'Part Replacement', cost: '20% of retail price', leadtime: '10–15 business days after receipt' },
-    urgent: false, baseCost: 80000, costPaid: true,
+    ko: { type: '제품 수리', detail: '파손 & 변형 (구매 3년 이내)', method: '부품 교체', leadtime: '입고 후 10~15 영업일' },
+    en: { type: 'Product Repair', detail: 'Damage & Deformation (within 3 yrs)', method: 'Part Replacement', leadtime: '10–15 business days after receipt' },
+    urgent: false, costRatio: 0.20, costPaid: true,
   },
   'repair-break7': {
     ko: { type: '제품 수리', detail: '파손 & 변형 (3~7년, 복원 수리)', method: '복원 수리', cost: '30,000원', leadtime: '입고 후 10~15 영업일' },
-    en: { type: 'Product Repair', detail: 'Damage & Deformation (3–7 yrs, restoration)', method: 'Restoration Repair', cost: '₩30,000', leadtime: '10–15 business days after receipt' },
+    en: { type: 'Product Repair', detail: 'Damage & Deformation (3–7 yrs, restoration)', method: 'Restoration Repair', cost: '$22', leadtime: '10–15 business days after receipt' },
     urgent: false, baseCost: 30000, costPaid: true,
   },
   'repair-deco': {
@@ -283,11 +253,15 @@ const SCENARIOS = {
   },
 };
 
-let intOn = false;
 let currentKey = 'total';
 let currentLang = 'ko';
+let currentCountry = 'kr';
+let PRODUCT_RETAIL_PRICE = 400000;
 
 function fmt(n) {
+  if (currentCountry === 'us') {
+    return '$' + Math.round(n / 1350).toLocaleString('en-US');
+  }
   return currentLang === 'en'
     ? '₩' + n.toLocaleString('en-US')
     : n.toLocaleString('ko-KR') + '원';
@@ -336,39 +310,11 @@ function setLang(lang) {
   setText('key-est-leadtime', st.keyEstLeadtime);
   setText('notice-main', st.noticeMain);
   setText('notice-paid', st.noticePaid);
-  setText('lbl-int', st.lblInt);
-  setText('key-int-repair', st.keyIntRepair);
-  setText('key-int-tariff', st.keyIntTariff);
-  setText('key-int-total', st.keyIntTotal);
-  setText('int-footnote', st.intFootnote);
   setText('btn-prev', st.btnPrev);
   setText('btn-complete', st.btnComplete);
 
   // 현재 시나리오 동적 내용도 언어에 맞게 갱신
   setScenario(currentKey);
-}
-
-function updateIntCalc(s) {
-  if (!intOn) return;
-  const st = STRINGS[currentLang];
-  if (s.noTariff) {
-    setText('int-repair-cost', st.intNA);
-    setText('int-tariff-cost', st.intNA);
-    setText('int-total-cost', st.intNA);
-    return;
-  }
-  const urgentFee = s.urgent ? 50000 : 0;
-  const base = s.baseCost !== null ? (s.baseCost + urgentFee) : null;
-  if (base === null) {
-    setText('int-repair-cost', st.intPending);
-    setText('int-tariff-cost', st.intPending);
-    setText('int-total-cost', st.intPending);
-    return;
-  }
-  const tariff = Math.round(base * TARIFF_RATE);
-  setText('int-repair-cost', fmt(base));
-  setText('int-tariff-cost', fmt(tariff));
-  setText('int-total-cost', fmt(base + tariff));
 }
 
 function setScenario(key) {
@@ -416,7 +362,11 @@ function setScenario(key) {
   // 예상 수리 안내 동적 필드
   setText('est-method', loc.method);
   const costEl = document.getElementById('est-cost');
-  costEl.textContent = loc.cost;
+  if (s.costRatio !== undefined) {
+    costEl.textContent = fmt(Math.round(PRODUCT_RETAIL_PRICE * s.costRatio));
+  } else {
+    costEl.textContent = loc.cost;
+  }
   costEl.style.color = s.costPaid ? '#c8491a' : (s.costPaid === null ? '#888' : '#111');
   setText('est-leadtime', loc.leadtime);
   document.getElementById('est-urgent-fee').style.display = s.urgent ? 'block' : 'none';
@@ -440,26 +390,11 @@ function setScenario(key) {
     btnComplete.style.borderColor = '';
   }
 
-  updateIntCalc(s);
 }
 
 window.setCountry = function(country) {
-  var isInt = (country !== 'kr');
-  intOn = isInt;
-  var tariffEl = document.getElementById('int-tariff-notice');
-  if (tariffEl) tariffEl.style.display = isInt ? 'block' : 'none';
-  if (isInt) updateIntCalc(SCENARIOS[currentKey]);
+  setLang(country !== 'kr' ? 'en' : 'ko');
 };
-
-function toggleInt() {
-  intOn = !intOn;
-  document.getElementById('int-tariff-notice').style.display = intOn ? 'block' : 'none';
-  const btn = document.getElementById('pb-int');
-  btn.style.background = intOn ? '#c8a000' : '#fff';
-  btn.style.color = intOn ? '#fff' : '#333';
-  btn.style.borderColor = intOn ? '#c8a000' : '#ccc';
-  if (intOn) updateIntCalc(SCENARIOS[currentKey]);
-}
 
 // ─── ps-state 기반 자동 시나리오 판단 ───
 function getScenarioFromState(state) {
@@ -503,12 +438,16 @@ function getScenarioFromState(state) {
 }
 
 window.addEventListener('load', function() {
+  var savedCountry; try { savedCountry = localStorage.getItem('ps-country'); } catch(e) {}
+  currentCountry = savedCountry || 'kr';
+
   var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
-  setLang(saved || 'ko');
+  setLang(currentCountry === 'us' ? 'en' : (saved || 'ko'));
 
   // ps-state 읽어 자동 시나리오 적용
   try {
     var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
+    if (state.productPrice) PRODUCT_RETAIL_PRICE = state.productPrice;
     var key = getScenarioFromState(state);
     setScenario(key);
     if (state.productName) {
@@ -517,15 +456,6 @@ window.addEventListener('load', function() {
     }
   } catch(e) {
     setScenario('total');
-  }
-
-  // INT 모드: 국가가 한국 외로 설정된 경우 관세 섹션 자동 표시
-  var savedCountry; try { savedCountry = localStorage.getItem('ps-country'); } catch(e) {}
-  if (savedCountry === 'us') {
-    intOn = true;
-    var tariffEl = document.getElementById('int-tariff-notice');
-    if (tariffEl) tariffEl.style.display = 'block';
-    updateIntCalc(SCENARIOS[currentKey]);
   }
 });
 </script>

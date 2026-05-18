@@ -495,7 +495,8 @@ window.addEventListener('load', function() {
   initDispatchCalendar();
 
   var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
-  setLang(saved || 'ko');
+  var country; try { country = localStorage.getItem('ps-country'); } catch(e) {}
+  setLang(country === 'us' ? 'en' : (saved || 'ko'));
 
   var nextBtn = document.getElementById('btn-total-care-next');
   if (nextBtn) nextBtn.addEventListener('click', validateAndSave);

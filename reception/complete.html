@@ -221,7 +221,8 @@ function setLang(lang) {
 }
 window.addEventListener('load', function() {
   var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
-  setLang(saved || 'ko');
+  var country; try { country = localStorage.getItem('ps-country'); } catch(e) {}
+  setLang(country === 'us' ? 'en' : (saved || 'ko'));
   renderComplete();
 });
 </script>
