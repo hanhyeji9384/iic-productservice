@@ -439,7 +439,7 @@ body { font-family: var(--font); background: #fff; color: var(--black); min-heig
     <div class="node" data-id="step3b" onclick="selectNode(this)">
       <div class="node-tag">STEP 04</div>
       <div class="node-label">배송 정보</div>
-      <div class="node-desc">발송 · 수령 방법 선택 · KR / INT 분기</div>
+      <div class="node-desc">발송 · 수령 방법 선택 · KR / US 분기</div>
       <div class="node-arrow-hint">→</div>
     </div>
   </div>
@@ -543,7 +543,7 @@ const NODES = {
     en: {
       tag: 'ENTRY', title: 'Service Home',
       desc: 'Entry point for repair service. Provides service type overview and CTA to start.',
-      features: ['Service type overview (Total Care / Repair / Consultation)', 'Start Repair Request CTA button', 'Country / Language selection (KR · INT)', 'In-store repair guide link'],
+      features: ['Service type overview (Total Care / Repair / Consultation)', 'Start Repair Request CTA button', 'Country / Language selection (KR · US)', 'In-store repair guide link'],
       conditions: ['Click Request → Terms & Conditions screen'],
     },
     specFile: '00-service-home.md', proto: 'index.html',
@@ -684,13 +684,13 @@ const NODES = {
       tag: 'STEP 03', title: '사진 · 렌즈 정보',
       desc: '제품 상태 사진을 첨부하고 렌즈 상태를 선택하는 화면.',
       features: ['제품 사진 첨부 (최대 5장, JPG/PNG, 10MB)', '렌즈 정보: 미삽입 / 별도제작 / 제품기존', '별도제작 렌즈 면책 동의 (필수)', '렌즈 분리 서비스 안내 (KR 전용)', '패키지 동봉 금지 확인 (필수)', '다국어 지원 (KR / EN)'],
-      conditions: ['별도제작 렌즈 → 면책 동의 필수, Drop Off 전용 자동 적용', '상담원연결·부속품 경로 → 사진 첨부 생략', 'INT → 렌즈 분리 서비스 미제공'],
+      conditions: ['별도제작 렌즈 → 면책 동의 필수, Drop Off 전용 자동 적용', '상담원연결·부속품 경로 → 사진 첨부 생략', 'US → 렌즈 분리 서비스 미제공'],
     },
     en: {
       tag: 'STEP 03', title: 'Photos · Lens Info',
       desc: 'Upload product condition photos and select lens status.',
       features: ['Product photos (up to 5, JPG/PNG, 10MB)', 'Lens info: None / Custom-made / Original', 'Custom-made lens disclaimer (required)', 'Lens removal service (KR only)', 'No package enclosure confirmation (required)'],
-      conditions: ['Custom-made lens → Disclaimer required, Drop Off only auto-applied', 'Consultation · Accessories path → Skip photo upload', 'INT → Lens removal service not available'],
+      conditions: ['Custom-made lens → Disclaimer required, Drop Off only auto-applied', 'Consultation · Accessories path → Skip photo upload', 'US → Lens removal service not available'],
     },
     specFile: '06-step3-shipping.md', proto: 'reception/step3-details.html',
     specUrl: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-step4-photo-lens',
@@ -700,13 +700,13 @@ const NODES = {
       tag: 'STEP 04', title: '배송 정보',
       desc: '제품 발송 방법과 수령 방법을 선택하는 화면. 국가 및 렌즈 유형에 따라 옵션이 달라진다.',
       features: ['발송: 자택픽업 / Drop Off / 직접발송', '수령: 자택배송 / 매장픽업', '매장 지도 검색 (Drop Off 선택 시)', '주소 선택 · 추가 (자택 배송)', '다국어 지원 (KR / EN)'],
-      conditions: ['KR: 자택픽업(CJ) + Drop Off', 'INT: 자택픽업(DHL) + Drop Off + 직접발송', '별도제작 렌즈: Drop Off만 표시 · 자동 선택'],
+      conditions: ['KR: 자택픽업(CJ) + Drop Off', 'US 결함·이상: FedEx 픽업 + Drop Off', 'US 결함·이상 외: 직접 발송 + Drop Off', '별도제작 렌즈: Drop Off만 표시 · 자동 선택'],
     },
     en: {
       tag: 'STEP 04', title: 'Shipping Info',
       desc: 'Select product send and receive methods. Options differ by country and lens type.',
       features: ['Send: Home Pickup / Drop Off / Self-ship', 'Receive: Home Delivery / Store Pickup', 'Store map search (when Drop Off selected)', 'Address selection · add (home delivery)'],
-      conditions: ['KR: Home Pickup (CJ) + Drop Off', 'INT: Home Pickup (DHL) + Drop Off + Self-ship', 'Custom-made lens: Drop Off only, auto-selected'],
+      conditions: ['KR: Home Pickup (CJ) + Drop Off', 'US Defect/Issue: FedEx Pickup + Drop Off', 'US Other: Direct Shipment + Drop Off', 'Custom-made lens: Drop Off only, auto-selected'],
     },
     specFile: '06-step3-shipping.md', proto: 'reception/step3-shipping.html',
     specUrl: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-step5-shipping',
@@ -715,13 +715,13 @@ const NODES = {
     ko: {
       tag: 'STEP 05', title: '수리 안내 확인',
       desc: '예상 수리 방식, 비용, 리드타임을 확인하고 접수를 최종 완료하는 화면.',
-      features: ['접수 정보 요약 카드 (제품·서비스·발송)', '예상 수리 방식 및 비용', '예상 리드타임', 'INT 관세 예상 비용 섹션 (해외 국가)', '다국어 지원 (KR / EN)'],
+      features: ['접수 정보 요약 카드 (제품·서비스·발송)', '예상 수리 방식 및 비용', '예상 리드타임', 'US 관세 예상 비용 섹션 (해외 국가)', '다국어 지원 (KR / EN)'],
       conditions: ['토탈케어 → 무상 / 긴급 선택 시 50,000원 추가', '파손&변형 ~3년 → 소비자가 20%', '파손&변형 3~7년 → 30,000원', '장식·부속품 → 무상'],
     },
     en: {
       tag: 'STEP 05', title: 'Repair Guide Confirmation',
       desc: 'Confirm expected repair method, cost, and lead time to finalize the request.',
-      features: ['Reception summary card (product · service · shipping)', 'Expected repair method and cost', 'Expected lead time', 'INT customs estimate section (overseas)', 'Multilingual (KR / EN)'],
+      features: ['Reception summary card (product · service · shipping)', 'Expected repair method and cost', 'Expected lead time', 'US customs estimate section (overseas)', 'Multilingual (KR / EN)'],
       conditions: ['Total Care → Free / Urgent +₩50,000', 'Damage <3yr → 20% of retail', 'Damage 3–7yr → ₩30,000', 'Decoration · Accessories → Free'],
     },
     specFile: '07-step4-estimate.md', proto: 'reception/step4-estimate.html',
@@ -732,13 +732,13 @@ const NODES = {
       tag: 'COMPLETE', title: '접수 완료',
       desc: '수리 접수가 완료된 화면. 접수 번호와 발송 방법별 안내를 제공한다.',
       features: ['접수 번호 발급 (예: 2605060GMP…)', '발송 방법별 안내 (픽업기한 / 방문기한)', '이메일 · 카카오톡 안내 발송', '수리 서비스 내역 보기 링크', '다국어 지원 (KR / EN)'],
-      conditions: ['CJ 픽업: 접수일 +3영업일 이내 수거', 'Drop Off: 접수일 +5영업일 이내 방문', 'INT 직접발송: 접수일 +7일 이내 픽업'],
+      conditions: ['CJ 픽업: 접수일 +3영업일 이내 수거', 'Drop Off: 접수일 +5영업일 이내 방문', 'US 직접발송: 접수일 +7일 이내 픽업'],
     },
     en: {
       tag: 'COMPLETE', title: 'Reception Complete',
       desc: 'Repair reception completion screen. Provides reception number and shipping guidance.',
       features: ['Reception number issued (e.g., 2605060GMP…)', 'Guidance by shipping method (pickup / visit deadline)', 'Email · KakaoTalk notification sent', 'View repair service details link'],
-      conditions: ['CJ Pickup: Collection within 3 business days', 'Drop Off: Visit within 5 business days', 'INT Self-ship: Pickup within 7 days of reception'],
+      conditions: ['CJ Pickup: Collection within 3 business days', 'Drop Off: Visit within 5 business days', 'US Self-ship: Pickup within 7 days of reception'],
     },
     specFile: '08-complete.md', proto: 'reception/complete.html',
     specUrl: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-complete',
