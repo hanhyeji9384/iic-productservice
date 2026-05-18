@@ -301,7 +301,7 @@ body { font-family: var(--font); background: #fff; color: var(--black); min-heig
     <div class="legend-item"><div class="legend-dot" style="border:1px dashed #aaa;background:#fff;"></div> <span id="leg-pre">사전 단계</span></div>
   </div>
 
-  <!-- 서비스 홈 -->
+  <!-- 서비스 홈 (단일 진입점) -->
   <div class="node-row">
     <div class="node node-pre" data-id="home" onclick="selectNode(this)">
       <div class="node-tag">ENTRY</div>
@@ -313,12 +313,18 @@ body { font-family: var(--font); background: #fff; color: var(--black); min-heig
   <div class="connector"></div>
   <div class="connector-arrow">↓</div>
 
-  <!-- 약관 동의 -->
-  <div class="node-row">
+  <!-- 이용 방법 및 약관 동의 / 스토어 내 서비스 (병렬 PRE-FLOW) -->
+  <div class="node-row" style="gap:16px;">
     <div class="node node-pre" data-id="terms" onclick="selectNode(this)">
       <div class="node-tag">PRE-FLOW</div>
-      <div class="node-label">약관 동의</div>
-      <div class="node-desc">수리 서비스 이용 약관 필수 동의</div>
+      <div class="node-label">이용 방법 및 약관 동의</div>
+      <div class="node-desc">수리 서비스 이용 방법 안내 · 약관 필수 동의</div>
+      <div class="node-arrow-hint">→</div>
+    </div>
+    <div class="node node-pre" data-id="store-entry" onclick="selectNode(this)">
+      <div class="node-tag">PRE-FLOW</div>
+      <div class="node-label">스토어 내 서비스</div>
+      <div class="node-desc">매장 방문 접수 진입점</div>
       <div class="node-arrow-hint">→</div>
     </div>
   </div>
@@ -499,7 +505,7 @@ body { font-family: var(--font); background: #fff; color: var(--black); min-heig
   </div>
   <div class="spec-panel-footer">
     <a class="spec-link spec-link-primary" id="panelProtoLink" target="_blank"><span id="lbl-proto">프로토타입 열기 ↗</span></a>
-    <a class="spec-link spec-link-secondary" id="panelSpecLink" target="_blank"><span id="lbl-spec">기획 문서 보기 ↗</span></a>
+    <div id="panelSpecLinks"></div>
   </div>
 </div>
 
@@ -541,21 +547,42 @@ const NODES = {
       conditions: ['Click Request → Terms & Conditions screen'],
     },
     specFile: '00-service-home.md', proto: 'index.html',
+    specUrl: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/services',
   },
   terms: {
     ko: {
-      tag: 'PRE-FLOW', title: '약관 동의',
-      desc: '수리 서비스 이용 약관에 동의하는 화면. 6개 조항 확인 및 필수 동의.',
-      features: ['수리 서비스 이용약관 6개 조항', '필수 동의 체크박스', '약관 전문 보기 (별도 페이지 이동)', '다국어 지원 (KR / EN)'],
+      tag: 'PRE-FLOW', title: '이용 방법 및 약관 동의',
+      desc: '수리 서비스 이용 방법 안내 후 약관에 동의하는 화면. 6개 조항 확인 및 필수 동의.',
+      features: ['수리 서비스 이용 방법 안내', '수리 서비스 이용약관 6개 조항', '필수 동의 체크박스', '약관 전문 보기 (별도 페이지 이동)', '다국어 지원 (KR / EN)'],
       conditions: ['동의 완료 → STEP 1 기본정보 이동', '미동의 → 버튼 비활성'],
     },
     en: {
-      tag: 'PRE-FLOW', title: 'Terms & Conditions',
-      desc: 'Screen to agree to repair service terms. Review 6 clauses and mandatory consent.',
-      features: ['6 clauses of repair service terms', 'Mandatory consent checkbox', 'View full terms (separate page)', 'Multilingual support (KR / EN)'],
+      tag: 'PRE-FLOW', title: 'How to Use & Terms',
+      desc: 'How-to guide followed by terms agreement screen. Review 6 clauses and mandatory consent.',
+      features: ['How to use the repair service', '6 clauses of repair service terms', 'Mandatory consent checkbox', 'View full terms (separate page)', 'Multilingual support (KR / EN)'],
       conditions: ['Consent complete → STEP 1 Basic Info', 'Not agreed → Button disabled'],
     },
-    specFile: '01-main-terms.md', proto: 'reception/start.html',
+    proto: 'reception/start.html',
+    specUrls: [
+      { label: '이용방법 기획문서 ↗', url: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-start' },
+      { label: '약관동의 기획문서 ↗', url: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-terms' },
+    ],
+  },
+  'store-entry': {
+    ko: {
+      tag: 'PRE-FLOW', title: '스토어 내 서비스',
+      desc: '매장 방문 고객이 수리 서비스를 접수하는 진입점. 매장 직원이 고객 대신 접수를 시작한다.',
+      features: ['매장 방문 고객 수리 접수', '매장 직원 보조 접수 플로우', '온라인 접수와 동일한 STEP 진행'],
+      conditions: ['매장 방문 접수 시작 → STEP 1 기본정보'],
+    },
+    en: {
+      tag: 'PRE-FLOW', title: 'In-Store Service',
+      desc: 'Entry point for walk-in customers at a store. Staff assists in starting the repair request.',
+      features: ['Walk-in customer repair request', 'Staff-assisted reception flow', 'Same STEPs as online reception'],
+      conditions: ['Start in-store reception → STEP 1 Basic Info'],
+    },
+    specFile: '00-service-home.md', proto: 'index.html',
+    specUrl: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-start-store',
   },
   step1: {
     ko: {
@@ -571,6 +598,7 @@ const NODES = {
       conditions: ['AI product detected → AI STEP 2', 'Regular product → STEP 2 Service Type', 'No history + no proof → Next button disabled'],
     },
     specFile: '02-step1-basic-info.md', proto: 'reception/step1.html',
+    specUrl: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-step1',
   },
   'step2-type': {
     ko: {
@@ -586,19 +614,20 @@ const NODES = {
       conditions: ['Total Care → STEP 2A Total Care Details', 'Product Repair → STEP 2B Repair Details', 'Consultation → STEP 2C Consultation Details'],
     },
     specFile: '02-step1-basic-info.md', proto: 'reception/step2-service-type.html',
+    specUrl: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-step2-service-type',
   },
   'step2-ai': {
     ko: {
       tag: 'AI · 기능이상만', title: '기능이상만 선택 시',
       desc: 'AI 아이웨어에서 기능이상만 선택 시 사진·렌즈 단계를 생략하고 배송정보로 바로 이동한다.',
       features: ['기능이상 선택 (소프트웨어·센서·연결 등)', '제품이상 미선택', '사진·렌즈 단계 생략', '다국어 지원 (KR / EN)'],
-      conditions: ['기능이상만 → STEP 04 배송정보 직행', '제품이상 추가 선택 → STEP 03 사진·렌즈로 이동'],
+      conditions: ['기능이상만 → STEP 04 배송정보 직행', '제품이상 추가 선택 → 동일 화면 하단에 서비스 유형 선택 노출'],
     },
     en: {
       tag: 'AI · Func Only', title: 'Functional Issue Only',
       desc: 'When only Functional issue is selected for AI eyewear, skip photo·lens step and go directly to shipping.',
       features: ['Functional issue selected (software · sensor · connectivity)', 'Product issue not selected', 'Photo · lens step skipped'],
-      conditions: ['Functional only → Go directly to STEP 04 Shipping', 'Product issue also selected → Move to STEP 03 Photos·Lens'],
+      conditions: ['Functional only → Go directly to STEP 04 Shipping', 'Product issue also selected → Service type selection appears below on same screen'],
     },
     specFile: '02-step1-basic-info.md', proto: 'reception/step2-service-type.html?ai=func',
   },
@@ -616,6 +645,7 @@ const NODES = {
       conditions: ['Purchase 3+ years → Warranty disclaimer required', 'Urgent selected → ₩50,000 surcharge'],
     },
     specFile: '03-step2-total-care.md', proto: 'reception/step2-total-care.html',
+    specUrl: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-step2-total-care',
   },
   step2b: {
     ko: {
@@ -631,6 +661,7 @@ const NODES = {
       conditions: ['Damage <3yr → Part replacement (20% of retail)', 'Damage 3–7yr → Restoration repair ₩30,000', 'Damage 7yr+ → Repair not available', 'Decoration / Accessories → Free'],
     },
     specFile: '04-step2-repair.md', proto: 'reception/step2-repair.html',
+    specUrl: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-step2-repair',
   },
   step2c: {
     ko: {
@@ -646,6 +677,7 @@ const NODES = {
       conditions: ['Defect purchase 2+ years → Request not available', 'Accessory request → Skip photo step, move to shipping', 'Customer service → Consultation without estimate'],
     },
     specFile: '05-step2-consulting.md', proto: 'reception/step2-consulting.html',
+    specUrl: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-step2-consulting',
   },
   step3a: {
     ko: {
@@ -661,6 +693,7 @@ const NODES = {
       conditions: ['Custom-made lens → Disclaimer required, Drop Off only auto-applied', 'Consultation · Accessories path → Skip photo upload', 'INT → Lens removal service not available'],
     },
     specFile: '06-step3-shipping.md', proto: 'reception/step3-details.html',
+    specUrl: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-step4-photo-lens',
   },
   step3b: {
     ko: {
@@ -676,6 +709,7 @@ const NODES = {
       conditions: ['KR: Home Pickup (CJ) + Drop Off', 'INT: Home Pickup (DHL) + Drop Off + Self-ship', 'Custom-made lens: Drop Off only, auto-selected'],
     },
     specFile: '06-step3-shipping.md', proto: 'reception/step3-shipping.html',
+    specUrl: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-step5-shipping',
   },
   step4: {
     ko: {
@@ -691,6 +725,7 @@ const NODES = {
       conditions: ['Total Care → Free / Urgent +₩50,000', 'Damage <3yr → 20% of retail', 'Damage 3–7yr → ₩30,000', 'Decoration · Accessories → Free'],
     },
     specFile: '07-step4-estimate.md', proto: 'reception/step4-estimate.html',
+    specUrl: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-step4-estimate',
   },
   complete: {
     ko: {
@@ -706,6 +741,7 @@ const NODES = {
       conditions: ['CJ Pickup: Collection within 3 business days', 'Drop Off: Visit within 5 business days', 'INT Self-ship: Pickup within 7 days of reception'],
     },
     specFile: '08-complete.md', proto: 'reception/complete.html',
+    specUrl: 'https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-complete',
   },
   close: {
     ko: {
@@ -741,7 +777,6 @@ function setLang(lang) {
   document.getElementById('lbl-features').textContent = u.secFeatures;
   document.getElementById('lbl-conditions').textContent = u.secConditions;
   document.getElementById('lbl-proto').textContent = u.lblProto;
-  document.getElementById('lbl-spec').textContent = u.lblSpec;
   document.getElementById('btn-close-panel').textContent = u.btnClose;
 
   // update flowchart node text
@@ -797,7 +832,15 @@ function selectNode(el) {
     protoLink.style.display = 'none';
   }
 
-  document.getElementById('panelSpecLink').href = BASE_SPEC + node.specFile;
+  const specLinksEl = document.getElementById('panelSpecLinks');
+  if (node.specUrls && node.specUrls.length > 0) {
+    specLinksEl.innerHTML = node.specUrls.map(s =>
+      `<a class="spec-link spec-link-secondary" href="${s.url}" target="_blank">${s.label}</a>`
+    ).join('');
+  } else {
+    const url = node.specUrl || (BASE_SPEC + node.specFile);
+    specLinksEl.innerHTML = `<a class="spec-link spec-link-secondary" href="${url}" target="_blank">${UI[currentLang].lblSpec}</a>`;
+  }
 
   document.getElementById('specPanel').classList.add('open');
   document.getElementById('flowArea').classList.add('panel-open');
