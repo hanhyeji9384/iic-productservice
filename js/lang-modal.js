@@ -2,20 +2,28 @@
 (function () {
   var COUNTRY_MAP = {
     kr: { currency: 'krw', lang: 'ko' },
-    us: { currency: 'usd', lang: 'en' }
+    us: { currency: 'usd', lang: 'en' },
+    ca: { currency: 'cad', lang: 'en' }
   };
 
   var COUNTRY_LABEL = {
     kr: 'South Korea',
-    us: 'United States'
+    us: 'United States',
+    ca: 'Canada'
   };
 
-  function applyCountryToPage(country) {
+  function getSavedLang() {
+    try { return localStorage.getItem('ps-lang'); } catch(e) { return null; }
+  }
+
+  function applyCountryToPage(country, lang) {
     var label = COUNTRY_LABEL[country] || country;
+    var activeLang = lang || getSavedLang();
+    var prefix = (activeLang === 'en') ? 'Country: ' : '국가: ';
     document.querySelectorAll('.site-footer a, footer a').forEach(function(el) {
       var txt = el.textContent.trim();
       if (txt.indexOf('국가:') === 0 || txt.indexOf('Country:') === 0) {
-        el.textContent = '국가: ' + label;
+        el.textContent = prefix + label;
       }
     });
   }
@@ -26,7 +34,7 @@
 
     '<div style="background:#fff;width:490px;max-width:90vw;max-height:90vh;overflow-y:auto;border-radius:12px;padding:48px 40px 40px;position:relative;">' +
 
-    '<button onclick="closeLangModal()" style="position:absolute;top:18px;right:18px;width:34px;height:34px;border-radius:50%;border:1px solid #d0d0d0;background:#fff;cursor:pointer;font-size:16px;color:#333;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;font-family:inherit;">✕</button>' +
+    '<button onclick="closeLangModal()" style="position:absolute;top:18px;right:18px;width:34px;height:34px;border-radius:50%;border:1px solid #d0d0d0;background:#fff;cursor:pointer;font-size:16px;color:#333;display:flex;align-items:center;justify-content:center;line-height:1;padding:0;font-family:inherit;">&#x2715;</button>' +
 
     '<h2 style="font-size:22px;font-weight:500;letter-spacing:-0.01em;margin-bottom:28px;color:#111;">국가 또는 지역 선택</h2>' +
 
@@ -37,8 +45,9 @@
     '<select id="modal-country" onchange="onModalCountryChange(this.value)" style="flex:1;-webkit-appearance:none;appearance:none;border:none;font-size:14px;font-family:inherit;background:transparent;cursor:pointer;outline:none;color:#111;padding:0;">' +
     '<option value="kr">Korea, South</option>' +
     '<option value="us">United States</option>' +
+    '<option value="ca">Canada</option>' +
     '</select>' +
-    '<span style="pointer-events:none;color:#333;font-size:13px;margin-left:8px;">∨</span>' +
+    '<span style="pointer-events:none;color:#333;font-size:13px;margin-left:8px;">&#x2228;</span>' +
     '</div></div>' +
 
     '<p style="font-size:12px;color:#888;line-height:1.6;margin-bottom:24px;">쇼핑 도중에 장소를 변경하시는 경우 쇼핑백에 있는 모든 제품이 삭제되므로 주의하시기 바랍니다.</p>' +
@@ -50,8 +59,9 @@
     '<select id="modal-currency" style="flex:1;-webkit-appearance:none;appearance:none;border:none;font-size:14px;font-family:inherit;background:transparent;cursor:pointer;outline:none;color:#111;padding:0;">' +
     '<option value="krw">Won</option>' +
     '<option value="usd">Dollar</option>' +
+    '<option value="cad">Canadian Dollar</option>' +
     '</select>' +
-    '<span style="pointer-events:none;color:#333;font-size:13px;margin-left:8px;">∨</span>' +
+    '<span style="pointer-events:none;color:#333;font-size:13px;margin-left:8px;">&#x2228;</span>' +
     '</div></div>' +
 
     '<p style="font-size:13px;color:#111;margin-bottom:10px;">언어</p>' +
@@ -62,7 +72,7 @@
     '<option value="ko">한국어</option>' +
     '<option value="en">English</option>' +
     '</select>' +
-    '<span style="pointer-events:none;color:#333;font-size:13px;margin-left:8px;">∨</span>' +
+    '<span style="pointer-events:none;color:#333;font-size:13px;margin-left:8px;">&#x2228;</span>' +
     '</div></div>' +
 
     '<button onclick="saveLangModal()" style="width:100%;padding:18px;background:#111;color:#fff;border:none;border-radius:6px;font-size:15px;font-family:inherit;cursor:pointer;letter-spacing:0.02em;">저장하기</button>' +
@@ -72,20 +82,29 @@
   document.addEventListener('DOMContentLoaded', function () {
     var wrap = document.createElement('div');
     wrap.innerHTML = MODAL_HTML;
-    document.body.appendChild(wrap.firstElementChild);
+    var modalEl = wrap.firstElementChild;
+    if (modalEl) document.body.appendChild(modalEl);
 
     try {
-      var saved = localStorage.getItem('ps-lang');
-      var savedCountry = localStorage.getItem('ps-country');
-      if (saved) {
-        var sel = document.getElementById('modal-lang');
-        if (sel) sel.value = saved;
-        var countrySel = document.getElementById('modal-country');
+      var saved = getSavedLang();
+      var savedCountry;
+      try { savedCountry = localStorage.getItem('ps-country'); } catch(e) {}
+      var langSel = document.getElementById('modal-lang');
+      var countrySel = document.getElementById('modal-country');
+      var currSel = document.getElementById('modal-currency');
+      if (savedCountry) {
+        if (countrySel) countrySel.value = savedCountry;
+        var cmap = COUNTRY_MAP[savedCountry];
+        if (cmap) {
+          if (currSel) currSel.value = cmap.currency;
+          if (langSel) langSel.value = cmap.lang;
+        }
+        applyCountryToPage(savedCountry);
+      } else if (saved) {
+        if (langSel) langSel.value = saved;
         if (countrySel) countrySel.value = saved === 'en' ? 'us' : 'kr';
-        var currSel = document.getElementById('modal-currency');
         if (currSel) currSel.value = saved === 'en' ? 'usd' : 'krw';
       }
-      if (savedCountry) applyCountryToPage(savedCountry);
     } catch (e) {}
   });
 
@@ -94,7 +113,6 @@
     if (!map) return;
     var currSel = document.getElementById('modal-currency');
     if (currSel) currSel.value = map.currency;
-    // 언어는 현재 선택값이 해당 국가 언어와 다를 때만 변경
     var langSel = document.getElementById('modal-lang');
     if (langSel) langSel.value = map.lang;
   };
@@ -103,15 +121,17 @@
     var overlay = document.getElementById('lang-modal-overlay');
     if (!overlay) return;
     try {
-      var savedLang = localStorage.getItem('ps-lang');
-      var savedCountry = localStorage.getItem('ps-country');
+      var savedLang = getSavedLang();
+      var savedCountry;
+      try { savedCountry = localStorage.getItem('ps-country'); } catch(e) {}
       var langSel = document.getElementById('modal-lang');
       var countrySel = document.getElementById('modal-country');
       var currSel = document.getElementById('modal-currency');
       if (savedLang && langSel) langSel.value = savedLang;
       if (savedCountry) {
         if (countrySel) countrySel.value = savedCountry;
-        if (currSel) currSel.value = savedCountry === 'us' ? 'usd' : 'krw';
+        var cmap = COUNTRY_MAP[savedCountry];
+        if (cmap && currSel) currSel.value = cmap.currency;
       } else if (savedLang) {
         if (countrySel) countrySel.value = savedLang === 'en' ? 'us' : 'kr';
         if (currSel) currSel.value = savedLang === 'en' ? 'usd' : 'krw';
@@ -133,7 +153,7 @@
     var countrySel = document.getElementById('modal-country');
     var country = countrySel ? countrySel.value : 'kr';
     try { localStorage.setItem('ps-country', country); } catch(e) {}
-    applyCountryToPage(country);
+    applyCountryToPage(country, lang);
     if (typeof window.setCountry === 'function') window.setCountry(country);
     if (typeof window.setLang === 'function') window.setLang(lang);
     closeLangModal();

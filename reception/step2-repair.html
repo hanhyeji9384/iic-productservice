@@ -113,9 +113,11 @@
       <div id="result-damage-normal" style="display:none;">
         <div class="notice-box">
           <strong>수리 안내</strong>
-          <p>예상 수리 방식: <strong>부품 교체</strong></p>
-          <p>예상 비용: <strong>소비자가의 20%</strong></p>
-          <p style="font-size:12px;color:#999;margin-top:8px;">실제 비용은 입고 후 정밀 점검을 통해 결정됩니다.</p>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin-top:10px;font-size:13px;">
+            <span style="color:#888;">예상 수리 방식</span><span><strong>부품 교체</strong></span>
+            <span style="color:#888;">예상 비용</span><span><strong>소비자가의 20%</strong></span>
+          </div>
+          <p style="font-size:12px;color:#999;margin-top:10px;">실제 비용은 입고 후 정밀 점검을 통해 결정됩니다.</p>
         </div>
         <div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
           <strong style="color:#888;">토탈 케어 추천</strong>
@@ -302,9 +304,11 @@ var STRINGS = {
     partsSummaryEmpty: '<span style="font-size:12px;color:#bbb;">선택된 부위 없음</span>',
     resultDamageNormal: `<div class="notice-box">
           <strong>수리 안내</strong>
-          <p>예상 수리 방식: <strong>부품 교체</strong></p>
-          <p>예상 비용: <strong>소비자가의 20%</strong></p>
-          <p style="font-size:12px;color:#999;margin-top:8px;">실제 비용은 입고 후 정밀 점검을 통해 결정됩니다.</p>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin-top:10px;font-size:13px;">
+            <span style="color:#888;">예상 수리 방식</span><span><strong>부품 교체</strong></span>
+            <span style="color:#888;">예상 비용</span><span><strong>소비자가의 20%</strong></span>
+          </div>
+          <p style="font-size:12px;color:#999;margin-top:10px;">실제 비용은 입고 후 정밀 점검을 통해 결정됩니다.</p>
         </div>
         <div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
           <strong style="color:#888;">토탈 케어 추천</strong>
@@ -390,9 +394,11 @@ var STRINGS = {
     partsSummaryEmpty: '<span style="font-size:12px;color:#bbb;">No parts selected</span>',
     resultDamageNormal: `<div class="notice-box">
           <strong>Repair Guide</strong>
-          <p>Estimated repair: <strong>Part Replacement</strong></p>
-          <p>Estimated cost: <strong>20% of retail price</strong></p>
-          <p style="font-size:12px;color:#999;margin-top:8px;">Actual cost will be determined after detailed inspection upon receipt.</p>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin-top:10px;font-size:13px;">
+            <span style="color:#888;">Est. repair method</span><span><strong>Part Replacement</strong></span>
+            <span style="color:#888;">Est. cost</span><span><strong>20% of retail price</strong></span>
+          </div>
+          <p style="font-size:12px;color:#999;margin-top:10px;">Actual cost will be determined after detailed inspection upon receipt.</p>
         </div>
         <div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
           <strong style="color:#888;">Total Care Recommended</strong>
@@ -693,10 +699,6 @@ function setLang(lang) {
   }
 }
 
-function openLangModal() {
-  return false;
-}
-
 function showAllIssues() {
   document.getElementById('check-decoration').style.display = '';
   document.getElementById('check-accessory').style.display = '';
@@ -711,7 +713,6 @@ window.showResult = showResult;
 window.setRestoAvail = setRestoAvail;
 window.setDecoAvail = setDecoAvail;
 window.setLang = setLang;
-window.openLangModal = openLangModal;
 window.showAllIssues = showAllIssues;
 
 let repairPageInitialized = false;
