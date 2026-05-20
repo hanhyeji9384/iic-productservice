@@ -24,7 +24,7 @@
     </nav>
     <div class="gnb-actions">
       <a href="#">검색</a>
-      <a href="../my-service/list.html">계정</a>
+      <a href="../my-service/account.html">계정</a>
     </div>
   </div>
 </header>
@@ -349,27 +349,41 @@ function selectProduct(name) {
 }
 
 const GM_STORES = [
-  '온라인', 'Online',
-  '젠틀몬스터 청담', '젠틀몬스터 신사', '젠틀몬스터 홍대',
-  '젠틀몬스터 여의도', '젠틀몬스터 성수',
-  '젠틀몬스터 신세계 강남', '젠틀몬스터 신세계 센텀시티',
-  '젠틀몬스터 롯데 잠실', '젠틀몬스터 현대 판교',
-  '현대백화점 신촌점', '현대백화점 목동점',
-  '롯데백화점 본점', '신세계백화점 본점',
-  '갤러리아백화점 명품관',
-  '인천공항 면세점', '신라 면세점', '롯데 면세점',
+  { name: '젠틀몬스터 온라인', region: '온라인' },
+  { name: 'Gentle Monster Online', region: 'Online' },
+  { name: '젠틀몬스터 청담', region: '서울 강남구 청담동' },
+  { name: '젠틀몬스터 신사', region: '서울 강남구 신사동' },
+  { name: '젠틀몬스터 홍대', region: '서울 마포구 홍대' },
+  { name: '젠틀몬스터 여의도', region: '서울 영등포구 여의도' },
+  { name: '젠틀몬스터 성수', region: '서울 성동구 성수' },
+  { name: '젠틀몬스터 신세계 강남', region: '서울 강남구' },
+  { name: '젠틀몬스터 신세계 센텀시티', region: '부산 해운대구' },
+  { name: '젠틀몬스터 롯데 잠실', region: '서울 송파구 잠실' },
+  { name: '젠틀몬스터 현대 판교', region: '경기 성남시 판교' },
+  { name: '현대백화점 신촌점', region: '서울 서대문구 신촌' },
+  { name: '현대백화점 목동점', region: '서울 양천구 목동' },
+  { name: '롯데백화점 본점', region: '서울 중구 명동' },
+  { name: '신세계백화점 본점', region: '서울 중구 명동' },
+  { name: '갤러리아백화점 명품관', region: '서울 강남구 압구정' },
+  { name: '인천공항 면세점', region: '인천 중구 공항' },
+  { name: '신라 면세점', region: '서울 중구 장충동' },
+  { name: '롯데 면세점', region: '서울 중구 소공동' },
 ];
 
 function searchStore(val) {
   const dropdown = document.getElementById('store-dropdown');
-  if (val.trim().length < 2) { dropdown.style.display = 'none'; return; }
-  const filtered = GM_STORES.filter(s => s.toLowerCase().includes(val.toLowerCase()));
+  const q = val.trim().toLowerCase();
+  if (q.length < 1) { dropdown.style.display = 'none'; return; }
+  const filtered = GM_STORES.filter(s =>
+    s.name.toLowerCase().includes(q) || s.region.toLowerCase().includes(q)
+  );
   if (filtered.length === 0) { dropdown.style.display = 'none'; return; }
   dropdown.innerHTML = filtered.map(s => `
-    <div onclick="selectStore('${s}')"
-      style="padding:12px 16px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--gray-100);"
+    <div onclick="selectStore('${s.name}')"
+      style="padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--gray-100);"
       onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'">
-      ${s}
+      <div style="font-size:13px;color:#111;">${s.name}</div>
+      <div style="font-size:11px;color:#aaa;margin-top:2px;">${s.region}</div>
     </div>
   `).join('');
   dropdown.style.display = 'block';
@@ -413,6 +427,7 @@ function setLockedProductCard(product) {
   document.getElementById('lpc-sw').textContent = product.sw || '';
   lockedCard.style.display = 'block';
   lockedCard.style.borderLeft = product.isAi ? '3px solid #1428a0' : '3px solid #111';
+  lockedCard.setAttribute('data-ai', product.isAi ? 'true' : 'false');
 }
 
 function applyScenario(scenario) {
@@ -490,7 +505,7 @@ window.addEventListener('load', function() {
         name = (document.getElementById('lpc-name') || {}).textContent || '';
         var rawDate = (document.getElementById('lpc-date') || {}).textContent || '';
         purchaseDate = parsePurchaseDateStr(rawDate);
-        isAi = (lockedCard.style.borderLeft || '').indexOf('1428') !== -1;
+        isAi = lockedCard.getAttribute('data-ai') === 'true';
       } else if (selectedProductIdx !== null && selectedProductIdx >= 0 && selectedProductIdx < PS_PRODUCTS.length) {
         var pd = PS_PRODUCTS[selectedProductIdx];
         name = pd.name; purchaseDate = pd.purchaseDate; isAi = pd.isAi;
@@ -504,7 +519,9 @@ window.addEventListener('load', function() {
         productName: name, purchaseDate: purchaseDate, isAi: isAi,
         serviceType: null, urgentRepair: false, dispatchDate: null, fittingOption: 'basic',
         aiIssueFunc: false, aiIssueProd: false
-      })); } catch(e) {}
+      })); } catch(ex) {}
+      e.preventDefault();
+      window.location.href = 'step2-service-type.html' + (isAi ? '?ai=true' : '');
     });
   }
 
@@ -541,9 +558,10 @@ window.addEventListener('load', function() {
     }
 
     // AI 제품이면 잠금 카드에 파란 테두리
-    if (p.isAi) {
-      var lockedCard = document.getElementById('locked-product-card');
-      if (lockedCard) lockedCard.style.borderLeft = '3px solid #1428a0';
+    var lockedCardEl = document.getElementById('locked-product-card');
+    if (lockedCardEl) {
+      lockedCardEl.style.borderLeft = p.isAi ? '3px solid #1428a0' : '3px solid #111';
+      lockedCardEl.setAttribute('data-ai', p.isAi ? 'true' : 'false');
     }
 
     try { localStorage.removeItem('ps-from-purchased'); } catch(e) {}

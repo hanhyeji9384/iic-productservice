@@ -25,7 +25,6 @@
 <main class="page-wrapper">
   <div class="content">
 
-
     <p class="page-eyebrow">Product Service</p>
     <h1 class="page-title" id="txt-title">수리 서비스</h1>
     <p class="page-desc" id="txt-desc">
@@ -171,6 +170,7 @@
           <p style="font-size:12px;color:#888;margin-bottom:10px;">서울 성동구 성수이로 7길 30 1층 (성수동2가, 빌딩8)</p>
           <div style="display:flex;flex-wrap:wrap;gap:4px;">
             <span style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">렌즈 분리</span>
+            <span style="padding:3px 8px;font-size:10px;border:1px solid #2a7c42;color:#2a7c42;">심플리페어</span>
           </div>
         </div>
       </div>
@@ -203,19 +203,28 @@
         <span style="position:absolute;top:8%;left:10%;font-size:10px;color:#bbb;pointer-events:none;">서울특별시</span>
         <!-- 현재 위치 -->
         <div style="position:absolute;top:48%;left:54%;width:12px;height:12px;border-radius:50%;background:#4a90d9;border:2px solid #fff;box-shadow:0 0 0 4px rgba(74,144,217,0.2);transform:translate(-50%,-50%);z-index:3;"></div>
-        <!-- 심플리페어 핀들 -->
-        <div onclick="window.location.href='../store.html'" title="젠틀몬스터 하우스 도산"
-          style="position:absolute;top:44%;left:36%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;z-index:2;box-shadow:0 2px 8px rgba(0,0,0,0.3);">G</div>
-        <div onclick="window.location.href='../store.html'" title="젠틀몬스터 갤러리아 압구정"
-          style="position:absolute;top:50%;left:28%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;z-index:2;">G</div>
-        <div onclick="window.location.href='../store.html'" title="젠틀몬스터 홍대"
-          style="position:absolute;top:32%;left:32%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;z-index:2;">G</div>
-        <!-- 가까운 스토어 callout -->
-        <div style="position:absolute;top:36%;left:54%;transform:translate(-50%,-100%);background:#fff;border:1px solid #ddd;padding:8px 12px;font-size:11px;box-shadow:0 2px 10px rgba(0,0,0,0.1);white-space:nowrap;z-index:10;pointer-events:none;">
-          <strong style="display:block;font-size:12px;margin-bottom:1px;">하우스 노웨어 서울</strong>
-          <span style="color:#aaa;">29m</span>
-          <span style="color:#2a7c42;margin-left:6px;">심플리페어</span>
+        <!-- 공유 hover 팝업 -->
+        <div id="sp-tooltip" style="display:none;position:absolute;background:#fff;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,0.15);padding:12px 14px;min-width:210px;z-index:20;pointer-events:none;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+            <strong id="sp-tt-name" style="font-size:13px;font-weight:500;color:#111;"></strong>
+            <span id="sp-tt-dist" style="font-size:11px;color:#888;margin-left:12px;white-space:nowrap;flex-shrink:0;"></span>
+          </div>
+          <p id="sp-tt-addr" style="font-size:11px;color:#666;line-height:1.5;margin-bottom:8px;"></p>
+          <div style="display:flex;gap:4px;">
+            <span id="sp-tt-svc" style="font-size:10px;color:#555;border:1px solid #ddd;padding:2px 7px;"></span>
+            <span style="font-size:10px;color:#2a7c42;border:1px solid #2a7c42;padding:2px 7px;">심플리페어</span>
+          </div>
         </div>
+        <!-- 심플리페어 핀들 (가맹점 → 작은 점) -->
+        <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'디렉토','612m','서울 성동구 아차산로 72','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:35%;left:57%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+        <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'블루선 성수점','1.2km','서울 성동구 왕십리로 15','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:37%;left:60%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+        <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'큐브안경원','3.6km','서울 광진구 아차산로 537-17, 1호','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:40%;left:66%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+        <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'이태원블링크 안경','2.8km','서울 용산구 이태원로 180','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:47%;left:40%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+        <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'메티스 안경','2.3km','서울 중구 명동4길 14','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:46%;left:45%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+        <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'제우스안경','2.1km','서울 중구 명동9길 24','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:44%;left:46%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+        <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'리웍스120','3.9km','서울 마포구 독막로 79','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:55%;left:33%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+        <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'자이스비전센터 강남점','5.2km','서울 강남구 강남대로 438','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:62%;left:46%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+        <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'커스텀아이즈','6.4km','서울 송파구 올림픽로 300','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:66%;left:63%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
         <div style="position:absolute;bottom:10px;right:12px;font-size:10px;color:#aaa;pointer-events:none;">지도 데이터 ©2025 TMap Mobility</div>
       </div>
     </div>
@@ -230,6 +239,29 @@ function toggleSimplipairMap(checked) {
   document.getElementById('sp-store-list').style.display = checked ? 'none' : 'block';
   document.getElementById('sp-stockist-list').style.display = checked ? 'block' : 'none';
   document.getElementById('btn-more-stores').href = checked ? '../store.html?filter=simplipair' : '../store.html';
+}
+
+function showSpTip(el, name, dist, addr, svc) {
+  var tip = document.getElementById('sp-tooltip');
+  var map = document.getElementById('sp-map');
+  if (!tip || !map) return;
+  document.getElementById('sp-tt-name').textContent = name;
+  document.getElementById('sp-tt-dist').textContent = dist;
+  document.getElementById('sp-tt-addr').textContent = addr;
+  document.getElementById('sp-tt-svc').textContent = svc;
+  var mapRect = map.getBoundingClientRect();
+  var elRect = el.getBoundingClientRect();
+  var leftPx = elRect.left - mapRect.left + el.offsetWidth / 2;
+  var topPx = elRect.top - mapRect.top;
+  tip.style.left = leftPx + 'px';
+  tip.style.top = topPx + 'px';
+  tip.style.transform = 'translate(-50%, calc(-100% - 10px))';
+  tip.style.display = 'block';
+}
+
+function hideSpTip() {
+  var tip = document.getElementById('sp-tooltip');
+  if (tip) tip.style.display = 'none';
 }
 </script>
 

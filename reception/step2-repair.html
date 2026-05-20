@@ -550,9 +550,8 @@ function showResult(issueType) {
     if (!over3) {
       document.getElementById('result-decoration-normal').style.display = 'block';
     } else {
-      // 3년 이상 (7년 포함) — 부품 보유 여부 확인 후 수리 가능/불가 결정
-      document.getElementById('result-decoration-3yr').style.display = 'block';
-      document.getElementById('deco-disclaimer').style.display = 'none';
+      // 3년 이상: 어드민이 부품 보유 여부 결정 → 프로토타입에서는 수리 불가로 시뮬레이션
+      document.getElementById('result-unavailable').style.display = 'block';
       document.getElementById('btn-next').style.display = 'none';
     }
   } else if (issueType === 'accessory') {
@@ -594,7 +593,7 @@ function setDecoAvail(avail) {
 
 function updateNextBtn(issueType) {
   const isEnd = (issueType === 'damage' && (yearMode === 'unavailable' || (yearMode === 'restoration' && restoAvail !== true)))
-             || (issueType === 'decoration' && yearMode !== 'normal' && decoAvail !== true);
+             || (issueType === 'decoration' && yearMode !== 'normal');
   document.getElementById('btn-next').style.display = isEnd ? 'none' : '';
 }
 

@@ -215,6 +215,8 @@ function updateAiFlow() {
     return;
   }
   if (serviceSection) serviceSection.style.display = aiProdActive ? '' : 'none';
+  var cardTc = document.getElementById('card-tc');
+  if (cardTc) cardTc.style.display = aiProdActive ? 'none' : '';
   // 기능이상만: 다음 버튼 표시 / 제품이상 포함: 다음 버튼 숨김 (이전 버튼 전체 너비)
   if (aiNextBtn) {
     var showNext = aiFuncActive && !aiProdActive;
@@ -267,6 +269,8 @@ window.addEventListener('load', function() {
   var urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('ai') === 'func') {
     setAiMode('galaxy');
+  } else if (urlParams.get('ai') === 'true') {
+    setAiMode('ai');
   } else {
     try {
       var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
