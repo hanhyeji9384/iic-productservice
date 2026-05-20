@@ -615,7 +615,7 @@ function applyUsDefectMode() {
   if (selfSec) selfSec.style.display = 'none';
   var titleEl = document.getElementById('title-pickup');
   var descEl = document.getElementById('desc-pickup');
-  if (titleEl) titleEl.textContent = 'Courier Pickup';
+  if (titleEl) titleEl.textContent = 'Home Pickup';
   if (descEl) descEl.innerHTML = 'A courier will visit your address to collect the product.<br><span style="font-size:11px;color:#999;">Within 14 days of submission</span>';
   var nb = document.getElementById('pickup-notice-box');
   if (nb) nb.innerHTML = '<p>· After submission, FedEx will email you your pickup schedule and prepaid shipping label. (Check your spam folder too)</p><p>· If the pickup is not completed, your submission will be automatically cancelled.</p>';
@@ -980,6 +980,9 @@ function applyAccessoryMode() {
   if (el) el.textContent = currentLang === 'en' ? 'Your product will be delivered to your home.' : '자택으로 배송해 드립니다.';
   el = document.getElementById('desc-store-pickup');
   if (el) el.textContent = currentLang === 'en' ? 'Collect your product at your selected store.' : '선택한 매장에서 수령합니다.';
+  document.getElementById('recv-store-opt').style.display = 'none';
+  var homeOpt = document.getElementById('recv-home-opt');
+  if (homeOpt) { homeOpt.classList.add('selected'); var rr = homeOpt.querySelector('input[type="radio"]'); if (rr) rr.checked = true; selectReceive(homeOpt, 'home'); }
 }
 
 window.addEventListener('load', function() {
