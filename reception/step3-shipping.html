@@ -548,7 +548,33 @@ function selectSend(el, type) {
   checkShippingNextBtn();
 }
 
+function setFranchisePinsVisible(visible) {
+  var disp = visible ? '' : 'none';
+  FRANCHISE_STORES.forEach(function(_, i) {
+    var dp = document.getElementById('fpin-' + i); if (dp) dp.style.display = disp;
+    var rp = document.getElementById('rfpin-' + i); if (rp) rp.style.display = disp;
+  });
+}
+
+function resetShippingOptions() {
+  ['send-pickup-opt','send-store-opt','send-self-opt'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.style.display = '';
+  });
+  ['recv-home-opt','recv-store-opt'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) { el.style.display = ''; el.classList.remove('selected'); }
+  });
+  document.querySelectorAll('.check-group .check-item').forEach(function(el) { el.classList.remove('selected'); });
+  document.querySelectorAll('input[name="send"], input[name="receive"]').forEach(function(r) { r.checked = false; });
+  ['pickup-section','send-store-section','self-ship-section','address-section','store-section'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
+  setFranchisePinsVisible(true);
+  currentSend = null; currentReceive = null;
+  checkShippingNextBtn();
+}
+
 function applyLensServiceMode() {
+  resetShippingOptions();
   lensOnlyMode = true;
   ['send-pickup-opt','send-self-opt'].forEach(function(id) {
     var el = document.getElementById(id);
@@ -561,6 +587,8 @@ function applyLensServiceMode() {
 }
 
 function applyKrMode() {
+  resetShippingOptions();
+  lensOnlyMode = false;
   setLang('ko');
   document.getElementById('send-pickup-opt').style.display = '';
   document.getElementById('send-self-opt').style.display = 'none';
@@ -577,7 +605,9 @@ function applyKrMode() {
 }
 
 function applyUsDefectMode() {
-  // US 결함·이상: 픽업 + 매장 Drop Off
+  resetShippingOptions();
+  lensOnlyMode = false;
+  setFranchisePinsVisible(false);
   setLang('en');
   document.getElementById('send-pickup-opt').style.display = '';
   document.getElementById('send-self-opt').style.display = 'none';
@@ -594,7 +624,9 @@ function applyUsDefectMode() {
 }
 
 function applyUsOtherMode() {
-  // US 결함·이상 외: 직접 발송만
+  resetShippingOptions();
+  lensOnlyMode = false;
+  setFranchisePinsVisible(false);
   setLang('en');
   document.getElementById('send-pickup-opt').style.display = 'none';
   document.getElementById('send-self-opt').style.display = '';
@@ -608,6 +640,9 @@ function applyUsOtherMode() {
 }
 
 function applyCAMode() {
+  resetShippingOptions();
+  lensOnlyMode = false;
+  setFranchisePinsVisible(false);
   setLang('en');
   document.getElementById('send-store-opt').style.display = 'none';
   document.getElementById('send-self-opt').style.display = 'none';
