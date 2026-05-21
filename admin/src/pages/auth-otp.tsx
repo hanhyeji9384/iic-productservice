@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ChevronDown } from 'lucide-react'
 
 const MOCK_OTP = '123456'
 
@@ -7,6 +7,7 @@ export function AuthOtpPage() {
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [otpError, setOtpError] = useState('')
   const [done, setDone] = useState(false)
+  const [showHint, setShowHint] = useState(false)
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
 
   useEffect(() => {
@@ -53,7 +54,25 @@ export function AuthOtpPage() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fb] flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm w-full max-w-sm px-8 py-10">
+      <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm w-full max-w-sm px-8 py-10">
+        {/* 목업 힌트 배지 */}
+        <div className="absolute top-3 right-3">
+          <button
+            onClick={() => setShowHint(v => !v)}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 border border-amber-100 text-amber-600 text-[10px] font-semibold hover:bg-amber-100 transition-colors"
+          >
+            목업
+            <ChevronDown className={`w-3 h-3 transition-transform ${showHint ? 'rotate-180' : ''}`} />
+          </button>
+          {showHint && (
+            <div className="absolute right-0 top-full mt-1 bg-white border border-amber-100 rounded-xl shadow-lg px-3 py-2.5 z-10 w-40">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] text-amber-600 font-medium">OTP 코드</span>
+                <span className="text-[12px] font-mono font-bold text-amber-700 tracking-[0.2em]">{MOCK_OTP}</span>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* 로고 */}
         <div className="flex items-center gap-2.5 mb-8">
@@ -91,12 +110,6 @@ export function AuthOtpPage() {
             <p className="text-sm text-gray-400 leading-relaxed mb-6">
               6자리 인증 코드를 입력해주세요.
             </p>
-
-            {/* 목업 힌트 */}
-            <div className="bg-amber-50 border border-amber-100 rounded-xl px-3.5 py-2.5 mb-5 flex items-center gap-2">
-              <span className="text-[11px] text-amber-600 font-medium">목업 코드</span>
-              <span className="text-[13px] font-mono font-bold text-amber-700 tracking-[0.2em]">{MOCK_OTP}</span>
-            </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="flex gap-2 justify-between" onPaste={handleOtpPaste}>

@@ -32,8 +32,8 @@ function formFromMember(m: Member): EditForm {
 }
 
 export function MemberDetailPage() {
-  const { id, countryCode, langCode } = useParams<{ id: string; countryCode: string; langCode: string }>()
-  const pfx = `/${countryCode}/${langCode}`
+  const { id, langCode } = useParams<{ id: string; langCode: string }>()
+  const pfx = `/${langCode}`
   const navigate = useNavigate()
 
   const { members, updateMember, deleteMember } = useMembers()

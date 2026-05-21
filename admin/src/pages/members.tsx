@@ -49,8 +49,8 @@ const INITIAL_LOGS: ChangeLog[] = [
 
 export function MembersPage() {
   const navigate = useNavigate()
-  const { countryCode, langCode } = useParams()
-  const pfx = `/${countryCode}/${langCode}`
+  const { langCode } = useParams()
+  const pfx = `/${langCode}`
   const [searchParams, setSearchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState<'list' | 'history'>('list')
   const { members } = useMembers()

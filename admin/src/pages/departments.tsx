@@ -182,12 +182,7 @@ export function DepartmentsPage() {
                 ) : paginatedDepts.map(dept => (
                   <tr key={dept.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="bg-gray-100 p-2 rounded-lg">
-                          <Briefcase className="w-4 h-4 text-gray-600" />
-                        </div>
-                        <span className="text-sm font-semibold text-gray-900">{dept.name}</span>
-                      </div>
+                      <span className="text-sm font-semibold text-gray-900">{dept.name}</span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500">{dept.description ?? '—'}</td>
                     <td className="px-6 py-4 whitespace-nowrap">

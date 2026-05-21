@@ -1,12 +1,20 @@
 import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { useNavigate, Link, useSearchParams } from 'react-router-dom'
+import { ArrowLeft, AlertCircle, LogIn, ChevronDown } from 'lucide-react'
 
 const MOCK_PASSWORD = '123456'
 const MOCK_OTP = '123456'
+const MOCK_FIRST_LOGIN_ID = 'new_user' // 2FA 미등록 계정 (최초 로그인 시뮬레이션)
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const isExpiredNotice = searchParams.get('expired') === 'true'
+
+  function dismissExpiredNotice() {
+    searchParams.delete('expired')
+    setSearchParams(searchParams, { replace: true })
+  }
 
   // step: 'credentials' | 'otp'
   const [step, setStep] = useState<'credentials' | 'otp'>('credentials')
@@ -14,6 +22,7 @@ export function LoginPage() {
   const [id, setId] = useState('')
   const [password, setPassword] = useState('')
   const [credError, setCredError] = useState('')
+  const [showHint, setShowHint] = useState(false)
 
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [otpError, setOtpError] = useState('')
@@ -36,6 +45,12 @@ export function LoginPage() {
       setCredError('아이디 또는 비밀번호가 올바르지 않습니다.')
       return
     }
+    // 최초 로그인 (2FA 미등록) → QR 등록 화면으로 이동
+    if (id === MOCK_FIRST_LOGIN_ID) {
+      navigate('/setup-2fa')
+      return
+    }
+    // 일반 로그인 (2FA 등록됨) → TOTP 입력
     setOtp(['', '', '', '', '', ''])
     setOtpError('')
     setStep('otp')
@@ -99,7 +114,26 @@ export function LoginPage() {
   if (step === 'otp') {
     return (
       <div className="min-h-screen bg-[#f8f9fb] flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm w-full max-w-sm px-8 py-10">
+        <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm w-full max-w-sm px-8 py-10">
+          {/* 목업 힌트 배지 */}
+          <div className="absolute top-3 right-3">
+            <button
+              onClick={() => setShowHint(v => !v)}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 border border-amber-100 text-amber-600 text-[10px] font-semibold hover:bg-amber-100 transition-colors"
+            >
+              목업
+              <ChevronDown className={`w-3 h-3 transition-transform ${showHint ? 'rotate-180' : ''}`} />
+            </button>
+            {showHint && (
+              <div className="absolute right-0 top-full mt-1 bg-white border border-amber-100 rounded-xl shadow-lg px-3 py-2.5 z-10 w-40">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] text-amber-600 font-medium">OTP 코드</span>
+                  <span className="text-[12px] font-mono font-bold text-amber-700 tracking-[0.2em]">{MOCK_OTP}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
           {logo}
 
           <button
@@ -114,12 +148,6 @@ export function LoginPage() {
           <p className="text-sm text-gray-400 leading-relaxed mb-6">
             6자리 인증 코드를 입력해주세요.
           </p>
-
-          {/* 목업 힌트 */}
-          <div className="bg-amber-50 border border-amber-100 rounded-xl px-3.5 py-2.5 mb-5 flex items-center gap-2">
-            <span className="text-[11px] text-amber-600 font-medium">목업 코드</span>
-            <span className="text-[13px] font-mono font-bold text-amber-700 tracking-[0.2em]">{MOCK_OTP}</span>
-          </div>
 
           <form onSubmit={handleOtpSubmit} className="space-y-5">
             {/* 6자리 입력 박스 */}
@@ -163,16 +191,63 @@ export function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#f8f9fb] flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm w-full max-w-sm px-8 py-10">
+      {/* 세션 만료 알림 모달 */}
+      {isExpiredNotice && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden">
+            <div className="px-6 pt-6 pb-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
+                  <AlertCircle className="w-5 h-5 text-red-500" />
+                </div>
+                <h2 className="text-base font-semibold text-gray-900">자동 로그아웃</h2>
+              </div>
+              <p className="text-sm text-gray-500 leading-relaxed">
+                장시간 활동이 없어 자동 로그아웃되었습니다.
+              </p>
+            </div>
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+              <button
+                onClick={dismissExpiredNotice}
+                className="w-full flex items-center justify-center gap-2 py-2.5 bg-black text-white text-sm font-medium rounded-xl hover:bg-gray-800 transition-colors"
+              >
+                <LogIn className="w-4 h-4" />
+                확인
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="relative bg-white rounded-2xl border border-gray-200 shadow-sm w-full max-w-sm px-8 py-10">
+        {/* 목업 힌트 배지 */}
+        <div className="absolute top-3 right-3">
+          <button
+            onClick={() => setShowHint(v => !v)}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg bg-amber-50 border border-amber-100 text-amber-600 text-[10px] font-semibold hover:bg-amber-100 transition-colors"
+          >
+            목업
+            <ChevronDown className={`w-3 h-3 transition-transform ${showHint ? 'rotate-180' : ''}`} />
+          </button>
+          {showHint && (
+            <div className="absolute right-0 top-full mt-1 bg-white border border-amber-100 rounded-xl shadow-lg px-3 py-2.5 space-y-1.5 z-10 w-48">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] text-amber-600 font-medium">비밀번호</span>
+                <span className="text-[12px] font-mono font-bold text-amber-700 tracking-[0.2em]">{MOCK_PASSWORD}</span>
+              </div>
+              <div className="border-t border-amber-100"/>
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] text-amber-600 font-medium">최초 로그인 ID</span>
+                <span className="text-[12px] font-mono font-bold text-amber-700 tracking-[0.1em]">{MOCK_FIRST_LOGIN_ID}</span>
+              </div>
+            </div>
+          )}
+        </div>
+
         {logo}
 
         <h1 className="text-[18px] font-semibold text-gray-900 mb-4">로그인</h1>
-
-        {/* 목업 힌트 */}
-        <div className="bg-amber-50 border border-amber-100 rounded-xl px-3.5 py-2.5 mb-4 flex items-center gap-3">
-          <span className="text-[11px] text-amber-600 font-medium whitespace-nowrap">목업 비밀번호</span>
-          <span className="text-[13px] font-mono font-bold text-amber-700 tracking-[0.2em]">{MOCK_PASSWORD}</span>
-        </div>
 
         <form onSubmit={handleCredentialSubmit} className="space-y-4">
           <div>
@@ -209,9 +284,9 @@ export function LoginPage() {
         </form>
 
         <div className="mt-4 text-center">
-          <a href="/forgot-password" className="text-[12px] text-gray-400 hover:text-gray-600 transition-colors">
+          <Link to="/forgot-password" className="text-[12px] text-gray-400 hover:text-gray-600 transition-colors">
             비밀번호를 잊으셨나요?
-          </a>
+          </Link>
         </div>
       </div>
     </div>

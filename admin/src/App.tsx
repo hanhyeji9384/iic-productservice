@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { MembersProvider } from '@/lib/members-context'
+import { SessionProvider } from '@/lib/session-context'
 import { AdminLayout } from '@/components/admin-layout'
 import { HomePage } from '@/pages/home'
 import { MembersPage } from '@/pages/members'
@@ -16,6 +17,7 @@ import { Error404Page } from '@/pages/error-404'
 import { Error403Page } from '@/pages/error-403'
 import { Error500Page } from '@/pages/error-500'
 import { ErrorOfflinePage } from '@/pages/error-offline'
+import { SetupTotpPage } from '@/pages/setup-totp'
 
 export default function App() {
   return (
@@ -25,13 +27,14 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/setup-2fa" element={<SetupTotpPage />} />
 
         {/* 기본 리다이렉트 */}
-        <Route path="/" element={<Navigate to="/kr/ko" replace />} />
-        <Route path="*" element={<Navigate to="/kr/ko" replace />} />
+        <Route path="/" element={<Navigate to="/ko" replace />} />
+        <Route path="*" element={<Navigate to="/ko" replace />} />
 
-        {/* 어드민 — /:countryCode/:langCode 프리픽스 */}
-        <Route path="/:countryCode/:langCode" element={<MembersProvider><AdminLayout /></MembersProvider>}>
+        {/* 어드민 — /:langCode 프리픽스 */}
+        <Route path="/:langCode" element={<SessionProvider><MembersProvider><AdminLayout /></MembersProvider></SessionProvider>}>
           <Route index element={<HomePage />} />
 
           {/* 회원/권한 관리 */}

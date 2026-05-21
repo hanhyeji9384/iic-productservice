@@ -5,6 +5,9 @@ import {
   Users, Ticket, Menu, LogOut, ChevronRight,
   AlertTriangle, KeyRound, Briefcase,
 } from 'lucide-react'
+import { useSession } from '@/lib/session-context'
+import { SessionWarningModal } from '@/components/session-warning-modal'
+import { SessionExpiredModal } from '@/components/session-expired-modal'
 
 interface NavChild {
   to: string
@@ -74,12 +77,23 @@ const NAV: NavGroup[] = [
 ]
 
 export function AdminLayout() {
+  const { triggerWarning, triggerExpiry } = useSession()
   const [collapsed, setSidebarCollapsed] = useState(false)
   const [expanded, setExpanded] = useState<string[]>([])
   const location = useLocation()
   const navigate = useNavigate()
-  const { countryCode, langCode } = useParams()
-  const pfx = `/${countryCode}/${langCode}`
+  const { langCode } = useParams()
+  const pfx = `/${langCode}`
+
+  const LANGS = [
+    { code: 'ko', label: '한국어' },
+    { code: 'en', label: 'English' },
+  ]
+
+  function switchLang(next: string) {
+    const rest = location.pathname.replace(/^\/[^/]+/, '')
+    navigate(`/${next}${rest}`)
+  }
 
   // 현재 경로에 맞는 그룹을 자동 열기
   useEffect(() => {
@@ -108,17 +122,20 @@ export function AdminLayout() {
       >
         {/* 로고 */}
         <div className="px-5 py-5 border-b border-gray-100">
-          <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => navigate(pfx)}
+            className="flex items-center gap-2.5 hover:opacity-70 transition-opacity"
+          >
             <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center">
               <span className="text-[11px] font-bold text-white tracking-wider">PS</span>
             </div>
-            <div>
+            <div className="text-left">
               <div className="text-[13px] font-semibold text-gray-900 tracking-[-0.01em] leading-tight">
                 Product Service
               </div>
               <div className="text-[10px] text-gray-400 tracking-[0.06em] uppercase mt-0.5">Admin</div>
             </div>
-          </div>
+          </button>
         </div>
 
         {/* 네비게이션 */}
@@ -194,13 +211,47 @@ export function AdminLayout() {
             >
               <Menu className="w-5 h-5 text-gray-600" />
             </button>
-            <button
-              onClick={() => navigate('/login')}
-              className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 font-medium transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              <span>LOGOUT</span>
-            </button>
+            <div className="flex items-center gap-3">
+              {/* 세션 테스트 (프로토타입 전용) */}
+              <div className="relative">
+                <select
+                  value=""
+                  onChange={e => {
+                    const v = e.target.value
+                    if (v === 'warn-idle') triggerWarning('idle')
+                    if (v === 'expire-absolute') triggerExpiry('absolute')
+                    e.target.value = ''
+                  }}
+                  className="appearance-none pl-3 pr-7 py-1.5 text-xs font-medium bg-amber-50 border border-amber-200 rounded-xl text-amber-700 hover:bg-amber-100 focus:outline-none cursor-pointer transition-colors"
+                >
+                  <option value="" disabled>🧪 세션 테스트</option>
+                  <option value="warn-idle">경고 (유휴)</option>
+                  <option value="expire-absolute">만료 (절대)</option>
+                </select>
+                <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-amber-400 pointer-events-none rotate-90" />
+              </div>
+
+              {/* 언어 선택 */}
+              <div className="relative">
+                <select
+                  value={langCode}
+                  onChange={e => switchLang(e.target.value)}
+                  className="appearance-none pl-3 pr-7 py-1.5 text-xs font-medium bg-gray-100 border-0 rounded-xl text-gray-700 hover:bg-gray-200 focus:outline-none cursor-pointer transition-colors"
+                >
+                  {LANGS.map(({ code, label }) => (
+                    <option key={code} value={code}>{label}</option>
+                  ))}
+                </select>
+                <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 pointer-events-none rotate-90" />
+              </div>
+              <button
+                onClick={() => navigate('/login')}
+                className="flex items-center gap-2 pl-3 pr-3.5 py-1.5 text-xs font-medium bg-gray-100 rounded-xl text-gray-700 hover:bg-gray-200 transition-colors"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>LOGOUT</span>
+              </button>
+            </div>
           </div>
         </header>
 
@@ -209,6 +260,9 @@ export function AdminLayout() {
           <Outlet />
         </main>
       </div>
+
+      <SessionWarningModal />
+      <SessionExpiredModal />
     </div>
   )
 }
