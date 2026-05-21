@@ -125,14 +125,14 @@
 
     <!-- 왼쪽: 정보 + 스토어 카드 -->
     <div>
-      <h2 style="font-size:22px;font-weight:400;margin-bottom:20px;">스토어 내 서비스</h2>
-      <p style="font-size:13px;color:#555;line-height:1.9;margin-bottom:32px;">
+      <h2 data-ko="스토어 내 서비스" data-en="In-Store Service" style="font-size:22px;font-weight:400;margin-bottom:20px;">스토어 내 서비스</h2>
+      <p data-ko="고객님의 편안한 제품 사용을 위해 전 세계 오프라인 스토어에서 커스텀 피팅 서비스 및 부속품(코패드, 나사 등) 교체를 지원합니다.<br><br>스토어 내에서 진행이 어려울 경우, 프로덕트 서비스 팀으로 이관될 수 있도록 온라인 수리 접수를 안내해 드립니다." data-en="At every Gentle Monster store worldwide, enjoy custom fitting services and accessory replacements (nose pads, screws, etc.).<br><br>If the service cannot be completed in-store, we will guide you to submit an online repair request for our Product Service team." style="font-size:13px;color:#555;line-height:1.9;margin-bottom:32px;">
         고객님의 편안한 제품 사용을 위해 전 세계 오프라인 스토어에서 커스텀 피팅 서비스 및 부속품(코패드, 나사 등) 교체를 지원합니다.<br><br>
         스토어 내에서 진행이 어려울 경우, 프로덕트 서비스 팀으로 이관될 수 있도록 온라인 수리 접수를 안내해 드립니다.
       </p>
 
       <!-- 심플리페어 필터 -->
-      <div style="margin-bottom:20px;">
+      <div id="sp-filter-wrap" style="margin-bottom:20px;">
         <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
           <input type="checkbox" id="sp-filter" onchange="toggleSimplipairMap(this.checked)"
             style="width:15px;height:15px;accent-color:#111;cursor:pointer;">
@@ -141,21 +141,21 @@
       </div>
 
       <!-- 가까운 스토어 -->
-      <p style="font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;margin-bottom:16px;">가까운 스토어 찾기</p>
+      <p data-ko="가까운 스토어 찾기" data-en="Find Nearby Stores" style="font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;margin-bottom:16px;">가까운 스토어 찾기</p>
 
       <!-- 일반 스토어 목록 -->
       <div id="sp-store-list">
         <div style="padding:16px 0;border-top:1px solid var(--gray-200);">
           <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
-            <strong style="font-size:15px;font-weight:400;">하우스 노웨어 서울</strong>
+            <strong data-ko="하우스 노웨어 서울" data-en="House Nowhere Seoul" style="font-size:15px;font-weight:400;">하우스 노웨어 서울</strong>
             <span style="font-size:12px;color:#aaa;">29m</span>
           </div>
-          <p style="font-size:12px;color:#2a7c42;margin-bottom:2px;">오픈 <span style="color:#888;">· 오후 9:00시까지 영업</span></p>
-          <p style="font-size:12px;color:#888;margin-bottom:10px;">서울특별시 성동구 뚝섬로 433</p>
+          <p data-ko="오픈 <span style='color:#888'>· 오후 9:00시까지 영업</span>" data-en="Open <span style='color:#888'>· Open until 9:00 PM</span>" style="font-size:12px;color:#2a7c42;margin-bottom:2px;">오픈 <span style="color:#888;">· 오후 9:00시까지 영업</span></p>
+          <p data-ko="서울특별시 성동구 뚝섬로 433" data-en="433 Ttukseom-ro, Seongdong-gu, Seoul" style="font-size:12px;color:#888;margin-bottom:10px;">서울특별시 성동구 뚝섬로 433</p>
           <div style="display:flex;flex-wrap:wrap;gap:4px;">
-            <span style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">피팅 서비스</span>
-            <span style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">간편 수리</span>
-            <span style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">수리 제품 픽업</span>
+            <span data-ko="피팅 서비스" data-en="Fitting Service" style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">피팅 서비스</span>
+            <span data-ko="간편 수리" data-en="Minor Repair" style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">간편 수리</span>
+            <span data-ko="수리 제품 픽업" data-en="Product Pickup" style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">수리 제품 픽업</span>
           </div>
         </div>
       </div>
@@ -164,18 +164,18 @@
       <div id="sp-stockist-list" style="display:none;">
         <div style="padding:16px 0;border-top:1px solid var(--gray-200);">
           <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
-            <strong style="font-size:15px;font-weight:400;">디렉토</strong>
+            <strong data-ko="디렉토" data-en="Directo" style="font-size:15px;font-weight:400;">디렉토</strong>
             <span style="font-size:12px;color:#aaa;">612m</span>
           </div>
-          <p style="font-size:12px;color:#888;margin-bottom:10px;">서울 성동구 성수이로 7길 30 1층 (성수동2가, 빌딩8)</p>
+          <p data-ko="서울 성동구 성수이로 7길 30 1층 (성수동2가, 빌딩8)" data-en="30 Seongsui-ro 7-gil, 1F, Seongdong-gu, Seoul" style="font-size:12px;color:#888;margin-bottom:10px;">서울 성동구 성수이로 7길 30 1층 (성수동2가, 빌딩8)</p>
           <div style="display:flex;flex-wrap:wrap;gap:4px;">
-            <span style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">렌즈 분리</span>
-            <span style="padding:3px 8px;font-size:10px;border:1px solid #2a7c42;color:#2a7c42;">심플리페어</span>
+            <span data-ko="렌즈 분리" data-en="Lens Removal" style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">렌즈 분리</span>
+            <span data-ko="심플리페어" data-en="Simplipair" style="padding:3px 8px;font-size:10px;border:1px solid #2a7c42;color:#2a7c42;">심플리페어</span>
           </div>
         </div>
       </div>
 
-      <a id="btn-more-stores" href="../store.html" style="display:block;margin-top:32px;padding:14px;border:1px solid #ddd;text-align:center;font-size:13px;color:#111;text-decoration:none;letter-spacing:0.04em;transition:border-color 0.15s;"
+      <a id="btn-more-stores" data-ko="더 찾아보기" data-en="Find More Stores" href="../store.html" style="display:block;margin-top:32px;padding:14px;border:1px solid #ddd;text-align:center;font-size:13px;color:#111;text-decoration:none;letter-spacing:0.04em;transition:border-color 0.15s;"
         onmouseover="this.style.borderColor='#111'" onmouseout="this.style.borderColor='#ddd'">더 찾아보기</a>
     </div>
 
@@ -187,7 +187,7 @@
         <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:12px;color:#aaa;letter-spacing:0.06em;">STORE IMAGE</div>
         <div id="sp-img-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;"
              onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
-          <span style="color:#fff;font-size:12px;font-weight:500;letter-spacing:0.06em;border:1px solid rgba(255,255,255,0.7);padding:8px 18px;">스토어 세부 정보 보기</span>
+          <span data-ko="스토어 세부 정보 보기" data-en="View Store Details" style="color:#fff;font-size:12px;font-weight:500;letter-spacing:0.06em;border:1px solid rgba(255,255,255,0.7);padding:8px 18px;">스토어 세부 정보 보기</span>
         </div>
       </div>
 
@@ -358,6 +358,12 @@ function setText(id, html) {
   if (el) el.innerHTML = html;
 }
 
+function applyLang(lang) {
+  document.querySelectorAll('[data-' + lang + ']').forEach(function(el) {
+    el.innerHTML = el.getAttribute('data-' + lang);
+  });
+}
+
 function setLang(lang) {
   try { localStorage.setItem('ps-lang', lang); } catch(e) {}
   ['ko','en'].forEach(function(l) { var el = document.getElementById('footer-lang-' + l); if (el) { el.style.fontWeight = l === lang ? '500' : '400'; el.style.color = l === lang ? '#111' : ''; } });
@@ -389,7 +395,22 @@ function setLang(lang) {
   setText('txt-t6-head', s.t6Head); setText('txt-t6-body', s.t6Body);
   setText('txt-chk-label', s.chkLabel);
   setText('txt-start-btn', s.startBtn);
+  applyLang(lang);
+  var spWrap = document.getElementById('sp-filter-wrap');
+  if (spWrap) {
+    spWrap.style.display = (lang === 'ko') ? '' : 'none';
+    if (lang !== 'ko') { var cb = document.getElementById('sp-filter'); if (cb && cb.checked) { cb.checked = false; toggleSimplipairMap(false); } }
+  }
 }
+
+window.setLang = setLang;
+window.setCountry = function(country) {
+  var spWrap = document.getElementById('sp-filter-wrap');
+  if (!spWrap) return;
+  var show = country === 'kr';
+  spWrap.style.display = show ? '' : 'none';
+  if (!show) { var cb = document.getElementById('sp-filter'); if (cb && cb.checked) { cb.checked = false; toggleSimplipairMap(false); } }
+};
 
 function openTermsModal() {
   var overlay = document.getElementById('terms-modal-overlay');
@@ -429,7 +450,12 @@ document.addEventListener('keydown', function(e) {
 
 window.addEventListener('load', function() {
   var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
+  var savedCountry; try { savedCountry = localStorage.getItem('ps-country'); } catch(e) {}
   setLang(saved || 'ko');
+  if (savedCountry && savedCountry !== 'kr') {
+    var spWrap = document.getElementById('sp-filter-wrap');
+    if (spWrap) { spWrap.style.display = 'none'; var cb = document.getElementById('sp-filter'); if (cb && cb.checked) { cb.checked = false; toggleSimplipairMap(false); } }
+  }
 });
 </script>
 </body>
