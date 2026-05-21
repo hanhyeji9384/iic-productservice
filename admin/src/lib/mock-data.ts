@@ -82,6 +82,7 @@ export const MEMBERS: Member[] = [
   { id: '30', loginId: 'monster420', name: '남지우',     email: 'jiwoo.nam@gentlemonster.com',        tel: '010-8888-9999', country: 'KR', roleId: 'SUPER_ADMIN',   department: 'D003', status: 'active',   expiresAt: null,         createdAt: '2026-01-01', lastLoginAt: '2026-05-18T09:15:00', managedBranches: ['*'],             assignedStores: [] },
   { id: '31', loginId: 'monster563', name: '한혜지',     email: 'monster563@gentlemonster.com',       tel: '',              country: 'KR', roleId: 'SUPER_ADMIN',   department: 'D006', status: 'active',   expiresAt: null,         createdAt: '2024-01-01', lastLoginAt: '2026-05-20T10:00:00', managedBranches: ['*'],             assignedStores: [] },
   { id: '32', loginId: 'franchise01', name: '김가맹',    email: 'franchise01@partner.com',            tel: '010-1234-9999', country: 'KR', roleId: 'FRANCHISE_OWNER', department: 'D007', status: 'active',   expiresAt: '2027-12-31', createdAt: '2026-03-01', lastLoginAt: '2026-05-18T08:00:00', managedBranches: ['1110'], assignedStores: ['3171'] },
+  { id: '33', loginId: 'monster1416', name: '백성현',    email: 'monster1416@gentlemonster.com',      tel: '',              country: 'KR', roleId: 'SUPER_ADMIN',   department: 'D006', status: 'active',   expiresAt: null,         createdAt: '2024-01-01', lastLoginAt: null,                  managedBranches: ['*'],             assignedStores: [] },
 ]
 
 export const DEFAULT_PERMISSIONS: Permission[] = [
