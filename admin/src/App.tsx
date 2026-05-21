@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { MembersProvider } from '@/lib/members-context'
 import { AdminLayout } from '@/components/admin-layout'
 import { HomePage } from '@/pages/home'
 import { MembersPage } from '@/pages/members'
@@ -18,7 +19,7 @@ import { ErrorOfflinePage } from '@/pages/error-offline'
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/admin">
       <Routes>
         {/* 인증 — 프리픽스 없음 */}
         <Route path="/login" element={<LoginPage />} />
@@ -30,7 +31,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/kr/ko" replace />} />
 
         {/* 어드민 — /:countryCode/:langCode 프리픽스 */}
-        <Route path="/:countryCode/:langCode" element={<AdminLayout />}>
+        <Route path="/:countryCode/:langCode" element={<MembersProvider><AdminLayout /></MembersProvider>}>
           <Route index element={<HomePage />} />
 
           {/* 회원/권한 관리 */}

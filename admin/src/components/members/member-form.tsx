@@ -9,7 +9,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import type { Member } from '@/lib/types'
-import { ROLES, COUNTRIES, DEPTS } from '@/lib/mock-data'
+import { ROLES, COUNTRIES, DEPARTMENTS } from '@/lib/mock-data'
 
 type Props = {
   open: boolean
@@ -19,7 +19,7 @@ type Props = {
 }
 
 const EMPTY: Partial<Member> = {
-  loginId: '', name: '', email: '', dept: '', tel: '',
+  loginId: '', name: '', email: '', department: '', tel: '',
   country: 'KR', roleId: '', expiresAt: null, status: 'active',
 }
 
@@ -100,14 +100,14 @@ export function MemberForm({ open, onOpenChange, member, onSave }: Props) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="dept">부서</Label>
-              <Select value={form.dept ?? ''} onValueChange={v => set('dept', v)}>
-                <SelectTrigger id="dept">
+              <Label htmlFor="department">부서</Label>
+              <Select value={form.department ?? ''} onValueChange={v => set('department', v)}>
+                <SelectTrigger id="department">
                   <SelectValue placeholder="부서 선택" />
                 </SelectTrigger>
                 <SelectContent>
-                  {DEPTS.map(d => (
-                    <SelectItem key={d} value={d}>{d}</SelectItem>
+                  {DEPARTMENTS.map(d => (
+                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

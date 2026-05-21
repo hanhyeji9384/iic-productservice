@@ -1,9 +1,7 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { WifiOff, RotateCw } from 'lucide-react'
 
 export function ErrorOfflinePage() {
-  const navigate = useNavigate()
 
   useEffect(() => {
     function handleOnline() {

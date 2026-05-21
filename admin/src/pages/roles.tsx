@@ -16,8 +16,9 @@ type Tab = 'roles' | 'history'
 const ITEMS_PER_PAGE = 10
 
 const CHANGE_TYPE_STYLE = {
-  update: { bg: 'bg-blue-50 text-blue-700', label: '수정' },
-  delete: { bg: 'bg-red-50 text-red-700',   label: '삭제' },
+  update: { bg: 'bg-blue-50 text-blue-700',  label: '수정' },
+  delete: { bg: 'bg-red-50 text-red-700',    label: '삭제' },
+  create: { bg: 'bg-gray-100 text-gray-500', label: '생성' },
 }
 
 function emptyPerms(): PermissionEntry[] {

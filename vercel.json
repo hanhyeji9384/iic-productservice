@@ -1,0 +1,9 @@
+{
+  "buildCommand": "cd admin && npm install && npm run build",
+  "outputDirectory": ".",
+  "routes": [
+    { "src": "/admin/assets/(.*)", "dest": "/admin/dist/assets/$1" },
+    { "src": "/admin/favicon\\.svg", "dest": "/admin/dist/favicon.svg" },
+    { "src": "/admin(/?.*)", "dest": "/admin/dist/index.html" }
+  ]
+}

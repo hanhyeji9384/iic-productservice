@@ -1,79 +1,20 @@
 import { useState, useMemo } from 'react'
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom'
-import { UserPlus, Edit, ChevronDown, Shield, History, Users, Search, Globe, ChevronLeft, ChevronRight } from 'lucide-react'
-import { MEMBERS as INITIAL_MEMBERS, ROLES, BRANCHES, STORES, DEPARTMENTS } from '@/lib/mock-data'
-import type { Member } from '@/lib/types'
+import { UserPlus, Edit, ChevronDown, Shield, History, Users, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { ROLES, BRANCHES, STORES, DEPARTMENTS } from '@/lib/mock-data'
 import { Pagination } from '@/components/pagination'
 import { SummaryCell } from '@/components/summary-cell'
-
-
-function formatDateTime(iso: string | null) {
-  if (!iso) return '-'
-  return iso.replace('T', ' ').slice(0, 19)
-}
+import { useMembers } from '@/lib/members-context'
+import { formatDateTime } from '@/lib/utils'
 
 function getRoleName(roleId: string) {
   return ROLES.find(r => r.id === roleId)?.name ?? roleId
-}
-
-function getBranchName(code: string) {
-  return BRANCHES.find(b => b.code === code)?.name ?? code
-}
-
-function getStoreName(code: string) {
-  return STORES.find(s => s.code === code)?.name ?? code
 }
 
 function getDepartmentName(id: string) {
   return DEPARTMENTS.find(d => d.id === id)?.name ?? '—'
 }
 
-function ManagedBranchesBadges({ codes }: { codes: string[] }) {
-  if (!codes || codes.length === 0) return <span className="text-gray-300">—</span>
-  if (codes.includes('*')) {
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
-        <Globe className="w-3 h-3" />전체
-      </span>
-    )
-  }
-  const visible = codes.slice(0, 2)
-  const extra = codes.length - 2
-  return (
-    <div className="flex flex-wrap gap-1">
-      {visible.map(c => (
-        <span key={c} className="px-1.5 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 whitespace-nowrap">
-          {getBranchName(c)}
-        </span>
-      ))}
-      {extra > 0 && (
-        <span className="px-1.5 py-0.5 rounded text-[11px] font-semibold bg-gray-100 text-gray-500">
-          +{extra}
-        </span>
-      )}
-    </div>
-  )
-}
-
-function AssignedStoresBadges({ codes }: { codes: string[] }) {
-  if (!codes || codes.length === 0) return <span className="text-gray-300">—</span>
-  const visible = codes.slice(0, 1)
-  const extra = codes.length - 1
-  return (
-    <div className="flex flex-wrap gap-1">
-      {visible.map(c => (
-        <span key={c} className="px-1.5 py-0.5 rounded text-[11px] bg-gray-100 text-gray-600 whitespace-nowrap max-w-[140px] truncate">
-          {getStoreName(c)}
-        </span>
-      ))}
-      {extra > 0 && (
-        <span className="px-1.5 py-0.5 rounded text-[11px] bg-gray-100 text-gray-500">
-          +{extra}
-        </span>
-      )}
-    </div>
-  )
-}
 
 
 const CHANGE_TYPE_STYLES: Record<string, { bg: string; label: string }> = {
@@ -112,8 +53,8 @@ export function MembersPage() {
   const pfx = `/${countryCode}/${langCode}`
   const [searchParams, setSearchParams] = useSearchParams()
   const [activeTab, setActiveTab] = useState<'list' | 'history'>('list')
-  const [members, setMembers] = useState<Member[]>(INITIAL_MEMBERS)
-  const [logs, setLogs] = useState<ChangeLog[]>(INITIAL_LOGS)
+  const { members } = useMembers()
+  const [logs] = useState<ChangeLog[]>(INITIAL_LOGS)
 
   const [showFilters, setShowFilters] = useState(false)
   const [search, setSearch] = useState(searchParams.get('q') ?? '')
