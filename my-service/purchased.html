@@ -109,17 +109,38 @@
     .purchase-card-price {
       font-size: 14px;
       color: var(--gray-800);
-      margin-bottom: 16px;
+      margin-bottom: 0;
     }
 
     .purchase-card-warranty {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 4px 12px;
-      font-size: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 4px 18px;
+      font-size: 11px;
       color: var(--gray-500);
-      margin-bottom: 16px;
+      line-height: 1.8;
+      margin: 12px 0 18px;
     }
+
+    .warranty-item {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .warranty-label { color: var(--gray-400); }
+    .warranty-value { color: var(--gray-800); }
+    .warranty-status {
+      margin-left: 4px;
+      font-size: 11px;
+    }
+    .warranty-status--active {
+      color: var(--black);
+      font-weight: 500;
+    }
+    .warranty-status--pending { color: var(--gray-500); }
+    .warranty-status--expired { color: var(--gray-400); }
 
     .purchase-card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 
@@ -151,6 +172,22 @@
       font-size: 11px;
       color: var(--gray-400);
       margin-top: 10px;
+    }
+
+    @media (max-width: 720px) {
+      .purchased-wrap { padding: 32px 20px 64px; }
+      .purchase-card {
+        flex-direction: column;
+        gap: 20px;
+      }
+      .purchase-card-img { width: 100%; }
+      .purchase-card-warranty {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        margin: 12px 0 18px;
+      }
+      .warranty-item { white-space: normal; }
     }
   </style>
 </head>
@@ -202,6 +239,10 @@
         <p class="purchase-card-order">온라인 #2605200PLGDQRSTUVW</p>
         <p class="purchase-card-name">PALETTE 02 (GD)</p>
         <p class="purchase-card-price">₩329,000</p>
+        <div class="purchase-card-warranty">
+          <span class="warranty-item"><span class="warranty-label">품질 보증 기간</span><span class="warranty-value">~2028. 05. 20 <span class="warranty-status warranty-status--pending">(적용 예정)</span></span></span>
+          <span class="warranty-item"><span class="warranty-label">서비스 보증 기간</span><span class="warranty-value">~2029. 05. 20 <span class="warranty-status warranty-status--pending">(적용 예정)</span></span></span>
+        </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
         </div>
@@ -217,6 +258,10 @@
         <p class="purchase-card-order">온라인 #2604290XYZLMNOPQRS</p>
         <p class="purchase-card-name">FRIDA 01</p>
         <p class="purchase-card-price">₩299,000</p>
+        <div class="purchase-card-warranty">
+          <span class="warranty-item"><span class="warranty-label">품질 보증 기간</span><span class="warranty-value">~2028. 04. 29 <span class="warranty-status warranty-status--pending">(적용 예정)</span></span></span>
+          <span class="warranty-item"><span class="warranty-label">서비스 보증 기간</span><span class="warranty-value">~2029. 04. 29 <span class="warranty-status warranty-status--pending">(적용 예정)</span></span></span>
+        </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
         </div>
@@ -233,10 +278,8 @@
         <p class="purchase-card-name">스마트 브리즈비 02 (GR)</p>
         <p class="purchase-card-price">₩499,000</p>
         <div class="purchase-card-warranty">
-          <span style="color:var(--gray-400);">품질 보증</span>
-          <span>~2028. 02. 03 <span style="color:#111;font-weight:500;">(유효)</span></span>
-          <span style="color:var(--gray-400);">서비스 보증</span>
-          <span>~2029. 02. 03 <span style="color:#111;font-weight:500;">(유효)</span></span>
+          <span class="warranty-item"><span class="warranty-label">품질 보증 기간</span><span class="warranty-value">~2028. 02. 03 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
+          <span class="warranty-item"><span class="warranty-label">서비스 보증 기간</span><span class="warranty-value">~2029. 02. 03 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
         </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
@@ -255,10 +298,8 @@
         <p class="purchase-card-name">TOFINO 01 (BK)</p>
         <p class="purchase-card-price">₩249,000</p>
         <div class="purchase-card-warranty">
-          <span style="color:var(--gray-400);">품질 보증</span>
-          <span>~2027. 07. 18 <span style="color:#111;font-weight:500;">(유효)</span></span>
-          <span style="color:var(--gray-400);">서비스 보증</span>
-          <span>~2028. 07. 18 <span style="color:#111;font-weight:500;">(유효)</span></span>
+          <span class="warranty-item"><span class="warranty-label">품질 보증 기간</span><span class="warranty-value">~2027. 07. 18 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
+          <span class="warranty-item"><span class="warranty-label">서비스 보증 기간</span><span class="warranty-value">~2028. 07. 18 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
         </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
@@ -277,10 +318,8 @@
         <p class="purchase-card-name">스마트 브리즈비 01 (BL)</p>
         <p class="purchase-card-price">₩479,000</p>
         <div class="purchase-card-warranty">
-          <span style="color:var(--gray-400);">품질 보증</span>
-          <span>~2027. 08. 18 <span style="color:#111;font-weight:500;">(유효)</span></span>
-          <span style="color:var(--gray-400);">서비스 보증</span>
-          <span>~2028. 08. 18 <span style="color:#111;font-weight:500;">(유효)</span></span>
+          <span class="warranty-item"><span class="warranty-label">품질 보증 기간</span><span class="warranty-value">~2027. 08. 18 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
+          <span class="warranty-item"><span class="warranty-label">서비스 보증 기간</span><span class="warranty-value">~2028. 08. 18 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
         </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
@@ -299,10 +338,8 @@
         <p class="purchase-card-name">FRIDA 02 <span style="font-size:11px;color:var(--gray-400);font-weight:400;">(FRIDA 03 교체)</span></p>
         <p class="purchase-card-price">₩289,000</p>
         <div class="purchase-card-warranty">
-          <span style="color:var(--gray-400);">품질 보증</span>
-          <span>~2026. 11. 20 <span style="color:#111;font-weight:500;">(유효)</span></span>
-          <span style="color:var(--gray-400);">서비스 보증</span>
-          <span>~2027. 11. 20 <span style="color:#111;font-weight:500;">(유효)</span></span>
+          <span class="warranty-item"><span class="warranty-label">품질 보증 기간</span><span class="warranty-value">~2026. 11. 20 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
+          <span class="warranty-item"><span class="warranty-label">서비스 보증 기간</span><span class="warranty-value">~2027. 11. 20 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
         </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
@@ -321,10 +358,8 @@
         <p class="purchase-card-name">MONDO 03 (GY)</p>
         <p class="purchase-card-price">₩269,000</p>
         <div class="purchase-card-warranty">
-          <span style="color:var(--gray-400);">품질 보증</span>
-          <span>~2025. 08. 10 <span style="color:var(--gray-400);">(만료)</span></span>
-          <span style="color:var(--gray-400);">서비스 보증</span>
-          <span>~2026. 08. 10 <span style="color:#111;font-weight:500;">(유효)</span></span>
+          <span class="warranty-item"><span class="warranty-label">품질 보증 기간</span><span class="warranty-value">~2025. 08. 10 <span class="warranty-status warranty-status--expired">(만료)</span></span></span>
+          <span class="warranty-item"><span class="warranty-label">서비스 보증 기간</span><span class="warranty-value">~2026. 08. 10 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
         </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
@@ -343,10 +378,8 @@
         <p class="purchase-card-name">JENNIE 01 (BK)</p>
         <p class="purchase-card-price">₩319,000</p>
         <div class="purchase-card-warranty">
-          <span style="color:var(--gray-400);">품질 보증</span>
-          <span>~2024. 03. 15 <span style="color:var(--gray-400);">(만료)</span></span>
-          <span style="color:var(--gray-400);">서비스 보증</span>
-          <span>~2025. 03. 15 <span style="color:var(--gray-400);">(만료)</span></span>
+          <span class="warranty-item"><span class="warranty-label">품질 보증 기간</span><span class="warranty-value">~2024. 03. 15 <span class="warranty-status warranty-status--expired">(만료)</span></span></span>
+          <span class="warranty-item"><span class="warranty-label">서비스 보증 기간</span><span class="warranty-value">~2025. 03. 15 <span class="warranty-status warranty-status--expired">(만료)</span></span></span>
         </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
