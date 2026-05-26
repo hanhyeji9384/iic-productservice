@@ -96,7 +96,7 @@ export function LoginPage() {
       setTimeout(() => otpRefs.current[0]?.focus(), 50)
       return
     }
-    navigate('/kr/ko')
+    navigate('/ko')
   }
 
   const logo = (

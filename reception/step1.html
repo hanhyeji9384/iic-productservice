@@ -523,13 +523,23 @@ window.addEventListener('load', function() {
         purchaseDate = dateEl ? dateEl.value : '';
         isAi = name.indexOf('스마트') !== -1;
       }
-      try { localStorage.setItem('ps-state', JSON.stringify({
-        productName: name, purchaseDate: purchaseDate, isAi: isAi,
-        serviceType: null, urgentRepair: false, dispatchDate: null, fittingOption: 'basic',
-        aiIssueFunc: false, aiIssueProd: false
-      })); } catch(ex) {}
-      e.preventDefault();
-      window.location.href = 'step2-service-type.html' + (isAi ? '?ai=true' : '');
+      var isEditMode = new URLSearchParams(window.location.search).get('mode') === 'edit';
+      if (isEditMode) {
+        var existState = {};
+        try { existState = JSON.parse(localStorage.getItem('ps-state') || '{}'); } catch(ex) {}
+        existState.productName = name; existState.purchaseDate = purchaseDate; existState.isAi = isAi;
+        try { localStorage.setItem('ps-state', JSON.stringify(existState)); } catch(ex) {}
+        e.preventDefault();
+        window.location.href = 'step2-service-type.html?mode=edit';
+      } else {
+        try { localStorage.setItem('ps-state', JSON.stringify({
+          productName: name, purchaseDate: purchaseDate, isAi: isAi,
+          serviceType: null, urgentRepair: false, dispatchDate: null, fittingOption: 'basic',
+          aiIssueFunc: false, aiIssueProd: false
+        })); } catch(ex) {}
+        e.preventDefault();
+        window.location.href = 'step2-service-type.html' + (isAi ? '?ai=true' : '');
+      }
     });
   }
 

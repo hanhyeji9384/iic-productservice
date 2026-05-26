@@ -1012,6 +1012,22 @@ window.addEventListener('load', function() {
     } else {
       applyKrMode();
     }
+
+    // 이전 선택 복원
+    if (state.receiveMethod) {
+      var recvInput = document.querySelector('input[name="receive"][value="' + state.receiveMethod + '"]');
+      if (recvInput) {
+        var recvOpt = recvInput.closest('.check-item');
+        if (recvOpt && recvOpt.offsetParent !== null) selectReceive(recvOpt, state.receiveMethod);
+      }
+    }
+    if (state.sendMethod && state.sendMethod !== 'accessory') {
+      var sendInput = document.querySelector('input[name="send"][value="' + state.sendMethod + '"]');
+      if (sendInput) {
+        var sendOpt = sendInput.closest('.check-item');
+        if (sendOpt && sendOpt.offsetParent !== null) selectSend(sendOpt, state.sendMethod);
+      }
+    }
   } catch(e) {}
 });
 </script>

@@ -227,6 +227,15 @@
 <main class="page-wrapper">
   <div class="content">
 
+    <!-- PROTOTYPE CONTROLS -->
+    <div style="margin-bottom:24px;padding:14px 16px;background:#f5f5f5;border:1px solid #e0e0e0;">
+      <p style="font-size:10px;color:#aaa;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;">PROTOTYPE SCENARIO</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button id="pb-call-open" onclick="setCallAvailability(true)" style="font-size:11px;padding:5px 12px;border:1px solid #111;background:#111;color:#fff;cursor:pointer;font-family:inherit;">콜 운영시간 내</button>
+        <button id="pb-call-closed" onclick="setCallAvailability(false)" style="font-size:11px;padding:5px 12px;border:1px solid #ccc;background:#fff;color:#333;cursor:pointer;font-family:inherit;">콜 운영시간 외</button>
+      </div>
+    </div>
+
     <div class="step-progress">
       <div class="step-item done"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 01</p><p class="step-label">기본 정보</p></div>
       <div class="step-item done"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 02</p><p class="step-label">서비스 유형</p></div>
@@ -424,8 +433,8 @@
           <label class="consult-channel-card" id="consult-card-chat" onclick="selectConsultChannel('chat')">
             <input type="radio" name="consult-channel" value="chat">
             <div>
-              <p class="consult-channel-title" id="ch-chat-title">라이브챗</p>
-              <p class="consult-channel-desc" id="ch-chat-desc">채팅 상담 바로 시작</p>
+              <p class="consult-channel-title" id="ch-chat-title">AI Agent</p>
+              <p class="consult-channel-desc" id="ch-chat-desc">AI 에이전트와 바로 상담</p>
             </div>
           </label>
         </div>
@@ -433,6 +442,9 @@
         <div class="consult-panel" id="consult-panel-call">
           <p class="consult-panel-title" id="call-panel-title">전화 상담</p>
           <p id="call-panel-desc" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:18px;">운영 시간: 평일 10:00 - 18:00<br>제품 상태와 접수 상황을 빠르게 확인하실 수 있습니다.</p>
+          <div id="call-closed-notice" style="display:none;padding:14px 16px;background:#f8f8f8;border:1px solid #e0e0e0;margin-bottom:16px;">
+            <p style="font-size:13px;color:#555;">현재 운영 시간이 아닙니다.<br>운영 시간: 평일 10:00 - 18:00 · 이메일 또는 AI Agent를 이용해 주세요.</p>
+          </div>
           <a href="tel:16002126" class="btn btn-primary" style="display:inline-flex;min-width:180px;">1600-2126</a>
         </div>
 
@@ -493,9 +505,9 @@
         </div>
 
         <div class="consult-panel" id="consult-panel-chat" style="display:none;">
-          <p class="consult-panel-title" id="chat-panel-title">라이브챗</p>
-          <p id="chat-panel-desc" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:18px;">상담 가능한 시간이면 실시간 채팅으로 문의하실 수 있습니다.</p>
-          <button id="chat-start-btn" type="button" class="btn btn-primary" onclick="openLiveChat()" style="min-width:180px;">라이브챗 시작하기</button>
+          <p class="consult-panel-title" id="chat-panel-title">AI Agent</p>
+          <p id="chat-panel-desc" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:18px;">AI 에이전트와 실시간으로 상담하실 수 있습니다. 이메일 및 AI Agent는 24시간 운영합니다.</p>
+          <button id="chat-start-btn" type="button" class="btn btn-primary" onclick="openLiveChat()" style="min-width:180px;">AI Agent 연결</button>
         </div>
       </div>
     </div>
@@ -511,8 +523,8 @@
 <div class="live-chat-widget" id="live-chat-widget">
   <div class="live-chat-header">
     <div>
-      <p id="livechat-header-title" style="font-size:14px;font-weight:500;">GENTLE MONSTER 라이브챗</p>
-      <p id="livechat-header-status" style="font-size:11px;color:#777;">상담 가능 · 평균 응답 2분</p>
+      <p id="livechat-header-title" style="font-size:14px;font-weight:500;">GENTLE MONSTER AI Agent</p>
+      <p id="livechat-header-status" style="font-size:11px;color:#777;">24시간 운영 · 즉시 응답</p>
     </div>
     <button type="button" onclick="closeLiveChat()" style="border:none;background:none;font-size:18px;cursor:pointer;padding:4px;">×</button>
   </div>
@@ -613,8 +625,8 @@ var STRINGS = {
     chCallDesc: '운영 시간 내 전화 상담',
     chEmailTitle: '이메일',
     chEmailDesc: '문의 내용 작성 후 접수',
-    chChatTitle: '라이브챗',
-    chChatDesc: '채팅 상담 바로 시작',
+    chChatTitle: 'AI Agent',
+    chChatDesc: 'AI 에이전트와 바로 상담',
     callPanelTitle: '전화 상담',
     callPanelDesc: '운영 시간: 평일 10:00 - 18:00<br>제품 상태와 접수 상황을 빠르게 확인하실 수 있습니다.',
     emailPanelTitle: '이메일 문의하기',
@@ -633,11 +645,11 @@ var STRINGS = {
     emailUploadBtn: '이미지 업로드하기',
     emailConsentText: '고객 서비스에 연락하기 위해 입력한 데이터를 국외로 전송하는 데 동의합니다.',
     emailSubmitLabel: '제출하기',
-    chatPanelTitle: '라이브챗',
-    chatPanelDesc: '상담 가능한 시간이면 실시간 채팅으로 문의하실 수 있습니다.',
-    chatStartBtn: '라이브챗 시작하기',
-    livechatHeaderTitle: 'GENTLE MONSTER 라이브챗',
-    livechatHeaderStatus: '상담 가능 · 평균 응답 2분',
+    chatPanelTitle: 'AI Agent',
+    chatPanelDesc: 'AI 에이전트와 실시간으로 상담하실 수 있습니다. 이메일 및 AI Agent는 24시간 운영합니다.',
+    chatStartBtn: 'AI Agent 연결',
+    livechatHeaderTitle: 'GENTLE MONSTER AI Agent',
+    livechatHeaderStatus: '24시간 운영 · 즉시 응답',
     livechatGreeting: '안녕하세요. 젠틀몬스터 프로덕트 서비스입니다. 어떤 도움이 필요하신가요?',
     livechatInputPlaceholder: '메시지를 입력해 주세요',
     livechatSendBtn: '전송',
@@ -689,8 +701,8 @@ var STRINGS = {
     chCallDesc: 'Phone consultation during operating hours',
     chEmailTitle: 'Email',
     chEmailDesc: 'Submit your inquiry via email',
-    chChatTitle: 'Live Chat',
-    chChatDesc: 'Start a chat session immediately',
+    chChatTitle: 'AI Agent',
+    chChatDesc: 'Chat with AI agent instantly',
     callPanelTitle: 'Phone Consultation',
     callPanelDesc: 'Operating hours: Mon–Fri 10:00–18:00<br>Get a quick update on your product status and service progress.',
     emailPanelTitle: 'Email Inquiry',
@@ -709,11 +721,11 @@ var STRINGS = {
     emailUploadBtn: 'Upload Image',
     emailConsentText: 'I agree to the transfer of my data outside my country for the purpose of contacting customer service.',
     emailSubmitLabel: 'SUBMIT',
-    chatPanelTitle: 'Live Chat',
-    chatPanelDesc: 'During operating hours, you can contact us via real-time chat.',
-    chatStartBtn: 'START LIVE CHAT',
-    livechatHeaderTitle: 'GENTLE MONSTER Live Chat',
-    livechatHeaderStatus: 'Available · Avg. response 2 min',
+    chatPanelTitle: 'AI Agent',
+    chatPanelDesc: 'Connect with our AI agent for real-time support. Email and AI Agent are available 24/7.',
+    chatStartBtn: 'CONNECT WITH AI AGENT',
+    livechatHeaderTitle: 'GENTLE MONSTER AI Agent',
+    livechatHeaderStatus: '24/7 · Instant Response',
     livechatGreeting: 'Hello. Welcome to GENTLE MONSTER Product Service. How can we help you?',
     livechatInputPlaceholder: 'Type a message',
     livechatSendBtn: 'SEND',
@@ -817,7 +829,29 @@ function checkAccessoryNextBtn() {
   btn.style.pointerEvents = allQtySelected ? '' : 'none';
 }
 
+var _callAvailable = true;
+
+function setCallAvailability(isOpen) {
+  _callAvailable = isOpen;
+  var callCard = document.getElementById('consult-card-call');
+  var callPanel = document.getElementById('consult-panel-call');
+  var closedNotice = document.getElementById('call-closed-notice');
+  var pb1 = document.getElementById('pb-call-open');
+  var pb2 = document.getElementById('pb-call-closed');
+  if (callCard) {
+    callCard.style.opacity = isOpen ? '' : '0.4';
+    callCard.style.pointerEvents = isOpen ? '' : 'none';
+  }
+  if (closedNotice) closedNotice.style.display = isOpen ? 'none' : 'block';
+  if (pb1) { pb1.style.background = isOpen?'#111':'#fff'; pb1.style.color = isOpen?'#fff':'#333'; pb1.style.borderColor = isOpen?'#111':'#ccc'; }
+  if (pb2) { pb2.style.background = isOpen?'#fff':'#111'; pb2.style.color = isOpen?'#333':'#fff'; pb2.style.borderColor = isOpen?'#ccc':'#111'; }
+  if (!isOpen && callCard && callCard.classList.contains('selected')) {
+    selectConsultChannel('email');
+  }
+}
+
 function selectConsultChannel(channel) {
+  if (channel === 'call' && !_callAvailable) return;
   ['call','email','chat'].forEach(function(key) {
     const card = document.getElementById('consult-card-' + key);
     const panel = document.getElementById('consult-panel-' + key);

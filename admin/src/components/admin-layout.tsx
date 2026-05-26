@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-rout
 import {
   UserCog, Shield, Package, Wrench, ArchiveX,
   Users, Ticket, Menu, LogOut, ChevronRight,
-  AlertTriangle, KeyRound, Briefcase,
+  AlertTriangle, KeyRound, Briefcase, CalendarDays,
 } from 'lucide-react'
 import { useSession } from '@/lib/session-context'
 import { SessionWarningModal } from '@/components/session-warning-modal'
@@ -26,18 +26,19 @@ const NAV: NavGroup[] = [
     label: '시스템관리',
     icon: UserCog,
     children: [
-      { to: '/members',     label: '회원', icon: UserCog },
-      { to: '/roles',       label: '권한', icon: Shield },
-      { to: '/departments', label: '부서', icon: Briefcase },
+      { to: '/members',                  label: '회원 관리',      icon: UserCog },
+      { to: '/roles',                    label: '권한 관리',      icon: Shield },
+      { to: '/departments',              label: '부서 관리',      icon: Briefcase },
+      { to: '/settings/reception-slots', label: '접수 슬롯 설정', icon: CalendarDays },
     ],
   },
   {
     label: '제품 관리',
     icon: Package,
     children: [
-      { to: '/products', label: '제품', icon: Package },
-      { to: '/parts',    label: '부품', icon: Wrench },
-      { to: '/stock',    label: '재고', icon: ArchiveX },
+      { to: '/products', label: '제품 관리',   icon: Package },
+      { to: '/parts',    label: '부품 관리',   icon: Wrench },
+      { to: '/stock',    label: '재고 리스트', icon: ArchiveX },
     ],
   },
   {
@@ -71,7 +72,9 @@ const NAV: NavGroup[] = [
       { to: '/auth/login',           label: '로그인',       icon: KeyRound },
       { to: '/auth/otp',             label: 'OTP 인증',     icon: KeyRound },
       { to: '/auth/forgot-password', label: '비밀번호 찾기', icon: KeyRound },
-      { to: '/auth/reset-password',  label: '비밀번호 변경', icon: KeyRound },
+      { to: '/auth/reset-password',      label: '비밀번호 변경',      icon: KeyRound },
+      { to: '/auth/reset-password/done', label: '비밀번호 변경 완료', icon: KeyRound },
+      { to: '/auth/setup-2fa',           label: 'Google Auth 등록',  icon: KeyRound },
     ],
   },
 ]
@@ -142,7 +145,6 @@ export function AdminLayout() {
         <nav className="px-3 py-3 pb-6">
           {NAV.map(group => {
             const isExpanded = expanded.includes(group.label)
-            const isGroupActive = group.children.some(c => location.pathname.startsWith(`${pfx}${c.to}`))
             const GroupIcon = group.icon
 
             return (
@@ -150,11 +152,7 @@ export function AdminLayout() {
                 {/* 그룹 헤더 */}
                 <button
                   onClick={() => toggleGroup(group.label)}
-                  className={`w-full px-4 py-2.5 text-sm rounded-xl transition-colors flex items-center justify-between ${
-                    isGroupActive
-                      ? 'text-gray-900 bg-gray-100 font-medium'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                  }`}
+                  className="w-full px-4 py-2.5 text-sm rounded-xl transition-colors flex items-center justify-between text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                 >
                   <div className="flex items-center gap-3">
                     <GroupIcon className="w-4 h-4" />
@@ -180,6 +178,7 @@ export function AdminLayout() {
                       <NavLink
                         key={to}
                         to={`${pfx}${to}`}
+                        end
                         className={({ isActive }) =>
                           `flex items-center gap-3 px-4 py-2.5 text-sm rounded-xl transition-colors ${
                             isActive

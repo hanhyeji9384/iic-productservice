@@ -100,7 +100,7 @@
 
       <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
         <label class="inline-check">
-          <input type="checkbox" id="chk-lens" onchange="checkNextBtn()">
+          <input type="checkbox" id="chk-lens" onchange="savePkgLensState();checkNextBtn()">
           <span id="txt-ln-chk">내용을 확인했으며, 렌즈를 분리하여 제품만 발송합니다.</span>
         </label>
       </div>
@@ -123,7 +123,7 @@
     <div style="border:1px solid #e0e0e0;padding:16px 20px;margin-bottom:40px;">
       <p id="txt-pkg-desc" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:12px;">제품 본체만 보내주세요. 보증카드, 케이스 등 부속품은 분실 우려가 있으니 함께 보내지 마세요.</p>
       <label class="inline-check">
-        <input type="checkbox" id="chk-pkg" onchange="checkNextBtn()">
+        <input type="checkbox" id="chk-pkg" onchange="savePkgLensState();checkNextBtn()">
         <span id="txt-pkg-chk">확인했습니다.</span>
       </label>
     </div><!-- /#lens-pkg-section -->
@@ -338,7 +338,31 @@ function updateFileUI() {
   document.getElementById('upload-zone').style.display = hasFiles ? 'none' : 'block';
   document.getElementById('file-list').style.display = hasFiles ? 'block' : 'none';
   document.getElementById('add-more-btn').style.display = (hasFiles && attachedFiles.length < MAX_FILES) ? 'block' : 'none';
+  try {
+    var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
+    state.imageCount = attachedFiles.length;
+    localStorage.setItem('ps-state', JSON.stringify(state));
+  } catch(e) {}
   checkNextBtn();
+}
+
+function savePkgLensState() {
+  try {
+    var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
+    state.chkPkg  = document.getElementById('chk-pkg').checked;
+    state.chkLens = document.getElementById('chk-lens').checked;
+    localStorage.setItem('ps-state', JSON.stringify(state));
+  } catch(e) {}
+}
+
+function renderMockFile(id, name) {
+  const item = document.createElement('div');
+  item.id = 'file-' + id;
+  item.style.cssText = 'position:relative;width:88px;';
+  item.innerHTML = '<div style="width:88px;height:88px;border:1px solid #e0e0e0;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa;text-align:center;">이전 이미지</div>' +
+    '<p style="font-size:10px;color:#666;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:88px;">' + name + '</p>' +
+    '<button onclick="removeFile(' + id + ')" style="position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,0.55);border:none;color:#fff;font-size:10px;cursor:pointer;line-height:1;padding:0;">✕</button>';
+  document.getElementById('file-items').appendChild(item);
 }
 
 // ── 제품 선택 ──
@@ -425,6 +449,35 @@ window.addEventListener('load', function() {
   var country; try { country = localStorage.getItem('ps-country'); } catch(e) {}
   setLang(country === 'us' ? 'en' : (saved || 'ko'));
 
+  // 이전 입력 상태 복원
+  try {
+    var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
+
+    // 렌즈 유형 복원
+    if (state.lensType && state.lensType !== 'none') {
+      var lensInput = document.querySelector('input[name="lens"][value="' + state.lensType + '"]');
+      if (lensInput) {
+        var lensLabel = lensInput.closest('.check-item');
+        if (lensLabel) selectLens(lensLabel, state.lensType);
+      }
+    }
+
+    // 체크박스 복원
+    if (state.chkPkg)  document.getElementById('chk-pkg').checked  = true;
+    if (state.chkLens) document.getElementById('chk-lens').checked = true;
+
+    // 이전 이미지 플레이스홀더 복원
+    if (state.imageCount && state.imageCount > 0) {
+      for (var i = 0; i < Math.min(state.imageCount, MAX_FILES); i++) {
+        var mockId = Date.now() + i;
+        attachedFiles.push({ id: mockId, name: '이미지_' + (i + 1) + '.jpg', size: 0 });
+        renderMockFile(mockId, '이미지_' + (i + 1) + '.jpg');
+      }
+      updateFileUI();
+    }
+
+    checkNextBtn();
+  } catch(e) {}
 });
 </script>
 </body>

@@ -109,7 +109,16 @@
     .purchase-card-price {
       font-size: 14px;
       color: var(--gray-800);
-      margin-bottom: 20px;
+      margin-bottom: 16px;
+    }
+
+    .purchase-card-warranty {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 4px 12px;
+      font-size: 12px;
+      color: var(--gray-500);
+      margin-bottom: 16px;
     }
 
     .purchase-card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -184,7 +193,22 @@
       <a href="#" class="register-btn">구매 등록하기</a>
     </div>
 
-    <!-- 배송 중 → 버튼 없음 (2026-04-29) -->
+    <!-- 배송 준비중 (2026-05-20) — 버튼 없음 -->
+    <div class="purchase-card">
+      <div class="purchase-card-img">PRODUCT IMAGE</div>
+      <div class="purchase-card-info">
+        <p class="purchase-card-status" style="color:var(--gray-500);">배송 준비중</p>
+        <p class="purchase-card-date">2026년 5월 20일</p>
+        <p class="purchase-card-order">온라인 #2605200PLGDQRSTUVW</p>
+        <p class="purchase-card-name">PALETTE 02 (GD)</p>
+        <p class="purchase-card-price">₩329,000</p>
+        <div class="purchase-card-actions">
+          <a href="#" class="btn-card">세부 정보 보기</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 배송 중 (2026-04-29) — 버튼 없음 -->
     <div class="purchase-card">
       <div class="purchase-card-img">PRODUCT IMAGE</div>
       <div class="purchase-card-info">
@@ -199,7 +223,7 @@
       </div>
     </div>
 
-    <!-- 배송 완료 (2026-02-03) -->
+    <!-- 배송 완료 (2026-02-03) — AI 안경 / 보증 전체 유효 -->
     <div class="purchase-card">
       <div class="purchase-card-img">PRODUCT IMAGE</div>
       <div class="purchase-card-info">
@@ -207,7 +231,13 @@
         <p class="purchase-card-date">2026년 2월 3일</p>
         <p class="purchase-card-order">온라인 #2602030AJKXLQPBMNVZ</p>
         <p class="purchase-card-name">스마트 브리즈비 02 (GR)</p>
-        <p class="purchase-card-price">₩299,000</p>
+        <p class="purchase-card-price">₩499,000</p>
+        <div class="purchase-card-warranty">
+          <span style="color:var(--gray-400);">품질 보증</span>
+          <span>~2028. 02. 03 <span style="color:#111;font-weight:500;">(유효)</span></span>
+          <span style="color:var(--gray-400);">서비스 보증</span>
+          <span>~2029. 02. 03 <span style="color:#111;font-weight:500;">(유효)</span></span>
+        </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
           <a href="../reception/start.html" onclick="try{localStorage.setItem('ps-from-purchased',JSON.stringify({name:'스마트 브리즈비 02 (GR)',order:'#2602030AJKXLQPBMNVZ',date:'2026. 02. 03',store:'젠틀몬스터 온라인',qw:'~2028. 02. 03 (유효)',sw:'~2029. 02. 03 (유효)',isAi:true}));}catch(e){}" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
@@ -215,7 +245,29 @@
       </div>
     </div>
 
-    <!-- 배송 완료 (2025-08-18) -->
+    <!-- 배송 완료 (2025-07-18) — 일반 선글라스 / 보증 전체 유효 -->
+    <div class="purchase-card">
+      <div class="purchase-card-img">PRODUCT IMAGE</div>
+      <div class="purchase-card-info">
+        <p class="purchase-card-status">배송 완료</p>
+        <p class="purchase-card-date">2025년 7월 18일</p>
+        <p class="purchase-card-order">온라인 #2507180TFBKJKLMNOP</p>
+        <p class="purchase-card-name">TOFINO 01 (BK)</p>
+        <p class="purchase-card-price">₩249,000</p>
+        <div class="purchase-card-warranty">
+          <span style="color:var(--gray-400);">품질 보증</span>
+          <span>~2027. 07. 18 <span style="color:#111;font-weight:500;">(유효)</span></span>
+          <span style="color:var(--gray-400);">서비스 보증</span>
+          <span>~2028. 07. 18 <span style="color:#111;font-weight:500;">(유효)</span></span>
+        </div>
+        <div class="purchase-card-actions">
+          <a href="#" class="btn-card">세부 정보 보기</a>
+          <a href="../reception/start.html" onclick="try{localStorage.setItem('ps-from-purchased',JSON.stringify({name:'TOFINO 01 (BK)',order:'#2507180TFBKJKLMNOP',date:'2025. 07. 18',store:'젠틀몬스터 온라인',qw:'~2027. 07. 18 (유효)',sw:'~2028. 07. 18 (유효)'}));}catch(e){}" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 배송 완료 (2025-08-18) — AI 안경 / 보증 전체 유효 -->
     <div class="purchase-card">
       <div class="purchase-card-img">PRODUCT IMAGE</div>
       <div class="purchase-card-info">
@@ -223,7 +275,13 @@
         <p class="purchase-card-date">2025년 8월 18일</p>
         <p class="purchase-card-order">온라인 #2508180MNSVGSJKKGZQ</p>
         <p class="purchase-card-name">스마트 브리즈비 01 (BL)</p>
-        <p class="purchase-card-price">₩279,000</p>
+        <p class="purchase-card-price">₩479,000</p>
+        <div class="purchase-card-warranty">
+          <span style="color:var(--gray-400);">품질 보증</span>
+          <span>~2027. 08. 18 <span style="color:#111;font-weight:500;">(유효)</span></span>
+          <span style="color:var(--gray-400);">서비스 보증</span>
+          <span>~2028. 08. 18 <span style="color:#111;font-weight:500;">(유효)</span></span>
+        </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
           <a href="../reception/start.html" onclick="try{localStorage.setItem('ps-from-purchased',JSON.stringify({name:'스마트 브리즈비 01 (BL)',order:'#2508180MNSVGSJKKGZQ',date:'2025. 08. 18',store:'젠틀몬스터 온라인',qw:'~2027. 08. 18 (유효)',sw:'~2028. 08. 18 (유효)',isAi:true}));}catch(e){}" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
@@ -231,7 +289,7 @@
       </div>
     </div>
 
-    <!-- 배송 완료 (2024-11-20) / 수리 교체 후 FRIDA 03 -->
+    <!-- 배송 완료 (2024-11-20) — 수리 교체 이력 / 보증 전체 유효 -->
     <div class="purchase-card">
       <div class="purchase-card-img">PRODUCT IMAGE</div>
       <div class="purchase-card-info">
@@ -240,9 +298,59 @@
         <p class="purchase-card-order">온라인 #2411200PQRSTUVWXYZ</p>
         <p class="purchase-card-name">FRIDA 02 <span style="font-size:11px;color:var(--gray-400);font-weight:400;">(FRIDA 03 교체)</span></p>
         <p class="purchase-card-price">₩289,000</p>
+        <div class="purchase-card-warranty">
+          <span style="color:var(--gray-400);">품질 보증</span>
+          <span>~2026. 11. 20 <span style="color:#111;font-weight:500;">(유효)</span></span>
+          <span style="color:var(--gray-400);">서비스 보증</span>
+          <span>~2027. 11. 20 <span style="color:#111;font-weight:500;">(유효)</span></span>
+        </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
           <a href="../reception/start.html" onclick="try{localStorage.setItem('ps-from-purchased',JSON.stringify({name:'FRIDA 03',order:'#2411200PQRSTUVWXYZ',date:'2024. 11. 20',store:'온라인',qw:'~2026. 11. 20 (유효)',sw:'~2027. 11. 20 (유효)'}));}catch(e){}" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 배송 완료 (2023-08-10) — 품질 보증 만료 / 서비스 보증 유효 -->
+    <div class="purchase-card">
+      <div class="purchase-card-img">PRODUCT IMAGE</div>
+      <div class="purchase-card-info">
+        <p class="purchase-card-status">배송 완료</p>
+        <p class="purchase-card-date">2023년 8월 10일</p>
+        <p class="purchase-card-order">온라인 #2308100MGYBKQRSTUV</p>
+        <p class="purchase-card-name">MONDO 03 (GY)</p>
+        <p class="purchase-card-price">₩269,000</p>
+        <div class="purchase-card-warranty">
+          <span style="color:var(--gray-400);">품질 보증</span>
+          <span>~2025. 08. 10 <span style="color:var(--gray-400);">(만료)</span></span>
+          <span style="color:var(--gray-400);">서비스 보증</span>
+          <span>~2026. 08. 10 <span style="color:#111;font-weight:500;">(유효)</span></span>
+        </div>
+        <div class="purchase-card-actions">
+          <a href="#" class="btn-card">세부 정보 보기</a>
+          <a href="../reception/start.html" onclick="try{localStorage.setItem('ps-from-purchased',JSON.stringify({name:'MONDO 03 (GY)',order:'#2308100MGYBKQRSTUV',date:'2023. 08. 10',store:'젠틀몬스터 온라인',qw:'~2025. 08. 10 (만료)',sw:'~2026. 08. 10 (유효)'}));}catch(e){}" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 배송 완료 (2022-03-15) — 오프라인 등록 / 보증 전체 만료 -->
+    <div class="purchase-card">
+      <div class="purchase-card-img">PRODUCT IMAGE</div>
+      <div class="purchase-card-info">
+        <p class="purchase-card-status">배송 완료</p>
+        <p class="purchase-card-date">2022년 3월 15일</p>
+        <p class="purchase-card-order">오프라인 등록 · 젠틀몬스터 가로수길</p>
+        <p class="purchase-card-name">JENNIE 01 (BK)</p>
+        <p class="purchase-card-price">₩319,000</p>
+        <div class="purchase-card-warranty">
+          <span style="color:var(--gray-400);">품질 보증</span>
+          <span>~2024. 03. 15 <span style="color:var(--gray-400);">(만료)</span></span>
+          <span style="color:var(--gray-400);">서비스 보증</span>
+          <span>~2025. 03. 15 <span style="color:var(--gray-400);">(만료)</span></span>
+        </div>
+        <div class="purchase-card-actions">
+          <a href="#" class="btn-card">세부 정보 보기</a>
+          <a href="../reception/start.html" onclick="try{localStorage.setItem('ps-from-purchased',JSON.stringify({name:'JENNIE 01 (BK)',order:'오프라인 등록',date:'2022. 03. 15',store:'젠틀몬스터 가로수길',qw:'~2024. 03. 15 (만료)',sw:'~2025. 03. 15 (만료)'}));}catch(e){}" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
         </div>
       </div>
     </div>

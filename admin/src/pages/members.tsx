@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom'
-import { UserPlus, Edit, ChevronDown, Shield, History, Users, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { UserPlus, Edit, ChevronDown, Shield, History, Users, Search, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
 import { ROLES, BRANCHES, STORES, DEPARTMENTS } from '@/lib/mock-data'
 import { Pagination } from '@/components/pagination'
 import { SummaryCell } from '@/components/summary-cell'
@@ -78,6 +78,23 @@ export function MembersPage() {
   const LOG_PAGE_SIZE = 10
   const [logsPage, setLogsPage] = useState(1)
 
+  type SortKey = 'loginId' | 'status' | 'lastLoginAt'
+  type SortDir = 'asc' | 'desc' | null
+  const [sortKey, setSortKey] = useState<SortKey | null>(null)
+  const [sortDir, setSortDir] = useState<SortDir>(null)
+
+  function handleSort(key: SortKey) {
+    if (sortKey !== key) { setSortKey(key); setSortDir('asc') }
+    else if (sortDir === 'asc') setSortDir('desc')
+    else { setSortKey(null); setSortDir(null) }
+  }
+
+  function SortIcon({ col }: { col: SortKey }) {
+    if (sortKey !== col) return <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-400" />
+    if (sortDir === 'asc') return <ArrowUp className="w-3 h-3 text-gray-700" />
+    return <ArrowDown className="w-3 h-3 text-gray-700" />
+  }
+
   const filtered = useMemo(() =>
     members.filter(m => {
       const q = appliedSearch.toLowerCase()
@@ -149,10 +166,20 @@ export function MembersPage() {
     })
   }
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
-  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+  const sorted = useMemo(() => {
+    if (!sortKey || !sortDir) return filtered
+    return [...filtered].sort((a, b) => {
+      const av = (a[sortKey] ?? '') as string
+      const bv = (b[sortKey] ?? '') as string
+      const dir = sortDir === 'asc' ? 1 : -1
+      if (!av && bv) return 1
+      if (av && !bv) return -1
+      return av < bv ? -dir : av > bv ? dir : 0
+    })
+  }, [filtered, sortKey, sortDir])
 
-  const activeCount = members.filter(m => m.status === 'active').length
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paginated = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   return (
     <div className="overflow-x-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -162,7 +189,6 @@ export function MembersPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-gray-900">회원 관리</h1>
-            <p className="text-sm text-gray-500 mt-1">전체 {members.length}명 · 활성 {activeCount}명</p>
           </div>
           <button
             onClick={() => navigate(`${pfx}/members/new`)}
@@ -292,12 +318,24 @@ export function MembersPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">회원</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
+                        <button onClick={() => handleSort('loginId')} className="group flex items-center gap-1.5 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
+                          회원 <SortIcon col="loginId" />
+                        </button>
+                      </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">이메일</th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">역할</th>
                       <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">부서</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">상태</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">마지막 로그인</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
+                        <button onClick={() => handleSort('status')} className="group flex items-center gap-1.5 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
+                          상태 <SortIcon col="status" />
+                        </button>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
+                        <button onClick={() => handleSort('lastLoginAt')} className="group flex items-center gap-1.5 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
+                          마지막 로그인 <SortIcon col="lastLoginAt" />
+                        </button>
+                      </th>
                       <th className="px-6 py-4 bg-gray-50/50 whitespace-nowrap w-[60px]"></th>
                     </tr>
                   </thead>

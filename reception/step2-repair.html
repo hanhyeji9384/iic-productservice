@@ -147,10 +147,10 @@
       <!-- 파손 3~7년: 복원 수리 Y/N -->
       <div id="result-damage-restoration" style="display:none;">
         <div style="border:1px solid #e0e0e0;padding:20px;margin-bottom:16px;">
-          <p id="resto-question" style="font-size:13px;font-weight:500;margin-bottom:8px;">복원 수리로 진행하시겠습니까?</p>
+          <p id="resto-question" style="font-size:13px;font-weight:500;margin-bottom:8px;">복원 수리를 의뢰하시겠습니까?</p>
           <p id="resto-desc" style="font-size:12px;color:#555;margin-bottom:16px;line-height:1.7;">부품 교체가 어려운 경우, 용접/도금 방식으로 원형에 가깝게 복원하는 수리입니다.</p>
           <div style="display:flex;gap:8px;">
-            <button onclick="setRestoAvail(true)" id="resto-y" style="flex:1;padding:10px;font-size:12px;border:1px solid #ccc;background:#fff;cursor:pointer;font-family:var(--font);">예</button>
+            <button onclick="setRestoAvail(true)" id="resto-y" style="flex:1;padding:10px;font-size:12px;border:1px solid #ccc;background:#fff;cursor:pointer;font-family:var(--font);">의뢰하기</button>
             <button onclick="setRestoAvail(false)" id="resto-n" style="flex:1;padding:10px;font-size:12px;border:1px solid #ccc;background:#fff;cursor:pointer;font-family:var(--font);">아니오 — 수리 불가</button>
           </div>
         </div>
@@ -291,9 +291,9 @@ var STRINGS = {
     issueError: '문제 현상을 선택해 주세요.',
     btnPrev: '이전',
     btnNext: '다음 — 사진·렌즈',
-    restoQuestion: '복원 수리로 진행하시겠습니까?',
+    restoQuestion: '복원 수리를 의뢰하시겠습니까?',
     restoDesc: '부품 교체가 어려운 경우, 용접/도금 방식으로 원형에 가깝게 복원하는 수리입니다.',
-    restoY: '예',
+    restoY: '의뢰하기',
     restoN: '아니오 — 수리 불가',
     decoCheckQuestion: '장식 부품 보유 여부를 확인해 주세요.',
     decoY: '보유 — 수리 접수',
@@ -381,9 +381,9 @@ var STRINGS = {
     issueError: 'Please select an issue type.',
     btnPrev: 'BACK',
     btnNext: 'NEXT — PHOTOS & LENS',
-    restoQuestion: 'Would you like to proceed with restoration repair?',
+    restoQuestion: 'Would you like to request restoration repair?',
     restoDesc: 'When part replacement is not feasible, we restore the product using welding or plating techniques.',
-    restoY: 'Yes',
+    restoY: 'Submit Request',
     restoN: 'No — Cannot Repair',
     decoCheckQuestion: 'Please check if the decoration parts are in stock.',
     decoY: 'In Stock — Proceed',

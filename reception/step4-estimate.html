@@ -454,6 +454,25 @@ window.addEventListener('load', function() {
       var productVal = document.querySelector('.summary-val');
       if (productVal) productVal.textContent = state.productName;
     }
+
+    // 발송/수령 방법 표시 업데이트
+    var sendLabels = {
+      pickup: { ko: '자택 픽업 (CJ 택배)', en: 'Home Pickup (CJ Logistics)' },
+      store:  { ko: '매장 발송', en: 'Store Drop-off' },
+      self:   { ko: '직접 발송', en: 'Self-shipping' }
+    };
+    if (state.sendMethod && sendLabels[state.sendMethod]) {
+      var sendEl = document.getElementById('val-send');
+      if (sendEl) sendEl.textContent = sendLabels[state.sendMethod][currentLang] || sendLabels[state.sendMethod].ko;
+    }
+    if (state.receiveMethod) {
+      var recvText = state.receiveMethod === 'store'
+        ? (currentLang === 'en' ? 'Store Pickup' : '매장 픽업')
+        : (currentLang === 'en' ? 'Home Delivery' : '자택 배송');
+      if (state.receiveMethod === 'store' && state.recvStoreName) recvText += ' — ' + state.recvStoreName;
+      var recvEl = document.getElementById('val-recv');
+      if (recvEl) recvEl.textContent = recvText;
+    }
   } catch(e) {
     setScenario('total');
   }

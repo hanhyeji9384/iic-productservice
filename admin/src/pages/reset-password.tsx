@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, ArrowLeft, CheckCircle } from 'lucide-react'
 
-export function ResetPasswordPage() {
+export function ResetPasswordPage({ done: initialDone = false }: { done?: boolean } = {}) {
   const navigate = useNavigate()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
-  const [done, setDone] = useState(false)
+  const [done, setDone] = useState(initialDone)
   const [error, setError] = useState('')
 
   function handleSubmit(e: React.FormEvent) {
