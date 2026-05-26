@@ -521,8 +521,29 @@ html, body {
 .check-item.selected { border-color: var(--black); background: var(--gray-50); }
 
 .check-item input { accent-color: var(--black); margin-top: 2px; flex-shrink: 0; }
+.check-item,
+.check-item > div,
+#addr-modal-overlay [style*="flex:1"] { min-width: 0; }
 .check-item-title { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
-.check-item-desc { font-size: 12px; color: var(--gray-500); }
+.check-item-desc { font-size: 12px; color: var(--gray-500); overflow-wrap: anywhere; word-break: break-all; }
+
+#addr-modal-overlay p { overflow-wrap: anywhere; word-break: break-all; }
+#addr-modal-overlay button { flex-shrink: 0; }
+
+@media (max-width: 520px) {
+  #addr-modal-overlay > div {
+    width: calc(100vw - 64px) !important;
+    max-width: calc(100vw - 64px) !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+  }
+  #addr-modal-overlay .check-group { grid-template-columns: 1fr !important; }
+  #addr-modal-overlay #addr-list-view > div { display: block !important; }
+  #addr-modal-overlay #addr-list-view > div > div { margin-bottom: 10px; }
+  #addr-modal-overlay #addr-list-view > div > button { margin-left: 28px !important; }
+  #addr-modal-overlay #addr-list-view p { max-width: 280px; }
+  #addr-modal-overlay .addr-modal-actions { flex-direction: column; }
+}
 
 .inline-check {
   display: flex;

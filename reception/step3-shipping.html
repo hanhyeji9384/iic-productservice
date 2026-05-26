@@ -892,6 +892,32 @@ function changeRecvStore() {
 // ─── 주소록 ───
 let selectedAddrIdx = 1;
 
+const ADDRESS_BOOK = [
+  { addr:'서울특별시 강남구 테헤란로 427 (삼성동, 위워크타워)', detail:'12층', zip:'06158' },
+  { addr:'서울특별시 성동구 왕십리로 83-21 (성수동2가, 성수아이파크)', detail:'203동 1502호', zip:'04784' },
+  { addr:'경기도 수원시 영통구 월드컵로 164 (매탄동, e편한세상영통)', detail:'101동 304호', zip:'16705' },
+];
+
+function normalizeText(value) {
+  return String(value || '').replace(/\s+/g, '').replace(/[-,()]/g, '');
+}
+
+function findAddressIndex(addr) {
+  var target = normalizeText(addr);
+  if (!target) return -1;
+  if (target.indexOf('강남구테헤란로427') !== -1) return 0;
+  if (target.indexOf('성동구왕십리로8321') !== -1) return 1;
+  if (target.indexOf('수원시영통구월드컵로164') !== -1) return 2;
+  for (var i = 0; i < ADDRESS_BOOK.length; i++) {
+    var d = ADDRESS_BOOK[i];
+    var full = [d.addr, d.detail, d.zip].join('');
+    if (target.indexOf(normalizeText(d.addr)) !== -1 || normalizeText(full).indexOf(target) !== -1) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 function selectAddr(idx) {
   selectedAddrIdx = idx;
   document.querySelectorAll('input[name="addr"]').forEach((r, i) => r.checked = (i === idx));
@@ -985,6 +1011,59 @@ function applyAccessoryMode() {
   if (homeOpt) { homeOpt.classList.add('selected'); var rr = homeOpt.querySelector('input[type="radio"]'); if (rr) rr.checked = true; selectReceive(homeOpt, 'home'); }
 }
 
+function mergeReapplyShippingState(state) {
+  var source = {};
+  try { source = JSON.parse(localStorage.getItem('ps-reapply-source') || '{}'); } catch(e) {}
+  if (!source || !source.ticketId) return state;
+
+  if (!state.sendMethod && source.sendMethod) state.sendMethod = source.sendMethod;
+  if (!state.pickupAddr && source.pickupAddr) state.pickupAddr = source.pickupAddr;
+  if (!state.receiveMethod && source.receiveMethod) state.receiveMethod = source.receiveMethod;
+  if (!state.receiveAddr && source.receiveAddr) state.receiveAddr = source.receiveAddr;
+  if (!state.recvStoreName && source.receiveStore) state.recvStoreName = source.receiveStore;
+  if (!state.reapplyFromTicket && source.ticketId) state.reapplyFromTicket = source.ticketId;
+
+  try { localStorage.setItem('ps-state', JSON.stringify(state)); } catch(e) {}
+  return state;
+}
+
+function applySavedShippingSelection(state) {
+  if (!state) return;
+
+  if (state.receiveMethod) {
+    var recvInput = document.querySelector('input[name="receive"][value="' + state.receiveMethod + '"]');
+    if (recvInput) {
+      var recvOpt = recvInput.closest('.check-item');
+      if (recvOpt && recvOpt.offsetParent !== null) selectReceive(recvOpt, state.receiveMethod);
+    }
+  }
+
+  if (state.receiveMethod === 'home' && state.receiveAddr) {
+    var addrIdx = findAddressIndex(state.receiveAddr);
+    if (addrIdx >= 0) selectAddr(addrIdx);
+  }
+
+  if (state.receiveMethod === 'store' && state.recvStoreName) {
+    var recvIdx = ALL_STORES.findIndex(function(store) { return store.name === state.recvStoreName; });
+    if (recvIdx >= 0) selectRecvStore(recvIdx);
+  }
+
+  if (state.sendMethod && state.sendMethod !== 'accessory') {
+    var sendInput = document.querySelector('input[name="send"][value="' + state.sendMethod + '"]');
+    if (sendInput) {
+      var sendOpt = sendInput.closest('.check-item');
+      if (sendOpt && sendOpt.offsetParent !== null) selectSend(sendOpt, state.sendMethod);
+    }
+  }
+
+  if (state.sendMethod === 'store' && state.dropStoreName) {
+    var dropIdx = ALL_STORES.findIndex(function(store) { return store.name === state.dropStoreName; });
+    if (dropIdx >= 0) selectDropStore(dropIdx);
+  }
+
+  checkShippingNextBtn();
+}
+
 window.addEventListener('load', function() {
   var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
   setLang(saved || 'ko');
@@ -995,6 +1074,7 @@ window.addEventListener('load', function() {
 
   try {
     var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
+    state = mergeReapplyShippingState(state);
     var country = localStorage.getItem('ps-country') || 'kr';
 
     if (country === 'us') {
@@ -1014,20 +1094,7 @@ window.addEventListener('load', function() {
     }
 
     // 이전 선택 복원
-    if (state.receiveMethod) {
-      var recvInput = document.querySelector('input[name="receive"][value="' + state.receiveMethod + '"]');
-      if (recvInput) {
-        var recvOpt = recvInput.closest('.check-item');
-        if (recvOpt && recvOpt.offsetParent !== null) selectReceive(recvOpt, state.receiveMethod);
-      }
-    }
-    if (state.sendMethod && state.sendMethod !== 'accessory') {
-      var sendInput = document.querySelector('input[name="send"][value="' + state.sendMethod + '"]');
-      if (sendInput) {
-        var sendOpt = sendInput.closest('.check-item');
-        if (sendOpt && sendOpt.offsetParent !== null) selectSend(sendOpt, state.sendMethod);
-      }
-    }
+    applySavedShippingSelection(state);
   } catch(e) {}
 });
 </script>

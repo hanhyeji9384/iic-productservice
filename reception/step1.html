@@ -526,7 +526,9 @@ window.addEventListener('load', function() {
         productSubCategory = typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(name) : '';
         isAi = name.indexOf('스마트') !== -1;
       }
-      var isEditMode = new URLSearchParams(window.location.search).get('mode') === 'edit';
+      var modeParam = new URLSearchParams(window.location.search).get('mode');
+      var isEditMode = modeParam === 'edit';
+      var isReapplyMode = modeParam === 'reapply';
       if (isEditMode) {
         var existState = {};
         try { existState = JSON.parse(localStorage.getItem('ps-state') || '{}'); } catch(ex) {}
@@ -535,13 +537,26 @@ window.addEventListener('load', function() {
         e.preventDefault();
         window.location.href = 'step2-service-type.html?mode=edit';
       } else {
-        try { localStorage.setItem('ps-state', JSON.stringify({
+        var nextState = {
           productName: name, purchaseDate: purchaseDate, productSubCategory: productSubCategory, isAi: isAi,
           serviceType: null, urgentRepair: false, dispatchDate: null, fittingOption: 'basic',
           aiIssueFunc: false, aiIssueProd: false
-        })); } catch(ex) {}
+        };
+        if (isReapplyMode) {
+          try {
+            var reapplyState = JSON.parse(localStorage.getItem('ps-state') || '{}');
+            nextState = Object.assign({}, reapplyState, nextState, {
+              serviceType: reapplyState.serviceType || nextState.serviceType,
+              reapplyFromTicket: reapplyState.reapplyFromTicket || ''
+            });
+          } catch(ex) {}
+        }
+        try { localStorage.setItem('ps-state', JSON.stringify(nextState)); } catch(ex) {}
         e.preventDefault();
-        window.location.href = 'step2-service-type.html' + (isAi ? '?ai=true' : '');
+        var nextQuery = [];
+        if (isReapplyMode) nextQuery.push('mode=reapply');
+        if (isAi) nextQuery.push('ai=true');
+        window.location.href = 'step2-service-type.html' + (nextQuery.length ? '?' + nextQuery.join('&') : '');
       }
     });
   }
@@ -552,6 +567,7 @@ window.addEventListener('load', function() {
     applyScenario('edit');
     return;
   }
+  var isReapplyMode = urlParams.get('mode') === 'reapply';
 
   // 구매내역 진입 시 제품 잠금
   var fromPurchased;
@@ -559,7 +575,6 @@ window.addEventListener('load', function() {
   if (fromPurchased) {
     var p = {};
     try { p = JSON.parse(fromPurchased); } catch(e) {}
-
     document.getElementById('lpc-name').textContent = p.name || '';
     document.getElementById('lpc-order').textContent = p.order || '';
     document.getElementById('lpc-store').textContent = p.store || '';
@@ -575,7 +590,11 @@ window.addEventListener('load', function() {
     // AI 제품이면 AI 플로우로, 아니면 일반 수리 플로우로
     var nextBtn = document.getElementById('txt-btn-next');
     if (nextBtn) {
-      nextBtn.href = 'step2-service-type.html';
+      nextBtn.href = isReapplyMode ? 'step2-service-type.html?mode=reapply' : 'step2-service-type.html';
+    }
+    if (isReapplyMode) {
+      var prevBtn = document.getElementById('txt-btn-prev');
+      if (prevBtn) prevBtn.href = '../my-service/detail.html?scenario=cancelled';
     }
 
     // AI 제품이면 잠금 카드에 파란 테두리

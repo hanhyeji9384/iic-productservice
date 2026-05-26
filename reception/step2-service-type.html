@@ -64,7 +64,7 @@
           <p class="option-card-title" id="txt-tc-title">토탈 케어</p>
           <p class="option-card-desc" id="txt-tc-desc">클리닝 · 폴리싱 · 피팅 — 제품 전체를 처음처럼 케어해 드립니다.</p>
         </div>
-        <span class="option-card-arrow">→</span>
+        <span class="option-card-arrow" id="card-tc-arrow">→</span>
       </a>
       <a href="step2-repair.html" class="option-card" id="card-rp" onclick="saveServiceType('repair')">
         <div class="option-card-body">
@@ -78,7 +78,7 @@
           <p class="option-card-title" id="txt-cs-title">상담 &amp; 기타</p>
           <p class="option-card-desc" id="txt-cs-desc">제품 결함 문의 · 부속품 요청 · 상담원 연결</p>
         </div>
-        <span class="option-card-arrow">→</span>
+        <span class="option-card-arrow" id="card-cs-arrow">→</span>
       </a>
     </div>
 
@@ -172,19 +172,63 @@ function setLang(lang) {
   setText('txt-btn-prev', s.btnPrev);
 }
 
+var currentFlowMode = '';
+
+function getServiceStepHref(type, mode) {
+  var map = {
+    'total-care': 'step2-total-care.html',
+    repair: 'step2-repair.html',
+    consulting: 'step2-consulting.html'
+  };
+  return (map[type] || map.repair) + (mode ? '?mode=' + encodeURIComponent(mode) : '');
+}
+
+function getServiceCard(type) {
+  return document.getElementById(type === 'total-care' ? 'card-tc' : type === 'consulting' ? 'card-cs' : 'card-rp');
+}
+
+function getServiceArrow(type) {
+  return document.getElementById(type === 'total-care' ? 'card-tc-arrow' : type === 'consulting' ? 'card-cs-arrow' : 'card-rp-arrow');
+}
+
+function normalizeServiceType(type) {
+  return type === 'total-care' || type === 'consulting' || type === 'repair' ? type : 'repair';
+}
+
 function showAllOptions() {
-  document.getElementById('card-tc').style.display = '';
-  document.getElementById('card-cs').style.display = '';
-  var rp = document.getElementById('card-rp');
-  rp.style.borderColor = '';
-  rp.style.background = '';
-  document.getElementById('card-rp-arrow').innerHTML = '→';
+  ['total-care', 'repair', 'consulting'].forEach(function(type) {
+    var card = getServiceCard(type);
+    var arrow = getServiceArrow(type);
+    if (card) {
+      card.style.display = '';
+      card.style.borderColor = '';
+      card.style.background = '';
+      card.href = getServiceStepHref(type, currentFlowMode);
+    }
+    if (arrow) arrow.innerHTML = '→';
+  });
   document.getElementById('btn-change-type').style.display = 'none';
-  document.getElementById('card-tc').href = 'step2-total-care.html?mode=edit';
-  document.getElementById('card-rp').href = 'step2-repair.html?mode=edit';
-  document.getElementById('card-cs').href = 'step2-consulting.html?mode=edit';
   var prev = document.getElementById('txt-btn-prev');
-  if (prev) prev.href = 'step1.html?mode=edit';
+  if (prev) prev.href = currentFlowMode ? 'step1.html?mode=' + encodeURIComponent(currentFlowMode) : 'step1.html';
+}
+
+function applySelectedServiceType(type, mode) {
+  currentFlowMode = mode || '';
+  var selectedType = normalizeServiceType(type);
+  ['total-care', 'repair', 'consulting'].forEach(function(cardType) {
+    var card = getServiceCard(cardType);
+    var arrow = getServiceArrow(cardType);
+    if (!card) return;
+    var selected = cardType === selectedType;
+    card.style.display = selected ? '' : 'none';
+    card.style.borderColor = selected ? '#111' : '';
+    card.style.background = selected ? '#f8f8f8' : '';
+    card.href = getServiceStepHref(cardType, currentFlowMode);
+    if (arrow) arrow.innerHTML = selected ? '<span style="font-size:11px;font-weight:500;color:#111;">선택됨 →</span>' : '→';
+  });
+  document.getElementById('btn-change-type').style.display = 'block';
+  var prev = document.getElementById('txt-btn-prev');
+  if (prev) prev.href = currentFlowMode ? 'step1.html?mode=' + encodeURIComponent(currentFlowMode) : 'step1.html';
 }
 
 // ─── AI 이상 유형 ───
@@ -267,27 +311,25 @@ window.addEventListener('load', function() {
 
   // AI 모드 판단: URL 파라미터 우선, 없으면 ps-state.isAi
   var urlParams = new URLSearchParams(window.location.search);
+  var state = {};
   if (urlParams.get('ai') === 'func') {
     setAiMode('galaxy');
   } else if (urlParams.get('ai') === 'true') {
     setAiMode('ai');
   } else {
     try {
-      var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
+      state = JSON.parse(localStorage.getItem('ps-state') || '{}');
       if (state.isAi) setAiMode('ai');
     } catch(e) {}
   }
 
-  if (urlParams.get('mode') === 'edit') {
-    document.getElementById('card-tc').style.display = 'none';
-    document.getElementById('card-cs').style.display = 'none';
-    var rp = document.getElementById('card-rp');
-    rp.href = 'step2-repair.html?mode=edit';
-    rp.style.borderColor = '#111';
-    document.getElementById('card-rp-arrow').innerHTML = '<span style="font-size:11px;font-weight:500;color:#111;">선택됨 →</span>';
-    document.getElementById('btn-change-type').style.display = 'block';
-    var prev = document.getElementById('txt-btn-prev');
-    if (prev) prev.href = 'step1.html?mode=edit';
+  try {
+    state = Object.assign({}, state, JSON.parse(localStorage.getItem('ps-state') || '{}'));
+  } catch(e) {}
+
+  var mode = urlParams.get('mode') || (state.reapplyFromTicket ? 'reapply' : '');
+  if (mode === 'edit' || mode === 'reapply') {
+    applySelectedServiceType(state.serviceType || 'repair', mode);
   }
 });
 </script>

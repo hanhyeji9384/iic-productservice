@@ -51,11 +51,6 @@
     <!-- STATUS TRACKER -->
     <div id="status-track" class="status-track" style="margin-bottom:40px;"></div>
 
-    <!-- 취소 배너 -->
-    <div id="sec-cancelled" style="display:none;border:1px solid #e0e0e0;padding:20px;margin-bottom:32px;text-align:center;">
-      <p id="txt-cancelled-msg" style="font-size:13px;color:#999;">수리 서비스 접수가 취소되었습니다.</p>
-    </div>
-
     <!-- 접수 정보 -->
     <p class="section-label" id="lbl-reception" style="margin-top:0;">접수 정보</p>
     <div class="detail-section">
@@ -86,8 +81,8 @@
       <div class="detail-row"><span class="detail-key" id="key-lens">렌즈 유형</span><span class="detail-val" id="val-lens">미삽입</span></div>
       <div class="detail-row"><span class="detail-key" id="key-lens-consent">렌즈 동의 여부</span><span class="detail-val" id="val-lens-consent">동의 완료</span></div>
       <div class="detail-row"><span class="detail-key" id="key-desired">출고 희망일</span><span class="detail-val">2026. 06. 25</span></div>
-      <div class="detail-row"><span class="detail-key" id="key-qwarranty">품질 보증 기간</span><span class="detail-val" id="val-qwarranty">~2025. 03. 15 <span style="color:#999;font-size:11px;">(만료)</span></span></div>
-      <div class="detail-row"><span class="detail-key" id="key-swarranty">서비스 보증 기간</span><span class="detail-val" id="val-swarranty">~2026. 03. 15 <span style="color:#000;font-size:11px;font-weight:500;">(유효)</span></span></div>
+      <div class="detail-row"><span class="detail-key" id="key-qwarranty">품질 보증</span><span class="detail-val" id="val-qwarranty">~2025. 03. 15 <span style="color:#999;font-size:11px;">(만료)</span></span></div>
+      <div class="detail-row"><span class="detail-key" id="key-swarranty">서비스 보증</span><span class="detail-val" id="val-swarranty">~2026. 03. 15 <span style="color:#000;font-size:11px;font-weight:500;">(유효)</span></span></div>
     </div>
 
     <!-- 고객 첨부 이미지 -->
@@ -142,17 +137,17 @@
       <p class="section-label" id="lbl-result">서비스 결과</p>
       <div class="detail-section" style="margin-bottom:0;">
         <div class="detail-row"><span class="detail-key" id="key-result-method">수리 내용</span><span class="detail-val" id="val-result-method">클리닝 &amp; 폴리싱 &amp; 기본 피팅 완료</span></div>
-        <div class="detail-row"><span class="detail-key" id="key-result-date">출고일</span><span class="detail-val">2026. 06. 25</span></div>
-        <div class="detail-row"><span class="detail-key" id="key-receipt">영수증</span><span class="detail-val"><a href="#" onclick="alert('[영수증 보기]');return false;" style="color:#111;font-size:12px;text-decoration:underline;" id="val-receipt">영수증 보기</a></span></div>
-        <div class="detail-row"><span class="detail-key" id="key-delivery">배송 상태</span><span class="detail-val" id="val-delivery">배송 완료</span></div>
+        <div id="row-result-date" class="detail-row"><span class="detail-key" id="key-result-date">출고일</span><span class="detail-val">2026. 06. 25</span></div>
+        <div id="row-receipt" class="detail-row"><span class="detail-key" id="key-receipt">영수증</span><span class="detail-val"><a href="#" onclick="alert('[영수증 보기]');return false;" style="color:#111;font-size:12px;text-decoration:underline;" id="val-receipt">영수증 보기</a></span></div>
+        <div id="row-delivery" class="detail-row"><span class="detail-key" id="key-delivery">배송 상태</span><span class="detail-val" id="val-delivery">배송 완료</span></div>
         <div id="row-tracking" class="detail-row" style="display:none;"><span class="detail-key" id="key-tracking">운송장 번호</span><span class="detail-val" style="font-family:monospace;">CJ · 1234567890</span></div>
       </div>
-      <div style="background:#f8f8f8;border:1px solid #e0e0e0;padding:20px;margin-top:0;margin-bottom:16px;">
+      <div id="result-memo" style="background:#f8f8f8;border:1px solid #e0e0e0;padding:20px;margin-top:0;margin-bottom:16px;">
         <p id="lbl-memo" style="font-size:11px;color:#999;margin-bottom:4px;">PS팀 메모</p>
         <p id="val-memo" style="font-size:13px;color:#555;line-height:1.8;">전체 클리닝 및 폴리싱 완료. 코 받침 기본 피팅 진행. 힌지 유격 없음, 코팅 양호.</p>
       </div>
       <p id="lbl-ps-images" style="font-size:11px;color:#999;margin-bottom:8px;">PS 첨부 이미지</p>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:40px;">
+      <div id="sec-ps-images" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:40px;">
         <div class="illustration" style="height:100px;">PS 이미지 1</div>
         <div class="illustration" style="height:100px;">PS 이미지 2</div>
         <div class="illustration" style="height:100px;">PS 이미지 3</div>
@@ -192,13 +187,13 @@
       <p id="txt-editable-note" style="font-size:11px;color:#999;text-align:center;"></p>
     </div>
 
-    <!-- 액션 버튼: 수령지 수정 + 접수 취소 (수리 진행 중 이전까지) -->
+    <!-- 액션 버튼: 수령지 수정 + 접수 취소 (수리 시작 전) -->
     <div id="sec-actions-addr-only" style="display:none;">
       <div style="display:flex;gap:12px;margin-bottom:12px;">
         <button class="btn btn-secondary" id="txt-btn-addr2" style="flex:1;font-size:11px;" onclick="openAddrModal()">수령지 수정</button>
         <button class="btn btn-secondary" id="txt-btn-cancel-addr" style="flex:1;font-size:11px;" onclick="alert('[접수 취소]')">접수 취소</button>
       </div>
-      <p id="txt-addr-only-note" style="font-size:11px;color:#999;text-align:center;">수리 진행 중 이전 상태까지 취소 가능합니다.</p>
+      <p id="txt-addr-only-note" style="font-size:11px;color:#999;text-align:center;">수령지는 수리 진행 전까지 수정 가능합니다.</p>
     </div>
 
     <!-- 액션 버튼: 모두 불가 -->
@@ -212,6 +207,11 @@
     <!-- 서비스 종료/취소 후 새 접수 버튼 -->
     <div id="sec-actions-new" style="display:none;margin-bottom:24px;">
       <a href="../reception/start.html" class="btn btn-secondary" id="txt-btn-new" style="width:100%;text-align:center;padding:14px;">새 수리 접수하기</a>
+    </div>
+
+    <!-- 취소 처리 후 재접수 버튼 -->
+    <div id="sec-actions-reapply" style="display:none;margin-bottom:24px;">
+      <button class="btn btn-primary" id="txt-btn-reapply" style="width:100%;padding:14px;" onclick="reapplyRepairRequest()">이전 정보로 다시 접수하기</button>
     </div>
 
     <div style="margin-top:32px;text-align:center;">
@@ -245,8 +245,8 @@
 
 
 <!-- 수령지 수정 모달 -->
-<div id="addr-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;justify-content:center;align-items:center;">
-  <div style="background:#fff;width:100%;max-width:480px;margin:0 16px;padding:36px 32px 28px;">
+<div id="addr-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;justify-content:center;align-items:center;padding:0 16px;box-sizing:border-box;">
+  <div style="background:#fff;width:calc(100vw - 32px);max-width:640px;max-height:88vh;overflow-y:auto;margin:0;padding:36px 32px 28px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
       <p style="font-size:16px;font-weight:500;" id="addr-modal-title">수령지 수정</p>
       <button onclick="closeAddrModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#999;line-height:1;">✕</button>
@@ -254,43 +254,126 @@
 
     <div style="margin-bottom:20px;">
       <label style="font-size:11px;letter-spacing:0.06em;color:#999;display:block;margin-bottom:8px;" id="addr-modal-label-method">수령 방법</label>
-      <div style="display:flex;gap:8px;">
-        <button id="recv-method-btn-home" onclick="selectRecvMethod('home')" style="flex:1;padding:11px;border:1px solid #111;background:#111;color:#fff;font-size:12px;font-family:var(--font);cursor:pointer;">자택 배송</button>
-        <button id="recv-method-btn-store" onclick="selectRecvMethod('store')" style="flex:1;padding:11px;border:1px solid #ddd;background:#fff;color:#333;font-size:12px;font-family:var(--font);cursor:pointer;">매장 픽업</button>
-      </div>
-    </div>
-    <div id="recv-home-section">
-    <div style="margin-bottom:16px;">
-      <label style="font-size:11px;letter-spacing:0.06em;color:#999;display:block;margin-bottom:8px;" id="addr-modal-label-zip">우편번호</label>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="addr-input-zip" value="04756" style="width:120px;border:1px solid #ddd;padding:11px 12px;font-size:13px;font-family:var(--font);outline:none;" readonly>
-        <button onclick="alert('[우편번호 검색]')" style="border:1px solid #111;background:#fff;padding:11px 16px;font-size:12px;font-family:var(--font);cursor:pointer;white-space:nowrap;" id="addr-modal-btn-zip">우편번호 검색</button>
+      <div class="check-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <label id="recv-method-btn-home" class="check-item selected" onclick="selectRecvMethod('home')" style="margin:0;cursor:pointer;">
+          <input type="radio" name="modal-receive" value="home" checked>
+          <div>
+            <p class="check-item-title">자택 배송</p>
+            <p class="check-item-desc">수리 완료 후 자택으로 배송해 드립니다.</p>
+          </div>
+        </label>
+        <label id="recv-method-btn-store" class="check-item" onclick="selectRecvMethod('store')" style="margin:0;cursor:pointer;">
+          <input type="radio" name="modal-receive" value="store">
+          <div>
+            <p class="check-item-title">매장 픽업</p>
+            <p class="check-item-desc">수리 완료 후 선택한 매장에서 수령합니다.</p>
+          </div>
+        </label>
       </div>
     </div>
 
-    <div style="margin-bottom:16px;">
-      <label style="font-size:11px;letter-spacing:0.06em;color:#999;display:block;margin-bottom:8px;" id="addr-modal-label-addr1">기본 주소</label>
-      <input type="text" id="addr-input-addr1" value="서울특별시 성동구 왕십리로 83-21" style="width:100%;border:1px solid #ddd;padding:11px 12px;font-size:13px;font-family:var(--font);outline:none;box-sizing:border-box;" readonly>
-    </div>
-
-    <div style="margin-bottom:28px;">
-      <label style="font-size:11px;letter-spacing:0.06em;color:#999;display:block;margin-bottom:8px;" id="addr-modal-label-addr2">상세 주소</label>
-      <input type="text" id="addr-input-addr2" value="301호" placeholder="상세 주소를 입력해주세요" style="width:100%;border:1px solid #ddd;padding:11px 12px;font-size:13px;font-family:var(--font);outline:none;box-sizing:border-box;">
-    </div>
-
-    </div><!-- /recv-home-section -->
-    <div id="recv-store-section" style="display:none;margin-bottom:28px;">
-      <label style="font-size:11px;letter-spacing:0.06em;color:#999;display:block;margin-bottom:8px;">매장 검색</label>
-      <input type="text" id="addr-store-input" placeholder="매장명 또는 주소 검색" style="width:100%;border:1px solid #ddd;padding:11px 12px;font-size:13px;font-family:var(--font);outline:none;box-sizing:border-box;margin-bottom:8px;" oninput="filterRecvStores(this.value)">
-      <div id="recv-store-list" style="border:1px solid #e0e0e0;max-height:160px;overflow-y:auto;">
-        <div onclick="selectRecvStore('젠틀몬스터 청담')" style="padding:12px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0f0;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'">젠틀몬스터 청담<span style="font-size:11px;color:#999;display:block;">서울 강남구 도산대로 82</span></div>
-        <div onclick="selectRecvStore('젠틀몬스터 성수')" style="padding:12px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0f0;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'">젠틀몬스터 성수<span style="font-size:11px;color:#999;display:block;">서울 성동구 왕십리로 83</span></div>
-        <div onclick="selectRecvStore('젠틀몬스터 신사')" style="padding:12px;font-size:13px;cursor:pointer;border-bottom:1px solid #f0f0f0;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'">젠틀몬스터 신사<span style="font-size:11px;color:#999;display:block;">서울 강남구 도산대로26길 18</span></div>
-        <div onclick="selectRecvStore('젠틀몬스터 코엑스')" style="padding:12px;font-size:13px;cursor:pointer;" onmouseover="this.style.background='#f5f5f5'" onmouseout="this.style.background='#fff'">젠틀몬스터 코엑스<span style="font-size:11px;color:#999;display:block;">서울 강남구 영동대로 513, 코엑스몰</span></div>
+    <div id="recv-home-section" style="margin-bottom:24px;">
+      <p class="section-label" style="margin-top:0;">수령 주소 <span style="color:#000">*</span></p>
+      <div id="addr-list-view">
+        <div id="addr-0" onclick="selectAddr(0)" style="padding:16px 0;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer;">
+          <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
+            <input type="radio" name="addr" style="margin-top:3px;flex-shrink:0;">
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:4px;">홍길동</p>
+              <p style="font-size:12px;color:var(--gray-500);margin-bottom:2px;">서울특별시 강남구 테헤란로 427 (삼성동, 위워크타워), 12층, 06158, 대한민국</p>
+              <p style="font-size:12px;color:var(--gray-500);">010 2134 5678</p>
+            </div>
+          </div>
+          <button onclick="event.stopPropagation();openEdit(0)" style="flex-shrink:0;margin-left:12px;font-size:11px;padding:5px 10px;border:1px solid var(--gray-300);background:var(--white);color:var(--gray-600);cursor:pointer;font-family:var(--font);">편집하기</button>
+        </div>
+        <div id="addr-1" onclick="selectAddr(1)" style="padding:16px 0;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer;">
+          <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
+            <input type="radio" name="addr" checked style="margin-top:3px;flex-shrink:0;">
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:4px;">한혜지 <span style="font-size:11px;color:#999;font-weight:400;margin-left:4px;">기본 배송지</span></p>
+              <p style="font-size:12px;color:var(--gray-500);margin-bottom:2px;">서울특별시 성동구 왕십리로 83-21 (성수동2가, 성수아이파크), 203동 1502호, 04784, 대한민국</p>
+              <p style="font-size:12px;color:var(--gray-500);">010 8565 9384</p>
+            </div>
+          </div>
+          <button onclick="event.stopPropagation();openEdit(1)" style="flex-shrink:0;margin-left:12px;font-size:11px;padding:5px 10px;border:1px solid var(--gray-300);background:var(--white);color:var(--gray-600);cursor:pointer;font-family:var(--font);">편집하기</button>
+        </div>
+        <div id="addr-2" onclick="selectAddr(2)" style="padding:16px 0;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer;">
+          <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
+            <input type="radio" name="addr" style="margin-top:3px;flex-shrink:0;">
+            <div>
+              <p style="font-size:13px;font-weight:500;margin-bottom:4px;">이준혁</p>
+              <p style="font-size:12px;color:var(--gray-500);margin-bottom:2px;">경기도 수원시 영통구 월드컵로 164 (매탄동, e편한세상영통), 101동 304호, 16705, 대한민국</p>
+              <p style="font-size:12px;color:var(--gray-500);">010 7654 3210</p>
+            </div>
+          </div>
+          <button onclick="event.stopPropagation();openEdit(2)" style="flex-shrink:0;margin-left:12px;font-size:11px;padding:5px 10px;border:1px solid var(--gray-300);background:var(--white);color:var(--gray-600);cursor:pointer;font-family:var(--font);">편집하기</button>
+        </div>
+        <button onclick="openAdd()" style="width:100%;padding:18px;font-size:13px;font-family:var(--font);color:var(--gray-800);background:var(--white);border:1px solid var(--gray-200);cursor:pointer;margin-top:8px;letter-spacing:0.02em;">새로운 주소 추가하기</button>
       </div>
-      <p id="recv-store-selected" style="font-size:12px;color:#111;margin-top:8px;font-weight:500;display:none;"></p>
+
+      <div id="addr-edit-view" style="display:none;">
+        <p style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-align:center;margin-bottom:24px;">EDIT AN ADDRESS</p>
+        <p style="font-size:11px;color:var(--gray-400);text-align:right;margin-bottom:12px;">*필수 입력 항목</p>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <div style="flex:1;background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;"><p style="font-size:11px;color:#aaa;margin-bottom:4px;">성 *</p><input id="edit-last" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;"></div>
+          <div style="flex:1;background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;"><p style="font-size:11px;color:#aaa;margin-bottom:4px;">이름 *</p><input id="edit-first" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;"></div>
+        </div>
+        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;margin-bottom:8px;"><p style="font-size:11px;color:#aaa;margin-bottom:4px;">주소 *</p><input id="edit-addr" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;"></div>
+        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;margin-bottom:8px;"><p style="font-size:11px;color:#aaa;margin-bottom:4px;">우편번호 *</p><input id="edit-zip" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;"></div>
+        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;margin-bottom:8px;"><p style="font-size:11px;color:#aaa;margin-bottom:4px;">상세주소</p><input id="edit-detail" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;"></div>
+        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;margin-bottom:24px;"><p style="font-size:11px;color:#aaa;margin-bottom:4px;">전화번호 *</p><input id="edit-tel" type="tel" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;"></div>
+        <div style="display:flex;gap:12px;"><button onclick="closeAddrForm()" style="flex:1;padding:16px;font-size:13px;font-family:var(--font);background:#fff;border:1px solid var(--gray-300);cursor:pointer;">뒤로가기</button><button onclick="saveEdit()" style="flex:1;padding:16px;font-size:13px;font-family:var(--font);background:#111;color:#fff;border:1px solid #111;cursor:pointer;">저장 &amp; 계속하기</button></div>
+      </div>
+
+      <div id="addr-add-view" style="display:none;">
+        <p style="font-size:13px;font-weight:500;letter-spacing:0.02em;text-align:center;margin-bottom:24px;">새로운 주소 추가하기</p>
+        <p style="font-size:11px;color:var(--gray-400);text-align:right;margin-bottom:12px;">*필수 입력 항목</p>
+        <div style="display:flex;gap:8px;margin-bottom:8px;">
+          <div style="flex:1;background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;"><p style="font-size:11px;color:#aaa;margin-bottom:4px;">성 *</p><input id="add-last" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;"></div>
+          <div style="flex:1;background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;"><p style="font-size:11px;color:#aaa;margin-bottom:4px;">이름 *</p><input id="add-first" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;"></div>
+        </div>
+        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:10px;"><span style="font-size:14px;color:#ccc;">⌕</span><div style="flex:1;"><p style="font-size:11px;color:#aaa;margin-bottom:4px;">주소 찾기 *</p><input id="add-addr" type="text" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;" oninput="checkAddForm()"></div></div>
+        <div style="background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;margin-bottom:24px;"><p style="font-size:11px;color:#aaa;margin-bottom:4px;">전화번호 *</p><input id="add-tel" type="tel" style="width:100%;border:none;font-size:14px;font-family:var(--font);background:transparent;outline:none;" oninput="checkAddForm()"></div>
+        <div style="display:flex;gap:12px;"><button onclick="closeAddrForm()" style="flex:1;padding:16px;font-size:13px;font-family:var(--font);background:#fff;border:1px solid var(--gray-300);cursor:pointer;">뒤로가기</button><button id="add-save-btn" onclick="saveAdd()" style="flex:1;padding:16px;font-size:13px;font-family:var(--font);background:#aaa;color:#fff;border:1px solid #aaa;cursor:not-allowed;" disabled>저장 &amp; 계속하기</button></div>
+      </div>
     </div>
-    <div style="display:flex;gap:10px;">
+
+    <div id="recv-store-section" style="display:none;margin-bottom:24px;">
+      <p class="section-label" style="margin-top:0;">수령 매장 선택 <span style="color:#000">*</span></p>
+      <div id="recv-store-picker">
+        <div style="position:relative;margin-bottom:12px;">
+          <div style="display:flex;gap:8px;">
+            <input id="addr-store-input" type="text" class="form-input" style="flex:1;" placeholder="매장명 또는 지역 검색" autocomplete="off" oninput="filterRecvStores(this.value)">
+            <button style="flex-shrink:0;padding:0 16px;font-size:12px;font-family:var(--font);border:1px solid var(--gray-300);background:var(--white);cursor:pointer;white-space:nowrap;letter-spacing:0.02em;">현재 위치</button>
+          </div>
+          <div id="recv-store-list" style="display:none;position:absolute;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-top:none;z-index:20;max-height:180px;overflow-y:auto;"></div>
+        </div>
+        <div style="position:relative;height:220px;background:#e8e8e8;border:1px solid #ddd;overflow:hidden;">
+          <div style="position:absolute;top:35%;left:0;right:0;height:2px;background:#fff;opacity:0.7;"></div>
+          <div style="position:absolute;top:56%;left:0;right:0;height:2px;background:#fff;opacity:0.7;"></div>
+          <div style="position:absolute;left:38%;top:0;bottom:0;width:2px;background:#fff;opacity:0.7;"></div>
+          <div style="position:absolute;left:60%;top:0;bottom:0;width:2px;background:#fff;opacity:0.7;"></div>
+          <span style="position:absolute;top:14%;left:14%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">압구정동</span>
+          <span style="position:absolute;top:38%;left:20%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">청담동</span>
+          <span style="position:absolute;top:25%;left:52%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">성수동</span>
+          <span style="position:absolute;top:57%;left:46%;font-size:10px;color:#aaa;font-weight:500;pointer-events:none;">삼성동</span>
+          <div id="rpin-0" onclick="selectRecvStore(0)" style="position:absolute;top:40%;left:32%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;">G</div>
+          <div id="rpin-1" onclick="selectRecvStore(1)" style="position:absolute;top:22%;left:20%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;">G</div>
+          <div id="rpin-2" onclick="selectRecvStore(2)" style="position:absolute;top:50%;left:27%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;">G</div>
+          <div id="rpin-3" onclick="selectRecvStore(3)" style="position:absolute;top:32%;left:52%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;">G</div>
+          <div id="rpin-4" onclick="selectRecvStore(4)" style="position:absolute;top:54%;left:47%;width:28px;height:28px;border-radius:50%;background:#111;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transform:translate(-50%,-50%);cursor:pointer;">G</div>
+          <div style="position:absolute;top:36%;left:50%;width:14px;height:14px;border-radius:50%;background:#4a90d9;border:2px solid #fff;box-shadow:0 0 0 4px rgba(74,144,217,0.2);transform:translate(-50%,-50%);"></div>
+        </div>
+      </div>
+      <div id="recv-store-selected" style="display:none;margin-top:12px;padding:16px 20px;border:1px solid #e0e0e0;">
+        <p style="font-size:10px;color:#aaa;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:10px;">선택된 수령 매장</p>
+        <p id="rss-name" style="font-size:14px;font-weight:500;margin-bottom:4px;"></p>
+        <p id="rss-status" style="font-size:12px;margin-bottom:4px;"></p>
+        <p id="rss-addr" style="font-size:12px;color:var(--gray-500);margin-bottom:14px;"></p>
+        <button onclick="changeRecvStore()" style="font-size:12px;padding:8px 16px;border:1px solid var(--gray-300);background:var(--white);font-family:var(--font);cursor:pointer;">변경하기</button>
+      </div>
+    </div>
+    <div class="addr-modal-actions" style="display:flex;gap:10px;">
       <button onclick="closeAddrModal()" class="btn btn-secondary" style="flex:1;font-size:12px;" id="addr-modal-btn-cancel">취소</button>
       <button onclick="saveAddr()" class="btn btn-primary" style="flex:1;font-size:12px;" id="addr-modal-btn-save">저장</button>
     </div>
@@ -304,7 +387,8 @@
 
 <script>
 // ─── 시나리오 정의 ───
-// tracker: [step1,step2,step3,step4,step5] — 1=done, 2=current, 0=pending, -1=cancelled
+// tracker: [step1,step2,step3,step4,step5] — 1=done, 2=current, 0=pending
+// 취소 처리 건은 고객 화면에서 수리 완료로 노출하고, adminStatus 값만 취소로 유지한다.
 const SC = {
   'received':     { ticketId:'2605060GMPSVKJTXQN', tracker:[2,0,0,0,0], canAddr:false, canCancel:false, canReceptionCancel:true,  showArrival:false, showShipout:false, showDiag:false, showConsent:false, showPayBtn:false, showResult:false, showTracking:false, showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:true, pickupDate:'2026. 05. 11', pickupAddr:'서울 성동구 왕십리로 83-21', receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
     ko:{ label:'접수 완료',       msg:'제품 픽업 또는 발송을 완료해 주세요. 서비스가 곧 진행됩니다.' },
@@ -342,6 +426,14 @@ const SC = {
   'store-arrived':   { ticketId:'2512150ABSVWLQXPKN', tracker:[1,1,1,1,1], canAddr:false, canCancel:false, canReceptionCancel:false, showArrival:true,  showShipout:true,  showDiag:true,  showConsent:true,  showPayBtn:false, showResult:true,  showTracking:true,  showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'store', receiveStore:'젠틀몬스터 성수',
     ko:{ label:'매장도착',         msg:'제품이 매장에 도착하였습니다. 방문하여 제품을 수령해 주세요.' },
     en:{ label:'Store Arrived',     msg:'Your product has arrived at the store. Please visit to pick it up.' } },
+  'cancelled':       { ticketId:'2605010GMPSCNCLD', tracker:[1,1,1,1,0], canAddr:false, canCancel:false, canReceptionCancel:false, showArrival:false, showShipout:false, showDiag:false, showConsent:false, showPayBtn:false, showResult:true, resultOnly:true, showTracking:false, showProgress:false, isCancelled:true, displayAsCompleted:true, adminStatus:'취소', isEnd:false, sendMethod:'pickup', showPickupInfo:true, pickupDate:'2026. 05. 11', pickupAddr:'서울 성동구 왕십리로 83-21', receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
+    ko:{ label:'수리 완료',        msg:'이전 정보로 다시 접수할 수 있습니다.' },
+    en:{ label:'Repair Complete',   msg:'You can start again with the previous information.' },
+    resultMethod:{ ko:'수리 취소', en:'Repair Cancelled' } },
+  'cancelled-ended': { ticketId:'2510200GMPSCEND', tracker:[1,1,1,1,1], canAddr:false, canCancel:false, canReceptionCancel:false, showArrival:false, showShipout:false, showDiag:false, showConsent:false, showPayBtn:false, showResult:true, resultOnly:true, showTracking:false, showProgress:false, isCancelled:true, displayAsCompleted:true, adminStatus:'취소', isEnd:true, sendMethod:'pickup', showPickupInfo:true, pickupDate:'2025. 10. 24', pickupAddr:'서울 성동구 왕십리로 83-21', receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
+    ko:{ label:'수리 완료',        msg:'서비스가 종료되었습니다. 이전 정보로 다시 접수할 수 있습니다.' },
+    en:{ label:'Repair Complete',   msg:'The service has been closed. You can start again with the previous information.' },
+    resultMethod:{ ko:'수리 취소', en:'Repair Cancelled' } },
   'done':            { ticketId:'2511050MNSVGSJKKGZQ', tracker:[1,1,1,1,1], canAddr:false, canCancel:false, canReceptionCancel:false, showArrival:true,  showShipout:true,  showDiag:true,  showConsent:true,  showPayBtn:false, showResult:true,  showTracking:true,  showProgress:false, isCancelled:false, isEnd:true, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
     ko:{ label:'서비스 종료',      msg:'수리 서비스가 종료되었습니다.' },
     en:{ label:'Service Complete',  msg:'The repair service has been completed.' } },
@@ -362,7 +454,7 @@ const STRINGS = {
     key_email:'이메일', key_phone:'연락처',
     key_send:'발송 방법', key_product:'제품명', key_symptom:'제품 현상', key_svctype:'서비스 유형', key_request:'요청사항',
     key_fitting:'피팅 옵션', key_lens:'렌즈 유형', key_lens_consent:'렌즈 동의 여부',
-    key_desired:'출고 희망일', key_qwarranty:'품질 보증 기간', key_swarranty:'서비스 보증 기간',
+    key_desired:'출고 희망일', key_qwarranty:'품질 보증', key_swarranty:'서비스 보증',
     key_method:'수리 방식', key_cost:'수리 비용', key_consent:'고객 동의', key_pay_date:'결제 일시', key_est_ship:'예상 출고일',
     key_result_method:'수리 내용', key_result_date:'출고일', key_receipt:'영수증', key_delivery:'배송 상태', key_tracking:'운송장 번호',
     key_addr:'수령지',
@@ -381,7 +473,6 @@ const STRINGS = {
     val_delivery_shipping:'배송 중', val_delivery_done:'배송 완료',
     val_addr:'서울 성동구 왕십리로 83-21',
     val_memo:'전체 클리닝 및 폴리싱 완료. 코 받침 기본 피팅 진행. 힌지 유격 없음, 코팅 양호.',
-    cancelled_msg:'수리 서비스 접수가 취소되었습니다.',
     in_progress:'제품이 수리 진행 중입니다.<br>완료 시 이메일과 카카오톡으로 안내드립니다.',
     btn_pay:'결제하기',
     btn_edit_reception:'접수 정보 수정', btn_cancel_reception:'접수 취소',
@@ -392,6 +483,7 @@ const STRINGS = {
     note_addr_only:'수령지는 수리 진행 전까지 수정 가능합니다.',
     note_disabled:'수리가 시작된 이후에는 수정 및 취소가 불가합니다.',
     btn_new:'새 수리 접수하기',
+    btn_reapply:'이전 정보로 다시 접수하기',
     img1:'이미지 1', img2:'이미지 2', img3:'이미지 3',
   },
   en: {
@@ -423,7 +515,6 @@ const STRINGS = {
     val_delivery_shipping:'In Delivery', val_delivery_done:'Delivered',
     val_addr:'83-21 Wangsimniro, Seongdong-gu, Seoul',
     val_memo:'Completed full cleaning and polishing. Basic nose pad fitting performed. Hinge plays well, coating in good condition.',
-    cancelled_msg:'The repair service request has been cancelled.',
     in_progress:'Your product is currently being repaired.<br>We will notify you via email and KakaoTalk upon completion.',
     btn_pay:'Pay Now',
     btn_edit_reception:'Edit Request', btn_cancel_reception:'Cancel Request',
@@ -434,6 +525,7 @@ const STRINGS = {
     note_addr_only:'Delivery address can be modified before repair begins.',
     note_disabled:'Modifications and cancellations are not possible after repair has started.',
     btn_new:'Submit New Repair Request',
+    btn_reapply:'Restart with Previous Info',
     img1:'Image 1', img2:'Image 2', img3:'Image 3',
   }
 };
@@ -512,7 +604,6 @@ function setLang(lang) {
   setText('val-consent', s.val_consent);
   setText('val-result-method', s.val_result_method);
   setText('val-addr', s.val_addr); setText('val-memo', s.val_memo);
-  setText('txt-cancelled-msg', s.cancelled_msg);
   setText('txt-in-progress', s.in_progress);
 
   // Buttons
@@ -527,6 +618,7 @@ function setLang(lang) {
   setText('txt-addr-only-note', s.note_addr_only);
   setText('txt-disabled-note', s.note_disabled);
   setText('txt-btn-new', s.btn_new);
+  setText('txt-btn-reapply', s.btn_reapply);
   setText('img-label-1', s.img1); setText('img-label-2', s.img2); setText('img-label-3', s.img3);
 
   // Re-apply scenario text in new lang
@@ -534,10 +626,11 @@ function setLang(lang) {
   const scTxt = sc[lang];
   setText('val-status', scTxt.label);
   setText('txt-status-msg', scTxt.msg);
+  setText('val-result-method', sc.resultMethod ? (sc.resultMethod[lang] || sc.resultMethod.ko || s.val_result_method) : s.val_result_method);
   setText('val-delivery', sc.showTracking ? s.val_delivery_done : s.val_delivery_shipping);
 
   // Tracker
-  renderTracker(sc.tracker, s.tr, sc.isCancelled);
+  renderTracker(sc.tracker, s.tr, sc.isCancelled && !sc.displayAsCompleted);
 }
 
 function setScenario(id) {
@@ -564,16 +657,13 @@ function setScenario(id) {
   if (statusEl) {
     statusEl.textContent = scTxt.label;
     statusEl.className = 'ticket-status' + (sc.isEnd ? ' done' : '');
-    if (sc.isCancelled) statusEl.style.opacity = '0.6';
+    if (sc.isCancelled && !sc.displayAsCompleted) statusEl.style.opacity = '0.6';
     else statusEl.style.opacity = '';
   }
   setText('txt-status-msg', scTxt.msg);
 
   // Tracker
-  renderTracker(sc.tracker, s.tr, sc.isCancelled);
-
-  // Cancelled banner
-  sc.isCancelled ? show('sec-cancelled') : hide('sec-cancelled');
+  renderTracker(sc.tracker, s.tr, sc.isCancelled && !sc.displayAsCompleted);
 
   // Conditional rows
   sc.showArrival  ? show('row-arrival') : hide('row-arrival');
@@ -614,16 +704,26 @@ function setScenario(id) {
 
   // Result section
   sc.showResult ? show('sec-result') : hide('sec-result');
-  sc.showTracking ? show('row-tracking') : hide('row-tracking');
+  setText('val-result-method', sc.resultMethod ? (sc.resultMethod[currentLang] || sc.resultMethod.ko || s.val_result_method) : s.val_result_method);
+  if (sc.resultOnly) {
+    hide('row-result-date'); hide('row-receipt'); hide('row-delivery'); hide('row-tracking');
+    hide('result-memo'); hide('lbl-ps-images'); hide('sec-ps-images');
+  } else {
+    show('row-result-date'); show('row-receipt'); show('row-delivery');
+    show('result-memo'); show('lbl-ps-images'); show('sec-ps-images');
+    sc.showTracking ? show('row-tracking') : hide('row-tracking');
+  }
 
   // Delivery value
   setText('val-delivery', sc.showTracking ? s.val_delivery_done : s.val_delivery_shipping);
 
   // Action buttons: determine which panel to show
   hide('sec-actions-reception'); hide('sec-actions-editable');
-  hide('sec-actions-addr-only'); hide('sec-actions-disabled'); hide('sec-actions-new');
+  hide('sec-actions-addr-only'); hide('sec-actions-disabled'); hide('sec-actions-new'); hide('sec-actions-reapply');
 
-  if (sc.isEnd || sc.isCancelled) {
+  if (sc.isCancelled) {
+    show('sec-actions-reapply');
+  } else if (sc.isEnd) {
     show('sec-actions-new');
   } else if (sc.canReceptionCancel) {
     show('sec-actions-reception');
@@ -662,12 +762,31 @@ function togglePaymentPanel() {
 function openAddrModal() {
   const overlay = document.getElementById('addr-modal-overlay');
   overlay.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  selectRecvMethod(_currentRecvMethod || 'home');
 }
 function closeAddrModal() {
   document.getElementById('addr-modal-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+  closeAddrForm();
 }
 var _currentRecvMethod = 'home';
-var _selectedRecvStore = '';
+var _selectedAddrIdx = 1;
+var _selectedRecvStoreIdx = null;
+
+var ADDRESS_BOOK = [
+  { name:'홍길동', addr:'서울특별시 강남구 테헤란로 427 (삼성동, 위워크타워)', detail:'12층', zip:'06158', tel:'010 2134 5678' },
+  { name:'한혜지', addr:'서울특별시 성동구 왕십리로 83-21 (성수동2가, 성수아이파크)', detail:'203동 1502호', zip:'04784', tel:'010 8565 9384' },
+  { name:'이준혁', addr:'경기도 수원시 영통구 월드컵로 164 (매탄동, e편한세상영통)', detail:'101동 304호', zip:'16705', tel:'010 7654 3210' }
+];
+
+var RECV_STORES = [
+  { name:'젠틀몬스터 청담', status:'영업 중', statusColor:'#2aa050', addr:'서울 강남구 도산대로 82' },
+  { name:'젠틀몬스터 갤러리아 압구정', status:'영업 종료 — 내일 오전 10:30에 다시 오픈', statusColor:'#999', addr:'서울 강남구 압구정로 343, 갤러리아백화점 WEST 4F' },
+  { name:'젠틀몬스터 신사', status:'영업 중', statusColor:'#2aa050', addr:'서울 강남구 도산대로26길 18' },
+  { name:'젠틀몬스터 성수', status:'영업 중', statusColor:'#2aa050', addr:'서울 성동구 왕십리로 83' },
+  { name:'젠틀몬스터 코엑스', status:'영업 종료 — 내일 오전 11:00에 다시 오픈', statusColor:'#999', addr:'서울 강남구 영동대로 513, 코엑스몰' }
+];
 
 window.selectRecvMethod = function (type) {
   _currentRecvMethod = type;
@@ -675,37 +794,134 @@ window.selectRecvMethod = function (type) {
   var storeBtn = document.getElementById('recv-method-btn-store');
   var homeSection = document.getElementById('recv-home-section');
   var storeSection = document.getElementById('recv-store-section');
-  if (homeBtn) { homeBtn.style.background = type==='home'?'#111':'#fff'; homeBtn.style.color = type==='home'?'#fff':'#333'; homeBtn.style.borderColor = type==='home'?'#111':'#ddd'; }
-  if (storeBtn) { storeBtn.style.background = type==='store'?'#111':'#fff'; storeBtn.style.color = type==='store'?'#fff':'#333'; storeBtn.style.borderColor = type==='store'?'#111':'#ddd'; }
+  if (homeBtn) homeBtn.classList.toggle('selected', type === 'home');
+  if (storeBtn) storeBtn.classList.toggle('selected', type === 'store');
+  document.querySelectorAll('input[name="modal-receive"]').forEach(function(r) { r.checked = r.value === type; });
   if (homeSection) homeSection.style.display = type==='home' ? '' : 'none';
   if (storeSection) storeSection.style.display = type==='store' ? '' : 'none';
 };
 
 window.filterRecvStores = function (val) {
-  var items = document.getElementById('recv-store-list') ? document.getElementById('recv-store-list').querySelectorAll('div') : [];
-  items.forEach(function (item) {
-    item.style.display = (!val || item.textContent.indexOf(val) !== -1) ? '' : 'none';
-  });
+  var dd = document.getElementById('recv-store-list');
+  if (!dd) return;
+  var q = (val || '').trim();
+  var results = q ? RECV_STORES.map(function(s, i) { return Object.assign({ idx:i }, s); }).filter(function(s) { return s.name.indexOf(q) !== -1 || s.addr.indexOf(q) !== -1; }) : [];
+  if (!results.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = results.map(function(s) {
+    return '<div onclick="selectRecvStore(' + s.idx + ')" style="padding:12px 16px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--gray-100);"><span style="font-weight:500;">' + s.name + '</span><span style="font-size:11px;color:#999;margin-left:8px;">' + s.addr + '</span></div>';
+  }).join('');
+  dd.style.display = 'block';
 };
 
-window.selectRecvStore = function (name) {
-  _selectedRecvStore = name;
-  var p = document.getElementById('recv-store-selected');
-  if (p) { p.textContent = '선택: ' + name; p.style.display = 'block'; }
+window.selectRecvStore = function (idx) {
+  _selectedRecvStoreIdx = idx;
+  var store = RECV_STORES[idx];
+  if (!store) return;
+  document.getElementById('addr-store-input').value = store.name;
+  document.getElementById('recv-store-list').style.display = 'none';
+  document.getElementById('recv-store-picker').style.display = 'none';
+  document.getElementById('recv-store-selected').style.display = 'block';
+  document.getElementById('rss-name').textContent = store.name;
+  document.getElementById('rss-status').textContent = store.status;
+  document.getElementById('rss-status').style.color = store.statusColor;
+  document.getElementById('rss-addr').textContent = store.addr;
 };
+
+function changeRecvStore() {
+  _selectedRecvStoreIdx = null;
+  document.getElementById('addr-store-input').value = '';
+  document.getElementById('recv-store-picker').style.display = 'block';
+  document.getElementById('recv-store-selected').style.display = 'none';
+}
+
+function selectAddr(idx) {
+  _selectedAddrIdx = idx;
+  document.querySelectorAll('input[name="addr"]').forEach(function(r, i) { r.checked = i === idx; });
+}
+
+function openEdit(idx) {
+  _selectedAddrIdx = idx;
+  var d = ADDRESS_BOOK[idx];
+  if (!d) return;
+  var parts = d.name.length > 1 ? [d.name.slice(0, 1), d.name.slice(1)] : [d.name, ''];
+  document.getElementById('edit-last').value = parts[0];
+  document.getElementById('edit-first').value = parts[1];
+  document.getElementById('edit-addr').value = d.addr;
+  document.getElementById('edit-zip').value = d.zip;
+  document.getElementById('edit-detail').value = d.detail;
+  document.getElementById('edit-tel').value = d.tel;
+  document.getElementById('addr-list-view').style.display = 'none';
+  document.getElementById('addr-edit-view').style.display = 'block';
+  document.getElementById('addr-add-view').style.display = 'none';
+}
+
+function openAdd() {
+  ['add-last', 'add-first', 'add-addr', 'add-tel'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  checkAddForm();
+  document.getElementById('addr-list-view').style.display = 'none';
+  document.getElementById('addr-edit-view').style.display = 'none';
+  document.getElementById('addr-add-view').style.display = 'block';
+}
+
+function closeAddrForm() {
+  var list = document.getElementById('addr-list-view');
+  var edit = document.getElementById('addr-edit-view');
+  var add = document.getElementById('addr-add-view');
+  if (list) list.style.display = 'block';
+  if (edit) edit.style.display = 'none';
+  if (add) add.style.display = 'none';
+}
+
+function saveEdit() {
+  var d = ADDRESS_BOOK[_selectedAddrIdx];
+  if (d) {
+    d.name = (document.getElementById('edit-last').value || '') + (document.getElementById('edit-first').value || '');
+    d.addr = document.getElementById('edit-addr').value || d.addr;
+    d.zip = document.getElementById('edit-zip').value || d.zip;
+    d.detail = document.getElementById('edit-detail').value || '';
+    d.tel = document.getElementById('edit-tel').value || d.tel;
+  }
+  closeAddrForm();
+}
+
+function saveAdd() {
+  var btn = document.getElementById('add-save-btn');
+  if (btn && btn.disabled) return;
+  ADDRESS_BOOK.push({
+    name: (document.getElementById('add-last').value || '') + (document.getElementById('add-first').value || ''),
+    addr: document.getElementById('add-addr').value || '',
+    detail: '',
+    zip: '',
+    tel: document.getElementById('add-tel').value || ''
+  });
+  _selectedAddrIdx = ADDRESS_BOOK.length - 1;
+  closeAddrForm();
+}
+
+function checkAddForm() {
+  var ok = (document.getElementById('add-addr').value || '').trim().length > 0 && (document.getElementById('add-tel').value || '').trim().length > 0;
+  var btn = document.getElementById('add-save-btn');
+  if (!btn) return;
+  btn.disabled = !ok;
+  btn.style.background = ok ? '#111' : '#aaa';
+  btn.style.borderColor = ok ? '#111' : '#aaa';
+  btn.style.cursor = ok ? 'pointer' : 'not-allowed';
+}
 
 function saveAddr() {
   if (_currentRecvMethod === 'store') {
-    if (!_selectedRecvStore) { alert('매장을 선택해 주세요.'); return; }
+    if (_selectedRecvStoreIdx === null) { alert('매장을 선택해 주세요.'); return; }
+    var store = RECV_STORES[_selectedRecvStoreIdx];
     document.getElementById('val-recv-method').textContent = '매장 픽업';
-    document.getElementById('val-recv-store').textContent = _selectedRecvStore;
+    document.getElementById('val-recv-store').textContent = store.name;
     document.getElementById('row-recv-addr').style.display = 'none';
     document.getElementById('row-recv-store').style.display = '';
   } else {
-    var a1 = document.getElementById('addr-input-addr1');
-    var a2 = document.getElementById('addr-input-addr2');
-    var full = (a1 ? a1.value : '') + (a2 && a2.value ? ' ' + a2.value : '');
-    var addr = full.trim() || (a1 ? a1.value : '');
+    var selected = ADDRESS_BOOK[_selectedAddrIdx] || ADDRESS_BOOK[1];
+    var addr = selected.addr + (selected.detail ? ', ' + selected.detail : '') + (selected.zip ? ', ' + selected.zip : '') + ', 대한민국';
     document.getElementById('val-recv-method').textContent = '자택 배송';
     document.getElementById('val-recv-addr').textContent = addr;
     document.getElementById('row-recv-addr').style.display = '';
@@ -716,6 +932,62 @@ function saveAddr() {
 document.getElementById('addr-modal-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeAddrModal();
 });
+
+function getPreviousRequestProduct() {
+  return {
+    name: 'MUSTANG 01',
+    order: 'ORD-20230315-4821',
+    store: '온라인',
+    date: '2023. 03. 15',
+    qw: '~2025. 03. 15 (만료)',
+    sw: '~2026. 03. 15 (유효)',
+    purchaseDate: '2023-03-15',
+    productSubCategory: 'SUNGLASS METAL',
+    isAi: false
+  };
+}
+
+function reapplyRepairRequest() {
+  var product = getPreviousRequestProduct();
+  var current = SC[currentSCId] || {};
+  var source = {
+    ticketId: current.ticketId || '',
+    symptom: '코 받침 부분 변형, 힌지 유격 발생',
+    serviceType: 'total-care',
+    request: '전체 클리닝 후 코 받침 교체 요청드립니다.',
+    lensType: 'none',
+    sendMethod: current.sendMethod || 'pickup',
+    pickupAddr: current.pickupAddr || '서울 성동구 왕십리로 83-21',
+    receiveMethod: current.receiveMethod || 'home',
+    receiveAddr: current.receiveAddr || '서울 성동구 왕십리로 83-21',
+    receiveStore: current.receiveStore || ''
+  };
+  try {
+    localStorage.setItem('ps-from-purchased', JSON.stringify(product));
+    localStorage.setItem('ps-reapply-source', JSON.stringify(source));
+    localStorage.setItem('ps-state', JSON.stringify({
+      productName: product.name,
+      purchaseDate: product.purchaseDate,
+      productSubCategory: product.productSubCategory,
+      isAi: product.isAi,
+      serviceType: source.serviceType,
+      urgentRepair: false,
+      dispatchDate: null,
+      fittingOption: 'basic',
+      aiIssueFunc: false,
+      aiIssueProd: false,
+      sendMethod: source.sendMethod,
+      pickupAddr: source.pickupAddr,
+      receiveMethod: source.receiveMethod,
+      receiveAddr: source.receiveAddr,
+      recvStoreName: source.receiveStore,
+      reapplyFromTicket: source.ticketId
+    }));
+  } catch(e) {}
+  window.location.href = '../reception/step1.html?mode=reapply';
+}
+
+window.reapplyRepairRequest = reapplyRepairRequest;
 
 window.addEventListener('load', function() {
   var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
