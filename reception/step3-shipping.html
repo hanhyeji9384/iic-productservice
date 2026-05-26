@@ -73,7 +73,7 @@
 
     <!-- 자택 픽업 섹션 -->
     <div id="pickup-section" style="display:none;margin-bottom:32px;">
-      <p class="section-label" style="margin-top:0;">회수 주소 <span style="color:#000">*</span></p>
+      <p class="section-label" id="lbl-pickup-addr" style="margin-top:0;">회수 주소 <span style="color:#000">*</span></p>
       <div id="pickup-addr-list">
         <div onclick="selectPickupAddr(0)" style="padding:16px 0;border-bottom:1px solid var(--gray-100);display:flex;justify-content:space-between;align-items:flex-start;cursor:pointer;">
           <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
@@ -600,8 +600,21 @@ function applyKrMode() {
   if (descEl) descEl.textContent = STRINGS.ko.descPickup;
   var nb = document.getElementById('pickup-notice-box');
   if (nb) nb.innerHTML = '<p>· 접수 완료 후 영업일 3일 이내 방문 수거해 드립니다.</p><p>· 수거 전 기사님께서 미리 연락드립니다.</p>';
+  var pickupAddrLabel = document.getElementById('lbl-pickup-addr');
+  if (pickupAddrLabel) pickupAddrLabel.innerHTML = '회수 주소 <span style="color:#000">*</span>';
   var sn = document.getElementById('store-notice-box');
   if (sn) sn.innerHTML = '<p>· 접수 후 5일 이내에 선택하신 매장에 제품을 맡겨주세요.</p><p>· 기한 내 미방문 시 접수가 자동으로 취소됩니다.</p>';
+}
+
+function setFedexPrepaidLabelCopy() {
+  var titleEl = document.getElementById('title-pickup');
+  var descEl = document.getElementById('desc-pickup');
+  var pickupAddrLabel = document.getElementById('lbl-pickup-addr');
+  var nb = document.getElementById('pickup-notice-box');
+  if (titleEl) titleEl.textContent = 'Home Pickup';
+  if (descEl) descEl.innerHTML = 'A prepaid shipping label will be sent to your email once your request is complete.<br><span style="font-size:11px;color:#999;">Shipping costs are covered by Gentle Monster for eligible requests.</span>';
+  if (pickupAddrLabel) pickupAddrLabel.innerHTML = 'Shipping Label Address <span style="color:#000">*</span>';
+  if (nb) nb.innerHTML = '<p>· A prepaid shipping label will be sent to your email once your request is complete. (Check your spam folder too)</p><p>· Please print the label and arrange a FedEx drop-off or pickup directly with FedEx.</p><p>· Shipping costs are covered by Gentle Monster for eligible requests.</p>';
 }
 
 function applyUsDefectMode() {
@@ -613,12 +626,7 @@ function applyUsDefectMode() {
   document.getElementById('send-self-opt').style.display = 'none';
   var selfSec = document.getElementById('self-ship-section');
   if (selfSec) selfSec.style.display = 'none';
-  var titleEl = document.getElementById('title-pickup');
-  var descEl = document.getElementById('desc-pickup');
-  if (titleEl) titleEl.textContent = 'Home Pickup';
-  if (descEl) descEl.innerHTML = 'A courier will visit your address to collect the product.<br><span style="font-size:11px;color:#999;">Within 14 days of submission</span>';
-  var nb = document.getElementById('pickup-notice-box');
-  if (nb) nb.innerHTML = '<p>· After submission, FedEx will email you your pickup schedule and prepaid shipping label. (Check your spam folder too)</p><p>· If the pickup is not completed, your submission will be automatically cancelled.</p>';
+  setFedexPrepaidLabelCopy();
   var sn = document.getElementById('store-notice-box');
   if (sn) sn.innerHTML = '<p>· Please bring your product to the selected store within 5 days of submission.</p><p>· Failure to visit within the deadline will result in automatic cancellation.</p>';
 }
@@ -648,12 +656,7 @@ function applyCAMode() {
   document.getElementById('send-self-opt').style.display = 'none';
   var selfSec = document.getElementById('self-ship-section');
   if (selfSec) selfSec.style.display = 'none';
-  var titleEl = document.getElementById('title-pickup');
-  var descEl = document.getElementById('desc-pickup');
-  if (titleEl) titleEl.textContent = 'Home Pickup';
-  if (descEl) descEl.innerHTML = 'A courier will visit your address to collect the product.<br><span style="font-size:11px;color:#999;">Within 14 days of submission</span>';
-  var nb = document.getElementById('pickup-notice-box');
-  if (nb) nb.innerHTML = '<p>· After submission, a courier will contact you to schedule pickup.</p><p>· If the pickup is not completed within 14 days, your submission will be automatically cancelled.</p>';
+  setFedexPrepaidLabelCopy();
   var pickupOpt = document.getElementById('send-pickup-opt');
   if (pickupOpt) { pickupOpt.classList.add('selected'); var r = pickupOpt.querySelector('input[type="radio"]'); if (r) r.checked = true; selectSend(pickupOpt, 'pickup'); }
   // 수령: 자택 배송만

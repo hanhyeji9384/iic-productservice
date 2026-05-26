@@ -124,38 +124,40 @@
       </label>
     </div>
 
-    <!-- 긴급 수리 -->
-    <p id="lbl-urgent" class="section-label">긴급 수리 <span style="font-size:10px;color:#999;text-transform:none;letter-spacing:0;">(선택)</span></p>
-    <label class="check-item" id="urgent-check-item" style="margin-bottom:8px;">
-      <input type="checkbox" id="urgent-check" onchange="toggleUrgent()" style="accent-color:var(--black);width:16px;height:16px;margin-top:2px;flex-shrink:0;cursor:pointer;">
-      <div>
-        <p id="title-urgent" class="check-item-title">긴급 수리 신청</p>
-        <p id="desc-urgent" class="check-item-desc">입고 후 5 영업일 이내 출고 · 추가 비용 50,000원</p>
+    <div id="domestic-schedule-options">
+      <!-- 긴급 수리 -->
+      <p id="lbl-urgent" class="section-label">긴급 수리 <span style="font-size:10px;color:#999;text-transform:none;letter-spacing:0;">(선택)</span></p>
+      <label class="check-item" id="urgent-check-item" style="margin-bottom:8px;">
+        <input type="checkbox" id="urgent-check" onchange="toggleUrgent()" style="accent-color:var(--black);width:16px;height:16px;margin-top:2px;flex-shrink:0;cursor:pointer;">
+        <div>
+          <p id="title-urgent" class="check-item-title">긴급 수리 신청</p>
+          <p id="desc-urgent" class="check-item-desc">입고 후 5 영업일 이내 출고 · 추가 비용 50,000원</p>
+        </div>
+      </label>
+      <div id="urgent-cal-note" style="display:none;padding:12px 14px;background:var(--gray-50);border:1px solid var(--gray-200);font-size:12px;color:var(--gray-600);margin-bottom:8px;line-height:1.7;">
+        <span id="txt-urgent-note">입고일 기준 +5 영업일 이내 출고로 자동 설정됩니다. 출고 희망일을 별도로 지정하실 수 없습니다.</span>
       </div>
-    </label>
-    <div id="urgent-cal-note" style="display:none;padding:12px 14px;background:var(--gray-50);border:1px solid var(--gray-200);font-size:12px;color:var(--gray-600);margin-bottom:8px;line-height:1.7;">
-      <span id="txt-urgent-note">입고일 기준 +5 영업일 이내 출고로 자동 설정됩니다. 출고 희망일을 별도로 지정하실 수 없습니다.</span>
-    </div>
 
-    <!-- 출고 희망일 슬롯 캘린더 -->
-    <p id="lbl-dispatch" class="section-label" style="margin-top:32px;"><span id="lbl-dispatch-text">출고 희망일</span> <span id="dispatch-req" class="required-mark">*</span><span id="dispatch-opt" style="font-size:10px;color:#999;text-transform:none;letter-spacing:0;display:none;">(선택)</span></p>
-    <div id="cal-wrapper-el" class="cal-wrapper">
-      <div class="cal-nav-row">
-        <button type="button" class="cal-nav" id="cal-prev" onclick="calPrev()">←</button>
-        <span class="cal-month-label" id="cal-month-label"></span>
-        <button type="button" class="cal-nav" id="cal-next" onclick="calNext()">→</button>
+      <!-- 출고 희망일 슬롯 캘린더 -->
+      <p id="lbl-dispatch" class="section-label" style="margin-top:32px;"><span id="lbl-dispatch-text">출고 희망일</span> <span id="dispatch-req" class="required-mark">*</span><span id="dispatch-opt" style="font-size:10px;color:#999;text-transform:none;letter-spacing:0;display:none;">(선택)</span></p>
+      <div id="cal-wrapper-el" class="cal-wrapper">
+        <div class="cal-nav-row">
+          <button type="button" class="cal-nav" id="cal-prev" onclick="calPrev()">←</button>
+          <span class="cal-month-label" id="cal-month-label"></span>
+          <button type="button" class="cal-nav" id="cal-next" onclick="calNext()">→</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
       </div>
-      <div class="cal-grid" id="cal-grid"></div>
+      <div id="dispatch-selected-wrap" class="cal-selected-wrap" style="display:none;">
+        <span id="lbl-dispatch-selected" style="color:var(--gray-500);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;">출고 희망일</span>
+        <span id="dispatch-selected-label" style="font-weight:500;margin-left:10px;"></span>
+      </div>
+      <p id="dispatch-error" style="display:none;font-size:11px;color:#c00;margin-top:4px;">출고 희망일을 선택해 주세요.</p>
+      <p id="txt-dispatch-hint" style="font-size:11px;color:#999;margin-top:8px;margin-bottom:40px;line-height:1.7;">
+        선택 가능 범위: 접수일 기준 15영업일 이후 ~ 20영업일 이내 (토·일 제외)<br>
+        선택하신 날짜는 수리 완료 후 희망 출고일로, 수리 내용에 따라 변동될 수 있습니다.
+      </p>
     </div>
-    <div id="dispatch-selected-wrap" class="cal-selected-wrap" style="display:none;">
-      <span id="lbl-dispatch-selected" style="color:var(--gray-500);font-size:11px;letter-spacing:0.06em;text-transform:uppercase;">출고 희망일</span>
-      <span id="dispatch-selected-label" style="font-weight:500;margin-left:10px;"></span>
-    </div>
-    <p id="dispatch-error" style="display:none;font-size:11px;color:#c00;margin-top:4px;">출고 희망일을 선택해 주세요.</p>
-    <p id="txt-dispatch-hint" style="font-size:11px;color:#999;margin-top:8px;margin-bottom:40px;line-height:1.7;">
-      선택 가능 범위: 접수일 기준 15영업일 이후 ~ 20영업일 이내 (토·일 제외)<br>
-      선택하신 날짜는 수리 완료 후 희망 출고일로, 수리 내용에 따라 변동될 수 있습니다.
-    </p>
 
     <div class="btn-wrap">
       <a href="step2-service-type.html" id="btn-prev" class="btn btn-secondary">이전</a>
@@ -198,6 +200,10 @@ function savePsState(updates) {
   try { localStorage.setItem('ps-state', JSON.stringify(state)); } catch(e) {}
 }
 
+function isUsMarket() {
+  try { return localStorage.getItem('ps-country') === 'us'; } catch(e) { return false; }
+}
+
 // ─── 피팅 옵션 ───
 var selectedFitting = 'basic';
 function selectFitting(label, value) {
@@ -209,6 +215,14 @@ function selectFitting(label, value) {
 }
 
 function updateTotalCareNextBtn() {
+  if (isUsMarket()) {
+    var usBtn = document.getElementById('btn-total-care-next');
+    if (usBtn) {
+      usBtn.style.opacity = '';
+      usBtn.style.pointerEvents = '';
+    }
+    return;
+  }
   var isUrgent = document.getElementById('urgent-check').checked;
   var ready = isUrgent || !!calSelectedDate;
   var btn = document.getElementById('btn-total-care-next');
@@ -219,6 +233,7 @@ function updateTotalCareNextBtn() {
 
 // ─── 긴급 수리 ───
 function toggleUrgent() {
+  if (isUsMarket()) return;
   var check = document.getElementById('urgent-check');
   var item = document.getElementById('urgent-check-item');
   var note = document.getElementById('urgent-cal-note');
@@ -235,6 +250,28 @@ function toggleUrgent() {
   if (optMark) optMark.style.display = isUrgent ? '' : 'none';
   var dispErr = document.getElementById('dispatch-error');
   if (dispErr) dispErr.style.display = 'none';
+  updateTotalCareNextBtn();
+}
+
+function syncMarketAvailability() {
+  var hiddenForUs = isUsMarket();
+  var schedule = document.getElementById('domestic-schedule-options');
+  var urgentCheck = document.getElementById('urgent-check');
+  var urgentItem = document.getElementById('urgent-check-item');
+  var urgentNote = document.getElementById('urgent-cal-note');
+  var calWrap = document.getElementById('cal-wrapper-el');
+  var selWrap = document.getElementById('dispatch-selected-wrap');
+  var dispErr = document.getElementById('dispatch-error');
+  if (schedule) schedule.style.display = hiddenForUs ? 'none' : '';
+  if (hiddenForUs) {
+    if (urgentCheck) urgentCheck.checked = false;
+    if (urgentItem) urgentItem.classList.remove('selected');
+    if (urgentNote) urgentNote.style.display = 'none';
+    if (calWrap) calWrap.style.display = '';
+    if (selWrap) selWrap.style.display = 'none';
+    if (dispErr) dispErr.style.display = 'none';
+    calSelectedDate = null;
+  }
   updateTotalCareNextBtn();
 }
 
@@ -375,7 +412,8 @@ function validateAndSave(event) {
     return;
   }
   var isUrgent = document.getElementById('urgent-check').checked;
-  if (!isUrgent && !calSelectedDate) {
+  var hiddenForUs = isUsMarket();
+  if (!hiddenForUs && !isUrgent && !calSelectedDate) {
     event.preventDefault();
     var dispErr = document.getElementById('dispatch-error');
     if (dispErr) {
@@ -387,8 +425,8 @@ function validateAndSave(event) {
   savePsState({
     serviceType: 'total-care',
     fittingOption: selectedFitting,
-    urgentRepair: isUrgent,
-    dispatchDate: isUrgent ? null : calSelectedDate,
+    urgentRepair: hiddenForUs ? false : isUrgent,
+    dispatchDate: hiddenForUs || isUrgent ? null : calSelectedDate,
   });
 }
 
@@ -488,7 +526,13 @@ function setLang(lang) {
     : ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
   CAL_MONTHS_KO = calMonths;
   if (calViewYear != null) renderCal();
+  syncMarketAvailability();
 }
+
+window.setCountry = function(country) {
+  setLang(country === 'us' ? 'en' : 'ko');
+  syncMarketAvailability();
+};
 
 window.addEventListener('load', function() {
   applyWarrantyFromState();
@@ -497,6 +541,7 @@ window.addEventListener('load', function() {
   var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
   var country; try { country = localStorage.getItem('ps-country'); } catch(e) {}
   setLang(country === 'us' ? 'en' : (saved || 'ko'));
+  syncMarketAvailability();
 
   var nextBtn = document.getElementById('btn-total-care-next');
   if (nextBtn) nextBtn.addEventListener('click', validateAndSave);

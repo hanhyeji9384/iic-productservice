@@ -172,6 +172,10 @@ function setLang(lang) {
   setText('txt-btn-prev', s.btnPrev);
 }
 
+window.setCountry = function(country) {
+  setLang(country === 'us' ? 'en' : 'ko');
+};
+
 var currentFlowMode = '';
 
 function getServiceStepHref(type, mode) {
@@ -307,7 +311,8 @@ function saveAiNext() {
 
 window.addEventListener('load', function() {
   var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
-  setLang(saved || 'ko');
+  var country; try { country = localStorage.getItem('ps-country'); } catch(e) {}
+  setLang(country === 'us' ? 'en' : (saved || 'ko'));
 
   // AI 모드 판단: URL 파라미터 우선, 없으면 ps-state.isAi
   var urlParams = new URLSearchParams(window.location.search);
