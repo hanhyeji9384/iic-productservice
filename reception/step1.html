@@ -436,11 +436,12 @@ function setLockedProductCard(product) {
   lockedCard.style.display = 'block';
   lockedCard.style.borderLeft = product.isAi ? '3px solid #1428a0' : '3px solid #111';
   lockedCard.setAttribute('data-ai', product.isAi ? 'true' : 'false');
+  lockedCard.setAttribute('data-sub-category', product.productSubCategory || product.subCategory || (typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(product.name) : ''));
 }
 
 function applyScenario(scenario) {
   if (scenario === 'edit') {
-    setLockedProductCard({ name: 'MUSTANG 01', order: 'ORD-20230315-4821', store: '온라인', date: '2023. 03. 15', qw: '~2025. 03. 15 (만료)', sw: '~2026. 03. 15 (유효)', isAi: false });
+    setLockedProductCard({ name: 'MUSTANG 01', order: 'ORD-20230315-4821', store: '온라인', date: '2023. 03. 15', qw: '~2025. 03. 15 (만료)', sw: '~2026. 03. 15 (유효)', subCategory: 'SUNGLASS METAL', isAi: false });
     var historyList = document.getElementById('product-history-list');
     var prompt = document.getElementById('ps-manual-prompt');
     var manualSection = document.getElementById('manual-input-section');
@@ -507,33 +508,35 @@ window.addEventListener('load', function() {
         }
       }
 
-      var name = '', purchaseDate = '', isAi = false;
+      var name = '', purchaseDate = '', productSubCategory = '', isAi = false;
       var lockedCard = document.getElementById('locked-product-card');
       if (lockedCard && lockedCard.style.display !== 'none') {
         name = (document.getElementById('lpc-name') || {}).textContent || '';
         var rawDate = (document.getElementById('lpc-date') || {}).textContent || '';
         purchaseDate = parsePurchaseDateStr(rawDate);
+        productSubCategory = lockedCard.getAttribute('data-sub-category') || (typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(name) : '');
         isAi = lockedCard.getAttribute('data-ai') === 'true';
       } else if (selectedProductIdx !== null && selectedProductIdx >= 0 && selectedProductIdx < PS_PRODUCTS.length) {
         var pd = PS_PRODUCTS[selectedProductIdx];
-        name = pd.name; purchaseDate = pd.purchaseDate; isAi = pd.isAi;
+        name = pd.name; purchaseDate = pd.purchaseDate; productSubCategory = typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(pd) : (pd.subCategory || ''); isAi = pd.isAi;
       } else {
         name = (document.getElementById('product-search') || {}).value || '';
         var dateEl = document.querySelector('#manual-input-section input[type="date"]');
         purchaseDate = dateEl ? dateEl.value : '';
+        productSubCategory = typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(name) : '';
         isAi = name.indexOf('스마트') !== -1;
       }
       var isEditMode = new URLSearchParams(window.location.search).get('mode') === 'edit';
       if (isEditMode) {
         var existState = {};
         try { existState = JSON.parse(localStorage.getItem('ps-state') || '{}'); } catch(ex) {}
-        existState.productName = name; existState.purchaseDate = purchaseDate; existState.isAi = isAi;
+        existState.productName = name; existState.purchaseDate = purchaseDate; existState.productSubCategory = productSubCategory; existState.isAi = isAi;
         try { localStorage.setItem('ps-state', JSON.stringify(existState)); } catch(ex) {}
         e.preventDefault();
         window.location.href = 'step2-service-type.html?mode=edit';
       } else {
         try { localStorage.setItem('ps-state', JSON.stringify({
-          productName: name, purchaseDate: purchaseDate, isAi: isAi,
+          productName: name, purchaseDate: purchaseDate, productSubCategory: productSubCategory, isAi: isAi,
           serviceType: null, urgentRepair: false, dispatchDate: null, fittingOption: 'basic',
           aiIssueFunc: false, aiIssueProd: false
         })); } catch(ex) {}
@@ -580,6 +583,7 @@ window.addEventListener('load', function() {
     if (lockedCardEl) {
       lockedCardEl.style.borderLeft = p.isAi ? '3px solid #1428a0' : '3px solid #111';
       lockedCardEl.setAttribute('data-ai', p.isAi ? 'true' : 'false');
+      lockedCardEl.setAttribute('data-sub-category', p.productSubCategory || p.subCategory || (typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(p.name) : ''));
     }
 
     try { localStorage.removeItem('ps-from-purchased'); } catch(e) {}

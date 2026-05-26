@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/lang-modal.js"></script>
+  <script src="../js/products.js"></script>
 
 </head>
 <body>
@@ -507,9 +508,35 @@ function checkBtnState() {
 }
 
 let yearMode = 'normal';
+let productSubCategory = '';
 let decoAvail = null;
 let restoAvail = null;
 const allResultIds = ['result-damage-normal','result-decoration-normal','result-accessory-normal','result-damage-restoration','result-unavailable','result-decoration-3yr','result-accessory-3yr'];
+
+function getRepairSubCategory(state) {
+  var subCategory = state.productSubCategory || state.subCategory || state.productCategory || '';
+  if (!subCategory && typeof psGetProductSubCategory === 'function') {
+    subCategory = psGetProductSubCategory(state.productName || '');
+  }
+  return subCategory || '';
+}
+
+function isRestorationEligibleSubCategory(subCategory) {
+  if (typeof psIsRestorationCategory === 'function') return psIsRestorationCategory(subCategory);
+  return /\b(METAL|COMBI)\b/i.test(subCategory || '');
+}
+
+function resolveRepairYearMode(state) {
+  var pd = state.purchaseDate;
+  if (!pd) return 'normal';
+
+  var years = (new Date() - new Date(pd)) / (1000 * 60 * 60 * 24 * 365.25);
+  if (years > 7) return 'unavailable';
+  if (years > 3) {
+    return isRestorationEligibleSubCategory(productSubCategory) ? 'restoration' : 'unavailable';
+  }
+  return 'normal';
+}
 
 function resetChoiceButtonStyles() {
   ['resto-y','resto-n','deco-y','deco-n'].forEach(function(id) {
@@ -723,19 +750,13 @@ function initRepairPage() {
   var country; try { country = localStorage.getItem('ps-country'); } catch(e) {}
   setLang(country === 'us' ? 'en' : (saved || 'ko'));
 
-  // ps-state.purchaseDate 기반 자동 연식 판단
+  // ps-state의 구매일/소분류 기반 자동 연식 판단
   try {
     var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
-    var pd = state.purchaseDate;
-    if (pd) {
-      var years = (new Date() - new Date(pd)) / (1000 * 60 * 60 * 24 * 365.25);
-      if (years > 7) setYearMode('unavailable');
-      else if (years > 3) setYearMode('restoration');
-      else setYearMode('normal');
-    } else {
-      setYearMode('normal');
-    }
+    productSubCategory = getRepairSubCategory(state);
+    setYearMode(resolveRepairYearMode(state));
   } catch(e) {
+    productSubCategory = '';
     setYearMode('normal');
   }
 
@@ -777,6 +798,7 @@ function initRepairPage() {
         state.serviceType = 'repair';
         state.repairDetail = checkedIssue.value;
         state.repairYearMode = yearMode;
+        state.productSubCategory = productSubCategory || state.productSubCategory || '';
         localStorage.setItem('ps-state', JSON.stringify(state));
       } catch(e2) {}
     });

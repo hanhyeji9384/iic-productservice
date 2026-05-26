@@ -8,6 +8,7 @@ var PS_PRODUCTS = [
     order: 'ORD-20250515-3821',
     store: '온라인',
     purchaseDate: '2025-05-15',   // 1년 — 품질·서비스 보증 유효
+    subCategory: 'SUNGLASS ACETATE',
     isAi: false,
   },
   {
@@ -15,6 +16,7 @@ var PS_PRODUCTS = [
     order: 'ORD-20240515-4821',
     store: '온라인',
     purchaseDate: '2024-05-15',   // 2년 — 품질 보증 만료 / 서비스 보증 유효
+    subCategory: 'SUNGLASS METAL',
     isAi: false,
   },
   {
@@ -22,6 +24,7 @@ var PS_PRODUCTS = [
     order: 'ORD-20230515-2934',
     store: '젠틀몬스터 청담',
     purchaseDate: '2023-05-15',   // 3년 — 서비스 보증 만료 / 복원 수리 구간
+    subCategory: 'SUNGLASS COMBI',
     isAi: false,
   },
   {
@@ -29,6 +32,7 @@ var PS_PRODUCTS = [
     order: 'ORD-20180515-1102',
     store: '젠틀몬스터 홍대',
     purchaseDate: '2018-05-15',   // 8년 — 수리 불가 구간 (7년 초과)
+    subCategory: 'SUNGLASS ACETATE',
     isAi: false,
   },
   {
@@ -36,11 +40,58 @@ var PS_PRODUCTS = [
     order: 'ORD-20250905-7193',
     store: '젠틀몬스터 온라인',
     purchaseDate: '2025-09-05',   // AI 아이웨어 플로우
+    subCategory: 'AI SMART EYEWEAR',
     isAi: true,
   },
 ];
 
 // ─── 헬퍼 ───
+
+var PS_PRODUCT_SUBCATEGORY_OVERRIDES = {
+  'FRIDA 01': 'SUNGLASS ACETATE',
+  'FRIDA 02': 'SUNGLASS ACETATE',
+  'FRIDA 03': 'SUNGLASS ACETATE',
+  'MUSTANG 01': 'SUNGLASS METAL',
+  'MATIN 01': 'SUNGLASS COMBI',
+  'MATIN 02': 'SUNGLASS COMBI',
+  'VOGO 01': 'SUNGLASS ACETATE',
+  'JENNIE 01': 'SUNGLASS ACETATE',
+  'MONDO 03': 'SUNGLASS ACETATE',
+  'TOFINO 01': 'SUNGLASS METAL',
+  'PALETTE 02': 'SUNGLASS METAL',
+  '스마트 브리즈비 01': 'AI SMART EYEWEAR',
+  '스마트 브리즈비 02': 'AI SMART EYEWEAR',
+  '스마트 브리즈비 03': 'AI SMART EYEWEAR'
+};
+
+function psNormalizeProductName(name) {
+  return String(name || '')
+    .replace(/\([^)]*\)/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toUpperCase();
+}
+
+function psGetProductSubCategory(productOrName) {
+  if (!productOrName) return '';
+  if (typeof productOrName === 'object') {
+    if (productOrName.productSubCategory) return productOrName.productSubCategory;
+    if (productOrName.subCategory) return productOrName.subCategory;
+    productOrName = productOrName.name || productOrName.productName || '';
+  }
+
+  var normalizedName = psNormalizeProductName(productOrName);
+  var found = PS_PRODUCTS.find(function(product) {
+    return psNormalizeProductName(product.name) === normalizedName;
+  });
+  if (found && found.subCategory) return found.subCategory;
+
+  return PS_PRODUCT_SUBCATEGORY_OVERRIDES[normalizedName] || '';
+}
+
+function psIsRestorationCategory(subCategory) {
+  return /\b(METAL|COMBI)\b/i.test(subCategory || '');
+}
 
 function psYearsFromPurchase(purchaseDate) {
   if (!purchaseDate) return 0;
@@ -94,6 +145,7 @@ function psRenderProductList(containerId) {
 
     html += '<div class="product-history-card" id="phc-' + i + '" onclick="selectHistoryProduct(' + i + ')"' +
       ' data-ai="' + (p.isAi ? 'true' : 'false') + '"' +
+      ' data-sub-category="' + (p.subCategory || '') + '"' +
       ' style="display:flex;gap:16px;padding:16px;' + bdrBottom + 'cursor:pointer;border-left:2px solid transparent;background:' + bgColor + ';">';
 
     html += '<div style="width:64px;height:64px;flex-shrink:0;background:' + thumbBg + ';display:flex;align-items:center;justify-content:center;font-size:10px;' + thumbColor + '">' + thumbText + '</div>';
