@@ -91,28 +91,11 @@
       </label>
     </div>
 
-    <div id="lens-notice" style="display:none;border:1px solid #000;padding:24px;margin-top:16px;margin-bottom:16px;">
-      <p id="txt-ln-head" style="font-size:14px;font-weight:500;margin-bottom:16px;">꼭 확인해 주세요.</p>
-      <p id="txt-ln-p1" style="font-size:13px;color:#555;margin-bottom:10px;line-height:1.8;">별도로 제작한 렌즈(도수·블루라이트 등)가 장착된 경우, 안전한 수리를 위해 렌즈 분리가 반드시 필요합니다.</p>
-      <p id="txt-ln-p2" style="font-size:13px;color:#555;margin-bottom:10px;line-height:1.8;">별도 제작렌즈가 삽입된 상태로 접수될 경우, 수리가 지연되거나 반송되며, 수리·운송 과정에서 렌즈가 손상되거나 분실되어도 보상하지 않습니다.</p>
-      <p id="txt-ln-p3" style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">따라서 별도로 제작된 렌즈는 꼭 분리하시고 제품만 보내주세요.</p>
-      <a href="#" id="txt-ln-link" style="font-size:12px;color:#555;text-decoration:underline;display:inline-block;margin-bottom:20px;">면책동의 원문 확인하기 →</a>
-
-      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
-        <label class="inline-check">
-          <input type="checkbox" id="chk-lens" onchange="savePkgLensState();checkNextBtn()">
-          <span id="txt-ln-chk">내용을 확인했으며, 렌즈를 분리하여 제품만 발송합니다.</span>
-        </label>
-      </div>
-
-      <div style="border:1px solid #e0e0e0;padding:20px;background:#fafafa;">
-        <p id="txt-ls-head" style="font-size:12px;font-weight:500;margin-bottom:12px;color:#444;">렌즈 분리 서비스 이용하기</p>
-        <p id="txt-ls-p1" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:6px;">고객님이 별도로 제작하신 렌즈(도수·블루라이트 등)가 삽입된 경우, 수리 전에 렌즈 분리가 반드시 필요합니다.</p>
-        <p id="txt-ls-p2" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:6px;">공식 안경원에서 전문 안경사님이 안전하게 렌즈를 분리해드리니, 수리 접수 후 방문하여 진행해주세요.</p>
-        <p id="txt-ls-p3" style="font-size:12px;color:#888;line-height:1.8;margin-bottom:16px;">※ 젠틀몬스터 제품의 기존 렌즈는 분리 없이 바로 수리 접수가 가능합니다.</p>
-        <p id="txt-ls-p4" style="font-size:13px;color:#555;margin-bottom:16px;">아래 [매장 찾기] 버튼을 눌러 이용 가능한 공식 안경원을 확인해 주세요.</p>
-        <a href="../store.html?filter=simplipair" class="btn btn-secondary" id="txt-ls-btn" style="font-size:12px;display:inline-block;">매장 찾기 →</a>
-      </div>
+    <div id="lens-notice" style="display:none;border:1px solid #000;padding:20px;margin-top:16px;margin-bottom:16px;">
+      <p id="txt-ln-head" style="font-size:14px;font-weight:500;margin-bottom:12px;">별도 제작 렌즈 안내</p>
+      <p id="txt-ln-p1" style="font-size:13px;color:#555;margin-bottom:8px;line-height:1.8;">별도 제작 렌즈가 삽입된 제품은 수리 전 렌즈 분리 또는 면책 동의가 필요합니다.</p>
+      <p id="txt-ln-p2" style="font-size:13px;color:#555;margin-bottom:8px;line-height:1.8;">다음 배송 정보 단계에서 심플리페어 Drop Off 또는 Home Pick Up 중 선택해 주세요.</p>
+      <p id="txt-ln-p3" style="font-size:13px;color:#555;line-height:1.8;">Home Pick Up 선택 시 렌즈 손상·분실 관련 면책 동의가 필요합니다.</p>
     </div>
 
     <div style="margin-bottom:32px;"></div>
@@ -178,10 +161,10 @@ const STRINGS = {
     lensNoneTitle: '미삽입', lensNoneDesc: '렌즈가 없는 상태로 발송합니다.',
     lensCustomTitle: '별도 제작 렌즈 삽입', lensCustomDesc: '도수, 블루라이트 차단 등 별도로 제작된 렌즈',
     lensOrigTitle: '제품 기존 렌즈', lensOrigDesc: '젠틀몬스터 정품 렌즈가 삽입된 상태',
-    lnHead: '꼭 확인해 주세요.',
-    lnP1: '별도로 제작한 렌즈(도수·블루라이트 등)가 장착된 경우, 안전한 수리를 위해 렌즈 분리가 반드시 필요합니다.',
-    lnP2: '별도 제작렌즈가 삽입된 상태로 접수될 경우, 수리가 지연되거나 반송되며, 수리·운송 과정에서 렌즈가 손상되거나 분실되어도 보상하지 않습니다.',
-    lnP3: '따라서 별도로 제작된 렌즈는 꼭 분리하시고 제품만 보내주세요.',
+    lnHead: '별도 제작 렌즈 안내',
+    lnP1: '별도 제작 렌즈가 삽입된 제품은 수리 전 렌즈 분리 또는 면책 동의가 필요합니다.',
+    lnP2: '다음 배송 정보 단계에서 심플리페어 Drop Off 또는 Home Pick Up 중 선택해 주세요.',
+    lnP3: 'Home Pick Up 선택 시 렌즈 손상·분실 관련 면책 동의가 필요합니다.',
     lnLink: '면책동의 원문 확인하기 →',
     lnChk: '내용을 확인했으며, 렌즈를 분리하여 제품만 발송합니다.',
     lsHead: '렌즈 분리 서비스 이용하기',
@@ -211,10 +194,10 @@ const STRINGS = {
     lensNoneTitle: 'No Lens', lensNoneDesc: 'Sending without any lens.',
     lensCustomTitle: 'Custom Lens', lensCustomDesc: 'Prescription, blue light filter, or other custom-made lenses',
     lensOrigTitle: 'Original Lens', lensOrigDesc: 'Fitted with original Gentle Monster lenses',
-    lnHead: 'Please read carefully.',
-    lnP1: 'If custom lenses (prescription, blue light filter, etc.) are installed, lens removal is required before repair.',
-    lnP2: 'If submitted with custom lenses installed, repairs may be delayed or the product returned. No compensation will be provided for lens damage or loss during repair or shipping.',
-    lnP3: 'Please remove any custom lenses and send only the frame.',
+    lnHead: 'Custom Lens Notice',
+    lnP1: 'If custom lenses are installed, lens removal or a disclaimer agreement is required before repair.',
+    lnP2: 'In the next shipping step, choose Simpli Repair Drop Off or Home Pick Up.',
+    lnP3: 'Home Pick Up requires a disclaimer agreement for potential lens damage or loss.',
     lnLink: 'View full disclaimer →',
     lnChk: 'I have read the above and will remove the lens before shipping.',
     lsHead: 'Lens Removal Service',
@@ -350,7 +333,6 @@ function savePkgLensState() {
   try {
     var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
     state.chkPkg  = document.getElementById('chk-pkg').checked;
-    state.chkLens = document.getElementById('chk-lens').checked;
     localStorage.setItem('ps-state', JSON.stringify(state));
   } catch(e) {}
 }
@@ -427,7 +409,6 @@ function selectLens(el, type) {
     localStorage.setItem('ps-state', JSON.stringify(state));
   } catch(e) {}
   document.getElementById('lens-notice').style.display = (type === 'custom') ? 'block' : 'none';
-  if (type !== 'custom') document.getElementById('chk-lens').checked = false;
   checkNextBtn();
 }
 
@@ -435,9 +416,8 @@ function checkNextBtn() {
   const btn = document.getElementById('btn-next');
   const imgSection = document.getElementById('image-section');
   const photoOk = !imgSection || imgSection.style.display === 'none' || attachedFiles.length > 0;
-  const lensOk = lensType !== 'custom' || document.getElementById('chk-lens').checked;
   const pkgOk = document.getElementById('chk-pkg').checked;
-  const ok = photoOk && lensOk && pkgOk;
+  const ok = photoOk && pkgOk;
   btn.style.opacity = ok ? '' : '0.4';
   btn.style.pointerEvents = ok ? '' : 'none';
 }
@@ -464,8 +444,6 @@ window.addEventListener('load', function() {
 
     // 체크박스 복원
     if (state.chkPkg)  document.getElementById('chk-pkg').checked  = true;
-    if (state.chkLens) document.getElementById('chk-lens').checked = true;
-
     // 이전 이미지 플레이스홀더 복원
     if (state.imageCount && state.imageCount > 0) {
       for (var i = 0; i < Math.min(state.imageCount, MAX_FILES); i++) {

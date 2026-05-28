@@ -101,10 +101,28 @@
         <p>· 접수 완료 후 영업일 3일 이내 방문 수거해 드립니다.</p>
         <p>· 수거 전 기사님께서 미리 연락드립니다.</p>
       </div>
+      <div id="lens-pickup-disclaimer" style="display:none;border:1px solid #000;padding:20px;margin-top:16px;">
+        <p id="lens-disclaimer-title" style="font-size:14px;font-weight:500;margin-bottom:16px;">꼭 확인해 주세요.</p>
+        <p id="lens-disclaimer-p1" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:10px;">별도로 제작한 렌즈(도수·블루라이트 등)가 장착된 경우, 안전한 수리를 위해 렌즈 분리가 반드시 필요합니다.</p>
+        <p id="lens-disclaimer-p2" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:10px;">별도 제작렌즈가 삽입된 상태로 접수될 경우, 수리가 지연되거나 반송되며, 수리·운송 과정에서 렌즈가 손상되거나 분실되어도 보상하지 않습니다.</p>
+        <p id="lens-disclaimer-p3" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:14px;">따라서 별도로 제작된 렌즈는 꼭 분리하시고 제품만 보내주세요.</p>
+        <a href="#" id="lens-disclaimer-link" style="font-size:12px;color:#555;text-decoration:underline;display:inline-block;margin-bottom:20px;">면책동의 원문 확인하기 →</a>
+        <label class="inline-check">
+          <input type="checkbox" id="chk-lens-pickup" onchange="saveShippingState();checkShippingNextBtn()">
+          <span id="lens-disclaimer-check">내용을 확인했으며, 렌즈를 분리하여 제품만 발송합니다.</span>
+        </label>
+      </div>
     </div>
 
     <!-- DROP OFF 매장 선택 -->
     <div id="send-store-section" style="display:none;margin-bottom:32px;">
+      <div id="lens-store-service" style="display:none;border:1px solid #e0e0e0;padding:24px;margin-bottom:24px;background:#fafafa;">
+        <p id="lens-store-title" style="font-size:14px;font-weight:500;margin-bottom:16px;">렌즈 분리 서비스 이용하기</p>
+        <p id="lens-store-p1" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:8px;">고객님이 별도로 제작하신 렌즈(도수·블루라이트 등)가 삽입된 경우, 수리 전에 렌즈 분리가 반드시 필요합니다.</p>
+        <p id="lens-store-p2" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:8px;">공식 안경원에서 전문 안경사님이 안전하게 렌즈를 분리해드리니, 수리 접수 후 방문하여 진행해주세요.</p>
+        <p id="lens-store-p3" style="font-size:12px;color:#888;line-height:1.8;margin-bottom:14px;">※ 젠틀몬스터 제품의 기존 렌즈는 분리 없이 바로 수리 접수가 가능합니다.</p>
+        <p id="lens-store-p4" style="font-size:13px;color:#555;line-height:1.8;">아래에서 이용 가능한 공식 안경원을 선택해 주세요.</p>
+      </div>
       <p id="lbl-dropoff-store" class="section-label" style="margin-top:0;">Drop Off 매장 선택 <span style="color:#000">*</span></p>
       <div id="drop-store-picker">
         <div style="position:relative;margin-bottom:12px;">
@@ -387,6 +405,26 @@ const STRINGS = {
     btnBack: '뒤로가기', btnSave: '저장 & 계속하기',
     btnPrev: '이전', btnNext: '다음 — 안내 확인',
     searchPlaceholder: '매장명 또는 지역 검색',
+    lensSendLabel: '발송 방법',
+    lensPickupTitle: '자택 픽업',
+    lensPickupDesc: '운송사가 방문하여 수거해 드립니다.',
+    lensDropoffTitle: '매장 Drop Off',
+    lensDropoffDesc: '가까운 매장에 직접 방문하여 제품을 맡겨주세요.',
+    lensDropoffStoreLabel: 'Drop Off 매장 선택',
+    lensPickupAddrLabel: '회수 주소',
+    lensPickupNotice: '<p>· 접수 완료 후 영업일 3일 이내 방문 수거해 드립니다.</p><p>· 별도 제작 렌즈가 삽입된 상태로 발송되는 경우 아래 면책 동의가 필요합니다.</p>',
+    lensStoreNotice: '<p>· 선택하신 심플리페어 매장에서 렌즈 분리 후 제품을 맡겨주세요.</p><p>· 접수 후 5일 이내 방문을 권장합니다.</p>',
+    lensDisclaimerTitle: '꼭 확인해 주세요.',
+    lensDisclaimerP1: '별도로 제작한 렌즈(도수·블루라이트 등)가 장착된 경우, 안전한 수리를 위해 렌즈 분리가 반드시 필요합니다.',
+    lensDisclaimerP2: '별도 제작렌즈가 삽입된 상태로 접수될 경우, 수리가 지연되거나 반송되며, 수리·운송 과정에서 렌즈가 손상되거나 분실되어도 보상하지 않습니다.',
+    lensDisclaimerP3: '따라서 별도로 제작된 렌즈는 꼭 분리하시고 제품만 보내주세요.',
+    lensDisclaimerLink: '면책동의 원문 확인하기 →',
+    lensDisclaimerCheck: '내용을 확인했으며, 렌즈를 분리하여 제품만 발송합니다.',
+    lensStoreTitle: '렌즈 분리 서비스 이용하기',
+    lensStoreP1: '고객님이 별도로 제작하신 렌즈(도수·블루라이트 등)가 삽입된 경우, 수리 전에 렌즈 분리가 반드시 필요합니다.',
+    lensStoreP2: '공식 안경원에서 전문 안경사님이 안전하게 렌즈를 분리해드리니, 수리 접수 후 방문하여 진행해주세요.',
+    lensStoreP3: '※ 젠틀몬스터 제품의 기존 렌즈는 분리 없이 바로 수리 접수가 가능합니다.',
+    lensStoreP4: '아래에서 이용 가능한 공식 안경원을 선택해 주세요.',
   },
   en: {
     title: 'Shipping Information',
@@ -412,6 +450,26 @@ const STRINGS = {
     btnBack: 'Back', btnSave: 'Save & Continue',
     btnPrev: 'Back', btnNext: 'Next — Confirm',
     searchPlaceholder: 'Search store name or area',
+    lensSendLabel: 'Shipping Method',
+    lensPickupTitle: 'Home Pick Up',
+    lensPickupDesc: 'A courier will visit your home for pickup.',
+    lensDropoffTitle: 'Store Drop Off',
+    lensDropoffDesc: 'Please visit your nearest store and drop off your product.',
+    lensDropoffStoreLabel: 'Select Drop Off Store',
+    lensPickupAddrLabel: 'Pickup Address',
+    lensPickupNotice: '<p>· A courier will visit for pickup within 3 business days after submission.</p><p>· If custom lenses remain inserted, the disclaimer agreement below is required.</p>',
+    lensStoreNotice: '<p>· Please visit the selected Simpli Repair store for lens removal and drop off.</p><p>· We recommend visiting within 5 days of submission.</p>',
+    lensDisclaimerTitle: 'Please read carefully.',
+    lensDisclaimerP1: 'If custom lenses (prescription, blue light filter, etc.) are installed, lens removal is required before repair.',
+    lensDisclaimerP2: 'If submitted with custom lenses installed, repairs may be delayed or the product returned. No compensation will be provided for lens damage or loss during repair or shipping.',
+    lensDisclaimerP3: 'Please remove any custom lenses and send only the frame.',
+    lensDisclaimerLink: 'View full disclaimer →',
+    lensDisclaimerCheck: 'I have read the above and will remove the lens before shipping.',
+    lensStoreTitle: 'Lens Removal Service',
+    lensStoreP1: 'If you have custom lenses (prescription, blue light filter, etc.) installed, lens removal is required before repair.',
+    lensStoreP2: 'A professional optician at an official partner store will safely remove your lenses. Please visit after submitting your repair request.',
+    lensStoreP3: '※ Original Gentle Monster lenses do not need to be removed before submitting for repair.',
+    lensStoreP4: 'Select an available official partner store below.',
   },
 };
 
@@ -496,6 +554,7 @@ function setLang(lang) {
   if (dss) dss.placeholder = st.searchPlaceholder;
   const rss = document.getElementById('recv-store-search');
   if (rss) rss.placeholder = st.searchPlaceholder;
+  if (typeof lensOnlyMode !== 'undefined' && lensOnlyMode) setLensServiceCopy();
 }
 
 // ─── 발송/수령 방법 ───
@@ -504,6 +563,42 @@ var currentReceive = null;
 var currentDropStore = null;
 var currentRecvStore = null;
 
+function setHtml(id, html) {
+  var el = document.getElementById(id);
+  if (el) el.innerHTML = html;
+}
+
+function setLensServiceCopy() {
+  var st = STRINGS[currentLang] || STRINGS.ko;
+  setHtml('lbl-send', st.lensSendLabel + ' <span style="color:#000">*</span>');
+  setText('title-pickup', st.lensPickupTitle);
+  setHtml('desc-pickup', st.lensPickupDesc);
+  setText('title-dropoff', st.lensDropoffTitle);
+  setHtml('desc-dropoff', st.lensDropoffDesc);
+  setHtml('lbl-dropoff-store', st.lensDropoffStoreLabel + ' <span style="color:#000">*</span>');
+  setHtml('lbl-pickup-addr', st.lensPickupAddrLabel + ' <span style="color:#000">*</span>');
+  setHtml('pickup-notice-box', st.lensPickupNotice);
+  setHtml('store-notice-box', st.lensStoreNotice);
+  setText('lens-disclaimer-title', st.lensDisclaimerTitle);
+  setText('lens-disclaimer-p1', st.lensDisclaimerP1);
+  setText('lens-disclaimer-p2', st.lensDisclaimerP2);
+  setText('lens-disclaimer-p3', st.lensDisclaimerP3);
+  setText('lens-disclaimer-link', st.lensDisclaimerLink);
+  setText('lens-disclaimer-check', st.lensDisclaimerCheck);
+  setText('lens-store-title', st.lensStoreTitle);
+  setText('lens-store-p1', st.lensStoreP1);
+  setText('lens-store-p2', st.lensStoreP2);
+  setText('lens-store-p3', st.lensStoreP3);
+  setText('lens-store-p4', st.lensStoreP4);
+}
+
+function updateLensMethodPanels() {
+  var pickup = document.getElementById('lens-pickup-disclaimer');
+  if (pickup) pickup.style.display = (lensOnlyMode && currentSend === 'pickup') ? 'block' : 'none';
+  var store = document.getElementById('lens-store-service');
+  if (store) store.style.display = (lensOnlyMode && currentSend === 'store') ? 'block' : 'none';
+}
+
 function checkShippingNextBtn() {
   var sendWrap = document.getElementById('send-method-wrap');
   var sendSectionHidden = !sendWrap || sendWrap.style.display === 'none';
@@ -511,13 +606,15 @@ function checkShippingNextBtn() {
     currentSend !== null &&
     (currentSend !== 'store' || currentDropStore !== null)
   );
+  var lensDisclaimer = document.getElementById('chk-lens-pickup');
+  var lensDisclaimerOk = !lensOnlyMode || currentSend !== 'pickup' || (lensDisclaimer && lensDisclaimer.checked);
   var recvOk = currentReceive !== null && (
     currentReceive !== 'store' || currentRecvStore !== null
   );
   var btn = document.getElementById('btn-next');
   if (!btn) return;
-  btn.style.opacity = (sendOk && recvOk) ? '' : '0.4';
-  btn.style.pointerEvents = (sendOk && recvOk) ? '' : 'none';
+  btn.style.opacity = (sendOk && lensDisclaimerOk && recvOk) ? '' : '0.4';
+  btn.style.pointerEvents = (sendOk && lensDisclaimerOk && recvOk) ? '' : 'none';
 }
 
 function saveShippingState() {
@@ -533,6 +630,8 @@ function saveShippingState() {
     if (currentRecvStore !== null && ALL_STORES[currentRecvStore]) {
       state.recvStoreName = ALL_STORES[currentRecvStore].name;
     }
+    var lensDisclaimer = document.getElementById('chk-lens-pickup');
+    if (lensDisclaimer) state.lensPickupDisclaimer = lensDisclaimer.checked;
     localStorage.setItem('ps-state', JSON.stringify(state));
   } catch(e) {}
 }
@@ -545,6 +644,7 @@ function selectSend(el, type) {
   document.getElementById('send-store-section').style.display = (type === 'store') ? 'block' : 'none';
   var selfSec = document.getElementById('self-ship-section');
   if (selfSec) selfSec.style.display = (type === 'self') ? 'block' : 'none';
+  updateLensMethodPanels();
   checkShippingNextBtn();
 }
 
@@ -565,9 +665,11 @@ function resetShippingOptions() {
   });
   document.querySelectorAll('.check-group .check-item').forEach(function(el) { el.classList.remove('selected'); });
   document.querySelectorAll('input[name="send"], input[name="receive"]').forEach(function(r) { r.checked = false; });
-  ['pickup-section','send-store-section','self-ship-section','address-section','store-section'].forEach(function(id) {
+  ['pickup-section','send-store-section','self-ship-section','address-section','store-section','lens-pickup-disclaimer','lens-store-service'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.style.display = 'none';
   });
+  var lensDisclaimer = document.getElementById('chk-lens-pickup');
+  if (lensDisclaimer) lensDisclaimer.checked = false;
   setFranchisePinsVisible(true);
   currentSend = null; currentReceive = null;
   checkShippingNextBtn();
@@ -576,14 +678,19 @@ function resetShippingOptions() {
 function applyLensServiceMode() {
   resetShippingOptions();
   lensOnlyMode = true;
-  ['send-pickup-opt','send-self-opt'].forEach(function(id) {
+  var pickupOpt = document.getElementById('send-pickup-opt');
+  if (pickupOpt) pickupOpt.style.display = '';
+  ['send-self-opt'].forEach(function(id) {
     var el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
   var storeOpt = document.getElementById('send-store-opt');
-  if (storeOpt) { storeOpt.classList.add('selected'); selectSend(storeOpt, 'store'); }
+  if (storeOpt) storeOpt.style.display = '';
+  setLensServiceCopy();
+  updateLensMethodPanels();
   _updateDropPins(null);
   _updateRecvPins(null);
+  checkShippingNextBtn();
 }
 
 function applyKrMode() {
@@ -1064,6 +1171,9 @@ function applySavedShippingSelection(state) {
     if (dropIdx >= 0) selectDropStore(dropIdx);
   }
 
+  var lensDisclaimer = document.getElementById('chk-lens-pickup');
+  if (lensDisclaimer && state.lensPickupDisclaimer) lensDisclaimer.checked = true;
+  updateLensMethodPanels();
   checkShippingNextBtn();
 }
 
