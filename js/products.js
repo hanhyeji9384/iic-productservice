@@ -5,42 +5,65 @@
 var PS_PRODUCTS = [
   {
     name: 'FRIDA 01',
-    order: 'ORD-20250515-3821',
-    store: '온라인',
-    purchaseDate: '2025-05-15',   // 1년 — 품질·서비스 보증 유효
+    order: '2501150MNSVGSJKKGZA',
+    serialNumber: 'FR010125-00003821',
+    store: '젠틀몬스터 온라인 공식몰',
+    purchaseDate: '2025-01-15',   // 1년 — 품질·서비스 보증 유효
+    subCategory: 'SUNGLASS ACETATE',
+    isAi: false,
+  },
+  {
+    name: 'FRIDA 01',
+    order: '2501150MNSVGSJKKGZA',
+    serialNumber: 'FR010125-00003822',
+    store: '젠틀몬스터 온라인 공식몰',
+    purchaseDate: '2025-01-15',   // 동일 SKU 복수 구매 — S/N으로 구분
     subCategory: 'SUNGLASS ACETATE',
     isAi: false,
   },
   {
     name: 'MUSTANG 01',
-    order: 'ORD-20240515-4821',
-    store: '온라인',
-    purchaseDate: '2024-05-15',   // 2년 — 품질 보증 만료 / 서비스 보증 유효
+    order: '2401100MNSVGSJKKGZB',
+    serialNumber: 'MU010124-00004821',
+    store: '젠틀몬스터 온라인 공식몰',
+    purchaseDate: '2024-01-10',   // 품질 보증 만료 / 서비스 보증 유효
     subCategory: 'SUNGLASS METAL',
     isAi: false,
   },
   {
     name: 'MATIN 01',
-    order: 'ORD-20230515-2934',
+    order: '2302010MNSVGSJKKGZC',
+    serialNumber: 'MA010223-00002934',
     store: '젠틀몬스터 청담',
-    purchaseDate: '2023-05-15',   // 3년 — 서비스 보증 만료 / 복원 수리 구간
+    purchaseDate: '2023-02-01',   // 서비스 보증 만료 / 복원 수리 구간
     subCategory: 'SUNGLASS COMBI',
     isAi: false,
   },
   {
+    name: 'HEIZER 01',
+    order: '2106200MNSVGSJKKGZD',
+    serialNumber: 'HE010621-00005521',
+    store: '젠틀몬스터 온라인 공식몰',
+    purchaseDate: '2021-06-20',   // 수리 불가 구간
+    subCategory: 'SUNGLASS METAL',
+    isAi: false,
+  },
+  {
     name: 'VOGO 01',
-    order: 'ORD-20180515-1102',
+    order: '1603100MNSVGSJKKGZE',
+    serialNumber: 'VO010316-00001102',
     store: '젠틀몬스터 홍대',
-    purchaseDate: '2018-05-15',   // 8년 — 수리 불가 구간 (7년 초과)
+    purchaseDate: '2016-03-10',   // 수리 불가 구간 (7년 초과)
     subCategory: 'SUNGLASS ACETATE',
     isAi: false,
   },
   {
     name: '스마트 브리즈비 01 (BL)',
-    order: 'ORD-20250905-7193',
-    store: '젠틀몬스터 온라인',
+    order: '2509050MNSVGSJKKGZF',
+    serialNumber: 'R4AC9001K85',
+    store: '젠틀몬스터 온라인 공식몰',
     purchaseDate: '2025-09-05',   // AI 아이웨어 플로우
-    subCategory: 'AI SMART EYEWEAR',
+    subCategory: 'AI EYEWEAR',
     isAi: true,
   },
 ];
@@ -59,9 +82,9 @@ var PS_PRODUCT_SUBCATEGORY_OVERRIDES = {
   'MONDO 03': 'SUNGLASS ACETATE',
   'TOFINO 01': 'SUNGLASS METAL',
   'PALETTE 02': 'SUNGLASS METAL',
-  '스마트 브리즈비 01': 'AI SMART EYEWEAR',
-  '스마트 브리즈비 02': 'AI SMART EYEWEAR',
-  '스마트 브리즈비 03': 'AI SMART EYEWEAR'
+  '스마트 브리즈비 01': 'AI EYEWEAR',
+  '스마트 브리즈비 02': 'AI EYEWEAR',
+  '스마트 브리즈비 03': 'AI EYEWEAR'
 };
 
 function psNormalizeProductName(name) {
@@ -154,6 +177,7 @@ function psRenderProductList(containerId) {
     html += '<p style="font-size:14px;font-weight:500;margin-bottom:10px;">' + p.name + '</p>';
     html += '<div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px;color:#666;">';
     html += '<span style="color:#999;">주문번호</span><span style="font-family:monospace;letter-spacing:0.03em;">' + p.order + '</span>';
+    html += '<span style="color:#999;">시리얼 넘버</span><span style="font-family:monospace;letter-spacing:0.03em;">' + (p.serialNumber || '-') + '</span>';
     html += '<span style="color:#999;">구매처</span><span>' + p.store + '</span>';
     html += '<span style="color:#999;">구매일</span><span>' + psFormatDate(p.purchaseDate) + '</span>';
     html += '<span style="color:#999;">품질 보증</span><span>' + psQualityWarranty(p.purchaseDate) + '</span>';
