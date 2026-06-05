@@ -91,12 +91,6 @@
       </label>
     </div>
 
-    <div id="lens-notice" style="display:none;border:1px solid #000;padding:20px;margin-top:16px;margin-bottom:16px;">
-      <p id="txt-ln-head" style="font-size:14px;font-weight:500;margin-bottom:12px;">별도 제작 렌즈 안내</p>
-      <p id="txt-ln-p1" style="font-size:13px;color:#555;margin-bottom:8px;line-height:1.8;">별도 제작 렌즈가 삽입된 제품은 수리 전 렌즈 분리 또는 면책 동의가 필요합니다.</p>
-      <p id="txt-ln-p2" style="font-size:13px;color:#555;margin-bottom:8px;line-height:1.8;">다음 배송 정보 단계에서 심플리페어 Drop Off 또는 Home Pick Up 중 선택해 주세요.</p>
-      <p id="txt-ln-p3" style="font-size:13px;color:#555;line-height:1.8;">Home Pick Up 선택 시 렌즈 손상·분실 관련 면책 동의가 필요합니다.</p>
-    </div>
 
     <div style="margin-bottom:32px;"></div>
     <div class="divider"></div>
@@ -161,18 +155,6 @@ const STRINGS = {
     lensNoneTitle: '미삽입', lensNoneDesc: '렌즈가 없는 상태로 발송합니다.',
     lensCustomTitle: '별도 제작 렌즈 삽입', lensCustomDesc: '도수, 블루라이트 차단 등 별도로 제작된 렌즈',
     lensOrigTitle: '제품 기존 렌즈', lensOrigDesc: '젠틀몬스터 정품 렌즈가 삽입된 상태',
-    lnHead: '별도 제작 렌즈 안내',
-    lnP1: '별도 제작 렌즈가 삽입된 제품은 수리 전 렌즈 분리 또는 면책 동의가 필요합니다.',
-    lnP2: '다음 배송 정보 단계에서 심플리페어 Drop Off 또는 Home Pick Up 중 선택해 주세요.',
-    lnP3: 'Home Pick Up 선택 시 렌즈 손상·분실 관련 면책 동의가 필요합니다.',
-    lnLink: '면책동의 원문 확인하기 →',
-    lnChk: '내용을 확인했으며, 렌즈를 분리하여 제품만 발송합니다.',
-    lsHead: '렌즈 분리 서비스 이용하기',
-    lsP1: '고객님이 별도로 제작하신 렌즈(도수·블루라이트 등)가 삽입된 경우, 수리 전에 렌즈 분리가 반드시 필요합니다.',
-    lsP2: '공식 안경원에서 전문 안경사님이 안전하게 렌즈를 분리해드리니, 수리 접수 후 방문하여 진행해주세요.',
-    lsP3: '※ 젠틀몬스터 제품의 기존 렌즈는 분리 없이 바로 수리 접수가 가능합니다.',
-    lsP4: '아래 [매장 찾기] 버튼을 눌러 이용 가능한 공식 안경원을 확인해 주세요.',
-    lsBtn: '매장 찾기 →',
     pkgLabel: '패키지 동봉 금지 확인 <span style="color:#000">*</span>',
     pkgDesc: '제품 본체만 보내주세요. 보증카드, 케이스 등 부속품은 분실 우려가 있으니 함께 보내지 마세요.',
     pkgChk: '확인했습니다.',
@@ -194,18 +176,6 @@ const STRINGS = {
     lensNoneTitle: 'No Lens', lensNoneDesc: 'Sending without any lens.',
     lensCustomTitle: 'Custom Lens', lensCustomDesc: 'Prescription, blue light filter, or other custom-made lenses',
     lensOrigTitle: 'Original Lens', lensOrigDesc: 'Fitted with original Gentle Monster lenses',
-    lnHead: 'Custom Lens Notice',
-    lnP1: 'If custom lenses are installed, lens removal or a disclaimer agreement is required before repair.',
-    lnP2: 'In the next shipping step, choose Simpli Repair Drop Off or Home Pick Up.',
-    lnP3: 'Home Pick Up requires a disclaimer agreement for potential lens damage or loss.',
-    lnLink: 'View full disclaimer →',
-    lnChk: 'I have read the above and will remove the lens before shipping.',
-    lsHead: 'Lens Removal Service',
-    lsP1: 'If you have custom lenses (prescription, blue light filter, etc.) installed, lens removal is required before repair.',
-    lsP2: 'A professional optician at an official partner store will safely remove your lenses — please visit after submitting your repair request.',
-    lsP3: '※ Original Gentle Monster lenses do not need to be removed before submitting for repair.',
-    lsP4: 'Click [Find Store] below to find an available official partner store.',
-    lsBtn: 'Find Store →',
     pkgLabel: 'Package Exclusion Confirmation <span style="color:#000">*</span>',
     pkgDesc: 'Please send only the product frame. Do not include warranty cards, cases, or accessories as they may be lost.',
     pkgChk: 'I understand.',
@@ -251,18 +221,6 @@ function setLang(lang) {
   setText('txt-lens-custom-desc', s.lensCustomDesc);
   setText('txt-lens-orig-title', s.lensOrigTitle);
   setText('txt-lens-orig-desc', s.lensOrigDesc);
-  setText('txt-ln-head', s.lnHead);
-  setText('txt-ln-p1', s.lnP1);
-  setText('txt-ln-p2', s.lnP2);
-  setText('txt-ln-p3', s.lnP3);
-  setText('txt-ln-link', s.lnLink);
-  setText('txt-ln-chk', s.lnChk);
-  setText('txt-ls-head', s.lsHead);
-  setText('txt-ls-p1', s.lsP1);
-  setText('txt-ls-p2', s.lsP2);
-  setText('txt-ls-p3', s.lsP3);
-  setText('txt-ls-p4', s.lsP4);
-  setText('txt-ls-btn', s.lsBtn);
   setText('txt-pkg-label', s.pkgLabel);
   setText('txt-pkg-desc', s.pkgDesc);
   setText('txt-pkg-chk', s.pkgChk);
@@ -408,7 +366,6 @@ function selectLens(el, type) {
     state.lensType = type;
     localStorage.setItem('ps-state', JSON.stringify(state));
   } catch(e) {}
-  document.getElementById('lens-notice').style.display = (type === 'custom') ? 'block' : 'none';
   checkNextBtn();
 }
 

@@ -61,7 +61,7 @@
       <div id="sc-shipping-rows">
         <div class="summary-row" style="padding-top:12px;">
           <span id="key-send" class="summary-key">발송 방법</span>
-          <span id="val-send" class="summary-val">자택 픽업 (CJ 택배)</span>
+          <span id="val-send" class="summary-val">자택 픽업</span>
         </div>
         <div class="summary-row">
           <span id="key-recv" class="summary-key">수령 방법</span>
@@ -163,7 +163,7 @@ const STRINGS = {
     keySvcType: '서비스 유형', keySvcDetail: '서비스 상세',
     keyUrgentOpt: '추가 옵션', valUrgent: '긴급 서비스',
     urgentFeeLabel: '+ 긴급 서비스 50,000원',
-    keySend: '발송 방법', valSend: '자택 픽업 (CJ 택배)',
+    keySend: '발송 방법', valSend: '자택 픽업',
     keyRecv: '수령 방법', valRecv: '자택 배송',
     keyAddr: '수령 주소',
     lblEst: '예상 수리 안내', keyEstMethod: '예상 수리 방식',
@@ -179,7 +179,7 @@ const STRINGS = {
     keySvcType: 'Service Type', keySvcDetail: 'Detail',
     keyUrgentOpt: 'Add-on', valUrgent: 'Urgent Service',
     urgentFeeLabel: '+ Urgent Service $37',
-    keySend: 'Shipping', valSend: 'Home Pickup (CJ Logistics)',
+    keySend: 'Shipping', valSend: 'Home Pickup',
     keyRecv: 'Return', valRecv: 'Home Delivery',
     keyAddr: 'Address',
     lblEst: 'Estimated Service', keyEstMethod: 'Est. Method',
@@ -457,7 +457,7 @@ window.addEventListener('load', function() {
 
     // 발송/수령 방법 표시 업데이트
     var sendLabels = {
-      pickup: { ko: '자택 픽업 (CJ 택배)', en: 'Home Pickup (CJ Logistics)' },
+      pickup: { ko: '자택 픽업', en: 'Home Pickup' },
       store:  { ko: '매장 발송', en: 'Store Drop-off' },
       self:   { ko: '직접 발송', en: 'Self-shipping' }
     };
