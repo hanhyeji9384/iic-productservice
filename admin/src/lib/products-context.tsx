@@ -5,6 +5,7 @@ import type { Product } from './types'
 type StockPatch = {
   stockLocation?: string
   quantity?: number
+  hasDecoration?: boolean
   isRestorationRequest?: boolean
 }
 

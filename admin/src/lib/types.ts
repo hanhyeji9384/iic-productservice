@@ -74,6 +74,7 @@ export type Product = {
   stockLocation: string        // 재고보관위치
   isSafetyStock: boolean       // 안전재고여부
   quantity: number             // 수량
+  hasDecoration?: boolean      // 장식보유여부
   isRestorationRequest: boolean // 복원의뢰여부
   dataSource: 'SAP' | 'PS'     // 데이터 출처
   registeredBy: string | null  // 등록자 (PS 출처일 때만)

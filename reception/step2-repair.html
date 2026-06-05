@@ -9,6 +9,23 @@
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/lang-modal.js"></script>
   <script src="../js/products.js"></script>
+  <style>
+    .prototype-control { padding:10px 0 16px; border-bottom:1px dashed #ddd; margin-bottom:28px; }
+    .prototype-label { font-size:10px; color:#bbb; letter-spacing:0.08em; margin-bottom:8px; }
+    .scenario-buttons { display:grid; gap:8px; }
+    .scenario-button { display:flex; align-items:center; justify-content:center; min-height:34px; border:1px solid var(--gray-300); background:var(--white); color:var(--gray-700); font-family:var(--font); font-size:11px; font-weight:500; letter-spacing:0.02em; cursor:pointer; padding:0 12px; text-align:center; }
+    .scenario-button:hover { border-color:var(--gray-800); color:var(--black); }
+    .scenario-button.active { border-color:var(--black); background:var(--black); color:var(--white); }
+    .prototype-note { font-size:11px; color:var(--gray-500); margin-top:8px; line-height:1.6; }
+    .check-item.is-disabled { background:var(--gray-50); border-color:var(--gray-200); color:var(--gray-400); cursor:not-allowed; }
+    .check-item.is-disabled:hover { border-color:var(--gray-200); }
+    .check-item.is-disabled input { cursor:not-allowed; }
+    .check-item.is-disabled .check-item-desc { color:var(--gray-400); }
+    .check-item-body { flex:1; }
+    .check-item-status { display:none; align-items:center; justify-content:center; min-height:24px; margin-left:auto; padding:2px 10px; border-radius:999px; font-size:11px; font-weight:500; white-space:nowrap; }
+    .check-item-status.is-visible { display:inline-flex; }
+    .check-item-status.status-unavailable { background:#fff3f3; color:#d09a9a; }
+  </style>
 
 </head>
 <body>
@@ -27,6 +44,15 @@
 
 <main class="page-wrapper">
   <div class="content">
+
+    <div class="prototype-control" id="decoration-scenario-control" aria-label="장식 부품 보유 시나리오 전환">
+      <p class="prototype-label">DECORATION PART SCENARIO</p>
+      <div class="scenario-buttons" style="grid-template-columns:repeat(2,auto);justify-content:start;">
+        <button type="button" class="scenario-button active" data-deco-scenario="available" onclick="setDecoScenario(true)">장식 보유</button>
+        <button type="button" class="scenario-button" data-deco-scenario="unavailable" onclick="setDecoScenario(false)">장식 미보유</button>
+      </div>
+      <p class="prototype-note" id="deco-scenario-note">3년 초과 장식 문제 선택 시 어드민의 장식 부품 보유 여부 판단값을 검수합니다.</p>
+    </div>
 
     <div class="step-progress">
       <div class="step-item done"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 01</p><p class="step-label">기본 정보</p></div>
@@ -83,24 +109,27 @@
     <div class="option-cards" style="margin-bottom:0;">
       <label id="check-damage" class="check-item" onclick="showResult('damage')">
         <input type="radio" name="issue" value="damage">
-        <div>
+        <div class="check-item-body">
           <p class="check-item-title" id="damage-title">파손 & 변형</p>
           <p class="check-item-desc" id="damage-desc">프레임 파손, 경첩 변형/변색, 렌즈 스크래치/균열</p>
         </div>
+        <span class="check-item-status" id="damage-status"></span>
       </label>
       <label id="check-decoration" class="check-item" onclick="showResult('decoration')">
         <input type="radio" name="issue" value="decoration">
-        <div>
+        <div class="check-item-body">
           <p class="check-item-title" id="deco-title">장식 문제</p>
           <p class="check-item-desc" id="deco-desc">장식 탈락, 장식 파손, 장식 변색</p>
         </div>
+        <span class="check-item-status" id="decoration-status"></span>
       </label>
       <label id="check-accessory" class="check-item" onclick="showResult('accessory')">
         <input type="radio" name="issue" value="accessory">
-        <div>
+        <div class="check-item-body">
           <p class="check-item-title" id="acc-title">부속품 문제</p>
           <p class="check-item-desc" id="acc-desc">코패드, 나사 등 소모품 부품 손상/분실</p>
         </div>
+        <span class="check-item-status" id="accessory-status"></span>
       </label>
     </div>
 
@@ -120,11 +149,7 @@
           </div>
           <p style="font-size:12px;color:#999;margin-top:10px;">실제 비용은 입고 후 정밀 점검을 통해 결정됩니다.</p>
         </div>
-        <div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
-          <strong style="color:#888;">토탈 케어 추천</strong>
-          <p style="margin-bottom:16px;">선택하신 부위만 신속하게 수리해드립니다.<br>제품 전체의 케어를 희망하시면 토탈 케어를 추천드립니다.<br>클리닝·폴리싱·피팅까지 한 번에 케어해 드립니다.</p>
-          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈 케어로 변경</a>
-        </div>
+
       </div>
 
       <!-- 장식 문제 3년 이하: 토탈케어 유도 -->
@@ -177,13 +202,7 @@
         <div id="restoration-unavailable" style="display:none;">
           <div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
             <p style="font-size:14px;font-weight:500;margin-bottom:12px;">수리가 어렵습니다</p>
-            <p style="font-size:13px;color:#555;line-height:1.8;">복원 수리를 원하지 않으시면 수리를 진행하기 어렵습니다.<br>아래 서비스는 계속 이용하실 수 있습니다.</p>
-            <div class="divider" style="margin:16px 0;"></div>
-            <p style="font-size:13px;">· 토탈 케어 (클리닝·폴리싱·피팅)<br>· 부속품 교체 (코패드, 나사 등)</p>
-            <div style="display:flex;gap:12px;margin-top:20px;">
-              <a href="step2-total-care.html" class="btn btn-secondary" style="flex:1;font-size:11px;">토탈 케어로 변경</a>
-              <a href="step2-consulting.html" class="btn btn-secondary" style="flex:1;font-size:11px;">부속품 요청</a>
-            </div>
+            <p style="font-size:13px;color:#555;line-height:1.8;">복원 수리를 원하지 않으시면 수리를 진행하기 어렵습니다.</p>
           </div>
         </div>
       </div>
@@ -192,27 +211,13 @@
       <div id="result-unavailable" style="display:none;">
         <div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
           <p style="font-size:14px;font-weight:500;margin-bottom:12px;">수리가 어렵습니다</p>
-          <p style="font-size:13px;color:#555;line-height:1.8;">프로덕트 서비스 보증기간이 경과한 제품은 교체 및 장식 부품 제공이 어려워 수리를 진행하기 어렵습니다.</p>
-          <div class="divider" style="margin:16px 0;"></div>
-          <p style="font-size:12px;color:#888;">다음 서비스는 계속 이용하실 수 있습니다.</p>
-          <p style="font-size:13px;margin-top:8px;">· 토탈 케어 (클리닝·폴리싱·피팅)<br>· 부속품 교체 (코패드, 나사 등)</p>
-          <div style="display:flex;gap:12px;margin-top:20px;">
-            <a href="step2-total-care.html" class="btn btn-secondary" style="flex:1;font-size:11px;">토탈 케어로 변경</a>
-            <a href="step2-consulting.html" class="btn btn-secondary" style="flex:1;font-size:11px;">부속품 요청</a>
-          </div>
+          <p style="font-size:13px;color:#555;line-height:1.8;">프로덕트 서비스 보증기간이 경과한 제품은 파손/변형 수리 진행이 어렵습니다.</p>
         </div>
       </div>
 
-      <!-- 장식 문제 3년~: 장식 보유 여부 → Y면 파손 면책 동의 -->
+      <!-- 장식 문제 3년~: 어드민 장식 보유 여부 기준으로 결과 노출 -->
       <div id="result-decoration-3yr" style="display:none;">
-        <div style="border:1px solid #e0e0e0;padding:16px;margin-bottom:16px;">
-          <p id="deco-check-question" style="font-size:13px;font-weight:500;margin-bottom:12px;">장식 부품 보유 여부를 확인해 주세요.</p>
-          <div style="display:flex;gap:8px;">
-            <button onclick="setDecoAvail(true)" id="deco-y" style="flex:1;padding:10px;font-size:12px;border:1px solid #ccc;background:#fff;cursor:pointer;font-family:var(--font);">보유 — 수리 접수</button>
-            <button onclick="setDecoAvail(false)" id="deco-n" style="flex:1;padding:10px;font-size:12px;border:1px solid #ccc;background:#fff;cursor:pointer;font-family:var(--font);">미보유 — 수리 불가</button>
-          </div>
-        </div>
-        <div id="deco-disclaimer" style="display:none;border:1px solid #000;padding:20px;margin-bottom:24px;">
+        <div id="deco-disclaimer" style="border:1px solid #000;padding:20px;margin-bottom:24px;">
           <p class="section-label" style="margin-top:0;">파손 면책 동의 <span style="color:#000">*</span></p>
           <p style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">보증 기간이 만료된 제품입니다. 오래 사용한 제품은 소재가 굳거나 약해져 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
           <label class="inline-check"><input type="checkbox" id="chk-deco" onchange="checkBtnState()"><span>내용을 확인했으며, 손상 가능성을 이해하고 수리를 신청합니다.</span></label>
@@ -296,9 +301,10 @@ var STRINGS = {
     restoDesc: '부품 교체가 어려운 경우, 용접/도금 방식으로 원형에 가깝게 복원하는 수리입니다.',
     restoY: '의뢰하기',
     restoN: '아니오 — 수리 불가',
-    decoCheckQuestion: '장식 부품 보유 여부를 확인해 주세요.',
-    decoY: '보유 — 수리 접수',
-    decoN: '미보유 — 수리 불가',
+    decoScenarioAvailable: '장식 보유',
+    decoScenarioUnavailable: '장식 미보유',
+    decoScenarioNote: '3년 초과 장식 문제 선택 시 어드민의 장식 부품 보유 여부 판단값을 검수합니다.',
+    statusUnavailable: '수리 불가',
     restoDisclaimerLabel: '파손 면책 동의 <span style="color:#000">*</span>',
     restoDisclaimerDesc: '보증 기간이 만료된 제품입니다. 오래 사용한 제품은 소재가 굳거나 약해져 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.',
     restoDisclaimerCheck: '내용을 확인했으며, 손상 가능성을 이해하고 수리를 신청합니다.',
@@ -311,11 +317,7 @@ var STRINGS = {
           </div>
           <p style="font-size:12px;color:#999;margin-top:10px;">실제 비용은 입고 후 정밀 점검을 통해 결정됩니다.</p>
         </div>
-        <div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
-          <strong style="color:#888;">토탈 케어 추천</strong>
-          <p style="margin-bottom:16px;">선택하신 부위만 신속하게 수리해드립니다.<br>제품 전체의 케어를 희망하시면 토탈 케어를 추천드립니다.<br>클리닝·폴리싱·피팅까지 한 번에 케어해 드립니다.</p>
-          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈 케어로 변경</a>
-        </div>`,
+`,
     resultDecorationNormal: `<div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
           <strong style="color:#888;">토탈 케어 추천</strong>
           <p style="margin-bottom:16px;">선택하신 장식 문제만 신속하게 수리해드립니다.<br>제품 전체의 케어를 희망하시면 토탈 케어를 추천드립니다.<br>클리닝·폴리싱·피팅까지 한 번에 케어해 드립니다.</p>
@@ -336,24 +338,11 @@ var STRINGS = {
           </div>`,
     restorationUnavailable: `<div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
             <p style="font-size:14px;font-weight:500;margin-bottom:12px;">수리가 어렵습니다</p>
-            <p style="font-size:13px;color:#555;line-height:1.8;">복원 수리를 원하지 않으시면 수리를 진행하기 어렵습니다.<br>아래 서비스는 계속 이용하실 수 있습니다.</p>
-            <div class="divider" style="margin:16px 0;"></div>
-            <p style="font-size:13px;">· 토탈 케어 (클리닝·폴리싱·피팅)<br>· 부속품 교체 (코패드, 나사 등)</p>
-            <div style="display:flex;gap:12px;margin-top:20px;">
-              <a href="step2-total-care.html" class="btn btn-secondary" style="flex:1;font-size:11px;">토탈 케어로 변경</a>
-              <a href="step2-consulting.html" class="btn btn-secondary" style="flex:1;font-size:11px;">부속품 요청</a>
-            </div>
+            <p style="font-size:13px;color:#555;line-height:1.8;">복원 수리를 원하지 않으시면 수리를 진행하기 어렵습니다.</p>
           </div>`,
     resultUnavailable: `<div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
           <p style="font-size:14px;font-weight:500;margin-bottom:12px;">수리가 어렵습니다</p>
           <p style="font-size:13px;color:#555;line-height:1.8;">프로덕트 서비스 보증기간이 경과한 제품은 교체 및 장식 부품 제공이 어려워 수리를 진행하기 어렵습니다.</p>
-          <div class="divider" style="margin:16px 0;"></div>
-          <p style="font-size:12px;color:#888;">다음 서비스는 계속 이용하실 수 있습니다.</p>
-          <p style="font-size:13px;margin-top:8px;">· 토탈 케어 (클리닝·폴리싱·피팅)<br>· 부속품 교체 (코패드, 나사 등)</p>
-          <div style="display:flex;gap:12px;margin-top:20px;">
-            <a href="step2-total-care.html" class="btn btn-secondary" style="flex:1;font-size:11px;">토탈 케어로 변경</a>
-            <a href="step2-consulting.html" class="btn btn-secondary" style="flex:1;font-size:11px;">부속품 요청</a>
-          </div>
         </div>`,
     decoDisclaimer: `<p class="section-label" style="margin-top:0;">파손 면책 동의 <span style="color:#000">*</span></p>
           <p style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">보증 기간이 만료된 제품입니다. 오래 사용한 제품은 소재가 굳거나 약해져 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
@@ -366,7 +355,7 @@ var STRINGS = {
     stepLabels: ['Basic Info','Service Type','Service Details','Photos & Lens','Shipping','Review'],
     pageEyebrow: 'Service Type — Repair',
     pageTitle: 'Repair Service',
-    pageDesc: 'What issue are you experiencing? Select all that apply.',
+    pageDesc: 'What issue are you experiencing? Please select one issue type.',
     lblParts: 'Select Part <span style="color:#000">*</span>',
     svgLabels: { 'gp-front-lbl':'Front','gp-ll-lbl':'L Lens','gp-rl-lbl':'R Lens','gp-br-lbl':'Bridge','gp-lt-lbl':'L Temple','gp-rt-lbl':'R Temple' },
     partsHint: 'Tap to select · Multiple selection',
@@ -386,9 +375,10 @@ var STRINGS = {
     restoDesc: 'When part replacement is not feasible, we restore the product using welding or plating techniques.',
     restoY: 'Submit Request',
     restoN: 'No — Cannot Repair',
-    decoCheckQuestion: 'Please check if the decoration parts are in stock.',
-    decoY: 'In Stock — Proceed',
-    decoN: 'Out of Stock — Cannot Repair',
+    decoScenarioAvailable: 'Decoration Available',
+    decoScenarioUnavailable: 'Decoration Unavailable',
+    decoScenarioNote: 'For decoration issues over 3 years, review the admin part-availability judgment.',
+    statusUnavailable: 'Not Repairable',
     restoDisclaimerLabel: 'Damage Waiver <span style="color:#000">*</span>',
     restoDisclaimerDesc: 'The warranty period for this product has expired. Aged products may develop micro-cracks or damage during disassembly/assembly.',
     restoDisclaimerCheck: 'I have read and understood the above, and agree to proceed with the repair.',
@@ -401,11 +391,7 @@ var STRINGS = {
           </div>
           <p style="font-size:12px;color:#999;margin-top:10px;">Actual cost will be determined after detailed inspection upon receipt.</p>
         </div>
-        <div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
-          <strong style="color:#888;">Total Care Recommended</strong>
-          <p style="margin-bottom:16px;">We'll repair the selected parts promptly.<br>For full product care, we recommend Total Care.<br>Cleaning, polishing, and fitting — all in one service.</p>
-          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">Switch to Total Care</a>
-        </div>`,
+`,
     resultDecorationNormal: `<div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
           <strong style="color:#888;">Total Care Recommended</strong>
           <p style="margin-bottom:16px;">We'll repair the selected decoration issue promptly.<br>For full product care, we recommend Total Care.<br>Cleaning, polishing, and fitting — all in one service.</p>
@@ -426,24 +412,11 @@ var STRINGS = {
           </div>`,
     restorationUnavailable: `<div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
             <p style="font-size:14px;font-weight:500;margin-bottom:12px;">Repair Not Available</p>
-            <p style="font-size:13px;color:#555;line-height:1.8;">If you do not wish to proceed with restoration repair, we are unable to carry out the repair.<br>The following services are still available.</p>
-            <div class="divider" style="margin:16px 0;"></div>
-            <p style="font-size:13px;">· Total Care (cleaning, polishing, fitting)<br>· Component replacement (nose pads, screws, etc.)</p>
-            <div style="display:flex;gap:12px;margin-top:20px;">
-              <a href="step2-total-care.html" class="btn btn-secondary" style="flex:1;font-size:11px;">Switch to Total Care</a>
-              <a href="step2-consulting.html" class="btn btn-secondary" style="flex:1;font-size:11px;">Component Request</a>
-            </div>
+            <p style="font-size:13px;color:#555;line-height:1.8;">If you do not wish to proceed with restoration repair, we are unable to carry out the repair.</p>
           </div>`,
     resultUnavailable: `<div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
           <p style="font-size:14px;font-weight:500;margin-bottom:12px;">Repair Not Available</p>
-          <p style="font-size:13px;color:#555;line-height:1.8;">Products outside the Product Service warranty period cannot be repaired due to unavailability of replacement and decoration parts.</p>
-          <div class="divider" style="margin:16px 0;"></div>
-          <p style="font-size:12px;color:#888;">The following services are still available.</p>
-          <p style="font-size:13px;margin-top:8px;">· Total Care (cleaning, polishing, fitting)<br>· Component replacement (nose pads, screws, etc.)</p>
-          <div style="display:flex;gap:12px;margin-top:20px;">
-            <a href="step2-total-care.html" class="btn btn-secondary" style="flex:1;font-size:11px;">Switch to Total Care</a>
-            <a href="step2-consulting.html" class="btn btn-secondary" style="flex:1;font-size:11px;">Component Request</a>
-          </div>
+          <p style="font-size:13px;color:#555;line-height:1.8;">Products over 7 years old are not eligible for damage or deformation repair.</p>
         </div>`,
     decoDisclaimer: `<p class="section-label" style="margin-top:0;">Damage Waiver <span style="color:#000">*</span></p>
           <p style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">The warranty period for this product has expired. Aged products may develop micro-cracks or damage during disassembly/assembly.</p>
@@ -509,9 +482,61 @@ function checkBtnState() {
 
 let yearMode = 'normal';
 let productSubCategory = '';
-let decoAvail = null;
+let decoAvail = true;
 let restoAvail = null;
 const allResultIds = ['result-damage-normal','result-decoration-normal','result-accessory-normal','result-damage-restoration','result-unavailable','result-decoration-3yr','result-accessory-3yr'];
+
+function hideResultArea() {
+  var resultArea = document.getElementById('result-area');
+  if (resultArea) resultArea.style.display = 'none';
+  allResultIds.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+}
+
+function setIssueStatus(issueType, label, variant) {
+  var status = document.getElementById(issueType + '-status');
+  if (!status) return;
+  status.textContent = label || '';
+  status.className = 'check-item-status' + (label ? ' is-visible status-' + variant : '');
+}
+
+function setIssueDisabled(issueType, disabled) {
+  var card = document.getElementById('check-' + issueType);
+  if (!card) return;
+  var input = card.querySelector('input[name="issue"]');
+  card.classList.toggle('is-disabled', disabled);
+  card.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+  if (input) {
+    input.disabled = disabled;
+    if (disabled && input.checked) {
+      input.checked = false;
+      card.classList.remove('selected');
+      hideResultArea();
+    }
+  }
+}
+
+function updateIssueAvailability() {
+  var s = STRINGS[currentLang] || STRINGS.ko;
+  ['damage','decoration','accessory'].forEach(function(issueType) {
+    setIssueDisabled(issueType, false);
+    setIssueStatus(issueType, '', '');
+  });
+
+  if (yearMode === 'normal') return;
+
+  if (yearMode !== 'restoration') {
+    setIssueDisabled('damage', true);
+    setIssueStatus('damage', s.statusUnavailable, 'unavailable');
+  }
+
+  if (decoAvail !== true) {
+    setIssueDisabled('decoration', true);
+    setIssueStatus('decoration', s.statusUnavailable, 'unavailable');
+  }
+}
 
 function getRepairSubCategory(state) {
   var subCategory = state.productSubCategory || state.subCategory || state.productCategory || '';
@@ -533,13 +558,13 @@ function resolveRepairYearMode(state) {
   var years = (new Date() - new Date(pd)) / (1000 * 60 * 60 * 24 * 365.25);
   if (years > 7) return 'unavailable';
   if (years > 3) {
-    return isRestorationEligibleSubCategory(productSubCategory) ? 'restoration' : 'unavailable';
+    return isRestorationEligibleSubCategory(getRepairSubCategory(state)) ? 'restoration' : 'restoration-nonmetal';
   }
   return 'normal';
 }
 
 function resetChoiceButtonStyles() {
-  ['resto-y','resto-n','deco-y','deco-n'].forEach(function(id) {
+  ['resto-y','resto-n'].forEach(function(id) {
     var button = document.getElementById(id);
     if (button) {
       button.style.background = '#fff';
@@ -552,19 +577,27 @@ function resetChoiceButtonStyles() {
 
 function setYearMode(mode) {
   yearMode = mode;
+  updateIssueAvailability();
   const checked = document.querySelector('input[name="issue"]:checked');
   if (checked) showResult(checked.value);
+  else hideResultArea();
   checkBtnState();
 }
 
 function showResult(issueType) {
+  var card = document.getElementById('check-' + issueType);
+  if (card && card.classList.contains('is-disabled')) {
+    hideResultArea();
+    updateNextBtn(null);
+    checkBtnState();
+    return;
+  }
   var issueErr = document.getElementById('issue-error');
   if (issueErr) issueErr.style.display = 'none';
   document.getElementById('result-area').style.display = 'block';
   allResultIds.forEach(id => document.getElementById(id).style.display = 'none');
   resetChoiceButtonStyles();
   restoAvail = null;
-  decoAvail = null;
 
   const over3 = yearMode !== 'normal';
 
@@ -582,10 +615,11 @@ function showResult(issueType) {
   } else if (issueType === 'decoration') {
     if (!over3) {
       document.getElementById('result-decoration-normal').style.display = 'block';
+    } else if (decoAvail !== true) {
+      hideResultArea();
+      return;
     } else {
-      // 3년 이상: 어드민이 부품 보유 여부 결정 → 프로토타입에서는 수리 불가로 시뮬레이션
-      document.getElementById('result-unavailable').style.display = 'block';
-      document.getElementById('btn-next').style.display = 'none';
+      document.getElementById('result-decoration-3yr').style.display = 'block';
     }
   } else if (issueType === 'accessory') {
     if (!over3) {
@@ -612,21 +646,37 @@ function setRestoAvail(avail) {
   checkBtnState();
 }
 
-function setDecoAvail(avail) {
+function setDecoScenario(avail) {
   decoAvail = avail;
-  const y = document.getElementById('deco-y'), n = document.getElementById('deco-n');
-  y.style.background = avail ? '#111' : '#fff'; y.style.color = avail ? '#fff' : '#333'; y.style.borderColor = avail ? '#111' : '#ccc';
-  n.style.background = avail ? '#fff' : '#111'; n.style.color = avail ? '#333' : '#fff'; n.style.borderColor = avail ? '#ccc' : '#111';
-  document.getElementById('deco-disclaimer').style.display = avail ? 'block' : 'none';
-  document.getElementById('result-unavailable').style.display = avail ? 'none' : 'block';
-  if (!avail) document.getElementById('chk-deco').checked = false;
-  updateNextBtn('decoration');
+  document.querySelectorAll('[data-deco-scenario]').forEach(function(button) {
+    var active = button.getAttribute('data-deco-scenario') === (avail ? 'available' : 'unavailable');
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+  if (!avail) {
+    var chk = document.getElementById('chk-deco');
+    if (chk) chk.checked = false;
+  }
+  updateIssueAvailability();
+  var checked = document.querySelector('input[name="issue"]:checked');
+  if (checked && checked.value === 'decoration') showResult('decoration');
+  else if (!checked) hideResultArea();
+  else if (checked) updateNextBtn(checked.value);
   checkBtnState();
 }
 
 function updateNextBtn(issueType) {
-  const isEnd = (issueType === 'damage' && (yearMode === 'unavailable' || (yearMode === 'restoration' && restoAvail !== true)))
-             || (issueType === 'decoration' && yearMode !== 'normal');
+  if (!issueType) {
+    var btn = document.getElementById('btn-next');
+    if (btn) {
+      btn.style.display = '';
+      btn.style.opacity = '0.4';
+      btn.style.pointerEvents = 'none';
+    }
+    return;
+  }
+  const isEnd = (issueType === 'damage' && (yearMode === 'unavailable' || yearMode === 'restoration-nonmetal' || (yearMode === 'restoration' && restoAvail !== true)))
+             || (issueType === 'decoration' && yearMode !== 'normal' && decoAvail !== true);
   document.getElementById('btn-next').style.display = isEnd ? 'none' : '';
 }
 
@@ -682,9 +732,12 @@ function setLang(lang) {
   setText('resto-desc', s.restoDesc);
   setText('resto-y', s.restoY);
   setText('resto-n', s.restoN);
-  setText('deco-check-question', s.decoCheckQuestion);
-  setText('deco-y', s.decoY);
-  setText('deco-n', s.decoN);
+  var decoAvailable = document.querySelector('[data-deco-scenario="available"]');
+  var decoUnavailable = document.querySelector('[data-deco-scenario="unavailable"]');
+  if (decoAvailable) decoAvailable.textContent = s.decoScenarioAvailable;
+  if (decoUnavailable) decoUnavailable.textContent = s.decoScenarioUnavailable;
+  setText('deco-scenario-note', s.decoScenarioNote);
+  updateIssueAvailability();
   setHTML('resto-disclaimer-label', s.restoDisclaimerLabel);
   setText('resto-disclaimer-desc', s.restoDisclaimerDesc);
   setText('resto-disclaimer-check', s.restoDisclaimerCheck);
@@ -706,7 +759,7 @@ function setLang(lang) {
   setHTML('restoration-unavailable', s.restorationUnavailable);
   setHTML('result-unavailable', s.resultUnavailable);
 
-  // deco-disclaimer: replace inner content but re-add checkbox (id needed by setDecoAvail)
+  // deco-disclaimer: replace inner content but re-add checkbox (id needed by setDecoScenario)
   var decoDisclaimerEl = document.getElementById('deco-disclaimer');
   if (decoDisclaimerEl) decoDisclaimerEl.innerHTML = s.decoDisclaimer;
 
@@ -730,6 +783,7 @@ function showAllIssues() {
   document.getElementById('check-decoration').style.display = '';
   document.getElementById('check-accessory').style.display = '';
   document.getElementById('btn-change-issue').style.display = 'none';
+  updateIssueAvailability();
   var prev = document.querySelector('.btn-wrap .btn-secondary');
   if (prev) prev.href = 'step2-service-type.html';
 }
@@ -738,7 +792,8 @@ window.togglePart = togglePart;
 window.checkBtnState = checkBtnState;
 window.showResult = showResult;
 window.setRestoAvail = setRestoAvail;
-window.setDecoAvail = setDecoAvail;
+window.setDecoScenario = setDecoScenario;
+window.setYearMode = setYearMode;
 window.setLang = setLang;
 window.showAllIssues = showAllIssues;
 
@@ -754,9 +809,14 @@ function initRepairPage() {
   try {
     var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
     productSubCategory = getRepairSubCategory(state);
+    var params = new URLSearchParams(window.location.search);
+    var decoParam = params.get('deco') || state.decorationPartAvailability || state.decoAvailability || '';
+    if (/^(none|no|false|unavailable|missing)$/i.test(decoParam)) setDecoScenario(false);
+    else setDecoScenario(true);
     setYearMode(resolveRepairYearMode(state));
   } catch(e) {
     productSubCategory = '';
+    setDecoScenario(true);
     setYearMode('normal');
   }
 

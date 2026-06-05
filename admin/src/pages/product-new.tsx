@@ -44,6 +44,7 @@ type Form = {
   stockLocation: string
   isSafetyStock: boolean
   quantity: string
+  hasDecoration: boolean
   isRestorationRequest: boolean
 }
 
@@ -54,7 +55,7 @@ const init: Form = {
   releaseDate: '', partsRetentionPeriod: '',
   salesStatus: '사용중',
   stockLocation: '', isSafetyStock: false,
-  quantity: '', isRestorationRequest: false,
+  quantity: '', hasDecoration: false, isRestorationRequest: false,
 }
 
 function FieldLabel({ text, required }: { text: string; required?: boolean }) {
@@ -127,6 +128,7 @@ export function ProductNewPage() {
         stockLocation: existing.stockLocation,
         isSafetyStock: existing.isSafetyStock,
         quantity: String(existing.quantity),
+        hasDecoration: existing.hasDecoration ?? false,
         isRestorationRequest: existing.isRestorationRequest,
       })
     } else {
@@ -189,6 +191,7 @@ export function ProductNewPage() {
       stockLocation: form.stockLocation.trim(),
       isSafetyStock: form.isSafetyStock,
       quantity: Number(form.quantity),
+      hasDecoration: form.hasDecoration,
       isRestorationRequest: form.isRestorationRequest,
       dataSource: 'PS' as const,
       registeredBy: isEdit ? existing!.registeredBy : 'monster001',
@@ -409,6 +412,19 @@ export function ProductNewPage() {
               }`} />
             </div>
             <span className="text-sm text-gray-700">복원의뢰</span>
+          </label>
+          <label className="flex items-center gap-2.5 cursor-pointer select-none">
+            <div
+              onClick={() => set('hasDecoration')(!form.hasDecoration)}
+              className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${
+                form.hasDecoration ? 'bg-gray-900' : 'bg-gray-200'
+              }`}
+            >
+              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                form.hasDecoration ? 'translate-x-4' : 'translate-x-0.5'
+              }`} />
+            </div>
+            <span className="text-sm text-gray-700">장식보유</span>
           </label>
         </div>
       </section>}
