@@ -85,6 +85,15 @@
       <div class="detail-row"><span class="detail-key" id="key-swarranty">서비스 보증</span><span class="detail-val" id="val-swarranty">~2026. 03. 15 <span style="color:#000;font-size:11px;font-weight:500;">(유효)</span></span></div>
     </div>
 
+    <!-- 예상 수리 안내 -->
+    <div id="sec-estimate" style="display:none;">
+      <p class="section-label" id="lbl-estimate">예상 수리 안내</p>
+      <div class="detail-section">
+        <div class="detail-row"><span class="detail-key" id="key-estimate-method">예상 수리 방식</span><span class="detail-val" id="val-estimate-method">클리닝 &amp; 폴리싱 &amp; 기본 피팅</span></div>
+        <div class="detail-row"><span class="detail-key" id="key-estimate-cost">예상 수리 비용</span><span class="detail-val" id="val-estimate-cost" style="font-weight:500;">₩45,000 (예상)</span></div>
+      </div>
+    </div>
+
     <!-- 고객 첨부 이미지 -->
     <p class="section-label" id="lbl-images">고객 첨부 이미지</p>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:40px;">
@@ -390,7 +399,10 @@
 // tracker: [step1,step2,step3,step4,step5] — 1=done, 2=current, 0=pending
 // 취소 처리 건은 고객 화면에서 수리 완료로 노출하고, adminStatus 값만 취소로 유지한다.
 const SC = {
-  'received':     { ticketId:'2605060GMPSVKJTXQN', tracker:[2,0,0,0,0], canAddr:false, canCancel:false, canReceptionCancel:true,  showArrival:false, showShipout:false, showDiag:false, showConsent:false, showPayBtn:false, showResult:false, showTracking:false, showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:true, pickupDate:'2026. 05. 11', pickupAddr:'서울 성동구 왕십리로 83-21', receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
+  'received':     { ticketId:'2605060GMPSVKJTXQN', tracker:[2,0,0,0,0], canAddr:false, canCancel:false, canReceptionCancel:true,  showArrival:false, showShipout:false, showDiag:false, showConsent:false, showPayBtn:false, showResult:false, showTracking:false, showProgress:false, isCancelled:false, isEnd:false,
+    estimateMethod:{ ko:'클리닝 & 폴리싱 & 기본 피팅', en:'Cleaning, polishing, and basic fitting' },
+    estimateCost:{ ko:'₩45,000 (예상)', en:'KRW 45,000 (Estimated)' },
+    sendMethod:'pickup', showPickupInfo:true, pickupDate:'2026. 05. 11', pickupAddr:'서울 성동구 왕십리로 83-21', receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
     ko:{ label:'접수 완료',       msg:'제품 픽업 또는 발송을 완료해 주세요. 서비스가 곧 진행됩니다.' },
     en:{ label:'Submitted',       msg:'Please complete product pickup or shipment. Service will begin shortly.' } },
   'moving':       { ticketId:'2604280FRDBNQXLWZK', tracker:[1,2,0,0,0], canAddr:true,  canCancel:false, canReceptionCancel:false, showArrival:true,  showShipout:false, showDiag:false, showConsent:false, showPayBtn:false, showResult:false, showTracking:false, showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
@@ -448,13 +460,14 @@ const STRINGS = {
     back: '← 수리 서비스 내역', backBottom: '← 내역으로 돌아가기',
     tabAccount:'계정', tabPurchased:'구매한 제품', tabWishlist:'위시리스트', tabRepair:'수리 서비스 내역', tabProfile:'프로필', tabLogout:'로그아웃',
     tr:['접수', '이동', '판정', '수리', '배송'],
-    lbl_reception:'접수 정보', lbl_customer:'고객 정보', lbl_detail:'접수 상세', lbl_images:'고객 첨부 이미지',
+    lbl_reception:'접수 정보', lbl_customer:'고객 정보', lbl_detail:'접수 상세', lbl_estimate:'예상 수리 안내', lbl_images:'고객 첨부 이미지',
     lbl_diagnosis:'진단 결과', lbl_result:'서비스 결과', lbl_address:'수령지', lbl_memo:'PS팀 메모',
     key_ticket:'티켓 번호', key_status:'상태', key_recv_date:'접수일', key_arrival:'입고 확인일', key_shipout:'출고일',
     key_email:'이메일', key_phone:'연락처',
     key_send:'발송 방법', key_product:'제품명', key_symptom:'제품 현상', key_svctype:'서비스 유형', key_request:'요청사항',
     key_fitting:'피팅 옵션', key_lens:'렌즈 유형', key_lens_consent:'렌즈 동의 여부',
     key_desired:'출고 희망일', key_qwarranty:'품질 보증', key_swarranty:'서비스 보증',
+    key_estimate_method:'예상 수리 방식', key_estimate_cost:'예상 수리 비용',
     key_method:'수리 방식', key_cost:'수리 비용', key_consent:'고객 동의', key_pay_date:'결제 일시', key_est_ship:'예상 출고일',
     key_result_method:'수리 내용', key_result_date:'출고일', key_receipt:'영수증', key_delivery:'배송 상태', key_tracking:'운송장 번호',
     key_addr:'수령지',
@@ -490,13 +503,14 @@ const STRINGS = {
     back: '← Repair History', backBottom: '← Back to List',
     tabAccount:'Account', tabPurchased:'Purchases', tabWishlist:'Wishlist', tabRepair:'Repair History', tabProfile:'Profile', tabLogout:'Sign Out',
     tr:['Submitted', 'In Transit', 'Diagnosis', 'Repair', 'Delivery'],
-    lbl_reception:'Ticket Information', lbl_customer:'Customer Information', lbl_detail:'Service Details', lbl_images:'Customer Photos',
+    lbl_reception:'Ticket Information', lbl_customer:'Customer Information', lbl_detail:'Service Details', lbl_estimate:'Estimated Repair Information', lbl_images:'Customer Photos',
     lbl_diagnosis:'Diagnosis Result', lbl_result:'Service Result', lbl_address:'Delivery Address', lbl_memo:'PS Team Note',
     key_ticket:'Ticket No.', key_status:'Status', key_recv_date:'Submitted', key_arrival:'Received', key_shipout:'Shipped',
     key_email:'Email', key_phone:'Phone',
     key_send:'Shipping Method', key_product:'Product', key_symptom:'Condition', key_svctype:'Service Type', key_request:'Request',
     key_fitting:'Fitting Option', key_lens:'Lens Type', key_lens_consent:'Lens Consent',
     key_desired:'Preferred Ship-out Date', key_qwarranty:'Quality Warranty', key_swarranty:'Service Warranty',
+    key_estimate_method:'Estimated Repair Method', key_estimate_cost:'Estimated Repair Cost',
     key_method:'Repair Method', key_cost:'Repair Cost', key_consent:'Customer Consent', key_pay_date:'Payment Date', key_est_ship:'Est. Ship-out Date',
     key_result_method:'Repair Content', key_result_date:'Ship-out Date', key_receipt:'Receipt', key_delivery:'Delivery Status', key_tracking:'Tracking No.',
     key_addr:'Delivery Address',
@@ -570,6 +584,7 @@ function setLang(lang) {
   // Section labels
   setText('lbl-reception', s.lbl_reception); setText('lbl-customer', s.lbl_customer);
   setText('lbl-detail', s.lbl_detail); setText('lbl-images', s.lbl_images);
+  setText('lbl-estimate', s.lbl_estimate);
   setText('lbl-diagnosis', s.lbl_diagnosis); setText('lbl-result', s.lbl_result);
   setText('lbl-address', s.lbl_address); setText('lbl-memo', s.lbl_memo);
 
@@ -583,7 +598,10 @@ function setLang(lang) {
   setText('key-fitting', s.key_fitting); setText('key-lens', s.key_lens);
   setText('key-lens-consent', s.key_lens_consent);
   setText('key-desired', s.key_desired); setText('key-qwarranty', s.key_qwarranty);
-  setText('key-swarranty', s.key_swarranty); setText('key-method', s.key_method);
+  setText('key-swarranty', s.key_swarranty);
+  setText('key-estimate-method', s.key_estimate_method);
+  setText('key-estimate-cost', s.key_estimate_cost);
+  setText('key-method', s.key_method);
   setText('key-cost', s.key_cost); setText('key-consent', s.key_consent);
   setText('key-pay-date', s.key_pay_date); setText('key-est-ship', s.key_est_ship);
   setText('key-result-method', s.key_result_method); setText('key-result-date', s.key_result_date);
@@ -626,6 +644,14 @@ function setLang(lang) {
   const scTxt = sc[lang];
   setText('val-status', scTxt.label);
   setText('txt-status-msg', scTxt.msg);
+  if (sc.estimateMethod && sc.estimateCost) {
+    setText('val-estimate-method', sc.estimateMethod[lang] || sc.estimateMethod.ko || '');
+    setText('val-estimate-cost', sc.estimateCost[lang] || sc.estimateCost.ko || '');
+  }
+  if (sc.showDiag) {
+    setText('val-method', lang === 'en' ? 'Hinge part replacement' : '힌지 부품 교체');
+    setText('val-cost', lang === 'en' ? 'KRW 45,000 <span style="font-size:12px;color:#555;">(Chargeable)</span>' : '₩45,000 <span style="font-size:12px;color:#555;">(유상)</span>');
+  }
   setText('val-result-method', sc.resultMethod ? (sc.resultMethod[lang] || sc.resultMethod.ko || s.val_result_method) : s.val_result_method);
   setText('val-delivery', sc.showTracking ? s.val_delivery_done : s.val_delivery_shipping);
 
@@ -669,6 +695,15 @@ function setScenario(id) {
   sc.showArrival  ? show('row-arrival') : hide('row-arrival');
   sc.showShipout  ? show('row-shipout') : hide('row-shipout');
 
+  // 접수 완료 시점 예상 수리 안내
+  if (sc.estimateMethod && sc.estimateCost) {
+    show('sec-estimate');
+    setText('val-estimate-method', sc.estimateMethod[currentLang] || sc.estimateMethod.ko || '');
+    setText('val-estimate-cost', sc.estimateCost[currentLang] || sc.estimateCost.ko || '');
+  } else {
+    hide('sec-estimate');
+  }
+
   // 발송 방법 & 픽업 정보
   if (sc.sendMethod === 'pickup') {
     setText('val-send', s.val_home_pickup || '자택 픽업');
@@ -694,6 +729,10 @@ function setScenario(id) {
 
   // Diagnosis section
   sc.showDiag ? show('sec-diagnosis') : hide('sec-diagnosis');
+  if (sc.showDiag) {
+    setText('val-method', currentLang === 'en' ? 'Hinge part replacement' : '힌지 부품 교체');
+    setText('val-cost', currentLang === 'en' ? 'KRW 45,000 <span style="font-size:12px;color:#555;">(Chargeable)</span>' : '₩45,000 <span style="font-size:12px;color:#555;">(유상)</span>');
+  }
   sc.showConsent  ? show('row-consent')   : hide('row-consent');
   sc.showConsent  ? show('row-pay-date')  : hide('row-pay-date');
   sc.showConsent  ? show('row-est-ship')  : hide('row-est-ship');
