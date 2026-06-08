@@ -44,7 +44,7 @@
     <div class="summary-card">
       <div class="summary-row">
         <span id="key-product" class="summary-key">제품</span>
-        <span class="summary-val">MUSTANG 01</span>
+        <span id="val-product" class="summary-val">MUSTANG 01</span>
       </div>
       <div class="summary-row">
         <span id="key-svc-type" class="summary-key">서비스 유형</span>
@@ -59,40 +59,19 @@
         <span id="val-urgent" class="summary-val" style="color:#c8491a;">긴급 서비스</span>
       </div>
       <div id="sc-shipping-rows">
-        <div class="summary-row" style="padding-top:12px;">
+        <div id="sc-send-row" class="summary-row" style="padding-top:12px;">
           <span id="key-send" class="summary-key">발송 방법</span>
           <span id="val-send" class="summary-val">자택 픽업</span>
         </div>
-        <div class="summary-row">
+        <div class="summary-row" data-receive-row>
           <span id="key-recv" class="summary-key">수령 방법</span>
           <span id="val-recv" class="summary-val">자택 배송</span>
         </div>
-        <div class="summary-row">
+        <div class="summary-row" data-receive-row>
           <span id="key-addr" class="summary-key">수령 주소</span>
-          <span class="summary-val">서울 성동구 왕십리로 83-21</span>
+          <span id="val-addr" class="summary-val">서울 성동구 왕십리로 83-21</span>
         </div>
       </div>
-    </div>
-
-    <!-- AI TBD 안내 (AI 시나리오 전용) -->
-    <div id="tbd-notice" style="display:none;margin-bottom:24px;">
-      <p class="section-label">예상 수리 안내</p>
-      <div class="notice-box">
-        <strong>TBD — 추후 확정 예정</strong>
-        <p>AI 아이웨어 접수의 예상 수리 안내 내용은 현재 확정 중입니다. 접수 후 별도로 안내드리겠습니다.</p>
-      </div>
-    </div>
-
-    <!-- 수리 불가 안내 (impossible 시나리오 전용) -->
-    <div id="impossible-section" style="display:none;margin-bottom:24px;">
-      <p class="section-label">수리 판정 결과</p>
-      <div class="notice-box" style="border-left:3px solid #c8491a;">
-        <p style="font-weight:500;color:#c8491a;margin-bottom:8px;">해당 제품은 수리가 불가합니다.</p>
-        <p>· 제품의 파손 및 변형 정도가 수리 가능 범위를 초과합니다.</p>
-        <p>· 제품 구매 후 7년이 초과된 경우 수리 서비스 제공이 어렵습니다.</p>
-        <p style="margin-top:8px;color:var(--gray-500);">추가 문의사항은 고객 서비스 채널을 통해 안내드리겠습니다.</p>
-      </div>
-      <p style="font-size:11px;color:var(--gray-400);margin-top:-4px;margin-bottom:0;line-height:1.8;">본 판정은 접수 정보 기준 예비 판정이며, 실제 제품 입고 후 최종 확인됩니다.</p>
     </div>
 
     <div id="est-section">
@@ -155,140 +134,222 @@
 </footer>
 
 <script>
-const STRINGS = {
-  ko: {
-    eyebrow: '수리 서비스 접수', title: '수리 안내 확인',
-    desc: '접수 정보와 예상 수리 안내를 확인해 주세요.',
-    lblReception: '접수 정보', keyProduct: '제품',
-    keySvcType: '서비스 유형', keySvcDetail: '서비스 상세',
-    keyUrgentOpt: '추가 옵션', valUrgent: '긴급 서비스',
-    urgentFeeLabel: '+ 긴급 서비스 50,000원',
-    keySend: '발송 방법', valSend: '자택 픽업',
-    keyRecv: '수령 방법', valRecv: '자택 배송',
-    keyAddr: '수령 주소',
-    lblEst: '예상 수리 안내', keyEstMethod: '예상 수리 방식',
-    keyEstCost: '예상 비용', keyEstLeadtime: '예상 리드타임',
-    noticeMain: '실제 수리 내용과 비용은 제품 입고 후 프로덕트 서비스팀의 정밀 점검을 통해 최종 결정됩니다.',
-    noticePaid: '유상 수리의 경우 결제 완료 후 수리가 시작됩니다.',
-    btnPrev: '이전', btnComplete: '접수 완료하기',
+var PRODUCT_RETAIL_PRICE = 400000;
+var currentKey = 'total';
+var currentLang = 'ko';
+var currentCountry = 'kr';
+var sendMethod = 'pickup';
+var receiveMethod = 'home';
+
+var DEFAULT_CONTACT = {
+  kr: {
+    address: '서울 성동구 왕십리로 83-21',
+    sendStoreName: '하우스 노웨어 서울',
+    recvStoreName: '젠틀몬스터 청담',
   },
-  en: {
-    eyebrow: 'Repair Service', title: 'Service Confirmation',
-    desc: 'Please review your service details and estimated repair information.',
-    lblReception: 'Service Details', keyProduct: 'Product',
-    keySvcType: 'Service Type', keySvcDetail: 'Detail',
-    keyUrgentOpt: 'Add-on', valUrgent: 'Urgent Service',
-    urgentFeeLabel: '+ Urgent Service $37',
-    keySend: 'Shipping', valSend: 'Home Pickup',
-    keyRecv: 'Return', valRecv: 'Home Delivery',
-    keyAddr: 'Address',
-    lblEst: 'Estimated Service', keyEstMethod: 'Est. Method',
-    keyEstCost: 'Est. Cost', keyEstLeadtime: 'Est. Lead Time',
-    noticeMain: 'Actual repair details and costs will be finalized after inspection by the Product Service team.',
-    noticePaid: 'For paid repairs, service will begin after payment is completed.',
-    btnPrev: 'Back', btnComplete: 'Confirm & Submit',
+  us: {
+    address: '816 S Broadway, Los Angeles, CA 90014, United States',
+    sendStoreName: '젠틀몬스터 로스앤젤레스',
+    recvStoreName: '젠틀몬스터 뉴욕',
   },
 };
 
-const SCENARIOS = {
-  'total': {
+var STORE_ADDRESSES = {
+  '하우스 노웨어 서울': '서울특별시 성동구 뚝섬로 433',
+  '젠틀몬스터 청담': '서울 강남구 도산대로 82',
+  '젠틀몬스터 갤러리아 압구정': '서울 강남구 압구정로 343, 갤러리아백화점 WEST 4F',
+  '젠틀몬스터 신사': '서울 강남구 도산대로26길 18',
+  '젠틀몬스터 코엑스': '서울 강남구 영동대로 513, 코엑스몰',
+  '젠틀몬스터 성수': '서울 성동구 왕십리로 83',
+  '젠틀몬스터 로스앤젤레스': '816 S Broadway, Los Angeles, CA 90014, United States',
+  '젠틀몬스터 뉴욕': '70 Wooster Street, New York, NY 10012, United States',
+  '젠틀몬스터 코스타메사 사우스코스트 플라자': 'Floor 2, South Coast Plaza, 3333 Bristol St, Costa Mesa, CA 92626, United States',
+  '젠틀몬스터 산호세 밸리페어': 'Floor 1, Westfield Valley Fair, 2855 Stevens Creek Blvd, Suite 1651, Santa Clara, CA 95050, United States',
+};
+
+var STRINGS = {
+  ko: {
+    eyebrow: '수리 서비스 접수',
+    title: '수리 안내 확인',
+    desc: '접수 정보와 예상 수리 안내를 확인해 주세요.',
+    lblReception: '접수 정보',
+    keyProduct: '제품',
+    keySvcType: '서비스 유형',
+    keySvcDetail: '서비스 상세',
+    keyUrgentOpt: '추가 옵션',
+    valUrgent: '긴급 서비스',
+    urgentFeeLabel: '+ 긴급 서비스 50,000원',
+    keySend: '발송 방법',
+    keyRecv: '수령 방법',
+    keyAddr: '수령 주소',
+    keyPickupStoreAddr: '수령 매장 주소',
+    lblEst: '예상 수리 안내',
+    keyEstMethod: '예상 수리 방식',
+    keyEstCost: '예상 비용',
+    keyEstLeadtime: '예상 리드타임',
+    noticeMain: '실제 수리 내용과 비용은 제품 입고 후 프로덕트 서비스팀의 정밀 점검을 통해 최종 결정됩니다.',
+    noticePaid: '유상 수리의 경우 결제 완료 후 수리가 시작됩니다.',
+    btnPrev: '이전',
+    btnComplete: '접수 완료하기',
+  },
+  en: {
+    eyebrow: 'Repair Service',
+    title: 'Service Confirmation',
+    desc: 'Please review your service details and estimated repair information.',
+    lblReception: 'Service Details',
+    keyProduct: 'Product',
+    keySvcType: 'Service Type',
+    keySvcDetail: 'Detail',
+    keyUrgentOpt: 'Add-on',
+    valUrgent: '',
+    urgentFeeLabel: '',
+    keySend: 'Shipping',
+    keyRecv: 'Return',
+    keyAddr: 'Address',
+    keyPickupStoreAddr: 'Pickup Store Address',
+    lblEst: 'Estimated Service',
+    keyEstMethod: 'Est. Method',
+    keyEstCost: 'Est. Cost',
+    keyEstLeadtime: 'Est. Lead Time',
+    noticeMain: 'Actual repair details and costs will be finalized after inspection by the Product Service team.',
+    noticePaid: 'For paid repairs, service will begin after payment is completed.',
+    btnPrev: 'Back',
+    btnComplete: 'Confirm & Submit',
+  },
+};
+
+var SEND_LABELS = {
+  pickup: { ko: '자택 픽업', en: 'Home Pickup' },
+  store: { ko: '매장 드롭오프', en: 'Store Drop-off' },
+  self: { ko: '직접 발송', en: 'Self-shipping' },
+  accessory: { ko: '발송 방법 없음', en: 'No shipping method' },
+};
+
+var RECEIVE_LABELS = {
+  home: { ko: '자택 배송', en: 'Home Delivery' },
+  store: { ko: '매장 픽업', en: 'Store Pickup' },
+};
+
+var SCENARIOS = {
+  total: {
     ko: { type: '토탈 케어', detail: null, method: '클리닝 & 폴리싱 & 피팅', cost: '무상', leadtime: '입고 후 10~15 영업일' },
-    en: { type: 'Total Care', detail: null, method: 'Cleaning & Polishing & Fitting', cost: 'Complimentary', leadtime: '10–15 business days after receipt' },
-    urgent: false, baseCost: 50000,
+    en: { type: 'Total Care', detail: null, method: 'Cleaning & Polishing & Fitting', cost: 'Complimentary', leadtime: '10-15 business days after receipt' },
+    urgent: false, baseCost: 50000, costPaid: false,
   },
   'total-urgent': {
     ko: { type: '토탈 케어', detail: null, method: '클리닝 & 폴리싱 & 피팅', cost: '무상', leadtime: '입고 후 3~5 영업일' },
-    en: { type: 'Total Care', detail: null, method: 'Cleaning & Polishing & Fitting', cost: 'Complimentary', leadtime: '3–5 business days after receipt' },
-    urgent: true, baseCost: 100000,
+    en: { type: 'Total Care', detail: null, method: 'Cleaning & Polishing & Fitting', cost: 'Complimentary', leadtime: '3-5 business days after receipt' },
+    urgent: true, baseCost: 100000, costPaid: false,
   },
   'repair-break3': {
     ko: { type: '제품 수리', detail: '파손 & 변형 (구매 3년 이내)', method: '부품 교체', leadtime: '입고 후 10~15 영업일' },
-    en: { type: 'Product Repair', detail: 'Damage & Deformation (within 3 yrs)', method: 'Part Replacement', leadtime: '10–15 business days after receipt' },
+    en: { type: 'Product Repair', detail: 'Damage & Deformation (within 3 years)', method: 'Part Replacement', leadtime: '10-15 business days after receipt' },
     urgent: false, costRatio: 0.20, costPaid: true,
   },
   'repair-break7': {
     ko: { type: '제품 수리', detail: '파손 & 변형 (3~7년, 복원 수리)', method: '복원 수리', cost: '30,000원', leadtime: '입고 후 10~15 영업일' },
-    en: { type: 'Product Repair', detail: 'Damage & Deformation (3–7 yrs, restoration)', method: 'Restoration Repair', cost: '$22', leadtime: '10–15 business days after receipt' },
+    en: { type: 'Product Repair', detail: 'Damage & Deformation (3-7 years, restoration)', method: 'Restoration Repair', cost: '$22', leadtime: '10-15 business days after receipt' },
     urgent: false, baseCost: 30000, costPaid: true,
   },
   'repair-deco': {
     ko: { type: '제품 수리', detail: '장식 문제', method: '장식 수리', cost: '무상', leadtime: '입고 후 10~15 영업일' },
-    en: { type: 'Product Repair', detail: 'Decoration Issue', method: 'Decoration Repair', cost: 'Complimentary', leadtime: '10–15 business days after receipt' },
+    en: { type: 'Product Repair', detail: 'Decoration Issue', method: 'Decoration Repair', cost: 'Complimentary', leadtime: '10-15 business days after receipt' },
     urgent: false, baseCost: 20000, costPaid: false,
   },
   'repair-acc': {
     ko: { type: '제품 수리', detail: '부속품 문제', method: '부속품 교체', cost: '무상', leadtime: '입고 후 3~5 영업일' },
-    en: { type: 'Product Repair', detail: 'Accessory Issue', method: 'Accessory Replacement', cost: 'Complimentary', leadtime: '3–5 business days after receipt' },
+    en: { type: 'Product Repair', detail: 'Accessory Issue', method: 'Accessory Replacement', cost: 'Complimentary', leadtime: '3-5 business days after receipt' },
     urgent: false, baseCost: 10000, costPaid: false,
   },
-  'consult': {
+  consult: {
     ko: { type: '상담 & 기타', detail: '제품 결함 & 이상', method: '판정 후 안내', cost: '점검 결과에 따라 안내', leadtime: '입고 후 안내' },
     en: { type: 'Consultation', detail: 'Product Defect & Anomaly', method: 'To be determined', cost: 'Subject to inspection result', leadtime: 'After receipt' },
-    urgent: false, baseCost: null, costPaid: null, hideShipping: false,
+    urgent: false, baseCost: null, costPaid: null,
   },
   'consult-acc': {
     ko: { type: '상담 & 기타', detail: '부속품 요청', method: '부속품 발송', cost: '무상', leadtime: '발송 후 3~5 영업일' },
-    en: { type: 'Consultation', detail: 'Accessory Request', method: 'Accessory Delivery', cost: 'Complimentary', leadtime: '3–5 business days after dispatch' },
-    urgent: false, baseCost: null, costPaid: false, noTariff: true, hideShipping: false, hideEst: true,
-  },
-  'consult-chat': {
-    ko: { type: '상담 & 기타', detail: '상담원 연결', method: '상담 후 안내', cost: '상담 후 안내', leadtime: '상담 후 안내' },
-    en: { type: 'Consultation', detail: 'Agent Connection', method: 'After consultation', cost: 'After consultation', leadtime: 'After consultation' },
-    urgent: false, baseCost: null, costPaid: null, hideShipping: true, mergeDetail: true,
-  },
-  'repair-impossible': {
-    ko: { type: '제품 수리', detail: '파손 & 변형 (7년 초과)', method: '수리 불가', cost: '해당 없음', leadtime: '해당 없음' },
-    en: { type: 'Product Repair', detail: 'Damage & Deformation (7+ yrs)', method: 'Not repairable', cost: 'N/A', leadtime: 'N/A' },
-    urgent: false, baseCost: null, costPaid: null, impossible: true,
+    en: { type: 'Consultation', detail: 'Accessory Request', method: 'Accessory Delivery', cost: 'Complimentary', leadtime: '3-5 business days after dispatch' },
+    urgent: false, baseCost: null, costPaid: false, hideSendMethod: true, hideEst: true,
   },
   'ai-func-only': {
-    ko: { type: 'AI — 기능 이상', detail: null, method: 'TBD', cost: 'TBD', leadtime: 'TBD' },
-    en: { type: 'AI — Functional Issue', detail: null, method: 'TBD', cost: 'TBD', leadtime: 'TBD' },
-    urgent: false, baseCost: null, costPaid: null, noTariff: true, isTBD: true,
+    ko: { type: 'AI — 기능 이상', detail: null, method: null, cost: null, leadtime: null },
+    en: { type: 'AI — Functional Issue', detail: null, method: null, cost: null, leadtime: null },
+    urgent: false, baseCost: null, costPaid: null, hideEst: true,
   },
   'ai-func-prod': {
-    ko: { type: 'AI — 기능 이상 + 제품 이상', detail: null, method: 'TBD', cost: 'TBD', leadtime: 'TBD' },
-    en: { type: 'AI — Functional + Physical Issue', detail: null, method: 'TBD', cost: 'TBD', leadtime: 'TBD' },
-    urgent: false, baseCost: null, costPaid: null, noTariff: true, isTBD: true,
+    ko: {
+      type: 'AI — 기능 이상 + 제품 이상',
+      detail: '제품 수리 / 상담 & 기타 (제품 결함 & 이상, 부속품 요청)',
+      method: 'TBD',
+      cost: 'TBD',
+      leadtime: 'TBD',
+      notice: 'AI 제품 이상 접수의 예상 수리 안내는 현재 정책 확인 중입니다.',
+    },
+    en: {
+      type: 'AI — Functional + Physical Issue',
+      detail: 'Product Repair / Consultation (Product Defect & Anomaly, Accessory Request)',
+      method: 'TBD',
+      cost: 'TBD',
+      leadtime: 'TBD',
+      notice: 'Estimated service guidance for AI product issue submissions is currently under policy review.',
+    },
+    urgent: false, baseCost: null, costPaid: null, tbdEstimate: true,
   },
 };
 
-let currentKey = 'total';
-let currentLang = 'ko';
-let currentCountry = 'kr';
-let PRODUCT_RETAIL_PRICE = 400000;
-
 function fmt(n) {
-  if (currentCountry === 'us') {
-    return '$' + Math.round(n / 1350).toLocaleString('en-US');
-  }
-  return currentLang === 'en'
-    ? '₩' + n.toLocaleString('en-US')
-    : n.toLocaleString('ko-KR') + '원';
+  if (currentCountry === 'us') return '$' + Math.round(n / 1350).toLocaleString('en-US');
+  if (currentLang === 'en') return 'KRW ' + n.toLocaleString('en-US');
+  return n.toLocaleString('ko-KR') + '원';
 }
 
 function setText(id, text) {
-  const el = document.getElementById(id);
+  var el = document.getElementById(id);
   if (el) el.textContent = text;
 }
 
-function setLang(lang) {
-  currentLang = lang;
-  try { localStorage.setItem('ps-lang', lang); } catch(e) {}
-  ['ko','en'].forEach(function(l) { var el = document.getElementById('footer-lang-' + l); if (el) { el.style.fontWeight = l === lang ? '500' : '400'; el.style.color = l === lang ? '#111' : ''; } });
-  const st = STRINGS[lang];
+function getSavedState() {
+  try { return JSON.parse(localStorage.getItem('ps-state') || '{}') || {}; }
+  catch (e) { return {}; }
+}
 
-  // 언어 버튼 상태
-  ['ko','en'].forEach(l => {
-    const btn = document.getElementById('pb-lang-' + l);
-    if (!btn) return;
-    const active = l === lang;
-    btn.style.background = active ? '#111' : '#fff';
-    btn.style.color = active ? '#fff' : '#333';
-    btn.style.borderColor = active ? '#111' : '#ccc';
-  });
+function getLabel(map, key) {
+  var item = map[key] || map.pickup || map.home;
+  return item[currentLang] || item.ko || '';
+}
 
-  // 정적 레이블 업데이트
+function getStoreAddress(name, fallback) {
+  return STORE_ADDRESSES[name] || fallback || '';
+}
+
+function updateSendReceiveLabels(state) {
+  state = state || {};
+  var defaults = DEFAULT_CONTACT[currentCountry] || DEFAULT_CONTACT.kr;
+  var sendKey = state.sendMethod || sendMethod;
+  var receiveKey = state.receiveMethod || receiveMethod;
+  sendMethod = sendKey;
+  receiveMethod = receiveKey;
+
+  var sendText = getLabel(SEND_LABELS, sendKey);
+  if (sendKey === 'store') sendText += ' — ' + (state.dropStoreName || state.sendStoreName || defaults.sendStoreName);
+  setText('val-send', sendText);
+
+  var receiveText = getLabel(RECEIVE_LABELS, receiveKey);
+  var recvStoreName = state.recvStoreName || defaults.recvStoreName;
+  if (receiveKey === 'store') receiveText += ' — ' + recvStoreName;
+  setText('val-recv', receiveText);
+
+  var isStoreReceive = receiveKey === 'store';
+  setText('key-addr', isStoreReceive ? STRINGS[currentLang].keyPickupStoreAddr : STRINGS[currentLang].keyAddr);
+  setText('val-addr', isStoreReceive ? getStoreAddress(recvStoreName, defaults.address) : (state.receiveAddr || state.receiveAddress || defaults.address));
+}
+
+function applyStrings(state) {
+  state = state || getSavedState();
+  if (state.sendMethod) sendMethod = state.sendMethod;
+  if (state.receiveMethod) receiveMethod = state.receiveMethod;
+  var st = STRINGS[currentLang];
+
   setText('pg-eyebrow', st.eyebrow);
   setText('pg-title', st.title);
   setText('pg-desc', st.desc);
@@ -300,10 +361,7 @@ function setLang(lang) {
   setText('val-urgent', st.valUrgent);
   setText('val-urgent-fee', st.urgentFeeLabel);
   setText('key-send', st.keySend);
-  setText('val-send', st.valSend);
   setText('key-recv', st.keyRecv);
-  setText('val-recv', st.valRecv);
-  setText('key-addr', st.keyAddr);
   setText('lbl-est', st.lblEst);
   setText('key-est-method', st.keyEstMethod);
   setText('key-est-cost', st.keyEstCost);
@@ -312,44 +370,33 @@ function setLang(lang) {
   setText('notice-paid', st.noticePaid);
   setText('btn-prev', st.btnPrev);
   setText('btn-complete', st.btnComplete);
+  updateSendReceiveLabels(state);
+}
 
-  // 현재 시나리오 동적 내용도 언어에 맞게 갱신
+function setLang(lang) {
+  currentLang = lang === 'en' ? 'en' : 'ko';
+  try { localStorage.setItem('ps-lang', currentLang); } catch(e) {}
+  ['ko','en'].forEach(function(l) {
+    var el = document.getElementById('footer-lang-' + l);
+    if (el) {
+      el.style.fontWeight = l === currentLang ? '500' : '400';
+      el.style.color = l === currentLang ? '#111' : '';
+    }
+  });
+  applyStrings(getSavedState());
   setScenario(currentKey);
 }
 
 function setScenario(key) {
-  const s = SCENARIOS[key];
+  if (currentCountry === 'us' && key === 'total-urgent') key = 'total';
+  var s = SCENARIOS[key];
   if (!s) return;
   currentKey = key;
-  const loc = s[currentLang];
+  var loc = s[currentLang] || s.ko;
 
-  // TBD 처리 (AI 시나리오)
-  const tbdNotice = document.getElementById('tbd-notice');
-  const estSection = document.getElementById('est-section');
-  if (s.isTBD) {
-    if (tbdNotice) tbdNotice.style.display = 'block';
-    if (estSection) estSection.style.display = 'none';
-    document.getElementById('impossible-section').style.display = 'none';
-    setText('sc-type', loc.type);
-    document.getElementById('sc-detail-row').style.display = 'none';
-    document.getElementById('sc-urgent-row').style.display = 'none';
-    const btnComplete = document.getElementById('btn-complete');
-    btnComplete.href = 'complete.html';
-    btnComplete.textContent = STRINGS[currentLang].btnComplete;
-    btnComplete.style.background = '';
-    btnComplete.style.borderColor = '';
-    return;
-  }
-  if (tbdNotice) tbdNotice.style.display = 'none';
-  if (estSection) estSection.style.display = '';
-
-  // 접수 정보 동적 필드
-  const detailRow = document.getElementById('sc-detail-row');
-  if (s.mergeDetail && loc.detail) {
-    setText('sc-type', loc.detail);
-    detailRow.style.display = 'none';
-  } else {
-    setText('sc-type', loc.type);
+  setText('sc-type', loc.type);
+  var detailRow = document.getElementById('sc-detail-row');
+  if (detailRow) {
     if (loc.detail) {
       setText('sc-detail', loc.detail);
       detailRow.style.display = '';
@@ -357,49 +404,61 @@ function setScenario(key) {
       detailRow.style.display = 'none';
     }
   }
-  document.getElementById('sc-urgent-row').style.display = s.urgent ? '' : 'none';
 
-  // 예상 수리 안내 동적 필드
-  setText('est-method', loc.method);
-  const costEl = document.getElementById('est-cost');
-  if (s.costRatio !== undefined) {
-    costEl.textContent = fmt(Math.round(PRODUCT_RETAIL_PRICE * s.costRatio));
-  } else {
-    costEl.textContent = loc.cost;
+  var urgentRow = document.getElementById('sc-urgent-row');
+  if (urgentRow) urgentRow.style.display = s.urgent ? '' : 'none';
+
+  var sendRow = document.getElementById('sc-send-row');
+  if (sendRow) sendRow.style.display = (s.hideShipping || s.hideSendMethod) ? 'none' : '';
+
+  var receiveRows = document.querySelectorAll('[data-receive-row]');
+  Array.prototype.forEach.call(receiveRows, function(row) {
+    row.style.display = s.hideShipping ? 'none' : '';
+  });
+
+  var estSection = document.getElementById('est-section');
+  if (estSection) estSection.style.display = (s.hideEst || s.hideShipping) ? 'none' : '';
+
+  if (!s.hideEst && !s.hideShipping) {
+    setText('est-method', loc.method);
+    var costEl = document.getElementById('est-cost');
+    if (costEl) {
+      costEl.textContent = s.costRatio !== undefined ? fmt(Math.round(PRODUCT_RETAIL_PRICE * s.costRatio)) : loc.cost;
+      costEl.style.color = s.costPaid ? '#c8491a' : (s.costPaid === null ? '#888' : '#111');
+    }
+    setText('est-leadtime', loc.leadtime);
+    var urgentFee = document.getElementById('est-urgent-fee');
+    if (urgentFee) urgentFee.style.display = s.urgent ? 'block' : 'none';
+    var paidNotice = document.getElementById('notice-paid');
+    if (paidNotice) paidNotice.style.display = s.costPaid ? '' : 'none';
+    setText('notice-main', loc.notice || STRINGS[currentLang].noticeMain);
   }
-  costEl.style.color = s.costPaid ? '#c8491a' : (s.costPaid === null ? '#888' : '#111');
-  setText('est-leadtime', loc.leadtime);
-  document.getElementById('est-urgent-fee').style.display = s.urgent ? 'block' : 'none';
 
-  // 섹션 show/hide
-  document.getElementById('sc-shipping-rows').style.display = s.hideShipping ? 'none' : '';
-  document.getElementById('est-section').style.display = (s.impossible || s.hideShipping || s.hideEst) ? 'none' : '';
-  document.getElementById('impossible-section').style.display = s.impossible ? 'block' : 'none';
-
-  // 수리 불가 시 버튼 변경
-  const btnComplete = document.getElementById('btn-complete');
-  if (s.impossible) {
-    btnComplete.href = 'close.html';
-    btnComplete.textContent = '접수 불가 안내 확인하기';
-    btnComplete.style.background = '#c8491a';
-    btnComplete.style.borderColor = '#c8491a';
-  } else {
+  var btnComplete = document.getElementById('btn-complete');
+  if (btnComplete) {
     btnComplete.href = 'complete.html';
     btnComplete.textContent = STRINGS[currentLang].btnComplete;
     btnComplete.style.background = '';
     btnComplete.style.borderColor = '';
   }
-
 }
 
 window.setCountry = function(country) {
-  setLang(country !== 'kr' ? 'en' : 'ko');
+  currentCountry = country === 'us' ? 'us' : 'kr';
+  try { localStorage.setItem('ps-country', currentCountry); } catch(e) {}
+  setLang(currentCountry === 'us' ? 'en' : 'ko');
 };
 
-// ─── ps-state 기반 자동 시나리오 판단 ───
+function getElapsedYears(purchaseDate) {
+  if (!purchaseDate) return 0;
+  var purchasedAt = new Date(purchaseDate);
+  if (isNaN(purchasedAt.getTime())) return 0;
+  return (new Date() - purchasedAt) / (1000 * 60 * 60 * 24 * 365.25);
+}
+
 function getScenarioFromState(state) {
-  var pd = state.purchaseDate;
-  var years = pd ? (new Date() - new Date(pd)) / (1000 * 60 * 60 * 24 * 365.25) : 0;
+  state = state || {};
+  var years = getElapsedYears(state.purchaseDate);
   var st = state.serviceType;
 
   if (st === 'ai-func-only') return 'ai-func-only';
@@ -407,30 +466,23 @@ function getScenarioFromState(state) {
   if (state.isAi && state.aiIssueFunc && !state.aiIssueProd) return 'ai-func-only';
 
   if (st === 'total-care' || (!st && !state.isAi)) {
-    return state.urgentRepair ? 'total-urgent' : 'total';
+    return currentCountry !== 'us' && state.urgentRepair ? 'total-urgent' : 'total';
   }
 
   if (st === 'repair') {
-    var detail = state.repairDetail;
-    if (detail === 'damage') {
-      if (years > 7) return 'repair-impossible';
+    if (state.repairDetail === 'damage') {
       if (years > 3) return 'repair-break7';
       return 'repair-break3';
     }
-    if (detail === 'decoration') {
-      if (years > 7) return 'repair-impossible';
-      return 'repair-deco';
-    }
-    if (detail === 'accessory') return 'repair-acc';
+    if (state.repairDetail === 'decoration') return 'repair-deco';
+    if (state.repairDetail === 'accessory') return 'repair-acc';
     return 'repair-break3';
   }
 
   if (st === 'accessory') return 'consult-acc';
 
   if (st === 'consulting') {
-    var cd = state.consultDetail;
-    if (cd === 'accessory') return 'consult-acc';
-    if (cd === 'consult') return 'consult-chat';
+    if (state.consultDetail === 'accessory') return 'consult-acc';
     return 'consult';
   }
 
@@ -438,44 +490,16 @@ function getScenarioFromState(state) {
 }
 
 window.addEventListener('load', function() {
-  var savedCountry; try { savedCountry = localStorage.getItem('ps-country'); } catch(e) {}
-  currentCountry = savedCountry || 'kr';
+  var state = getSavedState();
+  try { currentCountry = localStorage.getItem('ps-country') || 'kr'; } catch(e) { currentCountry = 'kr'; }
+  try { currentLang = currentCountry === 'us' ? 'en' : (localStorage.getItem('ps-lang') || 'ko'); } catch(e) { currentLang = currentCountry === 'us' ? 'en' : 'ko'; }
+  if (state.productPrice) PRODUCT_RETAIL_PRICE = Number(state.productPrice) || PRODUCT_RETAIL_PRICE;
+  if (state.sendMethod) sendMethod = state.sendMethod;
+  if (state.receiveMethod) receiveMethod = state.receiveMethod;
 
-  var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
-  setLang(currentCountry === 'us' ? 'en' : (saved || 'ko'));
-
-  // ps-state 읽어 자동 시나리오 적용
-  try {
-    var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
-    if (state.productPrice) PRODUCT_RETAIL_PRICE = state.productPrice;
-    var key = getScenarioFromState(state);
-    setScenario(key);
-    if (state.productName) {
-      var productVal = document.querySelector('.summary-val');
-      if (productVal) productVal.textContent = state.productName;
-    }
-
-    // 발송/수령 방법 표시 업데이트
-    var sendLabels = {
-      pickup: { ko: '자택 픽업', en: 'Home Pickup' },
-      store:  { ko: '매장 발송', en: 'Store Drop-off' },
-      self:   { ko: '직접 발송', en: 'Self-shipping' }
-    };
-    if (state.sendMethod && sendLabels[state.sendMethod]) {
-      var sendEl = document.getElementById('val-send');
-      if (sendEl) sendEl.textContent = sendLabels[state.sendMethod][currentLang] || sendLabels[state.sendMethod].ko;
-    }
-    if (state.receiveMethod) {
-      var recvText = state.receiveMethod === 'store'
-        ? (currentLang === 'en' ? 'Store Pickup' : '매장 픽업')
-        : (currentLang === 'en' ? 'Home Delivery' : '자택 배송');
-      if (state.receiveMethod === 'store' && state.recvStoreName) recvText += ' — ' + state.recvStoreName;
-      var recvEl = document.getElementById('val-recv');
-      if (recvEl) recvEl.textContent = recvText;
-    }
-  } catch(e) {
-    setScenario('total');
-  }
+  applyStrings(state);
+  setScenario(getScenarioFromState(state));
+  if (state.productName) setText('val-product', state.productName);
 });
 </script>
 </body>
