@@ -103,9 +103,19 @@
       </div>
     </div>
 
+    <div id="agreement-section" style="border-top:1px solid var(--gray-100);padding-top:28px;margin-top:32px;">
+      <p id="lbl-agreement" class="section-label" style="margin-top:0;">동의 및 안내</p>
+      <label class="inline-check" style="align-items:flex-start;margin-bottom:8px;">
+        <input type="checkbox" id="marketing-consent" autocomplete="off" onclick="try{var s=JSON.parse(localStorage.getItem('ps-state')||'{}');s.marketingConsent=this.checked;s.marketingAgreeYn=this.checked?'Y':'N';localStorage.setItem('ps-state',JSON.stringify(s));}catch(e){}" onchange="try{var s=JSON.parse(localStorage.getItem('ps-state')||'{}');s.marketingConsent=this.checked;s.marketingAgreeYn=this.checked?'Y':'N';localStorage.setItem('ps-state',JSON.stringify(s));}catch(e){}">
+        <span>
+          <span id="marketing-consent-label" style="display:block;color:var(--gray-800);">[선택] 마케팅 정보 수신 및 활용에 동의합니다.</span>
+        </span>
+      </label>
+    </div>
+
     <div class="btn-wrap">
       <a id="btn-prev" href="step3-shipping.html" class="btn btn-secondary">이전</a>
-      <a id="btn-complete" href="complete.html" class="btn btn-primary">접수 완료하기</a>
+      <a id="btn-complete" href="complete.html" class="btn btn-primary" onclick="saveMarketingConsent();try{var i=document.getElementById('marketing-consent');var s=JSON.parse(localStorage.getItem('ps-state')||'{}');s.marketingConsent=!!(i&&i.checked);s.marketingAgreeYn=s.marketingConsent?'Y':'N';localStorage.setItem('ps-state',JSON.stringify(s));}catch(e){}">접수 완료하기</a>
     </div>
 
   </div>
@@ -189,6 +199,8 @@ var STRINGS = {
     keyEstLeadtime: '예상 리드타임',
     noticeMain: '실제 수리 내용과 비용은 제품 입고 후 프로덕트 서비스팀의 정밀 점검을 통해 최종 결정됩니다.',
     noticePaid: '유상 수리의 경우 결제 완료 후 수리가 시작됩니다.',
+    lblAgreement: '동의 및 안내',
+    marketingConsentLabel: '[선택] 마케팅 정보 수신 및 활용에 동의합니다.',
     btnPrev: '이전',
     btnComplete: '접수 완료하기',
   },
@@ -213,6 +225,8 @@ var STRINGS = {
     keyEstLeadtime: 'Est. Lead Time',
     noticeMain: 'Actual repair details and costs will be finalized after inspection by the Product Service team.',
     noticePaid: 'For paid repairs, service will begin after payment is completed.',
+    lblAgreement: 'Consent',
+    marketingConsentLabel: '[Optional] I agree to receive and use marketing information.',
     btnPrev: 'Back',
     btnComplete: 'Confirm & Submit',
   },
@@ -368,9 +382,37 @@ function applyStrings(state) {
   setText('key-est-leadtime', st.keyEstLeadtime);
   setText('notice-main', st.noticeMain);
   setText('notice-paid', st.noticePaid);
+  setText('lbl-agreement', st.lblAgreement);
+  setText('marketing-consent-label', st.marketingConsentLabel);
   setText('btn-prev', st.btnPrev);
   setText('btn-complete', st.btnComplete);
   updateSendReceiveLabels(state);
+}
+
+function saveMarketingConsent() {
+  try {
+    var state = getSavedState();
+    var input = document.getElementById('marketing-consent');
+    state.marketingConsent = !!(input && input.checked);
+    state.marketingAgreeYn = state.marketingConsent ? 'Y' : 'N';
+    localStorage.setItem('ps-state', JSON.stringify(state));
+  } catch(e) {}
+}
+
+function restoreMarketingConsent(state) {
+  var input = document.getElementById('marketing-consent');
+  if (!input) return;
+  input.checked = !!(state && (state.marketingConsent || state.marketingAgreeYn === 'Y'));
+}
+
+var lastMarketingConsentState = null;
+function syncMarketingConsent() {
+  var input = document.getElementById('marketing-consent');
+  if (!input) return;
+  var checked = !!input.checked;
+  if (checked === lastMarketingConsentState) return;
+  lastMarketingConsentState = checked;
+  saveMarketingConsent();
 }
 
 function setLang(lang) {
@@ -499,6 +541,11 @@ window.addEventListener('load', function() {
 
   applyStrings(state);
   setScenario(getScenarioFromState(state));
+  restoreMarketingConsent(state);
+  var marketingConsentInput = document.getElementById('marketing-consent');
+  if (marketingConsentInput) marketingConsentInput.addEventListener('change', saveMarketingConsent);
+  syncMarketingConsent();
+  window.setInterval(syncMarketingConsent, 300);
   if (state.productName) setText('val-product', state.productName);
 });
 </script>
