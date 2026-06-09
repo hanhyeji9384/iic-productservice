@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import { MembersProvider } from '@/lib/members-context'
 import { SessionProvider } from '@/lib/session-context'
 import { AdminLayout } from '@/components/admin-layout'
@@ -10,10 +10,14 @@ import { RolesPage } from '@/pages/roles'
 import { DepartmentsPage } from '@/pages/departments'
 import { PlaceholderPage } from '@/pages/placeholder'
 import { ProductsPage } from '@/pages/products'
-import { ProductNewPage } from '@/pages/product-new'
 import { PartsPage } from '@/pages/parts'
 import { PartNewPage } from '@/pages/part-new'
 import { StockPage } from '@/pages/stock'
+import { StoresPage } from '@/pages/stores'
+import { StoreDetailPage } from '@/pages/store-detail'
+import { CustomersPage } from '@/pages/customers'
+import { DownloadLogsPage } from '@/pages/download-logs'
+import { PrivacyLogsPage } from '@/pages/privacy-logs'
 import { ProductsProvider } from '@/lib/products-context'
 import { PartsProvider } from '@/lib/parts-context'
 import { ReceptionSlotsPage } from '@/pages/reception-slots'
@@ -26,6 +30,11 @@ import { Error403Page } from '@/pages/error-403'
 import { Error500Page } from '@/pages/error-500'
 import { ErrorOfflinePage } from '@/pages/error-offline'
 import { SetupTotpPage } from '@/pages/setup-totp'
+
+function PartsEditRedirect() {
+  const { langCode } = useParams()
+  return <Navigate to={`/${langCode}/parts`} replace />
+}
 
 export default function App() {
   return (
@@ -54,18 +63,22 @@ export default function App() {
 
           {/* 시스템 관리 */}
           <Route path="settings/reception-slots" element={<ReceptionSlotsPage />} />
+          <Route path="download-logs" element={<DownloadLogsPage />} />
+          <Route path="privacy-logs" element={<PrivacyLogsPage />} />
 
-          {/* 제품 관리 */}
+          {/* 마스터 관리 */}
           <Route path="products" element={<ProductsPage />} />
-          <Route path="products/new" element={<ProductNewPage />} />
-          <Route path="products/:id/edit" element={<ProductNewPage />} />
           <Route path="parts" element={<PartsPage />} />
           <Route path="parts/new" element={<PartNewPage />} />
-          <Route path="parts/:id/edit" element={<PartNewPage />} />
+          <Route path="parts/:id/edit" element={<PartsEditRedirect />} />
+          <Route path="stores" element={<StoresPage />} />
+          <Route path="stores/:code" element={<StoreDetailPage />} />
+
+          {/* 재고 관리 */}
           <Route path="stock" element={<StockPage />} />
 
           {/* 고객 관리 */}
-          <Route path="customers" element={<PlaceholderPage title="고객" />} />
+          <Route path="customers" element={<CustomersPage />} />
 
           {/* 티켓 관리 */}
           <Route path="tickets" element={<PlaceholderPage title="티켓" />} />

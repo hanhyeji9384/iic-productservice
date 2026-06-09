@@ -10,7 +10,6 @@ type NewForm = {
   name: string
   loginId: string
   email: string
-  password: string
   tel: string
   department: string
   roleId: string
@@ -28,7 +27,7 @@ export function MemberNewPage() {
 
   const defaultRoleId = ROLES[0]?.id ?? ''
   const [form, setForm] = useState<NewForm>({
-    name: '', loginId: '', email: '', password: '', tel: '',
+    name: '', loginId: '', email: '', tel: '',
     department: '', roleId: defaultRoleId, status: 'active', expiresAt: '',
     managedBranches: HQ_ROLES.includes(defaultRoleId) ? ['*'] : [],
     assignedStores: [],
@@ -132,10 +131,8 @@ export function MemberNewPage() {
             <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className={inputCls} placeholder="name@gentlemonster.com" />
           </div>
 
-          <div>
-            <p className="text-xs text-gray-400 mb-1.5">초기 비밀번호 <span className="text-red-400">*</span></p>
-            <input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} className={inputCls} placeholder="8자 이상, 특수문자 포함" />
-            <p className="mt-1 text-[11px] text-gray-400">최초 로그인 시 비밀번호 변경을 권장합니다.</p>
+          <div className="px-3 py-2.5 bg-blue-50 border border-blue-100 rounded-xl text-[11px] text-blue-500">
+            등록 완료 시 비밀번호 설정 링크가 이메일로 발송됩니다.
           </div>
 
           <div className="grid grid-cols-2 gap-4">

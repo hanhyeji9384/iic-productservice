@@ -1,26 +1,77 @@
 import { createContext, useContext, useState, type ReactNode } from 'react'
-import { PRODUCTS as INITIAL_PRODUCTS } from './mock-data'
-import type { Product } from './types'
+import { PRODUCTS as INITIAL_PRODUCTS, PRODUCT_CHANGE_LOGS as INITIAL_PRODUCT_CHANGE_LOGS } from './mock-data'
+import type { Product, ProductChangeLog } from './types'
 
 type StockPatch = {
   stockLocation?: string
   quantity?: number
   hasDecoration?: boolean
-  isRestorationRequest?: boolean
+  isRestorationRepair?: boolean
 }
 
 type ProductsContextValue = {
   products: Product[]
+  productChangeLogs: ProductChangeLog[]
   addProduct: (product: Product) => void
   updateProduct: (updated: Product) => void
-  deleteProduct: (id: string) => void
   updateStockFields: (id: string, patch: StockPatch) => void
 }
 
 const ProductsContext = createContext<ProductsContextValue | null>(null)
 
+const CURRENT_ADMIN = {
+  name: '한혜지',
+  id: 'monster563',
+}
+
+const DEFAULT_DECORATION_PRODUCT_IDS = new Set(['P01', 'P02', 'P06', 'P08', 'P10', 'P11', 'P12', 'P14', 'P20', 'P21', 'P22'])
+
+function nowString() {
+  const d = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+
+function logId(type: ProductChangeLog['changeType'], productId: string) {
+  return `${type}-${productId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+}
+
+function hasDecorationProduct(product: Product) {
+  return product.hasDecoration ?? DEFAULT_DECORATION_PRODUCT_IDS.has(product.id)
+}
+
+function isRestorationRepairProduct(product: Product) {
+  return product.isRestorationRepair ?? /METAL|COMBI/.test(product.subCategory)
+}
+
+function yn(value: boolean) {
+  return value ? 'Y' : 'N'
+}
+
+function buildProductLog(product: Product, changeType: ProductChangeLog['changeType'], summary: string, changedAt = nowString()): ProductChangeLog {
+  return {
+    id: logId(changeType, product.id),
+    productId: product.id,
+    productCode: product.productCode,
+    productName: product.name,
+    changedAt,
+    changeType,
+    summary,
+    changedByName: CURRENT_ADMIN.name,
+    changedById: CURRENT_ADMIN.id,
+  }
+}
+
+function buildProductManagementDiff(current: Product, updated: Product) {
+  const diffs: string[] = []
+  if (hasDecorationProduct(current) !== hasDecorationProduct(updated)) diffs.push(`장식보유여부: ${yn(hasDecorationProduct(current))} → ${yn(hasDecorationProduct(updated))}`)
+  if (isRestorationRepairProduct(current) !== isRestorationRepairProduct(updated)) diffs.push(`복원수리: ${yn(isRestorationRepairProduct(current))} → ${yn(isRestorationRepairProduct(updated))}`)
+  return diffs.join(' / ') || '변경 없음'
+}
+
 export function ProductsProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS)
+  const [productChangeLogs, setProductChangeLogs] = useState<ProductChangeLog[]>(INITIAL_PRODUCT_CHANGE_LOGS)
 
   function addProduct(product: Product) {
     setProducts(prev => [product, ...prev])
@@ -30,16 +81,23 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     setProducts(prev => prev.map(p => p.id === updated.id ? updated : p))
   }
 
-  function deleteProduct(id: string) {
-    setProducts(prev => prev.filter(p => p.id !== id))
-  }
-
   function updateStockFields(id: string, patch: StockPatch) {
+    const current = products.find(product => product.id === id)
+    if (current) {
+      const updated = { ...current, ...patch }
+      const summary = buildProductManagementDiff(current, updated)
+      if (summary !== '변경 없음') {
+        setProductChangeLogs(prev => [
+          buildProductLog(current, 'update', summary),
+          ...prev,
+        ])
+      }
+    }
     setProducts(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p))
   }
 
   return (
-    <ProductsContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, updateStockFields }}>
+    <ProductsContext.Provider value={{ products, productChangeLogs, addProduct, updateProduct, updateStockFields }}>
       {children}
     </ProductsContext.Provider>
   )

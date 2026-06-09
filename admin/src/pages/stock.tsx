@@ -5,7 +5,7 @@ import { useProducts } from '@/lib/products-context'
 import { BRANCHES } from '@/lib/mock-data'
 import type { Product } from '@/lib/types'
 
-type SortKey = 'productCode' | 'name' | 'brandCategory' | 'stockLocation' | 'quantity' | 'hasDecoration' | 'isRestorationRequest'
+type SortKey = 'productCode' | 'name' | 'brandCategory' | 'stockLocation' | 'quantity'
 
 const ITEMS_PER_PAGE = 15
 
@@ -14,16 +14,13 @@ const initFilters = {
   stockLocation: '',
   safetyStock: 'all',
   hasStock: 'all',
-  decoration: 'all',
   quantityMin: '', quantityMax: '',
-  restoration: 'all',
 }
 type Filters = typeof initFilters
 
-const DEFAULT_DECORATION_STOCK_IDS = new Set(['P01', 'P02', 'P06', 'P08', 'P10', 'P11', 'P12', 'P14', 'P20', 'P21', 'P22'])
-
-function hasDecorationStock(product: Product) {
-  return product.hasDecoration ?? DEFAULT_DECORATION_STOCK_IDS.has(product.id)
+function branchLabel(branchCode: string) {
+  const branch = BRANCHES.find(b => b.code === branchCode)
+  return branch ? `${branch.code} ${branch.name}` : branchCode
 }
 
 function SelectFilter({ label, value, onChange, children }: {
@@ -71,8 +68,6 @@ export function StockPage() {
 
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkLocation, setBulkLocation] = useState('')
-  const [bulkDecoration, setBulkDecoration] = useState<'unchanged' | 'true' | 'false'>('unchanged')
-  const [bulkRestoration, setBulkRestoration] = useState<'unchanged' | 'true' | 'false'>('unchanged')
 
   const set = (key: keyof Filters) => (val: string) => setFilters(p => ({ ...p, [key]: val }))
 
@@ -115,10 +110,8 @@ export function StockPage() {
       if (applied.safetyStock === 'ok' && !(p.quantity >= 5)) return false
       if (applied.hasStock === 'y' && !(p.quantity >= 1)) return false
       if (applied.hasStock === 'n' && !(p.quantity === 0)) return false
-      if (applied.decoration !== 'all' && hasDecorationStock(p) !== (applied.decoration === 'true')) return false
       if (qMin !== null && p.quantity < qMin) return false
       if (qMax !== null && p.quantity > qMax) return false
-      if (applied.restoration !== 'all' && p.isRestorationRequest !== (applied.restoration === 'true')) return false
       return true
     })
   }, [appliedSearch, applied, products, effectiveBranch])
@@ -127,8 +120,8 @@ export function StockPage() {
     if (!sortKey || !sortDir) return filtered
     const dir = sortDir === 'asc' ? 1 : -1
     return [...filtered].sort((a, b) => {
-      const av = sortKey === 'hasDecoration' ? hasDecorationStock(a) : a[sortKey as keyof Product]
-      const bv = sortKey === 'hasDecoration' ? hasDecorationStock(b) : b[sortKey as keyof Product]
+      const av = a[sortKey as keyof Product]
+      const bv = b[sortKey as keyof Product]
       if (av == null && bv == null) return 0
       if (av == null) return 1
       if (bv == null) return -1
@@ -163,27 +156,21 @@ export function StockPage() {
 
   function handleBulkApply() {
     selected.forEach(id => {
-      const patch: { stockLocation?: string; hasDecoration?: boolean; isRestorationRequest?: boolean } = {}
+      const patch: { stockLocation?: string } = {}
       if (bulkLocation.trim()) patch.stockLocation = bulkLocation.trim()
-      if (bulkDecoration !== 'unchanged') patch.hasDecoration = bulkDecoration === 'true'
-      if (bulkRestoration !== 'unchanged') patch.isRestorationRequest = bulkRestoration === 'true'
       updateStockFields(id, patch)
     })
     setSelected(new Set())
     setBulkLocation('')
-    setBulkDecoration('unchanged')
-    setBulkRestoration('unchanged')
   }
 
   function handleExport() {
-    const headers = ['제품코드','제품명','브랜드','중분류','소분류','재고보관위치','수량','안전재고','재고보유여부','장식보유여부','복원가능여부']
+    const headers = ['제품코드','제품명','브랜드','중분류','소분류','재고보관위치','수량','안전재고','재고보유여부']
     const rows = filtered.map(p => [
       p.productCode, p.name, p.brandCategory, p.midCategory, p.subCategory,
       p.stockLocation, p.quantity,
       p.quantity < 5 ? '부족' : '—',
       p.quantity >= 1 ? 'Y' : 'N',
-      hasDecorationStock(p) ? 'Y' : 'N',
-      p.isRestorationRequest ? 'Y' : 'N',
     ])
     const csv = [headers, ...rows]
       .map(row => row.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(','))
@@ -201,6 +188,11 @@ export function StockPage() {
   function handleReset() {
     setSearch(''); setAppliedSearch(''); setFilters(initFilters); setApplied(initFilters); setPage(1)
   }
+  function handleBranchChange(branchCode: string) {
+    setActiveBranch(branchCode)
+    setPage(1)
+    setSelected(new Set())
+  }
 
   return (
     <div className="overflow-x-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -208,7 +200,7 @@ export function StockPage() {
 
         {/* 헤더 */}
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">재고 리스트</h1>
+          <h1 className="text-xl font-bold text-gray-900">재고 현황</h1>
           <button
             onClick={handleExport}
             className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors text-sm font-medium"
@@ -218,23 +210,15 @@ export function StockPage() {
           </button>
         </div>
 
-        {/* 법인 탭 */}
-        <div className="flex gap-1 border-b border-gray-200">
-          {branchTabs.map(b => (
-            <button
-              key={b.code}
-              onClick={() => { setActiveBranch(b.code); setPage(1) }}
-              className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
-                effectiveBranch === b.code ? 'border-black text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {b.code} {b.name}
-            </button>
-          ))}
-        </div>
-
         {/* 필터 */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
+          <div className="px-5 pt-5 pb-4 border-b border-gray-100">
+            <div className="max-w-xs">
+              <SelectFilter label="법인" value={effectiveBranch} onChange={handleBranchChange}>
+                {branchTabs.map(branch => <option key={branch.code} value={branch.code}>{branchLabel(branch.code)}</option>)}
+              </SelectFilter>
+            </div>
+          </div>
           <div className="p-5 flex gap-3 items-center">
             <div className="relative flex-1 min-w-[220px]">
               <input
@@ -289,7 +273,7 @@ export function StockPage() {
                     className="w-full px-3 py-2 bg-[#f8f9fb] border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-colors" />
                 </div>
               </div>
-              <div className="grid grid-cols-5 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <SelectFilter label="안전재고" value={filters.safetyStock} onChange={set('safetyStock')}>
                   <option value="all">전체</option>
                   <option value="shortage">부족 (5개 미만)</option>
@@ -299,16 +283,6 @@ export function StockPage() {
                   <option value="all">전체</option>
                   <option value="y">Y (1개 이상)</option>
                   <option value="n">N (0개)</option>
-                </SelectFilter>
-                <SelectFilter label="장식보유여부" value={filters.decoration} onChange={set('decoration')}>
-                  <option value="all">전체</option>
-                  <option value="true">Y</option>
-                  <option value="false">N</option>
-                </SelectFilter>
-                <SelectFilter label="복원가능여부" value={filters.restoration} onChange={set('restoration')}>
-                  <option value="all">전체</option>
-                  <option value="true">Y</option>
-                  <option value="false">N</option>
                 </SelectFilter>
                 <div>
                   <p className="text-xs text-gray-400 mb-1.5">수량</p>
@@ -350,8 +324,6 @@ export function StockPage() {
                     { key: 'quantity',             label: '수량',        sort: 'quantity' },
                     { key: 'isSafetyStock',        label: '안전재고',    sort: null },
                     { key: 'hasStock',             label: '재고보유여부', sort: null },
-                    { key: 'hasDecoration',        label: '장식보유여부', sort: 'hasDecoration' },
-                    { key: 'isRestorationRequest', label: '복원가능여부', sort: 'isRestorationRequest' },
                   ] as { key: string; label: string; sort: SortKey | null }[]).map(col => (
                     <th key={col.key} className="px-5 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
                       {col.sort ? (
@@ -366,7 +338,7 @@ export function StockPage() {
               <tbody className="divide-y divide-gray-100">
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={12} className="px-6 py-12 text-center text-sm text-gray-400">검색 결과가 없습니다.</td>
+                    <td colSpan={10} className="px-6 py-12 text-center text-sm text-gray-400">검색 결과가 없습니다.</td>
                   </tr>
                 ) : paginated.map(p => {
                   const isSelected = selected.has(p.id)
@@ -434,31 +406,6 @@ export function StockPage() {
                           {p.quantity >= 1 ? 'Y' : 'N'}
                         </span>
                       </td>
-
-                      {/* 장식보유여부 — editable */}
-                      <td className="px-5 py-3.5 whitespace-nowrap">
-                        <button
-                          type="button"
-                          onClick={() => updateStockFields(p.id, { hasDecoration: !hasDecorationStock(p) })}
-                          className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold transition-colors ${
-                            hasDecorationStock(p)
-                              ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
-                              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                          }`}
-                          title="클릭하여 장식보유 여부 변경"
-                        >
-                          {hasDecorationStock(p) ? 'Y' : 'N'}
-                        </button>
-                      </td>
-
-                      {/* 복원가능여부 */}
-                      <td className="px-5 py-3.5 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
-                          p.isRestorationRequest ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
-                        }`}>
-                          {p.isRestorationRequest ? 'Y' : 'N'}
-                        </span>
-                      </td>
                     </tr>
                   )
                 })}
@@ -483,38 +430,6 @@ export function StockPage() {
                   onChange={e => setBulkLocation(e.target.value)}
                   className="w-28 px-2.5 py-1.5 text-sm bg-gray-800 border border-gray-600 rounded-lg outline-none focus:border-gray-400 text-white placeholder:text-gray-500"
                 />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400 whitespace-nowrap">장식보유</span>
-                <div className="flex gap-1">
-                  {(['unchanged', 'true', 'false'] as const).map(v => (
-                    <button
-                      key={v}
-                      onClick={() => setBulkDecoration(v)}
-                      className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-colors ${
-                        bulkDecoration === v ? 'bg-white text-gray-900' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      }`}
-                    >
-                      {v === 'unchanged' ? '유지' : v === 'true' ? 'Y' : 'N'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400 whitespace-nowrap">복원가능</span>
-                <div className="flex gap-1">
-                  {(['unchanged', 'true', 'false'] as const).map(v => (
-                    <button
-                      key={v}
-                      onClick={() => setBulkRestoration(v)}
-                      className={`px-2.5 py-1 text-xs font-medium rounded-lg transition-colors ${
-                        bulkRestoration === v ? 'bg-white text-gray-900' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                      }`}
-                    >
-                      {v === 'unchanged' ? '유지' : v === 'true' ? 'Y' : 'N'}
-                    </button>
-                  ))}
-                </div>
               </div>
               <button
                 onClick={handleBulkApply}

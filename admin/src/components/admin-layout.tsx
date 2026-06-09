@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   UserCog, Shield, Package, Wrench, ArchiveX,
-  Users, Ticket, Menu, LogOut, ChevronRight,
-  AlertTriangle, KeyRound, Briefcase, CalendarDays,
+  Store, Users, Ticket, Menu, LogOut, ChevronRight,
+  AlertTriangle, KeyRound, Briefcase, CalendarDays, Download, ShieldCheck,
 } from 'lucide-react'
 import { useSession } from '@/lib/session-context'
 import { SessionWarningModal } from '@/components/session-warning-modal'
@@ -23,7 +23,7 @@ interface NavGroup {
 
 const NAV: NavGroup[] = [
   {
-    label: '시스템관리',
+    label: '시스템 관리',
     icon: UserCog,
     children: [
       { to: '/members',                  label: '회원 관리',      icon: UserCog },
@@ -33,12 +33,19 @@ const NAV: NavGroup[] = [
     ],
   },
   {
-    label: '제품 관리',
+    label: '마스터 관리',
     icon: Package,
     children: [
-      { to: '/products', label: '제품 관리',   icon: Package },
-      { to: '/parts',    label: '부품 관리',   icon: Wrench },
-      { to: '/stock',    label: '재고 리스트', icon: ArchiveX },
+      { to: '/products', label: '제품 관리',        icon: Package },
+      { to: '/parts',    label: '부품 관리',        icon: Wrench },
+      { to: '/stores',   label: '매장/거래처 관리', icon: Store },
+    ],
+  },
+  {
+    label: '재고 관리',
+    icon: ArchiveX,
+    children: [
+      { to: '/stock', label: '재고 현황', icon: ArchiveX },
     ],
   },
   {
@@ -53,6 +60,14 @@ const NAV: NavGroup[] = [
     icon: Ticket,
     children: [
       { to: '/tickets', label: '티켓', icon: Ticket },
+    ],
+  },
+  {
+    label: '로그 관리',
+    icon: Download,
+    children: [
+      { to: '/download-logs', label: '다운로드 로그', icon: Download },
+      { to: '/privacy-logs',  label: '개인정보 처리 로그', icon: ShieldCheck },
     ],
   },
   {

@@ -37,10 +37,14 @@ export const PERMISSION_MENUS: PermissionMenu[] = [
   // 회원/권한 관리
   { id: 'members',        label: '회원',           parentLabel: '회원/권한 관리' },
   { id: 'roles',          label: '권한',           parentLabel: '회원/권한 관리' },
-  // 제품 관리
-  { id: 'products',       label: '제품',           parentLabel: '제품 관리' },
-  { id: 'parts',          label: '부품',           parentLabel: '제품 관리' },
-  { id: 'stock',          label: '재고',           parentLabel: '제품 관리' },
+  { id: 'download-logs',  label: '다운로드 로그',  parentLabel: '로그 관리' },
+  { id: 'privacy-logs',   label: '개인정보 처리 로그', parentLabel: '로그 관리' },
+  // 마스터 관리
+  { id: 'products',       label: '제품',           parentLabel: '마스터 관리' },
+  { id: 'parts',          label: '부품',           parentLabel: '마스터 관리' },
+  { id: 'stores',         label: '매장/거래처',    parentLabel: '마스터 관리' },
+  // 재고 관리
+  { id: 'stock',          label: '재고 현황',      parentLabel: '재고 관리' },
   // 고객 관리
   { id: 'customers',      label: '고객',           parentLabel: '고객 관리' },
   // 티켓 관리
@@ -83,6 +87,7 @@ export const INITIAL_ROLES: PermissionRole[] = [
       members:          { read: true },
       products:         { read: true, write: true },
       parts:            { read: true, write: true },
+      stores:           { read: true, write: true },
       stock:            { read: true, write: true },
       customers:        { read: true, write: true, delete: true },
       tickets:          { read: true, write: true, delete: true },

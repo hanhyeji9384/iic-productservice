@@ -14,6 +14,24 @@ export type Store = {
   currency: string
   branchCode: string
   storeGroup: number  // 100: Flagship, 110: 백화점, 120: Mall, 130: 면세점, 140: 안경원, 150: 편집샵, ...
+  address1?: string
+  address2?: string
+  zipCode?: string | null
+  oldZipCode?: string | null
+  tel1?: string
+  tel2?: string
+  telFx?: string | null
+  active?: 'Y' | 'N' | null
+}
+
+export type Customer = {
+  id: string
+  name: string
+  email: string
+  phone: string
+  ticketYn: 'Y' | 'N'
+  marketingAgree: 'Y' | 'N'
+  registeredAt: string
 }
 
 export type Member = {
@@ -75,32 +93,59 @@ export type Product = {
   isSafetyStock: boolean       // 안전재고여부
   quantity: number             // 수량
   hasDecoration?: boolean      // 장식보유여부
-  isRestorationRequest: boolean // 복원의뢰여부
+  isRestorationRepair?: boolean // 복원수리 여부
   dataSource: 'SAP' | 'PS'     // 데이터 출처
   registeredBy: string | null  // 등록자 (PS 출처일 때만)
   registeredAt: string | null  // 등록일시 (PS 출처일 때만)
   branchCode?: string          // 법인 코드 (BRANCHES.code)
 }
 
-export type PartCategory = '렌즈' | '힌지' | '노즈패드' | '나사' | '템플' | '기타'
+export type ProductChangeType = 'update'
+
+export type ProductChangeLog = {
+  id: string
+  productId: string
+  productCode: string
+  productName: string
+  changedAt: string
+  changeType: ProductChangeType
+  summary: string
+  changedByName: string
+  changedById: string
+}
 
 export type Part = {
   id: string
-  productCode: string     // 연결된 제품 SAP/PS 코드
-  partCode: string        // 부품 관리 코드 (PT-XXXXX)
-  name: string            // 부품명
-  category: PartCategory
-  quantity: number
-  status: Status
-  note: string
+  productCode: string       // 연결된 제품 SAP/PS 코드
+  partCode: string          // 부속품 ID (PS 자동 생성, PT-XXXXX)
+  name: string              // 부속품명
+  specification: string     // 규격
+  color: string             // 컬러
+  storageLocation: string   // 부속품 보관위치
   registeredBy: string
   registeredAt: string
+  updatedAt?: string
+}
+
+export type PartChangeType = 'update' | 'delete'
+
+export type PartChangeLog = {
+  id: string
+  partId: string
+  productCode: string
+  partCode: string
+  partName: string
+  changedAt: string
+  changeType: PartChangeType
+  summary: string
+  changedByName: string
+  changedById: string
 }
 
 export type MemberHistory = {
   id: string
   memberId: string
-  eventType: 'CREATE' | 'UPDATE' | 'DEACTIVATE' | 'DELETE' | 'PASSWORD_CHANGE'
+  eventType: 'UPDATE' | 'DEACTIVATE' | 'DELETE' | 'PASSWORD_CHANGE'
   changedBy: string
   changedAt: string
   before: Record<string, unknown> | null

@@ -45,7 +45,7 @@ type Form = {
   isSafetyStock: boolean
   quantity: string
   hasDecoration: boolean
-  isRestorationRequest: boolean
+  isRestorationRepair: boolean
 }
 
 const init: Form = {
@@ -55,7 +55,8 @@ const init: Form = {
   releaseDate: '', partsRetentionPeriod: '',
   salesStatus: '사용중',
   stockLocation: '', isSafetyStock: false,
-  quantity: '', hasDecoration: false, isRestorationRequest: false,
+  quantity: '', hasDecoration: false,
+  isRestorationRepair: false,
 }
 
 function FieldLabel({ text, required }: { text: string; required?: boolean }) {
@@ -129,7 +130,7 @@ export function ProductNewPage() {
         isSafetyStock: existing.isSafetyStock,
         quantity: String(existing.quantity),
         hasDecoration: existing.hasDecoration ?? false,
-        isRestorationRequest: existing.isRestorationRequest,
+        isRestorationRepair: existing.isRestorationRepair ?? false,
       })
     } else {
       setForm(prev => ({ ...prev, productCode: nextPsCode }))
@@ -165,7 +166,6 @@ export function ProductNewPage() {
     if (!form.subCategory) errs.subCategory = '소분류를 선택하세요.'
     if (!form.factory1) errs.factory1 = '생산공장1을 선택하세요.'
     if (!form.releaseDate) errs.releaseDate = '출시일을 입력하세요.'
-    if (!form.stockLocation.trim()) errs.stockLocation = '필수 입력입니다.'
     if (!form.quantity || isNaN(Number(form.quantity)) || Number(form.quantity) < 0)
       errs.quantity = '0 이상의 숫자를 입력하세요.'
     setErrors(errs)
@@ -192,7 +192,7 @@ export function ProductNewPage() {
       isSafetyStock: form.isSafetyStock,
       quantity: Number(form.quantity),
       hasDecoration: form.hasDecoration,
-      isRestorationRequest: form.isRestorationRequest,
+      isRestorationRepair: form.isRestorationRepair,
       dataSource: 'PS' as const,
       registeredBy: isEdit ? existing!.registeredBy : 'monster001',
       registeredAt: isEdit ? existing!.registeredAt : new Date().toISOString().slice(0, 19),
@@ -363,17 +363,6 @@ export function ProductNewPage() {
         <h2 className="text-sm font-semibold text-gray-900">재고 정보</h2>
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <FieldLabel text="재고보관위치" required />
-            <input
-              type="text"
-              placeholder="예: A1-01"
-              value={form.stockLocation}
-              onChange={e => { set('stockLocation')(e.target.value); setErrors(p => ({ ...p, stockLocation: '' })) }}
-              className={`${inputCls} w-full ${errors.stockLocation ? 'border-red-300 focus:border-red-400' : ''}`}
-            />
-            {errors.stockLocation && <p className="text-[11px] text-red-400 mt-1">{errors.stockLocation}</p>}
-          </div>
-          <div>
             <FieldLabel text="수량" required />
             <input
               type="number"
@@ -402,19 +391,6 @@ export function ProductNewPage() {
           </label>
           <label className="flex items-center gap-2.5 cursor-pointer select-none">
             <div
-              onClick={() => set('isRestorationRequest')(!form.isRestorationRequest)}
-              className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${
-                form.isRestorationRequest ? 'bg-gray-900' : 'bg-gray-200'
-              }`}
-            >
-              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                form.isRestorationRequest ? 'translate-x-4' : 'translate-x-0.5'
-              }`} />
-            </div>
-            <span className="text-sm text-gray-700">복원의뢰</span>
-          </label>
-          <label className="flex items-center gap-2.5 cursor-pointer select-none">
-            <div
               onClick={() => set('hasDecoration')(!form.hasDecoration)}
               className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${
                 form.hasDecoration ? 'bg-gray-900' : 'bg-gray-200'
@@ -425,6 +401,19 @@ export function ProductNewPage() {
               }`} />
             </div>
             <span className="text-sm text-gray-700">장식보유</span>
+          </label>
+          <label className="flex items-center gap-2.5 cursor-pointer select-none">
+            <div
+              onClick={() => set('isRestorationRepair')(!form.isRestorationRepair)}
+              className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${
+                form.isRestorationRepair ? 'bg-gray-900' : 'bg-gray-200'
+              }`}
+            >
+              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                form.isRestorationRepair ? 'translate-x-4' : 'translate-x-0.5'
+              }`} />
+            </div>
+            <span className="text-sm text-gray-700">복원수리</span>
           </label>
         </div>
       </section>}
