@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   UserCog, Shield, Package, Wrench, ArchiveX,
@@ -97,6 +98,19 @@ export function AdminLayout() {
   const { triggerWarning, triggerExpiry } = useSession()
   const [collapsed, setSidebarCollapsed] = useState(false)
   const [expanded, setExpanded] = useState<string[]>([])
+  const [flyoutGroup, setFlyoutGroup] = useState<string | null>(null)
+  const [flyoutTop, setFlyoutTop] = useState(0)
+  const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function openFlyout(label: string, top: number) {
+    if (hideTimer.current) clearTimeout(hideTimer.current)
+    setFlyoutGroup(label)
+    setFlyoutTop(top)
+  }
+
+  function closeFlyout() {
+    hideTimer.current = setTimeout(() => setFlyoutGroup(null), 80)
+  }
   const location = useLocation()
   const navigate = useNavigate()
   const { langCode } = useParams()
@@ -133,34 +147,63 @@ export function AdminLayout() {
     <div className="min-h-screen bg-[#f8f9fb] flex">
       {/* 사이드바 */}
       <aside
-        className={`bg-white border-r border-gray-200 min-h-screen sticky top-0 flex-shrink-0 transition-all duration-300 overflow-hidden ${
-          collapsed ? 'w-0' : 'w-64'
+        className={`bg-white border-r border-gray-200 min-h-screen sticky top-0 flex-shrink-0 transition-all duration-300 ${
+          collapsed ? 'w-[60px] overflow-visible' : 'w-64 overflow-hidden'
         }`}
       >
         {/* 로고 */}
-        <div className="px-5 py-5 border-b border-gray-100">
+        <div className={`py-5 border-b border-gray-100 ${collapsed ? 'px-3' : 'px-5'}`}>
           <button
             onClick={() => navigate(pfx)}
-            className="flex items-center gap-2.5 hover:opacity-70 transition-opacity"
+            className={`hover:opacity-70 transition-opacity ${collapsed ? 'flex justify-center w-full' : 'flex items-center gap-2.5'}`}
           >
             <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center">
               <span className="text-[11px] font-bold text-white tracking-wider">PS</span>
             </div>
-            <div className="text-left">
-              <div className="text-[13px] font-semibold text-gray-900 tracking-[-0.01em] leading-tight">
-                Product Service
+            {!collapsed && (
+              <div className="text-left">
+                <div className="text-[13px] font-semibold text-gray-900 tracking-[-0.01em] leading-tight">
+                  Product Service
+                </div>
+                <div className="text-[10px] text-gray-400 tracking-[0.06em] uppercase mt-0.5">Admin</div>
               </div>
-              <div className="text-[10px] text-gray-400 tracking-[0.06em] uppercase mt-0.5">Admin</div>
-            </div>
+            )}
           </button>
         </div>
 
         {/* 네비게이션 */}
-        <nav className="px-3 py-3 pb-6">
+        <nav className={`py-3 pb-6 ${collapsed ? 'px-2' : 'px-3'}`}>
           {NAV.map(group => {
-            const isExpanded = expanded.includes(group.label)
             const GroupIcon = group.icon
 
+            if (collapsed) {
+              const isGroupActive = group.children.some(c =>
+                location.pathname.startsWith(`${pfx}${c.to}`)
+              )
+              return (
+                <div
+                  key={group.label}
+                  className="mb-0.5"
+                  onMouseEnter={e => {
+                    const rect = e.currentTarget.getBoundingClientRect()
+                    openFlyout(group.label, rect.top)
+                  }}
+                  onMouseLeave={closeFlyout}
+                >
+                  <button
+                    className={`w-full flex justify-center py-2.5 rounded-xl transition-colors ${
+                      isGroupActive
+                        ? 'text-gray-900 bg-gray-100'
+                        : 'text-gray-400 hover:text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    <GroupIcon className="w-5 h-5" />
+                  </button>
+                </div>
+              )
+            }
+
+            const isExpanded = expanded.includes(group.label)
             return (
               <div key={group.label} className="mb-0.5">
                 {/* 그룹 헤더 */}
@@ -282,6 +325,49 @@ export function AdminLayout() {
 
       <SessionWarningModal />
       <SessionExpiredModal />
+
+      {/* 사이드바 축소 flyout 포털 */}
+      {collapsed && flyoutGroup && createPortal(
+        (() => {
+          const group = NAV.find(g => g.label === flyoutGroup)
+          if (!group) return null
+          return (
+            <div
+              className="fixed z-[9999]"
+              style={{ top: flyoutTop, left: 60 }}
+              onMouseEnter={() => {
+                if (hideTimer.current) clearTimeout(hideTimer.current)
+              }}
+              onMouseLeave={closeFlyout}
+            >
+              <div className="ml-1.5 bg-white border border-gray-200 rounded-xl shadow-xl shadow-black/[0.08] py-1.5 min-w-[180px]">
+                <p className="px-3 py-1.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
+                  {group.label}
+                </p>
+                {group.children.map(({ to, label, icon: Icon }) => (
+                  <NavLink
+                    key={to}
+                    to={`${pfx}${to}`}
+                    end
+                    onClick={() => setFlyoutGroup(null)}
+                    className={({ isActive }) =>
+                      `flex items-center gap-2.5 mx-1.5 px-2.5 py-2 text-sm rounded-lg transition-colors ${
+                        isActive
+                          ? 'text-gray-900 bg-gray-100 font-medium'
+                          : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                      }`
+                    }
+                  >
+                    <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                    <span className="whitespace-nowrap">{label}</span>
+                  </NavLink>
+                ))}
+              </div>
+            </div>
+          )
+        })(),
+        document.body
+      )}
     </div>
   )
 }

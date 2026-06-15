@@ -24,14 +24,26 @@ export type Store = {
   active?: 'Y' | 'N' | null
 }
 
+export type CustomerAddress = {
+  id: string
+  isDefault?: boolean
+  address1: string
+  address2?: string
+  zipCode?: string
+  country: string
+}
+
 export type Customer = {
   id: string
   name: string
   email: string
   phone: string
+  country: string
+  branchCode: string
   ticketYn: 'Y' | 'N'
   marketingAgree: 'Y' | 'N'
   registeredAt: string
+  addresses?: CustomerAddress[]
 }
 
 export type TicketStatus =
@@ -139,6 +151,7 @@ export type Product = {
   releaseDate: string          // 출시일
   partsRetentionPeriod: string // 부품보유기간 만료일 (YYYY-MM-DD)
   salesStatus: SalesStatus    // 판매 상태
+  discontinuedYear?: string    // 단종년도 (SAP 제공, 없을 수 있음)
   stockLocation: string        // 재고보관위치
   isSafetyStock: boolean       // 안전재고여부
   quantity: number             // 수량

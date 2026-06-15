@@ -3,9 +3,10 @@ import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, FileDown, Filter, Lock, P
 import * as XLSX from 'xlsx'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Pagination } from '@/components/pagination'
-import { BRANCHES, MEMBERS, TICKETS } from '@/lib/mock-data'
+import { BRANCHES, MEMBERS } from '@/lib/mock-data'
 import { addDownloadLog } from '@/lib/download-logs'
 import { maskEmail, maskName, maskPhone } from '@/lib/masking'
+import { getTicketsWithExtras } from '@/lib/prototype-storage'
 import type { PaymentCompleted, Ticket, TicketStatus } from '@/lib/types'
 
 const ITEMS_PER_PAGE = 20
@@ -231,7 +232,7 @@ export function TicketsPage() {
   const branchOptions = useMemo(() => {
     return BRANCHES.filter(branch => branch.code === '1110' || branch.code === 'C1002')
   }, [])
-  const effectiveBranch = activeBranch || branchOptions[0]?.code || ''
+  const effectiveBranch = activeBranch
 
   const [dateFilters, setDateFilters] = useState<DateFilters>(initDateFilters)
   const [appliedDateFilters, setAppliedDateFilters] = useState<DateFilters>(initDateFilters)
@@ -255,6 +256,7 @@ export function TicketsPage() {
   const [originalDownloadOpen, setOriginalDownloadOpen] = useState(false)
   const [exportPassword, setExportPassword] = useState('')
   const [exportReason, setExportReason] = useState('')
+  const [tickets] = useState(() => getTicketsWithExtras())
   const scanInputRef = useRef<HTMLInputElement>(null)
   const modalScanRef = useRef<HTMLInputElement>(null)
   const exportMenuRef = useRef<HTMLDivElement>(null)
@@ -284,11 +286,11 @@ export function TicketsPage() {
   }
 
   const branchTickets = useMemo(
-    () => TICKETS.filter(ticket =>
+    () => tickets.filter(ticket =>
       !deletedIds.has(ticket.ticketNo) &&
       (!effectiveBranch || ticket.branchCode === effectiveBranch)
     ),
-    [effectiveBranch, deletedIds]
+    [effectiveBranch, deletedIds, tickets]
   )
 
   function buildExportRows(masked: boolean) {
@@ -457,7 +459,7 @@ export function TicketsPage() {
     if (e.key !== 'Enter') return
     const value = scanValue.trim()
     if (!value) return
-    const ticket = TICKETS.find(t => t.ticketNo === value)
+    const ticket = tickets.find(t => t.ticketNo === value)
     if (ticket) {
       setScanValue('')
       setScanError(false)
@@ -471,7 +473,7 @@ export function TicketsPage() {
     if (e.key !== 'Enter') return
     const value = modalScanValue.trim()
     if (!value) return
-    const ticket = TICKETS.find(t => t.ticketNo === value)
+    const ticket = tickets.find(t => t.ticketNo === value)
     if (ticket) {
       setModalScanValue('')
       setModalScanError(false)
@@ -684,7 +686,7 @@ export function TicketsPage() {
               <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
             </button>
             {exportMenuOpen && (
-              <div className="absolute right-0 top-full z-30 mt-1.5 w-56 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg shadow-black/[0.08]">
+              <div className="absolute right-0 top-full z-50 mt-1.5 w-56 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg shadow-black/[0.08]">
                 <button
                   type="button"
                   onClick={handleMaskedDownload}
@@ -720,6 +722,7 @@ export function TicketsPage() {
               onChange={e => handleBranchChange(e.target.value)}
               className="w-52 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400"
             >
+              <option value="">전체</option>
               {branchOptions.map(branch => (
                 <option key={branch.code} value={branch.code}>{branchLabel(branch.code)}</option>
               ))}
@@ -1069,7 +1072,7 @@ export function TicketsPage() {
               ) : (
                 <div className="space-y-1.5">
                   {[...selectedIds].map(id => {
-                    const t = TICKETS.find(tk => tk.ticketNo === id)
+                    const t = tickets.find(tk => tk.ticketNo === id)
                     if (!t) return null
                     const meta = STATUS_META[t.status]
                     return (

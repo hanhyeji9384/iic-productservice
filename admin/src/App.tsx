@@ -15,6 +15,7 @@ import { StockPage } from '@/pages/stock'
 import { StoresPage } from '@/pages/stores'
 import { StoreDetailPage } from '@/pages/store-detail'
 import { CustomersPage } from '@/pages/customers'
+import { CustomerDetailPage } from '@/pages/customer-detail'
 import { TicketsPage } from '@/pages/tickets'
 import { TicketDetailPage } from '@/pages/ticket-detail'
 import { TicketNewPage } from '@/pages/ticket-new'
@@ -80,6 +81,7 @@ export default function App() {
 
           {/* 고객 관리 */}
           <Route path="customers" element={<CustomersPage />} />
+          <Route path="customers/:customerId" element={<CustomerDetailPage />} />
 
           {/* 티켓 관리 */}
           <Route path="tickets" element={<TicketsPage />} />

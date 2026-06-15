@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Barcode, Copy, History, Package } from 'lucide-react'
-import { TICKETS, BRANCHES } from '@/lib/mock-data'
+import { BRANCHES } from '@/lib/mock-data'
+import { getTicketsWithExtras } from '@/lib/prototype-storage'
 import type { PaymentCompleted, TicketStatus } from '@/lib/types'
+import { BarcodePrintModal } from '@/components/barcode-print-modal'
 
 const STATUS_META: Record<TicketStatus, { label: string; className: string }> = {
   RECEIVED:          { label: '접수',            className: 'bg-blue-50 text-blue-700 border-blue-200' },
@@ -66,7 +68,19 @@ export function TicketDetailPage() {
   const { ticketNo } = useParams<{ ticketNo: string }>()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<Tab>('overview')
-  const ticket = TICKETS.find(t => t.ticketNo === ticketNo)
+  const [showBarcodeModal, setShowBarcodeModal] = useState(false)
+  const [autoPrintBarcode, setAutoPrintBarcode] = useState(false)
+  const ticket = getTicketsWithExtras().find(t => t.ticketNo === ticketNo)
+
+  useEffect(() => {
+    if (!ticketNo) return
+    const key = `barcode_printed_${ticketNo}`
+    if (!localStorage.getItem(key)) {
+      localStorage.setItem(key, '1')
+      setAutoPrintBarcode(true)
+      setShowBarcodeModal(true)
+    }
+  }, [ticketNo])
 
   if (!ticket) {
     return (
@@ -94,6 +108,15 @@ export function TicketDetailPage() {
 
   return (
     <div className="min-w-0 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {showBarcodeModal && ticket && (
+        <BarcodePrintModal
+          ticketNo={ticket.ticketNo}
+          productName={ticket.productName}
+          customerName={ticket.customerName}
+          autoPrint={autoPrintBarcode}
+          onClose={() => { setShowBarcodeModal(false); setAutoPrintBarcode(false) }}
+        />
+      )}
       <button
         onClick={() => navigate(-1)}
         className="flex items-center gap-1.5 mb-3 text-xs text-gray-400 hover:text-gray-700 transition-colors"
@@ -115,7 +138,13 @@ export function TicketDetailPage() {
             </div>
             {/* 액션 버튼 */}
             <div className="flex items-center gap-2 flex-shrink-0">
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors">
+              <button
+                onClick={() => {
+                  if (ticketNo) localStorage.removeItem(`barcode_printed_${ticketNo}`)
+                  setShowBarcodeModal(true)
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
+              >
                 <Barcode className="w-3.5 h-3.5" />바코드 출력
               </button>
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors">

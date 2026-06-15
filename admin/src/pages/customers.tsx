@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowDown, ArrowUp, ArrowUpDown, Filter, RefreshCw, Trash2, X } from 'lucide-react'
 import { Pagination } from '@/components/pagination'
 import { addPrivacyLog } from '@/lib/download-logs'
-import { CUSTOMERS } from '@/lib/mock-data'
+import { BRANCHES } from '@/lib/mock-data'
 import { maskEmail, maskName, maskPhone } from '@/lib/masking'
+import { getCustomersWithOverrides, localTimestamp } from '@/lib/prototype-storage'
 import type { Customer } from '@/lib/types'
 
 const ITEMS_PER_PAGE = 15
@@ -38,12 +40,6 @@ function getSortValue(customer: CustomerRow, key: SortKey) {
   return customer[key]
 }
 
-function localTimestamp() {
-  const now = new Date()
-  const pad = (value: number) => String(value).padStart(2, '0')
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
-}
-
 function loadRemovedCustomers() {
   if (typeof window === 'undefined') return new Map<string, string>()
   try {
@@ -67,7 +63,7 @@ function persistRemovedCustomers(customers: CustomerRow[]) {
 
 function initialCustomers() {
   const removed = loadRemovedCustomers()
-  return CUSTOMERS.map(customer => {
+  return getCustomersWithOverrides().map(customer => {
     const removedAt = removed.get(customer.id)
     if (!removedAt) return { ...customer }
     return {
@@ -83,6 +79,9 @@ function initialCustomers() {
 }
 
 export function CustomersPage() {
+  const navigate = useNavigate()
+  const { langCode } = useParams()
+  const [activeBranch, setActiveBranch] = useState('')
   const [customers, setCustomers] = useState<CustomerRow[]>(initialCustomers)
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({})
   const [appliedColumnFilters, setAppliedColumnFilters] = useState<Record<string, string>>({})
@@ -96,6 +95,7 @@ export function CustomersPage() {
 
   const filtered = useMemo(() => {
     return customers.filter(customer => {
+      if (activeBranch && customer.branchCode !== activeBranch) return false
       if (appliedColumnFilters.id && !customer.id.toLowerCase().includes(appliedColumnFilters.id.toLowerCase())) return false
       if (appliedColumnFilters.name && (customer.privacyRemoved || !customer.name.toLowerCase().includes(appliedColumnFilters.name.toLowerCase()))) return false
       if (appliedColumnFilters.email && (customer.privacyRemoved || !customer.email.toLowerCase().includes(appliedColumnFilters.email.toLowerCase()))) return false
@@ -112,7 +112,7 @@ export function CustomersPage() {
       if (appliedColumnFilters.registeredTo && registeredDate > appliedColumnFilters.registeredTo) return false
       return true
     })
-  }, [customers, appliedColumnFilters])
+  }, [activeBranch, customers, appliedColumnFilters])
 
   const sorted = useMemo(() => {
     if (!sortKey || !sortDir) return filtered
@@ -184,7 +184,7 @@ export function CustomersPage() {
   }
 
   function handleRefresh() {
-    setCustomers(prev => [...prev])
+    setCustomers(initialCustomers())
     setPage(1)
     setSelectedIds(new Set())
   }
@@ -394,13 +394,21 @@ export function CustomersPage() {
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          {hasActiveFilters && (
-            <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
+          <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
+            <select
+              value={activeBranch}
+              onChange={e => { setActiveBranch(e.target.value); setPage(1); setSelectedIds(new Set()) }}
+              className="w-64 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400"
+            >
+              <option value="">법인</option>
+              {BRANCHES.map(b => <option key={b.code} value={b.code}>{b.code} {b.name}</option>)}
+            </select>
+            {hasActiveFilters && (
               <button onClick={handleReset} className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                 <X className="w-3 h-3" />초기화
               </button>
-            </div>
-          )}
+            )}
+          </div>
           <div className="overflow-x-auto">
             <table className="min-w-[1080px] w-full">
               <thead>
@@ -466,7 +474,7 @@ export function CustomersPage() {
                     )
                   })()}
 
-                  {/* ID (email) */}
+                  {/* ID(이메일) */}
                   {(() => {
                     const isFiltered = !!appliedColumnFilters.email
                     return (
@@ -600,8 +608,12 @@ export function CustomersPage() {
                     </td>
                   </tr>
                 ) : paginated.map(customer => (
-                  <tr key={customer.id} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="px-5 py-3.5 whitespace-nowrap">
+                  <tr
+                    key={customer.id}
+                    onClick={() => !customer.privacyRemoved && navigate(`/${langCode}/customers/${customer.id}`)}
+                    className={`hover:bg-gray-50/50 transition-colors ${!customer.privacyRemoved ? 'cursor-pointer' : ''}`}
+                  >
+                    <td className="px-5 py-3.5 whitespace-nowrap" onClick={e => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         aria-label={`${customer.id} 선택`}
