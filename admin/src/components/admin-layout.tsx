@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   UserCog, Shield, Package, Wrench, ArchiveX,
-  Store, Users, Ticket, Menu, LogOut, ChevronRight,
-  AlertTriangle, KeyRound, Briefcase, CalendarDays, Download, ShieldCheck,
+  Store, Users, Ticket, PanelLeftClose, PanelLeftOpen, LogOut, ChevronRight,
+  AlertTriangle, KeyRound, CalendarDays, Download, ShieldCheck, Briefcase,
 } from 'lucide-react'
 import { useSession } from '@/lib/session-context'
 import { SessionWarningModal } from '@/components/session-warning-modal'
@@ -218,12 +218,18 @@ export function AdminLayout() {
       <div className="flex-1 flex flex-col min-w-0">
         {/* 헤더 */}
         <header className="bg-white border-b border-gray-200">
-          <div className="px-6 py-4 flex items-center justify-between">
+          <div className="px-6 h-[72px] flex items-center justify-between">
             <button
+              type="button"
               onClick={() => setSidebarCollapsed(!collapsed)}
-              className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+              aria-label={collapsed ? '좌측 메뉴 열기' : '좌측 메뉴 접기'}
+              title={collapsed ? '좌측 메뉴 열기' : '좌측 메뉴 접기'}
+              className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
             >
-              <Menu className="w-5 h-5 text-gray-600" />
+              {collapsed
+                ? <PanelLeftOpen className="w-5 h-5" />
+                : <PanelLeftClose className="w-5 h-5" />
+              }
             </button>
             <div className="flex items-center gap-3">
               {/* 세션 테스트 (프로토타입 전용) */}
@@ -270,7 +276,7 @@ export function AdminLayout() {
         </header>
 
         {/* 콘텐츠 */}
-        <main className="flex-1 p-8">
+        <main className="flex-1 min-w-0 p-8">
           <Outlet />
         </main>
       </div>

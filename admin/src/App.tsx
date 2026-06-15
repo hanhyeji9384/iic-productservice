@@ -16,6 +16,9 @@ import { StockPage } from '@/pages/stock'
 import { StoresPage } from '@/pages/stores'
 import { StoreDetailPage } from '@/pages/store-detail'
 import { CustomersPage } from '@/pages/customers'
+import { TicketsPage } from '@/pages/tickets'
+import { TicketDetailPage } from '@/pages/ticket-detail'
+import { TicketNewPage } from '@/pages/ticket-new'
 import { DownloadLogsPage } from '@/pages/download-logs'
 import { PrivacyLogsPage } from '@/pages/privacy-logs'
 import { ProductsProvider } from '@/lib/products-context'
@@ -81,7 +84,9 @@ export default function App() {
           <Route path="customers" element={<CustomersPage />} />
 
           {/* 티켓 관리 */}
-          <Route path="tickets" element={<PlaceholderPage title="티켓" />} />
+          <Route path="tickets" element={<TicketsPage />} />
+          <Route path="tickets/new" element={<TicketNewPage />} />
+          <Route path="tickets/:ticketNo" element={<TicketDetailPage />} />
           <Route path="global-tickets" element={<PlaceholderPage title="국가별 티켓 관리" />} />
 
           {/* 에러 페이지 */}

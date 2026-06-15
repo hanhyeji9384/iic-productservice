@@ -21,6 +21,11 @@ const CHANGE_TYPE_STYLE = {
   create: { bg: 'bg-gray-100 text-gray-500', label: '생성' },
 }
 
+const CURRENT_ADMIN = {
+  name: '한혜지',
+  id: 'monster563',
+}
+
 function emptyPerms(): PermissionEntry[] {
   return PERMISSION_MENUS.map(m => ({ menuId: m.id, read: false, write: false, delete: false }))
 }
@@ -138,11 +143,11 @@ export function RolesPage() {
       if (permDiff) metaDiffs.push(permDiff)
       const autoSummary = metaDiffs.length > 0 ? metaDiffs.join(' / ') : '변경 없음'
       setLogs(prev => [{
-        id: Math.max(...prev.map(l => l.id)) + 1,
+        id: Math.max(0, ...prev.map(l => l.id)) + 1,
         roleId: editingRole.id, roleName: formName,
         changedAt: now, changeType: 'update',
         summary: autoSummary,
-        changedByName: '김민준', changedById: 'monster001', memo: formMemo,
+        changedByName: CURRENT_ADMIN.name, changedById: CURRENT_ADMIN.id, memo: formMemo,
       }, ...prev])
     } else {
       const newRole: PermissionRole = {
@@ -151,6 +156,13 @@ export function RolesPage() {
         memberCount: 0, createdAt: now, updatedAt: now,
       }
       setRoles(prev => [...prev, newRole])
+      setLogs(prev => [{
+        id: Math.max(0, ...prev.map(l => l.id)) + 1,
+        roleId: newRole.id, roleName: newRole.name,
+        changedAt: now, changeType: 'create',
+        summary: '권한등록',
+        changedByName: CURRENT_ADMIN.name, changedById: CURRENT_ADMIN.id, memo: formMemo,
+      }, ...prev])
     }
     closeModal()
   }
@@ -159,16 +171,16 @@ export function RolesPage() {
     if (!confirm(`"${role.name}" 역할을 삭제하시겠습니까?`)) return
     setRoles(prev => prev.filter(r => r.id !== role.id))
     setLogs(prev => [{
-      id: Math.max(...prev.map(l => l.id)) + 1,
+      id: Math.max(0, ...prev.map(l => l.id)) + 1,
       roleId: role.id, roleName: role.name,
       changedAt: nowString(), changeType: 'delete',
       summary: `${role.name} 역할 삭제`,
-      changedByName: '김민준', changedById: 'monster001',
+      changedByName: CURRENT_ADMIN.name, changedById: CURRENT_ADMIN.id,
     }, ...prev])
   }
 
   const paginatedRoles = roles.slice((rolesPage - 1) * ITEMS_PER_PAGE, rolesPage * ITEMS_PER_PAGE)
-  const filteredLogs = logs.filter(l => l.changeType !== 'create')
+  const filteredLogs = logs
   const paginatedLogs = filteredLogs.slice((historyPage - 1) * ITEMS_PER_PAGE, historyPage * ITEMS_PER_PAGE)
   const isReadOnly = !!editingRole && editingRole.id === 0
 
@@ -291,7 +303,7 @@ export function RolesPage() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{log.roleName}</td>
                       <td className="px-6 py-4">
-                        <SummaryCell summary={log.summary} changeType={log.changeType} />
+                        <SummaryCell summary={log.summary} changeType={log.changeType === 'delete' ? undefined : log.changeType} />
                         {log.memo && <div className="text-xs text-gray-400 mt-1.5">사유: {log.memo}</div>}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Trash2, Check, ChevronDown, Globe, Building2, Mail, Calendar, Clock, User } from 'lucide-react'
-import { ROLES, DEPARTMENTS } from '@/lib/mock-data'
-import { OPTICAL_STORES, HQ_ROLES, FRANCHISE_ROLE, getBranchName, BranchMultiSelect, StoreMultiSelect } from '@/components/members/branch-store-select'
+import { ROLES } from '@/lib/mock-data'
+import { OPTICAL_STORES, HQ_ROLES, FRANCHISE_ROLES, getBranchName, BranchMultiSelect, StoreMultiSelect } from '@/components/members/branch-store-select'
 import { useMembers } from '@/lib/members-context'
 import { formatDateTime, formatDate, inputCls } from '@/lib/utils'
 import type { Member } from '@/lib/types'
@@ -10,7 +10,7 @@ import type { Member } from '@/lib/types'
 type EditForm = {
   name: string
   email: string
-  department: string
+  isTechnician: boolean
   roleId: string
   status: 'active' | 'inactive'
   expiresAt: string
@@ -22,7 +22,7 @@ function formFromMember(m: Member): EditForm {
   return {
     name: m.name,
     email: m.email,
-    department: m.department ?? '',
+    isTechnician: !!m.isTechnician,
     roleId: m.roleId,
     status: m.status,
     expiresAt: m.expiresAt ?? '',
@@ -38,9 +38,10 @@ export function MemberDetailPage() {
 
   const { members, updateMember, deleteMember } = useMembers()
   const member = members.find(m => m.id === id)
+  const isStoreOwnerRole = (roleId: string) => FRANCHISE_ROLES.includes(roleId)
 
   const [form, setForm] = useState<EditForm>({
-    name: '', email: '', department: '', roleId: '', status: 'active',
+    name: '', email: '', isTechnician: false, roleId: '', status: 'active',
     expiresAt: '', managedBranches: [], assignedStores: [],
   })
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -64,7 +65,7 @@ export function MemberDetailPage() {
       ...member!,
       name: form.name,
       email: form.email,
-      department: form.department || undefined,
+      isTechnician: form.isTechnician,
       roleId: form.roleId,
       status: form.status,
       expiresAt: form.expiresAt || null,
@@ -138,8 +139,8 @@ export function MemberDetailPage() {
                     const r = e.target.value
                     setForm(f => ({
                       ...f, roleId: r,
-                      managedBranches: HQ_ROLES.includes(r) ? ['*'] : r === FRANCHISE_ROLE ? ['1110'] : f.managedBranches,
-                      assignedStores: (HQ_ROLES.includes(r) || r === FRANCHISE_ROLE) ? [] : f.assignedStores,
+                      managedBranches: HQ_ROLES.includes(r) ? ['*'] : isStoreOwnerRole(r) ? ['1110'] : f.managedBranches,
+                      assignedStores: (HQ_ROLES.includes(r) || isStoreOwnerRole(r)) ? [] : f.assignedStores,
                     }))
                   }}
                   className={inputCls + ' appearance-none pr-8 cursor-pointer'}
@@ -171,14 +172,16 @@ export function MemberDetailPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">부서</p>
-              <div className="relative">
-                <select value={form.department} onChange={e => setForm(f => ({ ...f, department: e.target.value }))} className={inputCls + ' appearance-none pr-8 cursor-pointer'}>
-                  <option value="">미지정</option>
-                  {DEPARTMENTS.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              </div>
+              <p className="text-xs text-gray-400 mb-1.5">서비스 기술자</p>
+              <button
+                type="button"
+                onClick={() => setForm(f => ({ ...f, isTechnician: !f.isTechnician }))}
+                className="flex items-center gap-2.5 mt-1"
+              >
+                <span className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ${form.isTechnician ? 'bg-gray-900' : 'bg-gray-200'}`}>
+                  <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${form.isTechnician ? 'translate-x-4' : 'translate-x-0'}`} />
+                </span>
+              </button>
             </div>
             <div>
               <p className="text-xs text-gray-400 mb-1.5">계정 만료일</p>
@@ -193,7 +196,7 @@ export function MemberDetailPage() {
             <div>
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                <p className="text-xs text-gray-400">가입일</p>
+                <p className="text-xs text-gray-400">생성 일시</p>
               </div>
               <p className="text-sm text-gray-600">{formatDate(member.createdAt)}</p>
             </div>
@@ -211,7 +214,7 @@ export function MemberDetailPage() {
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">담당 정보</h2>
 
-          {form.roleId === FRANCHISE_ROLE ? (
+          {isStoreOwnerRole(form.roleId) ? (
             <>
               <div>
                 <div className="flex items-center gap-1.5 mb-1.5">

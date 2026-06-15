@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Search, ChevronDown, X, ArrowUp, ArrowDown, ArrowUpDown, Download, Check, Clock, List } from 'lucide-react'
+import { X, ArrowUp, ArrowDown, ArrowUpDown, Download, Check, Clock, List, Filter } from 'lucide-react'
 import { Pagination } from '@/components/pagination'
 import { SummaryCell } from '@/components/summary-cell'
 import { useProducts } from '@/lib/products-context'
@@ -30,17 +30,6 @@ const CHANGE_TYPE_STYLES: Record<ProductChangeLog['changeType'], { bg: string; l
   update: { bg: 'bg-blue-50 text-blue-700', label: '수정' },
 }
 
-const initFilters = {
-  brand: 'all', salesStatus: 'all',
-  midCategory: 'all', subCategory: 'all',
-  factory1: 'all', factory2: 'all', factory3: 'all',
-  releaseDateFrom: '', releaseDateTo: '',
-  partsRetentionFrom: '', partsRetentionTo: '',
-  decoration: 'all',
-  restorationRepair: 'all',
-}
-type Filters = typeof initFilters
-
 const DEFAULT_DECORATION_PRODUCT_IDS = new Set(['P01', 'P02', 'P06', 'P08', 'P10', 'P11', 'P12', 'P14', 'P20', 'P21', 'P22'])
 
 function hasDecorationProduct(product: Product) {
@@ -51,28 +40,6 @@ function isRestorationRepairProduct(product: Product) {
   return product.isRestorationRepair ?? /METAL|COMBI/.test(product.subCategory)
 }
 
-function branchLabel(branchCode: string) {
-  const branch = BRANCHES.find(b => b.code === branchCode)
-  return branch ? `${branch.code} ${branch.name}` : branchCode
-}
-
-function SelectFilter({ label, value, onChange, children }: {
-  label: string; value: string; onChange: (v: string) => void; children: React.ReactNode
-}) {
-  return (
-    <div>
-      <p className="text-xs text-gray-400 mb-1.5">{label}</p>
-      <div className="relative">
-        <select value={value} onChange={e => onChange(e.target.value)}
-          className="w-full appearance-none pl-3 pr-8 py-2 bg-[#f8f9fb] border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-colors cursor-pointer">
-          {children}
-        </select>
-        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-      </div>
-    </div>
-  )
-}
-
 export function ProductsPage() {
   const { products, productChangeLogs, updateStockFields } = useProducts()
 
@@ -80,20 +47,11 @@ export function ProductsPage() {
     const codes = [...new Set(products.map(p => p.branchCode).filter(Boolean))] as string[]
     return BRANCHES.filter(branch => codes.includes(branch.code))
   }, [products])
-  const [activeBranch, setActiveBranch] = useState<string>('')
   const [activeTab, setActiveTab] = useState<Tab>('list')
-  const effectiveBranch = activeBranch || branchOptions[0]?.code || ''
 
-  const branchProducts = useMemo(() =>
-    products.filter(product => !effectiveBranch || product.branchCode === effectiveBranch),
-    [products, effectiveBranch]
-  )
-
-  const [search, setSearch] = useState('')
-  const [appliedSearch, setAppliedSearch] = useState('')
-  const [showFilters, setShowFilters] = useState(false)
-  const [filters, setFilters] = useState<Filters>(initFilters)
-  const [applied, setApplied] = useState<Filters>(initFilters)
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({})
+  const [appliedColumnFilters, setAppliedColumnFilters] = useState<Record<string, string>>({})
+  const [filterPopover, setFilterPopover] = useState<{ col: string; rect: DOMRect } | null>(null)
   const [page, setPage] = useState(1)
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc' | null>(null)
@@ -101,8 +59,6 @@ export function ProductsPage() {
   const [decorationValue, setDecorationValue] = useState<'true' | 'false'>('true')
   const [restorationRepairValue, setRestorationRepairValue] = useState<'true' | 'false'>('true')
   const [historyPage, setHistoryPage] = useState(1)
-
-  const set = (key: keyof Filters) => (val: string) => setFilters(p => ({ ...p, [key]: val }))
 
   function handleSort(key: SortKey) {
     if (sortKey !== key) { setSortKey(key); setSortDir('asc') }
@@ -116,41 +72,42 @@ export function ProductsPage() {
     return <ArrowDown className="w-3 h-3 text-gray-700 flex-shrink-0" />
   }
 
-  const brands     = useMemo(() => [...new Set(branchProducts.map(p => p.brandCategory))], [branchProducts])
-  const midCats    = useMemo(() => [...new Set(branchProducts.map(p => p.midCategory))], [branchProducts])
+  const brands     = useMemo(() => [...new Set(products.map(p => p.brandCategory))], [products])
+  const midCats    = useMemo(() => [...new Set(products.map(p => p.midCategory))], [products])
   const subCats    = useMemo(() => {
-    const base = filters.midCategory === 'all' ? branchProducts : branchProducts.filter(p => p.midCategory === filters.midCategory)
+    const midCatFilter = columnFilters.midCategory
+    const base = midCatFilter ? products.filter(p => p.midCategory === midCatFilter) : products
     return [...new Set(base.map(p => p.subCategory))]
-  }, [filters.midCategory, branchProducts])
-  const factories1 = useMemo(() => [...new Set(branchProducts.map(p => p.factory1))], [branchProducts])
-  const factories2 = useMemo(() => [...new Set(branchProducts.map(p => p.factory2).filter(Boolean) as string[])], [branchProducts])
-  const factories3 = useMemo(() => [...new Set(branchProducts.map(p => p.factory3).filter(Boolean) as string[])], [branchProducts])
-
-  const activeFilterCount = useMemo(() =>
-    (Object.keys(initFilters) as (keyof Filters)[]).filter(k => applied[k] !== initFilters[k] && applied[k] !== '').length + (appliedSearch ? 1 : 0),
-    [applied, appliedSearch]
+  }, [columnFilters.midCategory, products])
+  const factories1 = useMemo(() => [...new Set(products.map(p => p.factory1))], [products])
+  const factories2 = useMemo(() => [...new Set(products.map(p => p.factory2).filter(Boolean) as string[])], [products])
+  const factories3 = useMemo(() => [...new Set(products.map(p => p.factory3).filter(Boolean) as string[])], [products])
+  const partsRetentionOptions = useMemo(() =>
+    [...new Set(products.map(p => p.partsRetentionPeriod).filter(Boolean) as string[])].sort(),
+    [products]
   )
 
   const filtered = useMemo(() => {
-    const q = appliedSearch.toLowerCase()
-    return branchProducts.filter(p => {
-      if (q && !p.productCode.toLowerCase().includes(q) && !p.name.toLowerCase().includes(q) && !p.barcode.includes(q)) return false
-      if (applied.brand !== 'all' && p.brandCategory !== applied.brand) return false
-      if (applied.midCategory !== 'all' && p.midCategory !== applied.midCategory) return false
-      if (applied.subCategory !== 'all' && p.subCategory !== applied.subCategory) return false
-      if (applied.factory1 !== 'all' && p.factory1 !== applied.factory1) return false
-      if (applied.factory2 !== 'all' && p.factory2 !== applied.factory2) return false
-      if (applied.factory3 !== 'all' && p.factory3 !== applied.factory3) return false
-      if (applied.salesStatus !== 'all' && p.salesStatus !== applied.salesStatus) return false
-      if (applied.decoration !== 'all' && hasDecorationProduct(p) !== (applied.decoration === 'true')) return false
-      if (applied.restorationRepair !== 'all' && isRestorationRepairProduct(p) !== (applied.restorationRepair === 'true')) return false
-      if (applied.releaseDateFrom && p.releaseDate < applied.releaseDateFrom) return false
-      if (applied.releaseDateTo && p.releaseDate > applied.releaseDateTo) return false
-      if (applied.partsRetentionFrom && p.partsRetentionPeriod < applied.partsRetentionFrom) return false
-      if (applied.partsRetentionTo && p.partsRetentionPeriod > applied.partsRetentionTo) return false
+    return products.filter(p => {
+      if (appliedColumnFilters.branch && p.branchCode !== appliedColumnFilters.branch) return false
+      if (appliedColumnFilters.productCode && !p.productCode.toLowerCase().includes(appliedColumnFilters.productCode.toLowerCase())) return false
+      if (appliedColumnFilters.name && !p.name.toLowerCase().includes(appliedColumnFilters.name.toLowerCase())) return false
+      if (appliedColumnFilters.barcode && !p.barcode.toLowerCase().includes(appliedColumnFilters.barcode.toLowerCase())) return false
+      if (appliedColumnFilters.salesStatus && p.salesStatus !== appliedColumnFilters.salesStatus) return false
+      if (appliedColumnFilters.brand && p.brandCategory !== appliedColumnFilters.brand) return false
+      if (appliedColumnFilters.midCategory && p.midCategory !== appliedColumnFilters.midCategory) return false
+      if (appliedColumnFilters.subCategory && p.subCategory !== appliedColumnFilters.subCategory) return false
+      if (appliedColumnFilters.factory1 && p.factory1 !== appliedColumnFilters.factory1) return false
+      if (appliedColumnFilters.factory2 && p.factory2 !== appliedColumnFilters.factory2) return false
+      if (appliedColumnFilters.factory3 && p.factory3 !== appliedColumnFilters.factory3) return false
+      if (appliedColumnFilters.decoration && hasDecorationProduct(p) !== (appliedColumnFilters.decoration === 'true')) return false
+      if (appliedColumnFilters.restorationRepair && isRestorationRepairProduct(p) !== (appliedColumnFilters.restorationRepair === 'true')) return false
+      if (appliedColumnFilters.releaseDateFrom && p.releaseDate < appliedColumnFilters.releaseDateFrom) return false
+      if (appliedColumnFilters.releaseDateTo && p.releaseDate > appliedColumnFilters.releaseDateTo) return false
+      if (appliedColumnFilters.partsRetention && p.partsRetentionPeriod !== appliedColumnFilters.partsRetention) return false
       return true
     })
-  }, [appliedSearch, applied, branchProducts])
+  }, [appliedColumnFilters, products])
 
   const sorted = useMemo(() => {
     if (!sortKey || !sortDir) return filtered
@@ -208,28 +165,314 @@ export function ProductsPage() {
     URL.revokeObjectURL(url)
   }
 
-  function handleSearch() { setAppliedSearch(search); setApplied(filters); setPage(1); setSelected(new Set()) }
-  function handleReset() {
-    setSearch(''); setAppliedSearch(''); setFilters(initFilters); setApplied(initFilters); setPage(1); setSelected(new Set())
+  function applyFilter(updates: Record<string, string | undefined>) {
+    setColumnFilters(prev => {
+      const next = { ...prev }
+      Object.entries(updates).forEach(([k, v]) => { if (v === undefined) delete next[k]; else next[k] = v })
+      return next
+    })
+    setAppliedColumnFilters(prev => {
+      const next = { ...prev }
+      Object.entries(updates).forEach(([k, v]) => { if (v === undefined) delete next[k]; else next[k] = v })
+      return next
+    })
+    setPage(1)
+    setFilterPopover(null)
   }
-  function handleBranchChange(branchCode: string) {
-    setActiveBranch(branchCode)
+
+  function applyCurrentFilters() {
+    setAppliedColumnFilters({ ...columnFilters })
+    setPage(1)
+    setFilterPopover(null)
+  }
+
+  function handleReset() {
+    setColumnFilters({})
+    setAppliedColumnFilters({})
     setPage(1)
     setSelected(new Set())
   }
+
   function handleDecorationApply() {
     selected.forEach(id => updateStockFields(id, { hasDecoration: decorationValue === 'true' }))
     setSelected(new Set())
   }
+
   function handleRestorationRepairApply() {
     selected.forEach(id => updateStockFields(id, { isRestorationRepair: restorationRepairValue === 'true' }))
     setSelected(new Set())
   }
 
+  function handleFilterIconClick(col: string, e: React.MouseEvent<HTMLButtonElement>) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    setFilterPopover(prev => prev?.col === col ? null : { col, rect })
+  }
+
+  function getAppliedFilterDisplay(col: string): string {
+    switch (col) {
+      case 'decoration':
+      case 'restorationRepair':
+        return appliedColumnFilters[col] === 'true' ? 'Y' : 'N'
+      case 'releaseDate': {
+        const from = appliedColumnFilters.releaseDateFrom
+        const to = appliedColumnFilters.releaseDateTo
+        if (from && to) return `${from} ~ ${to}`
+        if (from) return `${from} ~`
+        if (to) return `~ ${to}`
+        return ''
+      }
+      case 'partsRetention':
+        return fmtRetention(appliedColumnFilters.partsRetention ?? '')
+      default:
+        return appliedColumnFilters[col] ?? ''
+    }
+  }
+
+  function isColFiltered(col: string): boolean {
+    switch (col) {
+      case 'releaseDate':
+        return !!(appliedColumnFilters.releaseDateFrom || appliedColumnFilters.releaseDateTo)
+      case 'partsRetention':
+        return !!appliedColumnFilters.partsRetention
+      default:
+        return !!appliedColumnFilters[col]
+    }
+  }
+
+  function renderFilterPopoverContent(col: string) {
+    switch (col) {
+      case 'brand':
+        return (
+          <div className="space-y-1">
+            <button onClick={() => applyFilter({ brand: undefined })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.brand ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >전체</button>
+            {brands.map(b => (
+              <button key={b} onClick={() => applyFilter({ brand: b })}
+                className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.brand === b ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              >{b}</button>
+            ))}
+          </div>
+        )
+      case 'midCategory':
+        return (
+          <div className="space-y-1">
+            <button onClick={() => applyFilter({ midCategory: undefined, subCategory: undefined })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.midCategory ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >전체</button>
+            {midCats.map(c => (
+              <button key={c} onClick={() => applyFilter({ midCategory: c, subCategory: undefined })}
+                className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.midCategory === c ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              >{c}</button>
+            ))}
+          </div>
+        )
+      case 'subCategory':
+        return (
+          <div className="space-y-1">
+            <button onClick={() => applyFilter({ subCategory: undefined })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.subCategory ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >전체</button>
+            {subCats.map(c => (
+              <button key={c} onClick={() => applyFilter({ subCategory: c })}
+                className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.subCategory === c ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              >{c}</button>
+            ))}
+          </div>
+        )
+      case 'factory1':
+        return (
+          <div className="space-y-1">
+            <button onClick={() => applyFilter({ factory1: undefined })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.factory1 ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >전체</button>
+            {factories1.map(f => (
+              <button key={f} onClick={() => applyFilter({ factory1: f })}
+                className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.factory1 === f ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              >{f}</button>
+            ))}
+          </div>
+        )
+      case 'factory2':
+        return (
+          <div className="space-y-1">
+            <button onClick={() => applyFilter({ factory2: undefined })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.factory2 ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >전체</button>
+            {factories2.map(f => (
+              <button key={f} onClick={() => applyFilter({ factory2: f })}
+                className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.factory2 === f ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              >{f}</button>
+            ))}
+          </div>
+        )
+      case 'factory3':
+        return (
+          <div className="space-y-1">
+            <button onClick={() => applyFilter({ factory3: undefined })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.factory3 ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >전체</button>
+            {factories3.map(f => (
+              <button key={f} onClick={() => applyFilter({ factory3: f })}
+                className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.factory3 === f ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              >{f}</button>
+            ))}
+          </div>
+        )
+      case 'decoration':
+        return (
+          <div className="space-y-1">
+            <button onClick={() => applyFilter({ decoration: undefined })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.decoration ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >전체</button>
+            <button onClick={() => applyFilter({ decoration: 'true' })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.decoration === 'true' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >Y</button>
+            <button onClick={() => applyFilter({ decoration: 'false' })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.decoration === 'false' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >N</button>
+          </div>
+        )
+      case 'restorationRepair':
+        return (
+          <div className="space-y-1">
+            <button onClick={() => applyFilter({ restorationRepair: undefined })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.restorationRepair ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >전체</button>
+            <button onClick={() => applyFilter({ restorationRepair: 'true' })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.restorationRepair === 'true' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >Y</button>
+            <button onClick={() => applyFilter({ restorationRepair: 'false' })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.restorationRepair === 'false' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >N</button>
+          </div>
+        )
+      case 'releaseDate':
+        return (
+          <div className="space-y-2">
+            <p className="text-xs text-gray-500 font-medium">출시일 범위</p>
+            <div className="space-y-1.5">
+              <input type="date" value={columnFilters.releaseDateFrom ?? ''}
+                onChange={e => setColumnFilters(prev => ({ ...prev, releaseDateFrom: e.target.value }))}
+                className="w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-400"
+                placeholder="시작" />
+              <span className="block text-center text-gray-300 text-xs">~</span>
+              <input type="date" value={columnFilters.releaseDateTo ?? ''}
+                onChange={e => setColumnFilters(prev => ({ ...prev, releaseDateTo: e.target.value }))}
+                className="w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-400"
+                placeholder="종료" />
+            </div>
+            <div className="flex gap-1.5 pt-1">
+              {(columnFilters.releaseDateFrom || columnFilters.releaseDateTo) && (
+                <button onClick={() => applyFilter({ releaseDateFrom: undefined, releaseDateTo: undefined })}
+                  className="flex-1 text-center text-xs text-gray-400 hover:text-gray-600 transition-colors py-1.5 border border-gray-200 rounded-lg"
+                >초기화</button>
+              )}
+              <button onClick={applyCurrentFilters}
+                className="flex-1 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
+              >적용</button>
+            </div>
+          </div>
+        )
+      case 'partsRetention':
+        return (
+          <div className="space-y-1 max-h-64 overflow-y-auto">
+            <button onClick={() => applyFilter({ partsRetention: undefined })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.partsRetention ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >전체</button>
+            {partsRetentionOptions.map(v => (
+              <button key={v} onClick={() => applyFilter({ partsRetention: v })}
+                className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.partsRetention === v ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              >{fmtRetention(v)}</button>
+            ))}
+          </div>
+        )
+      case 'productCode':
+      case 'name':
+      case 'barcode': {
+        const placeholder = col === 'productCode' ? '제품코드 검색...' : col === 'name' ? '제품명 검색...' : '바코드 검색...'
+        return (
+          <div className="w-44 space-y-1.5">
+            <input type="text" value={columnFilters[col] ?? ''}
+              onChange={e => setColumnFilters(p => ({ ...p, [col]: e.target.value }))}
+              onKeyDown={e => e.key === 'Enter' && applyCurrentFilters()}
+              placeholder={placeholder}
+              className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-300" />
+            <div className="flex gap-1.5">
+              {columnFilters[col] && (
+                <button onClick={() => applyFilter({ [col]: undefined })}
+                  className="flex-1 text-xs text-gray-400 hover:text-gray-600 py-1.5 border border-gray-200 rounded-lg transition-colors">지우기</button>
+              )}
+              <button onClick={applyCurrentFilters}
+                className="flex-1 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors">적용</button>
+            </div>
+          </div>
+        )
+      }
+      case 'salesStatus':
+        return (
+          <div className="space-y-1">
+            <button onClick={() => applyFilter({ salesStatus: undefined })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.salesStatus ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >전체</button>
+            {(['사용중', '종료 예정', '판매 종료 (P)', '판매 종료 (C)'] as const).map(s => (
+              <button key={s} onClick={() => applyFilter({ salesStatus: s })}
+                className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.salesStatus === s ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              >{s}</button>
+            ))}
+          </div>
+        )
+      default:
+        return null
+    }
+  }
+
+  const FILTERABLE_COLS = new Set([
+    'productCode', 'barcode', 'name', 'salesStatus',
+    'brandCategory', 'midCategory', 'subCategory', 'hasDecoration', 'isRestorationRepair',
+    'factory1', 'factory2', 'factory3', 'releaseDate', 'partsRetentionPeriod',
+  ])
+
+  const COL_FILTER_KEY: Record<string, string> = {
+    productCode: 'productCode',
+    barcode: 'barcode',
+    name: 'name',
+    salesStatus: 'salesStatus',
+    brandCategory: 'brand',
+    midCategory: 'midCategory',
+    subCategory: 'subCategory',
+    hasDecoration: 'decoration',
+    isRestorationRepair: 'restorationRepair',
+    factory1: 'factory1',
+    factory2: 'factory2',
+    factory3: 'factory3',
+    releaseDate: 'releaseDate',
+    partsRetentionPeriod: 'partsRetention',
+  }
+
+  const tableColumns: { key: string; label: string; sort: SortKey | null }[] = [
+    { key: 'productCode',          label: '제품코드',    sort: 'productCode' },
+    { key: 'barcode',              label: '바코드',      sort: null },
+    { key: 'name',                 label: '제품명',      sort: 'name' },
+    { key: 'brandCategory',        label: '브랜드',      sort: 'brandCategory' },
+    { key: 'midCategory',          label: '중분류',      sort: 'midCategory' },
+    { key: 'subCategory',          label: '소분류',      sort: 'subCategory' },
+    { key: 'hasDecoration',        label: '장식보유여부', sort: 'hasDecoration' },
+    { key: 'isRestorationRepair',  label: '복원수리',    sort: 'isRestorationRepair' },
+    { key: 'factory1',             label: '생산공장1',   sort: 'factory1' },
+    { key: 'factory2',             label: '생산공장2',   sort: 'factory2' },
+    { key: 'factory3',             label: '생산공장3',   sort: 'factory3' },
+    { key: 'releaseDate',          label: '출시일',      sort: 'releaseDate' },
+    { key: 'salesStatus',          label: '판매상태',    sort: null },
+    { key: 'partsRetentionPeriod', label: '부품보유기간 만료일', sort: 'partsRetentionPeriod' },
+  ]
+
   const tabs = [
     { key: 'list' as const, label: '제품 목록', Icon: List },
     { key: 'history' as const, label: '변경 이력', Icon: Clock },
   ]
+
+  const hasAnyFilter = Object.values(appliedColumnFilters).some(Boolean)
 
   return (
     <div className="overflow-x-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -272,118 +515,36 @@ export function ProductsPage() {
         {/* 필터 */}
         {activeTab === 'list' && (
         <>
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-          <div className="px-5 pt-5 pb-4 border-b border-gray-100">
-            <div className="max-w-xs">
-              <SelectFilter label="법인" value={effectiveBranch} onChange={handleBranchChange}>
-                {branchOptions.map(branch => <option key={branch.code} value={branch.code}>{branchLabel(branch.code)}</option>)}
-              </SelectFilter>
-            </div>
-          </div>
-          <div className="p-5 flex gap-3 items-center">
-            <div className="relative flex-1 min-w-[220px]">
-              <input
-                type="text"
-                placeholder="제품코드, 제품명, 바코드로 검색..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                className="w-full px-4 py-2.5 bg-[#f8f9fb] border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-colors"
-              />
-            </div>
-            <button onClick={handleSearch} className="flex items-center gap-2 px-4 py-2.5 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
-              <Search className="w-4 h-4" />검색
-            </button>
-            <button
-              onClick={() => setShowFilters(v => !v)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${showFilters ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+        {/* 테이블 */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
+            <select
+              value={columnFilters.branch ?? ''}
+              onChange={e => {
+                const val = e.target.value
+                if (val) {
+                  setColumnFilters(prev => ({ ...prev, branch: val }))
+                  setAppliedColumnFilters(prev => ({ ...prev, branch: val }))
+                } else {
+                  setColumnFilters(prev => { const n = { ...prev }; delete n.branch; return n })
+                  setAppliedColumnFilters(prev => { const n = { ...prev }; delete n.branch; return n })
+                }
+                setPage(1)
+                setSelected(new Set())
+              }}
+              className="w-64 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400"
             >
-              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showFilters ? 'rotate-180' : ''}`} />
-              상세검색
-              {activeFilterCount > 0 && (
-                <span className={`ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${showFilters ? 'bg-white text-gray-900' : 'bg-gray-900 text-white'}`}>
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
-            {activeFilterCount > 0 && (
-              <button onClick={handleReset} className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-                <X className="w-3.5 h-3.5" />초기화
+              <option value="">법인</option>
+              {branchOptions.map(b => (
+                <option key={b.code} value={b.code}>{b.code} {b.name}</option>
+              ))}
+            </select>
+            {hasAnyFilter && (
+              <button onClick={handleReset} className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                <X className="w-3 h-3" />초기화
               </button>
             )}
           </div>
-
-          {showFilters && (
-            <div className="px-5 pb-5 border-t border-gray-100 pt-4 space-y-3">
-              <div className="grid grid-cols-4 gap-3">
-                <SelectFilter label="브랜드" value={filters.brand} onChange={set('brand')}>
-                  <option value="all">전체</option>
-                  {brands.map(b => <option key={b} value={b}>{b}</option>)}
-                </SelectFilter>
-                <SelectFilter label="판매 상태" value={filters.salesStatus} onChange={set('salesStatus')}>
-                  <option value="all">전체</option>
-                  <option value="사용중">사용중</option>
-                  <option value="종료 예정">종료 예정</option>
-                  <option value="판매 종료 (P)">판매 종료 (P)</option>
-                  <option value="판매 종료 (C)">판매 종료 (C)</option>
-                </SelectFilter>
-                <SelectFilter label="중분류" value={filters.midCategory} onChange={v => { set('midCategory')(v); set('subCategory')('all') }}>
-                  <option value="all">전체</option>
-                  {midCats.map(c => <option key={c} value={c}>{c}</option>)}
-                </SelectFilter>
-                <SelectFilter label="소분류" value={filters.subCategory} onChange={set('subCategory')}>
-                  <option value="all">전체</option>
-                  {subCats.map(c => <option key={c} value={c}>{c}</option>)}
-                </SelectFilter>
-              </div>
-              <div className="grid grid-cols-5 gap-3">
-                <SelectFilter label="생산공장1" value={filters.factory1} onChange={set('factory1')}>
-                  <option value="all">전체</option>
-                  {factories1.map(f => <option key={f} value={f}>{f}</option>)}
-                </SelectFilter>
-                <SelectFilter label="생산공장2" value={filters.factory2} onChange={set('factory2')}>
-                  <option value="all">전체</option>
-                  {factories2.map(f => <option key={f} value={f}>{f}</option>)}
-                </SelectFilter>
-                <SelectFilter label="생산공장3" value={filters.factory3} onChange={set('factory3')}>
-                  <option value="all">전체</option>
-                  {factories3.map(f => <option key={f} value={f}>{f}</option>)}
-                </SelectFilter>
-                <SelectFilter label="장식보유여부" value={filters.decoration} onChange={set('decoration')}>
-                  <option value="all">전체</option>
-                  <option value="true">Y</option>
-                  <option value="false">N</option>
-                </SelectFilter>
-                <SelectFilter label="복원수리" value={filters.restorationRepair} onChange={set('restorationRepair')}>
-                  <option value="all">전체</option>
-                  <option value="true">Y</option>
-                  <option value="false">N</option>
-                </SelectFilter>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <p className="text-xs text-gray-400 mb-1.5">출시일</p>
-                  <div className="flex items-center gap-2">
-                    <input type="date" value={filters.releaseDateFrom} onChange={e => set('releaseDateFrom')(e.target.value)} className="flex-1 px-3 py-2 bg-[#f8f9fb] border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-colors" />
-                    <span className="text-gray-300 text-sm flex-shrink-0">~</span>
-                    <input type="date" value={filters.releaseDateTo} onChange={e => set('releaseDateTo')(e.target.value)} className="flex-1 px-3 py-2 bg-[#f8f9fb] border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-colors" />
-                  </div>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-400 mb-1.5">부품보유기간 만료일</p>
-                  <div className="flex items-center gap-2">
-                    <input type="date" value={filters.partsRetentionFrom} onChange={e => set('partsRetentionFrom')(e.target.value)} className="flex-1 px-3 py-2 bg-[#f8f9fb] border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-colors" />
-                    <span className="text-gray-300 text-sm flex-shrink-0">~</span>
-                    <input type="date" value={filters.partsRetentionTo} onChange={e => set('partsRetentionTo')(e.target.value)} className="flex-1 px-3 py-2 bg-[#f8f9fb] border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-colors" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 테이블 */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-max w-full">
               <thead>
@@ -398,30 +559,47 @@ export function ProductsPage() {
                       {(allPageSelected || somePageSelected) && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
                     </button>
                   </th>
-                  {([
-                    { key: 'productCode',          label: '제품코드',    sort: 'productCode' },
-                    { key: 'barcode',              label: '바코드',      sort: null },
-                    { key: 'name',                 label: '제품명',      sort: 'name' },
-                    { key: 'brandCategory',        label: '브랜드',      sort: 'brandCategory' },
-                    { key: 'midCategory',          label: '중분류',      sort: 'midCategory' },
-                    { key: 'subCategory',          label: '소분류',      sort: 'subCategory' },
-                    { key: 'hasDecoration',        label: '장식보유여부', sort: 'hasDecoration' },
-                    { key: 'isRestorationRepair',  label: '복원수리',    sort: 'isRestorationRepair' },
-                    { key: 'factory1',             label: '생산공장1',   sort: 'factory1' },
-                    { key: 'factory2',             label: '생산공장2',   sort: 'factory2' },
-                    { key: 'factory3',             label: '생산공장3',   sort: 'factory3' },
-                    { key: 'releaseDate',          label: '출시일',      sort: 'releaseDate' },
-                    { key: 'salesStatus',          label: '판매상태',    sort: null },
-                    { key: 'partsRetentionPeriod', label: '부품보유기간 만료일', sort: 'partsRetentionPeriod' },
-                  ] as { key: string; label: string; sort: SortKey | null }[]).map(col => (
-                    <th key={col.key} className="px-5 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
-                      {col.sort ? (
-                        <button onClick={() => handleSort(col.sort!)} className="group flex items-center gap-1.5 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
-                          {col.label} <SortIcon col={col.sort} />
-                        </button>
-                      ) : col.label}
-                    </th>
-                  ))}
+                  {tableColumns.map(col => {
+                    const filterKey = COL_FILTER_KEY[col.key]
+                    const isFilterable = FILTERABLE_COLS.has(col.key)
+                    const isFiltered = isFilterable ? isColFiltered(filterKey) : false
+                    return (
+                      <th
+                        key={col.key}
+                        className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap align-top ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          {col.sort ? (
+                            <button
+                              onClick={() => handleSort(col.sort!)}
+                              className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide"
+                            >
+                              {col.label} <SortIcon col={col.sort} />
+                            </button>
+                          ) : (
+                            <span>{col.label}</span>
+                          )}
+                          {isFilterable && (
+                            <button
+                              onClick={e => handleFilterIconClick(filterKey, e)}
+                              className={`flex-shrink-0 rounded p-0.5 transition-colors ${
+                                filterPopover?.col === filterKey || isFiltered
+                                  ? 'text-blue-500'
+                                  : 'text-gray-300 hover:text-gray-500'
+                              }`}
+                            >
+                              <Filter className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                        {isFiltered && (
+                          <div className="mt-1 max-w-[120px] truncate text-[10px] font-medium normal-case tracking-normal text-blue-600">
+                            {getAppliedFilterDisplay(filterKey)}
+                          </div>
+                        )}
+                      </th>
+                    )
+                  })}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -473,7 +651,7 @@ export function ProductsPage() {
                         </span>
                       </td>
                       <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{fmtRetention(p.partsRetentionPeriod)}</td>
-                      </tr>
+                    </tr>
                   )
                 })}
               </tbody>
@@ -580,6 +758,24 @@ export function ProductsPage() {
         )}
 
       </div>
+
+      {filterPopover && (
+        <>
+          <div className="fixed inset-0 z-[40]" onClick={() => setFilterPopover(null)} />
+          <div
+            className="fixed z-[50] bg-white border border-gray-200 rounded-xl shadow-lg p-3 w-max"
+            style={{
+              top: filterPopover.rect.bottom + 6,
+              ...(filterPopover.rect.left + 240 > window.innerWidth
+                ? { right: Math.max(8, window.innerWidth - filterPopover.rect.right) }
+                : { left: filterPopover.rect.left }),
+            }}
+          >
+            {renderFilterPopoverContent(filterPopover.col)}
+          </div>
+        </>
+      )}
+
     </div>
   )
 }

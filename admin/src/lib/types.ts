@@ -34,6 +34,48 @@ export type Customer = {
   registeredAt: string
 }
 
+export type TicketStatus =
+  | 'RECEIVED'
+  | 'JUDGEMENT_PENDING'
+  | 'JUDGEMENT_DONE'
+  | 'PAYMENT_REQUESTED'
+  | 'PAYMENT_DONE'
+  | 'PARTNER_SENT'
+  | 'REPAIRING'
+  | 'REPAIR_DONE'
+  | 'READY_TO_SHIP'
+  | 'SHIPPING'
+  | 'SHIPPED'
+  | 'CLOSED'
+  | 'CANCELED'
+  | 'PICKUP_WAITING'
+
+export type PaymentCompleted = 'Y' | 'N' | 'C'
+
+export type Ticket = {
+  id: string
+  ticketNo: string
+  branchCode: string
+  receivedAt: string
+  status: TicketStatus
+  hqReceivedAt: string | null
+  expectedShipAt: string | null
+  receptionPlace: string
+  customerName: string
+  phone: string
+  email: string
+  productName: string
+  repairDepartment: string
+  repairDetail: string
+  trackingNo: string | null
+  paymentCompleted: PaymentCompleted
+  paymentDate: string | null
+  reexportCondition: 'Y' | 'N'
+  shippingMethod: string
+  shippedAt: string | null
+  soDocumentNo: string | null
+}
+
 export type Member = {
   id: string
   loginId: string
@@ -42,7 +84,7 @@ export type Member = {
   tel?: string
   country: string
   roleId: string
-  department?: string
+  isTechnician?: boolean
   status: Status
   expiresAt: string | null
   createdAt: string
@@ -51,17 +93,31 @@ export type Member = {
   assignedStores: string[]   // 담당 스토어 코드 배열 (주로 STORE_RECEIVE)
 }
 
-export type Department = {
+export type MemberChangeType = 'CREATE' | 'UPDATE' | 'DELETE'
+
+export type MemberChangeLog = {
   id: string
-  name: string
-  description?: string
+  changedAt: string
+  changeType: MemberChangeType
+  targetName: string
+  targetLoginId: string
+  summary: string
+  changedByName: string
+  changedById: string
 }
+
 
 export type Role = {
   id: string
   name: string
   description: string
   memberCount: number
+}
+
+export type Department = {
+  id: string
+  name: string
+  description?: string
 }
 
 export type Permission = {

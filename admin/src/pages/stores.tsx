@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { Search, ChevronDown, X, Download, ArrowUp, ArrowDown, ArrowUpDown } from 'lucide-react'
+import { X, Download, ArrowUp, ArrowDown, ArrowUpDown, Filter } from 'lucide-react'
 import { Pagination } from '@/components/pagination'
 import { BRANCHES, STORES } from '@/lib/mock-data'
 import type { Store } from '@/lib/types'
@@ -18,18 +18,7 @@ const STORE_GROUP_LABELS: Record<number, string> = {
   200: 'Distributor',
 }
 
-const initFilters = {
-  city: 'all',
-  status: 'all',
-  storeGroup: 'all',
-}
-type Filters = typeof initFilters
 type SortKey = 'code' | 'name' | 'city' | 'status' | 'storeGroup'
-
-function branchLabel(branchCode: string) {
-  const branch = BRANCHES.find(b => b.code === branchCode)
-  return branch ? `${branch.code} ${branch.name}` : branchCode
-}
 
 function groupLabel(storeGroup: number) {
   return STORE_GROUP_LABELS[storeGroup] ?? '기타'
@@ -69,77 +58,42 @@ function getSortValue(store: Store, key: SortKey) {
   return store[key]
 }
 
-function SelectFilter({ label, value, onChange, children }: {
-  label: string
-  value: string
-  onChange: (v: string) => void
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <p className="text-xs text-gray-400 mb-1.5">{label}</p>
-      <div className="relative">
-        <select
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          className="w-full appearance-none pl-3 pr-8 py-2 bg-[#f8f9fb] border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-colors cursor-pointer"
-        >
-          {children}
-        </select>
-        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-      </div>
-    </div>
-  )
-}
-
 export function StoresPage() {
   const navigate = useNavigate()
   const { langCode } = useParams()
   const pfx = `/${langCode}`
-  const [activeBranch, setActiveBranch] = useState<string>('')
-  const branchTabs = useMemo(() => BRANCHES.filter(b => STORES.some(s => s.branchCode === b.code)), [])
-  const effectiveBranch = activeBranch || branchTabs[0]?.code || ''
 
-  const [search, setSearch] = useState('')
-  const [appliedSearch, setAppliedSearch] = useState('')
-  const [showFilters, setShowFilters] = useState(false)
-  const [filters, setFilters] = useState<Filters>(initFilters)
-  const [applied, setApplied] = useState<Filters>(initFilters)
   const [page, setPage] = useState(1)
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc' | null>(null)
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({})
+  const [appliedColumnFilters, setAppliedColumnFilters] = useState<Record<string, string>>({})
+  const [filterPopover, setFilterPopover] = useState<{ col: string; rect: DOMRect } | null>(null)
 
-  const set = (key: keyof Filters) => (val: string) => setFilters(prev => ({ ...prev, [key]: val }))
-
-  const branchStores = useMemo(() =>
-    STORES.filter(store => !effectiveBranch || store.branchCode === effectiveBranch),
-    [effectiveBranch]
-  )
-  const cities = useMemo(() => [...new Set(branchStores.map(s => displayValue(s.address1)))].filter(city => city !== '-').sort(), [branchStores])
-  const storeGroups = useMemo(() => [...new Set(branchStores.map(s => s.storeGroup))].sort((a, b) => a - b), [branchStores])
-
-  const activeFilterCount = useMemo(() =>
-    (Object.keys(initFilters) as (keyof Filters)[]).filter(k => applied[k] !== initFilters[k]).length + (appliedSearch ? 1 : 0),
-    [applied, appliedSearch]
-  )
+  const branchOptions = useMemo(() => BRANCHES.filter(b => STORES.some(s => s.branchCode === b.code)), [])
+  const cities = useMemo(() => [...new Set(STORES.map(s => displayValue(s.address1)))].filter(city => city !== '-').sort(), [])
+  const storeGroups = useMemo(() => [...new Set(STORES.map(s => s.storeGroup))].sort((a, b) => a - b), [])
 
   const filtered = useMemo(() => {
-    const q = appliedSearch.trim().toLowerCase()
-    const qDigits = normalizeDigits(q)
-    return branchStores.filter(store => {
-      if (q) {
-        const textMatched = store.code.toLowerCase().includes(q) || store.name.toLowerCase().includes(q)
-        const phoneMatched = qDigits.length > 0 && (
-          normalizeDigits(store.tel1).includes(qDigits) || normalizeDigits(store.tel2).includes(qDigits)
-        )
-        if (!textMatched && !phoneMatched) return false
+    return STORES.filter(store => {
+      if (appliedColumnFilters.branch && store.branchCode !== appliedColumnFilters.branch) return false
+      if (appliedColumnFilters.code && !store.code.toLowerCase().includes(appliedColumnFilters.code.toLowerCase())) return false
+      if (appliedColumnFilters.name && !store.name.toLowerCase().includes(appliedColumnFilters.name.toLowerCase())) return false
+      if (appliedColumnFilters.tel1) {
+        const q = appliedColumnFilters.tel1.toLowerCase()
+        const qDigits = normalizeDigits(q)
+        const matched =
+          (store.tel1 ?? '').toLowerCase().includes(q) ||
+          (store.tel2 ?? '').toLowerCase().includes(q) ||
+          (qDigits.length > 0 && (normalizeDigits(store.tel1).includes(qDigits) || normalizeDigits(store.tel2).includes(qDigits)))
+        if (!matched) return false
       }
-      if (applied.city !== 'all' && displayValue(store.address1) !== applied.city) return false
-      if (applied.status !== 'all' && (applied.status === 'active' ? statusLabel(store) !== '활성' : statusLabel(store) !== '비활성')) return false
-      if (applied.storeGroup !== 'all' && String(store.storeGroup) !== applied.storeGroup) return false
+      if (appliedColumnFilters.city && displayValue(store.address1) !== appliedColumnFilters.city) return false
+      if (appliedColumnFilters.status && (appliedColumnFilters.status === 'active' ? statusLabel(store) !== '활성' : statusLabel(store) !== '비활성')) return false
+      if (appliedColumnFilters.storeGroup && String(store.storeGroup) !== appliedColumnFilters.storeGroup) return false
       return true
     })
-  }, [appliedSearch, applied, branchStores])
+  }, [appliedColumnFilters])
 
   const sorted = useMemo(() => {
     if (!sortKey || !sortDir) return filtered
@@ -165,17 +119,30 @@ export function StoresPage() {
     return <ArrowDown className="w-3 h-3 text-gray-700 flex-shrink-0" />
   }
 
-  function handleSearch() {
-    setAppliedSearch(search)
-    setApplied(filters)
+  function applyFilter(updates: Record<string, string | undefined>) {
+    setColumnFilters(prev => {
+      const next = { ...prev }
+      Object.entries(updates).forEach(([k, v]) => { if (v === undefined) delete next[k]; else next[k] = v })
+      return next
+    })
+    setAppliedColumnFilters(prev => {
+      const next = { ...prev }
+      Object.entries(updates).forEach(([k, v]) => { if (v === undefined) delete next[k]; else next[k] = v })
+      return next
+    })
     setPage(1)
+    setFilterPopover(null)
+  }
+
+  function applyCurrentFilters() {
+    setAppliedColumnFilters({ ...columnFilters })
+    setPage(1)
+    setFilterPopover(null)
   }
 
   function handleReset() {
-    setSearch('')
-    setAppliedSearch('')
-    setFilters(initFilters)
-    setApplied(initFilters)
+    setColumnFilters({})
+    setAppliedColumnFilters({})
     setPage(1)
   }
 
@@ -194,7 +161,7 @@ export function StoresPage() {
     const csv = [headers, ...rows]
       .map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
       .join('\n')
-    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' })
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -203,12 +170,90 @@ export function StoresPage() {
     URL.revokeObjectURL(url)
   }
 
-  function handleBranchChange(branchCode: string) {
-    setActiveBranch(branchCode)
-    setPage(1)
-    setSortKey(null)
-    setSortDir(null)
+  function renderFilterPopoverContent(col: string) {
+    if (col === 'code' || col === 'name') {
+      const placeholder = col === 'code' ? '계정 ID 검색...' : '이름 검색...'
+      return (
+        <div className="w-44 space-y-1.5">
+          <input type="text" value={columnFilters[col] ?? ''}
+            onChange={e => setColumnFilters(p => ({ ...p, [col]: e.target.value }))}
+            onKeyDown={e => e.key === 'Enter' && applyCurrentFilters()}
+            placeholder={placeholder}
+            className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-300" />
+          <div className="flex gap-1.5">
+            {columnFilters[col] && (
+              <button onClick={() => applyFilter({ [col]: undefined })}
+                className="flex-1 text-xs text-gray-400 hover:text-gray-600 py-1.5 border border-gray-200 rounded-lg transition-colors">지우기</button>
+            )}
+            <button onClick={applyCurrentFilters}
+              className="flex-1 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors">적용</button>
+          </div>
+        </div>
+      )
+    }
+    if (col === 'tel1') {
+      return (
+        <div className="w-44 space-y-1.5">
+          <input type="text" value={columnFilters.tel1 ?? ''}
+            onChange={e => setColumnFilters(p => ({ ...p, tel1: e.target.value }))}
+            onKeyDown={e => e.key === 'Enter' && applyCurrentFilters()}
+            placeholder="전화번호 검색..."
+            className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-300" />
+          <div className="flex gap-1.5">
+            {columnFilters.tel1 && (
+              <button onClick={() => applyFilter({ tel1: undefined })}
+                className="flex-1 text-xs text-gray-400 hover:text-gray-600 py-1.5 border border-gray-200 rounded-lg transition-colors">지우기</button>
+            )}
+            <button onClick={applyCurrentFilters}
+              className="flex-1 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors">적용</button>
+          </div>
+        </div>
+      )
+    }
+    if (col === 'city') {
+      return (
+        <div className="space-y-1 max-h-60 overflow-y-auto">
+          <button onClick={() => applyFilter({ city: undefined })}
+            className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.city ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+          >전체</button>
+          {cities.map(city => (
+            <button key={city} onClick={() => applyFilter({ city })}
+              className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.city === city ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >{city}</button>
+          ))}
+        </div>
+      )
+    }
+    if (col === 'status') {
+      return (
+        <div className="space-y-1">
+          {([{ v: undefined, l: '전체' }, { v: 'active', l: '활성' }, { v: 'inactive', l: '비활성' }] as { v: string | undefined; l: string }[]).map(opt => (
+            <button key={opt.l} onClick={() => applyFilter({ status: opt.v })}
+              className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${(opt.v ? columnFilters.status === opt.v : !columnFilters.status) ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >{opt.l}</button>
+          ))}
+        </div>
+      )
+    }
+    if (col === 'storeGroup') {
+      return (
+        <div className="space-y-1">
+          <button onClick={() => applyFilter({ storeGroup: undefined })}
+            className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.storeGroup ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+          >전체</button>
+          {storeGroups.map(g => (
+            <button key={g} onClick={() => applyFilter({ storeGroup: String(g) })}
+              className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.storeGroup === String(g) ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >{groupLabel(g)}</button>
+          ))}
+        </div>
+      )
+    }
+    return null
   }
+
+  const FILTERABLE_COLS = new Set(['code', 'name', 'tel1', 'city', 'status', 'storeGroup'])
+  const hasAnyFilter = Object.values(appliedColumnFilters).some(Boolean)
 
   return (
     <div className="overflow-x-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -224,97 +269,90 @@ export function StoresPage() {
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-          <div className="px-5 pt-5 pb-4 border-b border-gray-100">
-            <div className="max-w-xs">
-              <SelectFilter label="법인" value={effectiveBranch} onChange={handleBranchChange}>
-                {branchTabs.map(branch => <option key={branch.code} value={branch.code}>{branchLabel(branch.code)}</option>)}
-              </SelectFilter>
-            </div>
-          </div>
-          <div className="p-5 flex gap-3 items-center">
-            <div className="relative flex-1 min-w-[220px]">
-              <input
-                type="text"
-                placeholder="계정 ID, 이름, 전화번호로 검색..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                className="w-full px-4 py-2.5 bg-[#f8f9fb] border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-colors"
-              />
-            </div>
-            <button onClick={handleSearch} className="flex items-center gap-2 px-4 py-2.5 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
-              <Search className="w-4 h-4" />검색
-            </button>
-            <button
-              onClick={() => setShowFilters(v => !v)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${showFilters ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
+            <select
+              value={columnFilters.branch ?? ''}
+              onChange={e => {
+                const val = e.target.value
+                if (val) {
+                  setColumnFilters(prev => ({ ...prev, branch: val }))
+                  setAppliedColumnFilters(prev => ({ ...prev, branch: val }))
+                } else {
+                  setColumnFilters(prev => { const n = { ...prev }; delete n.branch; return n })
+                  setAppliedColumnFilters(prev => { const n = { ...prev }; delete n.branch; return n })
+                }
+                setPage(1)
+              }}
+              className="w-64 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400"
             >
-              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showFilters ? 'rotate-180' : ''}`} />
-              상세검색
-              {activeFilterCount > 0 && (
-                <span className={`ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${showFilters ? 'bg-white text-gray-900' : 'bg-gray-900 text-white'}`}>
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
-            {activeFilterCount > 0 && (
-              <button onClick={handleReset} className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-                <X className="w-3.5 h-3.5" />초기화
+              <option value="">법인</option>
+              {branchOptions.map(b => (
+                <option key={b.code} value={b.code}>{b.code} {b.name}</option>
+              ))}
+            </select>
+            {hasAnyFilter && (
+              <button onClick={handleReset} className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                <X className="w-3 h-3" />초기화
               </button>
             )}
           </div>
-
-          {showFilters && (
-            <div className="px-5 pb-5 border-t border-gray-100 pt-4 space-y-3">
-              <div className="grid grid-cols-3 gap-3">
-                <SelectFilter label="도시" value={filters.city} onChange={set('city')}>
-                  <option value="all">전체</option>
-                  {cities.map(city => <option key={city} value={city}>{city}</option>)}
-                </SelectFilter>
-                <SelectFilter label="상태" value={filters.status} onChange={set('status')}>
-                  <option value="all">전체</option>
-                  <option value="active">활성</option>
-                  <option value="inactive">비활성</option>
-                </SelectFilter>
-                <SelectFilter label="접수처 유형" value={filters.storeGroup} onChange={set('storeGroup')}>
-                  <option value="all">전체</option>
-                  {storeGroups.map(group => <option key={group} value={String(group)}>{groupLabel(group)}</option>)}
-                </SelectFilter>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-[1080px] w-full">
               <thead>
                 <tr className="border-b border-gray-200">
                   {([
-                    { key: 'code', label: '계정 ID', sort: 'code' },
-                    { key: 'name', label: '이름', sort: 'name' },
-                    { key: 'city', label: '시', sort: 'city' },
-                    { key: 'country', label: '국가 지역', sort: null },
-                    { key: 'tel1', label: '전화번호', sort: null },
-                    { key: 'tel2', label: '대표담당자번호', sort: null },
-                    { key: 'status', label: '상태', sort: 'status' },
-                    { key: 'storeGroup', label: '접수처유형', sort: 'storeGroup' },
-                  ] as { key: string; label: string; sort: SortKey | null }[]).map(col => (
-                    <th key={col.key} className="px-5 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
-                      {col.sort ? (
-                        <button onClick={() => handleSort(col.sort!)} className="group flex items-center gap-1.5 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
-                          {col.label} <SortIcon col={col.sort} />
-                        </button>
-                      ) : col.label}
-                    </th>
-                  ))}
+                    { key: 'branch',     label: '법인',         sort: null },
+                    { key: 'code',       label: '계정 ID',      sort: 'code' as SortKey },
+                    { key: 'name',       label: '이름',         sort: 'name' as SortKey },
+                    { key: 'city',       label: '시',           sort: 'city' as SortKey },
+                    { key: 'country',    label: '국가 지역',    sort: null },
+                    { key: 'tel1',       label: '전화번호',     sort: null },
+                    { key: 'tel2',       label: '대표담당자번호', sort: null },
+                    { key: 'status',     label: '상태',         sort: 'status' as SortKey },
+                    { key: 'storeGroup', label: '접수처유형',   sort: 'storeGroup' as SortKey },
+                  ] as { key: string; label: string; sort: SortKey | null }[]).map(col => {
+                    const isFiltered = !!appliedColumnFilters[col.key]
+                    const hasFilter = FILTERABLE_COLS.has(col.key)
+                    return (
+                      <th
+                        key={col.key}
+                        className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap align-top ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}
+                      >
+                        <div className="flex items-center gap-1.5">
+                          {col.sort ? (
+                            <button onClick={() => handleSort(col.sort!)} className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
+                              {col.label} <SortIcon col={col.sort} />
+                            </button>
+                          ) : col.label}
+                          {hasFilter && (
+                            <button
+                              onClick={e => { const rect = e.currentTarget.getBoundingClientRect(); setFilterPopover(prev => prev?.col === col.key ? null : { col: col.key, rect }) }}
+                              className={`flex-shrink-0 rounded p-0.5 transition-colors ${filterPopover?.col === col.key || isFiltered ? 'text-blue-500' : 'text-gray-300 hover:text-gray-500'}`}
+                            >
+                              <Filter className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                        {isFiltered && (
+                          <div className="mt-1 max-w-[120px] truncate text-[10px] font-medium normal-case tracking-normal text-blue-600">
+                            {col.key === 'code'       && appliedColumnFilters.code}
+                            {col.key === 'name'       && appliedColumnFilters.name}
+                            {col.key === 'tel1'       && appliedColumnFilters.tel1}
+                            {col.key === 'city'       && appliedColumnFilters.city}
+                            {col.key === 'status'     && (appliedColumnFilters.status === 'active' ? '활성' : '비활성')}
+                            {col.key === 'storeGroup' && groupLabel(Number(appliedColumnFilters.storeGroup))}
+                          </div>
+                        )}
+                      </th>
+                    )
+                  })}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-6 py-12 text-center text-sm text-gray-400">
+                    <td colSpan={9} className="px-6 py-12 text-center text-sm text-gray-400">
                       검색 결과가 없습니다.
                     </td>
                   </tr>
@@ -322,12 +360,13 @@ export function StoresPage() {
                   <tr
                     key={store.code}
                     onClick={() => navigate(`${pfx}/stores/${store.code}`)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' || e.key === ' ') navigate(`${pfx}/stores/${store.code}`)
-                    }}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate(`${pfx}/stores/${store.code}`) }}
                     tabIndex={0}
                     className="hover:bg-gray-50/50 transition-colors cursor-pointer focus:outline-none focus:bg-gray-50"
                   >
+                    <td className="px-5 py-3.5 whitespace-nowrap text-xs text-gray-600">
+                      {(() => { const b = BRANCHES.find(br => br.code === store.branchCode); return b ? `${b.code} ${b.name}` : store.branchCode })()}
+                    </td>
                     <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono font-medium text-gray-900">{store.code}</td>
                     <td className="px-5 py-3.5 whitespace-nowrap text-sm font-semibold text-gray-900">{store.name}</td>
                     <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{displayValue(store.address1)}</td>
@@ -350,6 +389,23 @@ export function StoresPage() {
           <Pagination total={filtered.length} perPage={ITEMS_PER_PAGE} current={page} onChange={setPage} />
         </div>
       </div>
+
+      {filterPopover && (
+        <>
+          <div className="fixed inset-0 z-[40]" onClick={() => setFilterPopover(null)} />
+          <div
+            className="fixed z-[50] bg-white border border-gray-200 rounded-xl shadow-lg p-3 w-max"
+            style={{
+              top: filterPopover.rect.bottom + 6,
+              ...(filterPopover.rect.left + 240 > window.innerWidth
+                ? { right: Math.max(8, window.innerWidth - filterPopover.rect.right) }
+                : { left: filterPopover.rect.left }),
+            }}
+          >
+            {renderFilterPopoverContent(filterPopover.col)}
+          </div>
+        </>
+      )}
     </div>
   )
 }

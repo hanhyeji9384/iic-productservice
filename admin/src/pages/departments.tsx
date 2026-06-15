@@ -9,7 +9,7 @@ type Tab = 'list' | 'history'
 
 interface ChangeLog {
   id: string
-  changeType: 'update' | 'delete'
+  changeType: 'create' | 'update' | 'delete'
   target: string
   summary: string
   changedAt: string
@@ -20,11 +20,18 @@ interface ChangeLog {
 const ITEMS_PER_PAGE = 10
 
 const CHANGE_TYPE_STYLE = {
+  create: { bg: 'bg-gray-100 text-gray-500', label: '생성' },
   update: { bg: 'bg-blue-50 text-blue-700', label: '수정' },
   delete: { bg: 'bg-red-50 text-red-700',   label: '삭제' },
 }
 
 const INITIAL_LOGS: ChangeLog[] = [
+  {
+    id: 'L000', changeType: 'create', target: '가맹점',
+    summary: '부서등록',
+    changedAt: '2026-03-01 10:00:00',
+    changedByName: '한혜지', changedById: 'monster563',
+  },
   {
     id: 'L001', changeType: 'update', target: 'PS팀',
     summary: '설명: "수리서비스 운영" → "수리서비스 전담 운영"',
@@ -106,6 +113,11 @@ export function DepartmentsPage() {
         description: formDesc || undefined,
       }
       setDepartments(prev => [...prev, newDept])
+      setLogs(prev => [{
+        id: `L${Date.now()}`, changeType: 'create', target: newDept.name,
+        summary: '부서등록',
+        changedAt: now, changedByName: '한혜지', changedById: 'monster563',
+      }, ...prev])
     }
     closeModal()
   }
@@ -228,7 +240,7 @@ export function DepartmentsPage() {
                         <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${style.bg}`}>{style.label}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{log.target}</td>
-                      <td className="px-6 py-4"><SummaryCell summary={log.summary} changeType={log.changeType} /></td>
+                      <td className="px-6 py-4"><SummaryCell summary={log.summary} changeType={log.changeType === 'delete' ? undefined : log.changeType} /></td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">{log.changedByName}</div>
                         <div className="text-xs text-gray-400 font-mono mt-0.5">{log.changedById}</div>

@@ -4,6 +4,8 @@ import { BRANCHES, STORES } from '@/lib/mock-data'
 
 export const HQ_ROLES = ['SUPER_ADMIN', 'HQ_OPS', 'HQ_RECEIVE']
 export const FRANCHISE_ROLE = 'FRANCHISE_OWNER'
+export const SIMPLY_REPAIR_FRANCHISE_ROLE = 'SIMPLY_REPAIR_FRANCHISE_OWNER'
+export const FRANCHISE_ROLES = [FRANCHISE_ROLE, SIMPLY_REPAIR_FRANCHISE_ROLE]
 export const OPTICAL_STORES = STORES.filter(s => s.storeGroup === 140)
 
 export function getBranchName(code: string) {

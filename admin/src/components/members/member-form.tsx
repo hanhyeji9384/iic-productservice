@@ -9,7 +9,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
 import type { Member } from '@/lib/types'
-import { ROLES, COUNTRIES, DEPARTMENTS } from '@/lib/mock-data'
+import { ROLES, COUNTRIES } from '@/lib/mock-data'
 
 type Props = {
   open: boolean
@@ -19,7 +19,7 @@ type Props = {
 }
 
 const EMPTY: Partial<Member> = {
-  loginId: '', name: '', email: '', department: '', tel: '',
+  loginId: '', name: '', email: '', isTechnician: false, tel: '',
   country: 'KR', roleId: '', expiresAt: null, status: 'active',
 }
 
@@ -33,7 +33,7 @@ export function MemberForm({ open, onOpenChange, member, onSave }: Props) {
     setPassword('')
   }, [member, open])
 
-  function set(key: keyof Member, value: string | null) {
+  function set<K extends keyof Member>(key: K, value: Member[K]) {
     setForm(prev => ({ ...prev, [key]: value }))
   }
 
@@ -100,21 +100,20 @@ export function MemberForm({ open, onOpenChange, member, onSave }: Props) {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="department">부서</Label>
-              <Select value={form.department ?? ''} onValueChange={v => set('department', v)}>
-                <SelectTrigger id="department">
-                  <SelectValue placeholder="부서 선택" />
-                </SelectTrigger>
-                <SelectContent>
-                  {DEPARTMENTS.map(d => (
-                    <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>서비스 기술자</Label>
+              <button
+                type="button"
+                onClick={() => set('isTechnician', !form.isTechnician)}
+                className="flex items-center gap-2.5 mt-1"
+              >
+                <span className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ${form.isTechnician ? 'bg-gray-900' : 'bg-gray-200'}`}>
+                  <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${form.isTechnician ? 'translate-x-4' : 'translate-x-0'}`} />
+                </span>
+              </button>
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="country">국가</Label>
-              <Select value={form.country ?? 'KR'} onValueChange={v => set('country', v)}>
+              <Select value={form.country ?? 'KR'} onValueChange={v => set('country', v ?? 'KR')}>
                 <SelectTrigger id="country">
                   <SelectValue />
                 </SelectTrigger>
@@ -138,7 +137,7 @@ export function MemberForm({ open, onOpenChange, member, onSave }: Props) {
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="role">역할 <span className="text-destructive">*</span></Label>
-            <Select value={form.roleId ?? ''} onValueChange={v => set('roleId', v)} required>
+            <Select value={form.roleId ?? ''} onValueChange={v => set('roleId', v ?? '')} required>
               <SelectTrigger id="role">
                 <SelectValue placeholder="역할 선택" />
               </SelectTrigger>

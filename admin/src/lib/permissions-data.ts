@@ -142,9 +142,22 @@ export const INITIAL_ROLES: PermissionRole[] = [
     createdAt: '2026-05-21 00:00:00',
     updatedAt: '2026-05-21 00:00:00',
   },
+  {
+    id: 8,
+    name: '심플리페어 가맹점주',
+    description: '심플리페어 가맹 매장 접수 전용 (한국)',
+    permissions: custom({
+      customers: { read: true },
+      tickets:   { read: true, write: true },
+    }),
+    memberCount: 0,
+    createdAt: '2026-06-10 00:00:00',
+    updatedAt: '2026-06-10 00:00:00',
+  },
 ]
 
 export const INITIAL_CHANGE_LOGS: PermissionChangeLog[] = [
+  { id: 9, roleId: 8, roleName: '심플리페어 가맹점주', changedAt: '2026-06-10 00:00:00', changeType: 'create', summary: '권한등록', changedByName: '한혜지', changedById: 'monster563' },
   { id: 1, roleId: 1, roleName: 'PS 운영팀',      changedAt: '2026-04-10 11:20:00', changeType: 'update', summary: '국가별 티켓 관리 등록·수정 추가 / 국가별 티켓 관리 삭제 추가',                                             changedByName: '김민준', changedById: 'monster001', memo: '업무 범위 확대' },
   { id: 6, roleId: 1, roleName: 'PS 운영팀',      changedAt: '2026-04-08 09:30:00', changeType: 'update', summary: '역할명: "본사 운영팀" → "PS 운영팀" / 설명: "본사 운영 담당" → "PS 파트 수리 운영 전담"',                    changedByName: '한혜지', changedById: 'monster563' },
   { id: 2, roleId: 2, roleName: '본사 접수 담당', changedAt: '2026-03-22 16:45:00', changeType: 'update', summary: '고객 등록·수정 제거 / 고객 삭제 제거',                                                                         changedByName: '김민준', changedById: 'monster001' },
@@ -152,5 +165,5 @@ export const INITIAL_CHANGE_LOGS: PermissionChangeLog[] = [
   { id: 7, roleId: 4, roleName: '조회 전용',      changedAt: '2026-03-05 14:10:00', changeType: 'update', summary: '설명: "읽기 전용 계정" → "조회 전용 (수정 권한 없음)"',                                                       changedByName: '김민준', changedById: 'monster001' },
   { id: 4, roleId: 6, roleName: '임시 운영자',    changedAt: '2026-02-14 10:00:00', changeType: 'delete', summary: '역할명: "임시 운영자" / 설명: "단기 운영 지원"',                                                               changedByName: '한혜지', changedById: 'monster563' },
   { id: 5, roleId: 7, roleName: '해외 CS 담당',   changedAt: '2026-01-08 15:30:00', changeType: 'delete', summary: '역할명: "해외 CS 담당" / 설명: "해외 고객 서비스 전담"',                                                      changedByName: '김민준', changedById: 'monster001' },
-  { id: 3, roleId: 3, roleName: '매장 접수 담당', changedAt: '2025-06-01 09:00:00', changeType: 'create', summary: '역할 생성',                                                                                                     changedByName: '시스템',  changedById: 'system' },
+  { id: 3, roleId: 3, roleName: '매장 접수 담당', changedAt: '2025-06-01 09:00:00', changeType: 'create', summary: '권한등록',                                                                                                     changedByName: '시스템',  changedById: 'system' },
 ]

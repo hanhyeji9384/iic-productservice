@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Check, ChevronDown, Globe, Building2 } from 'lucide-react'
-import { ROLES, DEPARTMENTS } from '@/lib/mock-data'
-import { OPTICAL_STORES, HQ_ROLES, FRANCHISE_ROLE, getBranchName, BranchMultiSelect, StoreMultiSelect } from '@/components/members/branch-store-select'
+import { ROLES } from '@/lib/mock-data'
+import { OPTICAL_STORES, HQ_ROLES, FRANCHISE_ROLES, getBranchName, BranchMultiSelect, StoreMultiSelect } from '@/components/members/branch-store-select'
 import { useMembers } from '@/lib/members-context'
 import { inputCls } from '@/lib/utils'
 
@@ -11,7 +11,7 @@ type NewForm = {
   loginId: string
   email: string
   tel: string
-  department: string
+  isTechnician: boolean
   roleId: string
   status: 'active' | 'inactive'
   expiresAt: string
@@ -26,9 +26,10 @@ export function MemberNewPage() {
   const { addMember } = useMembers()
 
   const defaultRoleId = ROLES[0]?.id ?? ''
+  const isStoreOwnerRole = (roleId: string) => FRANCHISE_ROLES.includes(roleId)
   const [form, setForm] = useState<NewForm>({
     name: '', loginId: '', email: '', tel: '',
-    department: '', roleId: defaultRoleId, status: 'active', expiresAt: '',
+    isTechnician: false, roleId: defaultRoleId, status: 'active', expiresAt: '',
     managedBranches: HQ_ROLES.includes(defaultRoleId) ? ['*'] : [],
     assignedStores: [],
   })
@@ -42,7 +43,7 @@ export function MemberNewPage() {
       tel: form.tel || undefined,
       country: 'KR',
       roleId: form.roleId,
-      department: form.department || undefined,
+      isTechnician: form.isTechnician,
       status: form.status,
       expiresAt: form.expiresAt || null,
       createdAt: new Date().toISOString().slice(0, 10),
@@ -103,8 +104,8 @@ export function MemberNewPage() {
                     const r = e.target.value
                     setForm(f => ({
                       ...f, roleId: r,
-                      managedBranches: HQ_ROLES.includes(r) ? ['*'] : r === FRANCHISE_ROLE ? ['1110'] : f.managedBranches,
-                      assignedStores: (HQ_ROLES.includes(r) || r === FRANCHISE_ROLE) ? [] : f.assignedStores,
+                      managedBranches: HQ_ROLES.includes(r) ? ['*'] : isStoreOwnerRole(r) ? ['1110'] : f.managedBranches,
+                      assignedStores: (HQ_ROLES.includes(r) || isStoreOwnerRole(r)) ? [] : f.assignedStores,
                     }))
                   }}
                   className={inputCls + ' appearance-none pr-8 cursor-pointer'}
@@ -137,14 +138,16 @@ export function MemberNewPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">부서</p>
-              <div className="relative">
-                <select value={form.department} onChange={e => setForm(f => ({ ...f, department: e.target.value }))} className={inputCls + ' appearance-none pr-8 cursor-pointer'}>
-                  <option value="">미지정</option>
-                  {DEPARTMENTS.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              </div>
+              <p className="text-xs text-gray-400 mb-1.5">서비스 기술자</p>
+              <button
+                type="button"
+                onClick={() => setForm(f => ({ ...f, isTechnician: !f.isTechnician }))}
+                className="flex items-center gap-2.5 mt-1"
+              >
+                <span className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ${form.isTechnician ? 'bg-gray-900' : 'bg-gray-200'}`}>
+                  <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform duration-200 ${form.isTechnician ? 'translate-x-4' : 'translate-x-0'}`} />
+                </span>
+              </button>
             </div>
             <div>
               <p className="text-xs text-gray-400 mb-1.5">연락처</p>
@@ -163,7 +166,7 @@ export function MemberNewPage() {
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">담당 정보</h2>
 
-          {form.roleId === FRANCHISE_ROLE ? (
+          {isStoreOwnerRole(form.roleId) ? (
             <>
               <div>
                 <div className="flex items-center gap-1.5 mb-1.5">

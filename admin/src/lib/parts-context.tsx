@@ -6,6 +6,7 @@ type PartsContextValue = {
   parts: Part[]
   partChangeLogs: PartChangeLog[]
   addPart: (part: Part) => void
+  addParts: (newParts: Part[]) => void
   updatePart: (updated: Part) => void
   updatePartStorageLocations: (updates: { partCode: string; storageLocation: string }[]) => number
   deletePart: (id: string) => void
@@ -49,6 +50,10 @@ export function PartsProvider({ children }: { children: ReactNode }) {
 
   function addPart(part: Part) {
     setParts(prev => [part, ...prev])
+  }
+
+  function addParts(newParts: Part[]) {
+    setParts(prev => [...newParts, ...prev])
   }
 
   function updatePart(updated: Part) {
@@ -102,7 +107,7 @@ export function PartsProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <PartsContext.Provider value={{ parts, partChangeLogs, addPart, updatePart, updatePartStorageLocations, deletePart }}>
+    <PartsContext.Provider value={{ parts, partChangeLogs, addPart, addParts, updatePart, updatePartStorageLocations, deletePart }}>
       {children}
     </PartsContext.Provider>
   )

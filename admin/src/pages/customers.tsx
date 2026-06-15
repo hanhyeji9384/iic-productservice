@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, RefreshCw, Search, Trash2, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, Filter, RefreshCw, Trash2, X } from 'lucide-react'
 import { Pagination } from '@/components/pagination'
 import { addPrivacyLog } from '@/lib/download-logs'
 import { CUSTOMERS } from '@/lib/mock-data'
@@ -9,13 +9,6 @@ import type { Customer } from '@/lib/types'
 const ITEMS_PER_PAGE = 15
 const REMOVED_CUSTOMERS_STORAGE_KEY = 'ps-admin-removed-customers'
 
-const initFilters = {
-  ticketYn: 'all',
-  marketingAgree: 'all',
-  registeredFrom: '',
-  registeredTo: '',
-}
-type Filters = typeof initFilters
 type SortKey = 'id' | 'name' | 'email' | 'phone' | 'ticketYn' | 'marketingAgree' | 'registeredAt'
 type CustomerRow = Customer & {
   privacyRemoved?: boolean
@@ -89,54 +82,11 @@ function initialCustomers() {
   })
 }
 
-function SelectFilter({ label, value, onChange, children }: {
-  label: string
-  value: string
-  onChange: (value: string) => void
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <p className="text-xs text-gray-400 mb-1.5">{label}</p>
-      <div className="relative">
-        <select
-          value={value}
-          onChange={event => onChange(event.target.value)}
-          className="w-full appearance-none pl-3 pr-8 py-2 bg-[#f8f9fb] border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-colors cursor-pointer"
-        >
-          {children}
-        </select>
-        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-      </div>
-    </div>
-  )
-}
-
-function DateFilter({ label, value, onChange }: {
-  label: string
-  value: string
-  onChange: (value: string) => void
-}) {
-  return (
-    <div>
-      <p className="text-xs text-gray-400 mb-1.5">{label}</p>
-      <input
-        type="date"
-        value={value}
-        onChange={event => onChange(event.target.value)}
-        className="w-full px-3 py-2 bg-[#f8f9fb] border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-colors"
-      />
-    </div>
-  )
-}
-
 export function CustomersPage() {
   const [customers, setCustomers] = useState<CustomerRow[]>(initialCustomers)
-  const [search, setSearch] = useState('')
-  const [appliedSearch, setAppliedSearch] = useState('')
-  const [showFilters, setShowFilters] = useState(false)
-  const [filters, setFilters] = useState<Filters>(initFilters)
-  const [applied, setApplied] = useState<Filters>(initFilters)
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({})
+  const [appliedColumnFilters, setAppliedColumnFilters] = useState<Record<string, string>>({})
+  const [filterPopover, setFilterPopover] = useState<{ col: string; rect: DOMRect } | null>(null)
   const [page, setPage] = useState(1)
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc' | null>(null)
@@ -144,35 +94,25 @@ export function CustomersPage() {
   const [removeTargets, setRemoveTargets] = useState<CustomerRow[] | null>(null)
   const [removeReason, setRemoveReason] = useState('')
 
-  const set = (key: keyof Filters) => (value: string) => setFilters(prev => ({ ...prev, [key]: value }))
-
-  const activeFilterCount = useMemo(() =>
-    (Object.keys(initFilters) as (keyof Filters)[]).filter(key => applied[key] !== initFilters[key]).length + (appliedSearch ? 1 : 0),
-    [applied, appliedSearch]
-  )
-
   const filtered = useMemo(() => {
-    const q = appliedSearch.trim().toLowerCase()
-    const qDigits = normalizeDigits(q)
     return customers.filter(customer => {
-      if (q) {
-        const textMatched =
-          customer.id.toLowerCase().includes(q) ||
-          (!customer.privacyRemoved && (
-            customer.name.toLowerCase().includes(q) ||
-            customer.email.toLowerCase().includes(q)
-          ))
-        const phoneMatched = !customer.privacyRemoved && qDigits.length > 0 && normalizeDigits(customer.phone).includes(qDigits)
-        if (!textMatched && !phoneMatched) return false
+      if (appliedColumnFilters.id && !customer.id.toLowerCase().includes(appliedColumnFilters.id.toLowerCase())) return false
+      if (appliedColumnFilters.name && (customer.privacyRemoved || !customer.name.toLowerCase().includes(appliedColumnFilters.name.toLowerCase()))) return false
+      if (appliedColumnFilters.email && (customer.privacyRemoved || !customer.email.toLowerCase().includes(appliedColumnFilters.email.toLowerCase()))) return false
+      if (appliedColumnFilters.phone) {
+        if (customer.privacyRemoved) return false
+        const qDigits = normalizeDigits(appliedColumnFilters.phone)
+        if (qDigits) { if (!normalizeDigits(customer.phone).includes(qDigits)) return false }
+        else { if (!customer.phone.includes(appliedColumnFilters.phone)) return false }
       }
-      if (applied.ticketYn !== 'all' && customer.ticketYn !== applied.ticketYn) return false
-      if (applied.marketingAgree !== 'all' && (customer.privacyRemoved || customer.marketingAgree !== applied.marketingAgree)) return false
+      if (appliedColumnFilters.ticketYn && customer.ticketYn !== appliedColumnFilters.ticketYn) return false
+      if (appliedColumnFilters.marketingAgree && (customer.privacyRemoved || customer.marketingAgree !== appliedColumnFilters.marketingAgree)) return false
       const registeredDate = customer.registeredAt.slice(0, 10)
-      if (applied.registeredFrom && registeredDate < applied.registeredFrom) return false
-      if (applied.registeredTo && registeredDate > applied.registeredTo) return false
+      if (appliedColumnFilters.registeredFrom && registeredDate < appliedColumnFilters.registeredFrom) return false
+      if (appliedColumnFilters.registeredTo && registeredDate > appliedColumnFilters.registeredTo) return false
       return true
     })
-  }, [customers, appliedSearch, applied])
+  }, [customers, appliedColumnFilters])
 
   const sorted = useMemo(() => {
     if (!sortKey || !sortDir) return filtered
@@ -211,18 +151,32 @@ export function CustomersPage() {
     return <ArrowDown className="w-3 h-3 text-gray-700 flex-shrink-0" />
   }
 
-  function handleSearch() {
-    setAppliedSearch(search)
-    setApplied(filters)
+  function applyFilter(updates: Record<string, string | undefined>) {
+    setColumnFilters(prev => {
+      const next = { ...prev }
+      Object.entries(updates).forEach(([k, v]) => { if (v === undefined) delete next[k]; else next[k] = v })
+      return next
+    })
+    setAppliedColumnFilters(prev => {
+      const next = { ...prev }
+      Object.entries(updates).forEach(([k, v]) => { if (v === undefined) delete next[k]; else next[k] = v })
+      return next
+    })
     setPage(1)
     setSelectedIds(new Set())
+    setFilterPopover(null)
+  }
+
+  function applyCurrentFilters() {
+    setAppliedColumnFilters({ ...columnFilters })
+    setPage(1)
+    setSelectedIds(new Set())
+    setFilterPopover(null)
   }
 
   function handleReset() {
-    setSearch('')
-    setAppliedSearch('')
-    setFilters(initFilters)
-    setApplied(initFilters)
+    setColumnFilters({})
+    setAppliedColumnFilters({})
     setPage(1)
     setSortKey(null)
     setSortDir(null)
@@ -305,6 +259,115 @@ export function CustomersPage() {
     closeRemoveModal()
   }
 
+  function renderFilterPopoverContent(col: string) {
+    if (col === 'id' || col === 'name' || col === 'email' || col === 'phone') {
+      const placeholder = col === 'id' ? 'No. 검색...' : col === 'name' ? '이름 검색...' : col === 'email' ? 'ID 검색...' : '전화번호 검색...'
+      return (
+        <div className="w-44 space-y-1.5">
+          <input
+            type="text"
+            value={columnFilters[col] ?? ''}
+            onChange={e => setColumnFilters(p => ({ ...p, [col]: e.target.value }))}
+            onKeyDown={e => e.key === 'Enter' && applyCurrentFilters()}
+            placeholder={placeholder}
+            className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-300"
+          />
+          <div className="flex gap-1.5">
+            {columnFilters[col] && (
+              <button
+                onClick={() => applyFilter({ [col]: undefined })}
+                className="flex-1 text-xs text-gray-400 hover:text-gray-600 py-1.5 border border-gray-200 rounded-lg transition-colors"
+              >지우기</button>
+            )}
+            <button
+              onClick={applyCurrentFilters}
+              className="flex-1 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
+            >적용</button>
+          </div>
+        </div>
+      )
+    }
+    if (col === 'ticketYn') {
+      return (
+        <div className="space-y-1">
+          {([{ v: undefined, l: '전체' }, { v: 'Y', l: 'Y' }, { v: 'N', l: 'N' }] as { v: string | undefined; l: string }[]).map(opt => (
+            <button
+              key={opt.l}
+              onClick={() => applyFilter({ ticketYn: opt.v })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${(opt.v ? columnFilters.ticketYn === opt.v : !columnFilters.ticketYn) ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >{opt.l}</button>
+          ))}
+        </div>
+      )
+    }
+    if (col === 'marketingAgree') {
+      return (
+        <div className="space-y-1">
+          {([{ v: undefined, l: '전체' }, { v: 'Y', l: '동의' }, { v: 'N', l: '미동의' }] as { v: string | undefined; l: string }[]).map(opt => (
+            <button
+              key={opt.l}
+              onClick={() => applyFilter({ marketingAgree: opt.v })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${(opt.v ? columnFilters.marketingAgree === opt.v : !columnFilters.marketingAgree) ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >{opt.l}</button>
+          ))}
+        </div>
+      )
+    }
+    if (col === 'registeredAt') {
+      return (
+        <div className="space-y-2">
+          <div>
+            <p className="text-[10px] text-gray-400 mb-1">시작일</p>
+            <input
+              type="date"
+              value={columnFilters.registeredFrom ?? ''}
+              onChange={e => setColumnFilters(p => ({ ...p, registeredFrom: e.target.value }))}
+              className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-300"
+            />
+          </div>
+          <div>
+            <p className="text-[10px] text-gray-400 mb-1">종료일</p>
+            <input
+              type="date"
+              value={columnFilters.registeredTo ?? ''}
+              onChange={e => setColumnFilters(p => ({ ...p, registeredTo: e.target.value }))}
+              className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-300"
+            />
+          </div>
+          <div className="flex gap-1.5">
+            {(columnFilters.registeredFrom || columnFilters.registeredTo) && (
+              <button
+                onClick={() => applyFilter({ registeredFrom: undefined, registeredTo: undefined })}
+                className="flex-1 text-xs text-gray-400 hover:text-gray-600 py-1.5 border border-gray-200 rounded-lg transition-colors"
+              >지우기</button>
+            )}
+            <button
+              onClick={applyCurrentFilters}
+              className="flex-1 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
+            >적용</button>
+          </div>
+        </div>
+      )
+    }
+    return null
+  }
+
+  const hasActiveFilters = Object.values(appliedColumnFilters).some(Boolean)
+
+  const registeredAtFilterLabel = (() => {
+    const from = appliedColumnFilters.registeredFrom
+    const to = appliedColumnFilters.registeredTo
+    if (!from && !to) return null
+    if (from && to) return `${from} ~ ${to}`
+    if (from) return `${from} ~`
+    return `~ ${to}`
+  })()
+
+  const textColFilterLabel = (col: string) => {
+    const v = appliedColumnFilters[col]
+    return v || null
+  }
+
   return (
     <div className="overflow-x-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="min-w-[1080px] space-y-6">
@@ -330,61 +393,14 @@ export function CustomersPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
-          <div className="p-5 flex gap-3 items-center">
-            <div className="relative flex-1 min-w-[260px]">
-              <input
-                type="text"
-                placeholder="No., 이름, ID, 전화번호로 검색..."
-                value={search}
-                onChange={event => setSearch(event.target.value)}
-                onKeyDown={event => event.key === 'Enter' && handleSearch()}
-                className="w-full px-4 py-2.5 bg-[#f8f9fb] border border-gray-100 rounded-xl text-sm focus:outline-none focus:border-gray-300 focus:bg-white transition-colors"
-              />
-            </div>
-            <button onClick={handleSearch} className="flex items-center gap-2 px-4 py-2.5 bg-black text-white rounded-xl text-sm font-medium hover:bg-gray-800 transition-colors">
-              <Search className="w-4 h-4" />검색
-            </button>
-            <button
-              onClick={() => setShowFilters(prev => !prev)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${showFilters ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
-            >
-              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${showFilters ? 'rotate-180' : ''}`} />
-              상세검색
-              {activeFilterCount > 0 && (
-                <span className={`ml-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-bold ${showFilters ? 'bg-white text-gray-900' : 'bg-gray-900 text-white'}`}>
-                  {activeFilterCount}
-                </span>
-              )}
-            </button>
-            {activeFilterCount > 0 && (
-              <button onClick={handleReset} className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-                <X className="w-3.5 h-3.5" />초기화
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          {hasActiveFilters && (
+            <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
+              <button onClick={handleReset} className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                <X className="w-3 h-3" />초기화
               </button>
-            )}
-          </div>
-
-          {showFilters && (
-            <div className="px-5 pb-5 border-t border-gray-100 pt-4">
-              <div className="grid grid-cols-4 gap-3">
-                <SelectFilter label="재접수" value={filters.ticketYn} onChange={set('ticketYn')}>
-                  <option value="all">전체</option>
-                  <option value="Y">Y</option>
-                  <option value="N">N</option>
-                </SelectFilter>
-                <SelectFilter label="마케팅 동의" value={filters.marketingAgree} onChange={set('marketingAgree')}>
-                  <option value="all">전체</option>
-                  <option value="Y">동의</option>
-                  <option value="N">미동의</option>
-                </SelectFilter>
-                <DateFilter label="등록일자 시작" value={filters.registeredFrom} onChange={set('registeredFrom')} />
-                <DateFilter label="등록일자 종료" value={filters.registeredTo} onChange={set('registeredTo')} />
-              </div>
             </div>
           )}
-        </div>
-
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-[1080px] w-full">
               <thead>
@@ -399,21 +415,181 @@ export function CustomersPage() {
                       className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-300 disabled:opacity-30"
                     />
                   </th>
-                  {([
-                    { key: 'id', label: 'No.', sort: 'id' },
-                    { key: 'name', label: '이름', sort: 'name' },
-                    { key: 'email', label: 'ID', sort: 'email' },
-                    { key: 'phone', label: '전화번호', sort: 'phone' },
-                    { key: 'ticketYn', label: '재접수', sort: 'ticketYn' },
-                    { key: 'marketingAgree', label: '마케팅 동의', sort: 'marketingAgree' },
-                    { key: 'registeredAt', label: '등록일자', sort: 'registeredAt' },
-                  ] as { key: string; label: string; sort: SortKey }[]).map(col => (
-                    <th key={col.key} className="px-5 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
-                      <button onClick={() => handleSort(col.sort)} className="group flex items-center gap-1.5 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
-                        {col.label} <SortIcon col={col.sort} />
-                      </button>
-                    </th>
-                  ))}
+
+                  {/* No. */}
+                  {(() => {
+                    const isFiltered = !!appliedColumnFilters.id
+                    return (
+                      <th className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}>
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => handleSort('id')} className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
+                            No. <SortIcon col="id" />
+                          </button>
+                          <button
+                            onClick={e => { const rect = e.currentTarget.getBoundingClientRect(); setFilterPopover({ col: 'id', rect }) }}
+                            className={`flex-shrink-0 rounded p-0.5 transition-colors ${isFiltered ? 'text-blue-500' : 'text-gray-300 hover:text-gray-500'}`}
+                          >
+                            <Filter className="w-3 h-3" />
+                          </button>
+                        </div>
+                        {isFiltered && textColFilterLabel('id') && (
+                          <div className="mt-1 max-w-[120px] truncate text-[10px] font-medium normal-case tracking-normal text-blue-600">
+                            {textColFilterLabel('id')}
+                          </div>
+                        )}
+                      </th>
+                    )
+                  })()}
+
+                  {/* 이름 */}
+                  {(() => {
+                    const isFiltered = !!appliedColumnFilters.name
+                    return (
+                      <th className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}>
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => handleSort('name')} className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
+                            이름 <SortIcon col="name" />
+                          </button>
+                          <button
+                            onClick={e => { const rect = e.currentTarget.getBoundingClientRect(); setFilterPopover({ col: 'name', rect }) }}
+                            className={`flex-shrink-0 rounded p-0.5 transition-colors ${isFiltered ? 'text-blue-500' : 'text-gray-300 hover:text-gray-500'}`}
+                          >
+                            <Filter className="w-3 h-3" />
+                          </button>
+                        </div>
+                        {isFiltered && textColFilterLabel('name') && (
+                          <div className="mt-1 max-w-[120px] truncate text-[10px] font-medium normal-case tracking-normal text-blue-600">
+                            {textColFilterLabel('name')}
+                          </div>
+                        )}
+                      </th>
+                    )
+                  })()}
+
+                  {/* ID (email) */}
+                  {(() => {
+                    const isFiltered = !!appliedColumnFilters.email
+                    return (
+                      <th className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}>
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => handleSort('email')} className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
+                            ID <SortIcon col="email" />
+                          </button>
+                          <button
+                            onClick={e => { const rect = e.currentTarget.getBoundingClientRect(); setFilterPopover({ col: 'email', rect }) }}
+                            className={`flex-shrink-0 rounded p-0.5 transition-colors ${isFiltered ? 'text-blue-500' : 'text-gray-300 hover:text-gray-500'}`}
+                          >
+                            <Filter className="w-3 h-3" />
+                          </button>
+                        </div>
+                        {isFiltered && textColFilterLabel('email') && (
+                          <div className="mt-1 max-w-[120px] truncate text-[10px] font-medium normal-case tracking-normal text-blue-600">
+                            {textColFilterLabel('email')}
+                          </div>
+                        )}
+                      </th>
+                    )
+                  })()}
+
+                  {/* 전화번호 */}
+                  {(() => {
+                    const isFiltered = !!appliedColumnFilters.phone
+                    return (
+                      <th className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}>
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => handleSort('phone')} className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
+                            전화번호 <SortIcon col="phone" />
+                          </button>
+                          <button
+                            onClick={e => { const rect = e.currentTarget.getBoundingClientRect(); setFilterPopover({ col: 'phone', rect }) }}
+                            className={`flex-shrink-0 rounded p-0.5 transition-colors ${isFiltered ? 'text-blue-500' : 'text-gray-300 hover:text-gray-500'}`}
+                          >
+                            <Filter className="w-3 h-3" />
+                          </button>
+                        </div>
+                        {isFiltered && textColFilterLabel('phone') && (
+                          <div className="mt-1 max-w-[120px] truncate text-[10px] font-medium normal-case tracking-normal text-blue-600">
+                            {textColFilterLabel('phone')}
+                          </div>
+                        )}
+                      </th>
+                    )
+                  })()}
+
+                  {/* 재접수 */}
+                  {(() => {
+                    const isFiltered = !!appliedColumnFilters.ticketYn
+                    return (
+                      <th className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}>
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => handleSort('ticketYn')} className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
+                            재접수 <SortIcon col="ticketYn" />
+                          </button>
+                          <button
+                            onClick={e => { const rect = e.currentTarget.getBoundingClientRect(); setFilterPopover({ col: 'ticketYn', rect }) }}
+                            className={`flex-shrink-0 rounded p-0.5 transition-colors ${isFiltered ? 'text-blue-500' : 'text-gray-300 hover:text-gray-500'}`}
+                          >
+                            <Filter className="w-3 h-3" />
+                          </button>
+                        </div>
+                        {isFiltered && (
+                          <div className="mt-1 max-w-[120px] truncate text-[10px] font-medium normal-case tracking-normal text-blue-600">
+                            {appliedColumnFilters.ticketYn}
+                          </div>
+                        )}
+                      </th>
+                    )
+                  })()}
+
+                  {/* 마케팅 동의 */}
+                  {(() => {
+                    const isFiltered = !!appliedColumnFilters.marketingAgree
+                    return (
+                      <th className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}>
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => handleSort('marketingAgree')} className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
+                            마케팅 동의 <SortIcon col="marketingAgree" />
+                          </button>
+                          <button
+                            onClick={e => { const rect = e.currentTarget.getBoundingClientRect(); setFilterPopover({ col: 'marketingAgree', rect }) }}
+                            className={`flex-shrink-0 rounded p-0.5 transition-colors ${isFiltered ? 'text-blue-500' : 'text-gray-300 hover:text-gray-500'}`}
+                          >
+                            <Filter className="w-3 h-3" />
+                          </button>
+                        </div>
+                        {isFiltered && (
+                          <div className="mt-1 max-w-[120px] truncate text-[10px] font-medium normal-case tracking-normal text-blue-600">
+                            {appliedColumnFilters.marketingAgree === 'Y' ? '동의' : '미동의'}
+                          </div>
+                        )}
+                      </th>
+                    )
+                  })()}
+
+                  {/* 등록일자 */}
+                  {(() => {
+                    const isFiltered = !!(appliedColumnFilters.registeredFrom || appliedColumnFilters.registeredTo)
+                    return (
+                      <th className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}>
+                        <div className="flex items-center gap-1.5">
+                          <button onClick={() => handleSort('registeredAt')} className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
+                            등록일자 <SortIcon col="registeredAt" />
+                          </button>
+                          <button
+                            onClick={e => { const rect = e.currentTarget.getBoundingClientRect(); setFilterPopover({ col: 'registeredAt', rect }) }}
+                            className={`flex-shrink-0 rounded p-0.5 transition-colors ${isFiltered ? 'text-blue-500' : 'text-gray-300 hover:text-gray-500'}`}
+                          >
+                            <Filter className="w-3 h-3" />
+                          </button>
+                        </div>
+                        {isFiltered && registeredAtFilterLabel && (
+                          <div className="mt-1 max-w-[160px] truncate text-[10px] font-medium normal-case tracking-normal text-blue-600">
+                            {registeredAtFilterLabel}
+                          </div>
+                        )}
+                      </th>
+                    )
+                  })()}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -531,6 +707,23 @@ export function CustomersPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {filterPopover && (
+        <>
+          <div className="fixed inset-0 z-[40]" onClick={() => setFilterPopover(null)} />
+          <div
+            className="fixed z-[50] bg-white border border-gray-200 rounded-xl shadow-lg p-3 w-max"
+            style={{
+              top: filterPopover.rect.bottom + 6,
+              ...(filterPopover.rect.left + 240 > window.innerWidth
+                ? { right: Math.max(8, window.innerWidth - filterPopover.rect.right) }
+                : { left: filterPopover.rect.left }),
+            }}
+          >
+            {renderFilterPopoverContent(filterPopover.col)}
+          </div>
+        </>
       )}
     </div>
   )
