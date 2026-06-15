@@ -29,8 +29,9 @@ export type PrivacyProcessingLog = {
 }
 
 const PRIVACY_LOGS_STORAGE_KEY = 'ps-admin-privacy-processing-logs'
+const DOWNLOAD_LOGS_STORAGE_KEY = 'ps-admin-download-logs'
 
-const mockDownloadLogs: DownloadLog[] = [
+const initialDownloadLogs: DownloadLog[] = [
   { id: 1, downloadedAt: '2026-06-03 09:14:22', adminName: '한혜지', adminId: 'monster563', target: '고객', downloadType: '원본', count: 12, ip: '10.0.1.42', reason: '고객 문의 이력 확인' },
   { id: 2, downloadedAt: '2026-06-04 14:30:05', adminName: '김민준', adminId: 'monster001', target: '고객', downloadType: '마스킹', count: 12, ip: '10.0.1.21', reason: '-' },
   { id: 3, downloadedAt: '2026-06-05 11:05:47', adminName: '이서연', adminId: 'monster042', target: '티켓', downloadType: '마스킹', count: 28, ip: '10.0.1.33', reason: '-' },
@@ -64,11 +65,30 @@ function loadStoredPrivacyLogs() {
   }
 }
 
+function loadStoredDownloadLogs() {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = window.localStorage.getItem(DOWNLOAD_LOGS_STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw)
+    return Array.isArray(parsed) ? parsed as DownloadLog[] : []
+  } catch {
+    return []
+  }
+}
+
+function persistDownloadLogs() {
+  if (typeof window === 'undefined') return
+  window.localStorage.setItem(DOWNLOAD_LOGS_STORAGE_KEY, JSON.stringify(mockDownloadLogs))
+}
+
 function persistPrivacyLogs() {
   if (typeof window === 'undefined') return
   window.localStorage.setItem(PRIVACY_LOGS_STORAGE_KEY, JSON.stringify(mockPrivacyLogs))
 }
 
+const storedDownloadLogs = loadStoredDownloadLogs()
+const mockDownloadLogs: DownloadLog[] = storedDownloadLogs.length > 0 ? storedDownloadLogs : initialDownloadLogs
 const storedPrivacyLogs = loadStoredPrivacyLogs()
 const mockPrivacyLogs: PrivacyProcessingLog[] = storedPrivacyLogs.length > 0 ? storedPrivacyLogs : initialPrivacyLogs
 
@@ -92,6 +112,7 @@ export function addDownloadLog(entry: Omit<DownloadLog, 'id' | 'downloadedAt'>) 
     downloadedAt: nowTimestamp(),
     ...entry,
   })
+  persistDownloadLogs()
 }
 
 export function addPrivacyLog(entry: Omit<PrivacyProcessingLog, 'id' | 'processedAt'>) {

@@ -3,7 +3,7 @@ import { NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-rout
 import {
   UserCog, Shield, Package, Wrench, ArchiveX,
   Store, Users, Ticket, PanelLeftClose, PanelLeftOpen, LogOut, ChevronRight,
-  AlertTriangle, KeyRound, CalendarDays, Download, ShieldCheck, Briefcase,
+  AlertTriangle, KeyRound, CalendarDays, Download, ShieldCheck,
 } from 'lucide-react'
 import { useSession } from '@/lib/session-context'
 import { SessionWarningModal } from '@/components/session-warning-modal'
@@ -28,7 +28,6 @@ const NAV: NavGroup[] = [
     children: [
       { to: '/members',                  label: '회원 관리',      icon: UserCog },
       { to: '/roles',                    label: '권한 관리',      icon: Shield },
-      { to: '/departments',              label: '부서 관리',      icon: Briefcase },
       { to: '/settings/reception-slots', label: '접수 슬롯 설정', icon: CalendarDays },
     ],
   },

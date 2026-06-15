@@ -114,12 +114,6 @@ export type Role = {
   memberCount: number
 }
 
-export type Department = {
-  id: string
-  name: string
-  description?: string
-}
-
 export type Permission = {
   menuId: string
   menuName: string

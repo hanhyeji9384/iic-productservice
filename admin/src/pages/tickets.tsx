@@ -1,9 +1,10 @@
-import { useMemo, useRef, useState } from 'react'
-import { ArrowDown, ArrowUp, ArrowUpDown, FileDown, Filter, Plus, ScanLine, Trash2, X } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, FileDown, Filter, Lock, Plus, ScanLine, Trash2, X } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Pagination } from '@/components/pagination'
 import { BRANCHES, MEMBERS, TICKETS } from '@/lib/mock-data'
+import { addDownloadLog } from '@/lib/download-logs'
 import { maskEmail, maskName, maskPhone } from '@/lib/masking'
 import type { PaymentCompleted, Ticket, TicketStatus } from '@/lib/types'
 
@@ -250,10 +251,33 @@ export function TicketsPage() {
   const [modalScanError, setModalScanError] = useState(false)
   const [deletedIds, setDeletedIds] = useState<Set<string>>(new Set())
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [exportMenuOpen, setExportMenuOpen] = useState(false)
+  const [originalDownloadOpen, setOriginalDownloadOpen] = useState(false)
+  const [exportPassword, setExportPassword] = useState('')
+  const [exportReason, setExportReason] = useState('')
   const scanInputRef = useRef<HTMLInputElement>(null)
   const modalScanRef = useRef<HTMLInputElement>(null)
+  const exportMenuRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const { langCode } = useParams<{ langCode: string }>()
+
+  useEffect(() => {
+    if (!exportMenuOpen) return
+    const closeOnOutsideClick = (event: MouseEvent) => {
+      if (!exportMenuRef.current?.contains(event.target as Node)) setExportMenuOpen(false)
+    }
+    document.addEventListener('mousedown', closeOnOutsideClick)
+    return () => document.removeEventListener('mousedown', closeOnOutsideClick)
+  }, [exportMenuOpen])
+
+  useEffect(() => {
+    if (!originalDownloadOpen) return
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') closeOriginalDownloadModal()
+    }
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [originalDownloadOpen])
 
   const setColumn = (key: ColumnFilterKey) => (value: string) => {
     setColumnFilters(prev => ({ ...prev, [key]: value }))
@@ -267,15 +291,15 @@ export function TicketsPage() {
     [effectiveBranch, deletedIds]
   )
 
-  function handleExportExcel() {
-    const rows = sorted.map(t => ({
+  function buildExportRows(masked: boolean) {
+    return sorted.map(t => ({
       '티켓번호': t.ticketNo,
       '접수일': t.receivedAt,
       '상태': STATUS_META[t.status].label,
       '접수처': t.receptionPlace,
-      '고객명': t.customerName,
-      '전화번호': t.phone,
-      '이메일': t.email,
+      '고객명': masked ? maskName(t.customerName) : t.customerName,
+      '전화번호': masked ? maskPhone(t.phone) : t.phone,
+      '이메일': masked ? maskEmail(t.email) : t.email,
       '제품명': t.productName,
       '수리부서': t.repairDepartment,
       '수리내역': t.repairDetail,
@@ -289,10 +313,47 @@ export function TicketsPage() {
       '본사입고일': t.hqReceivedAt ?? '',
       '출고예정일': t.expectedShipAt ?? '',
     }))
+  }
+
+  function downloadExcel(masked: boolean, reason?: string) {
+    const rows = buildExportRows(masked)
     const ws = XLSX.utils.json_to_sheet(rows)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, '티켓목록')
-    XLSX.writeFile(wb, `tickets_${new Date().toISOString().slice(0, 10)}.xlsx`)
+    XLSX.writeFile(wb, `tickets_${masked ? 'masked' : 'original'}_${new Date().toISOString().slice(0, 10)}.xlsx`)
+    if (!masked) {
+      addDownloadLog({
+        adminName: '한혜지',
+        adminId: 'monster563',
+        target: '티켓',
+        downloadType: '원본',
+        count: sorted.length,
+        ip: '10.0.1.42',
+        reason: reason?.trim() || '-',
+      })
+    }
+  }
+
+  function handleMaskedDownload() {
+    downloadExcel(true)
+    setExportMenuOpen(false)
+  }
+
+  function openOriginalDownloadModal() {
+    setExportMenuOpen(false)
+    setOriginalDownloadOpen(true)
+  }
+
+  function closeOriginalDownloadModal() {
+    setOriginalDownloadOpen(false)
+    setExportPassword('')
+    setExportReason('')
+  }
+
+  function handleOriginalDownload() {
+    if (!exportPassword || !exportReason.trim()) return
+    downloadExcel(false, exportReason)
+    closeOriginalDownloadModal()
   }
 
   function handleDeleteConfirm() {
@@ -612,6 +673,44 @@ export function TicketsPage() {
             <h1 className="text-xl font-bold text-gray-900">티켓</h1>
             <p className="mt-1 text-sm text-gray-400">공식 홈페이지와 매장에서 접수된 수리 서비스 티켓을 통합 조회합니다.</p>
           </div>
+          <div className="relative" ref={exportMenuRef}>
+            <button
+              type="button"
+              onClick={() => setExportMenuOpen(prev => !prev)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors text-sm font-medium"
+            >
+              <FileDown className="w-4 h-4" />
+              Excel 다운로드
+              <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+            </button>
+            {exportMenuOpen && (
+              <div className="absolute right-0 top-full z-30 mt-1.5 w-56 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg shadow-black/[0.08]">
+                <button
+                  type="button"
+                  onClick={handleMaskedDownload}
+                  className="flex w-full items-start gap-2.5 px-4 py-3 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  <FileDown className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+                  <span>
+                    <span className="block font-medium">마스킹 버전</span>
+                    <span className="mt-0.5 block text-xs text-gray-400">개인정보 가림 처리</span>
+                  </span>
+                </button>
+                <div className="mx-3 h-px bg-gray-100" />
+                <button
+                  type="button"
+                  onClick={openOriginalDownloadModal}
+                  className="flex w-full items-start gap-2.5 px-4 py-3 text-left text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                >
+                  <Lock className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
+                  <span>
+                    <span className="block font-medium">마스킹 없는 버전</span>
+                    <span className="mt-0.5 block text-xs text-gray-400">사유 입력 후 로그 기록</span>
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden min-w-0">
@@ -674,12 +773,6 @@ export function TicketsPage() {
               </button>
             )}
             <div className="ml-auto flex items-center gap-2">
-              <button
-                onClick={handleExportExcel}
-                className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors flex-shrink-0"
-              >
-                <FileDown className="w-3.5 h-3.5" />엑셀 출력
-              </button>
               <button
                 onClick={() => navigate(`/${langCode}/tickets/new`, { state: { branchCode: effectiveBranch } })}
                 className="flex items-center gap-1.5 px-3 py-2 bg-black text-white rounded-lg text-xs font-medium hover:bg-gray-800 transition-colors flex-shrink-0"
@@ -852,6 +945,81 @@ export function TicketsPage() {
             {renderFilterPopoverContent(filterPopover.col)}
           </div>
         </>
+      )}
+
+      {/* ── 원본 엑셀 다운로드 모달 ── */}
+      {originalDownloadOpen && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+          onClick={closeOriginalDownloadModal}
+        >
+          <div className="w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="border-b border-gray-100 px-6 py-5">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gray-100">
+                    <Lock className="h-5 w-5 text-gray-700" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-semibold text-gray-900">마스킹 없는 버전 다운로드</h3>
+                    <p className="mt-1 text-xs leading-5 text-gray-500">
+                      개인정보가 포함된 파일입니다. 다운로드 이력이 기록됩니다.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeOriginalDownloadModal}
+                  className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            <div className="space-y-4 px-6 py-5">
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-600">파일 비밀번호 설정</label>
+                <input
+                  type="password"
+                  value={exportPassword}
+                  onChange={e => setExportPassword(e.target.value)}
+                  placeholder="다운로드할 파일에 설정할 비밀번호"
+                  className="w-full rounded-xl border border-gray-100 bg-[#f8f9fb] px-4 py-2.5 text-sm outline-none transition-colors placeholder:text-gray-300 focus:border-gray-300 focus:bg-white"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-gray-600">
+                  다운로드 사유 <span className="text-red-400">*</span>
+                </label>
+                <textarea
+                  value={exportReason}
+                  onChange={e => setExportReason(e.target.value)}
+                  rows={3}
+                  placeholder="원본 다운로드 사유를 입력하세요"
+                  className="w-full resize-none rounded-xl border border-gray-100 bg-[#f8f9fb] px-4 py-2.5 text-sm outline-none transition-colors placeholder:text-gray-300 focus:border-gray-300 focus:bg-white"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 border-t border-gray-100 bg-gray-50 px-6 py-4">
+              <button
+                type="button"
+                onClick={closeOriginalDownloadModal}
+                className="rounded-xl px-4 py-2 text-sm font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleOriginalDownload}
+                disabled={!exportPassword || !exportReason.trim()}
+                className="flex items-center gap-2 rounded-xl bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <FileDown className="h-4 w-4" />
+                다운로드
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── 벌크 편집 모달 ── */}

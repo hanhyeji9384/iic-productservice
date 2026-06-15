@@ -11,7 +11,6 @@ import type {
   PartChangeLog,
   Customer,
   Ticket,
-  Department,
 } from './types'
 
 export const ROLES: Role[] = [
@@ -22,14 +21,6 @@ export const ROLES: Role[] = [
   { id: 'FRANCHISE_OWNER', name: '가맹점주',      description: '가맹 매장 접수 전용 (한국)', memberCount: 0  },
   { id: 'SIMPLY_REPAIR_FRANCHISE_OWNER', name: '심플리페어 가맹점주', description: '심플리페어 가맹 매장 접수 전용 (한국)', memberCount: 0 },
   { id: 'READONLY',        name: '조회 전용',      description: '전체 조회만 가능',           memberCount: 3  },
-]
-
-export const DEPARTMENTS: Department[] = [
-  { id: 'D001', name: 'PS팀', description: '수리서비스 전담 운영' },
-  { id: 'D002', name: 'CS팀', description: '고객서비스' },
-  { id: 'D003', name: '물류팀', description: '입출고 및 배송 관리' },
-  { id: 'D004', name: '매장운영팀', description: '매장/거래처 운영 관리' },
-  { id: 'D005', name: '가맹점', description: '가맹 매장 접수 운영' },
 ]
 
 // 1차 오픈 대상: KR + US
