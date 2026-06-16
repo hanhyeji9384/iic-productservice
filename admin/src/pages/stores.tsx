@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { X, Download, ArrowUp, ArrowDown, ArrowUpDown, Filter } from 'lucide-react'
 import { Pagination } from '@/components/pagination'
@@ -66,13 +66,29 @@ export function StoresPage() {
   const [page, setPage] = useState(1)
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc' | null>(null)
-  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({})
-  const [appliedColumnFilters, setAppliedColumnFilters] = useState<Record<string, string>>({})
   const [filterPopover, setFilterPopover] = useState<{ col: string; rect: DOMRect } | null>(null)
 
   const branchOptions = useMemo(() => BRANCHES.filter(b => STORES.some(s => s.branchCode === b.code)), [])
+  const defaultBranchCode = branchOptions.find(branch => branch.code === '1110')?.code ?? branchOptions[0]?.code ?? ''
+  const defaultBranchFilter = useMemo<Record<string, string>>(
+    () => {
+      const filter: Record<string, string> = {}
+      if (defaultBranchCode) filter.branch = defaultBranchCode
+      return filter
+    },
+    [defaultBranchCode]
+  )
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>(() => ({ ...defaultBranchFilter }))
+  const [appliedColumnFilters, setAppliedColumnFilters] = useState<Record<string, string>>(() => ({ ...defaultBranchFilter }))
   const cities = useMemo(() => [...new Set(STORES.map(s => displayValue(s.address1)))].filter(city => city !== '-').sort(), [])
   const storeGroups = useMemo(() => [...new Set(STORES.map(s => s.storeGroup))].sort((a, b) => a - b), [])
+
+  useEffect(() => {
+    if (!defaultBranchCode) return
+    if (appliedColumnFilters.branch) return
+    setColumnFilters(prev => ({ ...prev, branch: defaultBranchCode }))
+    setAppliedColumnFilters(prev => ({ ...prev, branch: defaultBranchCode }))
+  }, [appliedColumnFilters.branch, defaultBranchCode])
 
   const filtered = useMemo(() => {
     return STORES.filter(store => {
@@ -141,8 +157,8 @@ export function StoresPage() {
   }
 
   function handleReset() {
-    setColumnFilters({})
-    setAppliedColumnFilters({})
+    setColumnFilters({ ...defaultBranchFilter })
+    setAppliedColumnFilters({ ...defaultBranchFilter })
     setPage(1)
   }
 
@@ -253,7 +269,7 @@ export function StoresPage() {
   }
 
   const FILTERABLE_COLS = new Set(['code', 'name', 'tel1', 'city', 'status', 'storeGroup'])
-  const hasAnyFilter = Object.values(appliedColumnFilters).some(Boolean)
+  const hasAnyFilter = Object.entries(appliedColumnFilters).some(([key, value]) => key !== 'branch' && Boolean(value))
 
   return (
     <div className="overflow-x-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -272,21 +288,15 @@ export function StoresPage() {
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
             <select
-              value={columnFilters.branch ?? ''}
+              value={columnFilters.branch ?? defaultBranchCode}
               onChange={e => {
                 const val = e.target.value
-                if (val) {
-                  setColumnFilters(prev => ({ ...prev, branch: val }))
-                  setAppliedColumnFilters(prev => ({ ...prev, branch: val }))
-                } else {
-                  setColumnFilters(prev => { const n = { ...prev }; delete n.branch; return n })
-                  setAppliedColumnFilters(prev => { const n = { ...prev }; delete n.branch; return n })
-                }
+                setColumnFilters(prev => ({ ...prev, branch: val }))
+                setAppliedColumnFilters(prev => ({ ...prev, branch: val }))
                 setPage(1)
               }}
               className="w-64 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400"
             >
-              <option value="">법인</option>
               {branchOptions.map(b => (
                 <option key={b.code} value={b.code}>{b.code} {b.name}</option>
               ))}

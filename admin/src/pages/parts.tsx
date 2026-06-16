@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ChangeEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowDown,
@@ -155,8 +155,9 @@ export function PartsPage() {
     )
     return BRANCHES.filter(branch => branchCodes.has(branch.code))
   }, [parts, productMap])
+  const defaultBranchCode = branchOptions.find(branch => branch.code === '1110')?.code ?? branchOptions[0]?.code ?? ''
 
-  const [activeBranch, setActiveBranch] = useState<string>('')
+  const [activeBranch, setActiveBranch] = useState<string>(defaultBranchCode)
   const [activeTab, setActiveTab] = useState<Tab>('list')
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({})
   const [appliedColumnFilters, setAppliedColumnFilters] = useState<Record<string, string>>({})
@@ -171,7 +172,13 @@ export function PartsPage() {
   const [bulkStorageLocation, setBulkStorageLocation] = useState('')
   const [historyPage, setHistoryPage] = useState(1)
 
-  const effectiveBranch = activeBranch || branchOptions[0]?.code || ''
+  useEffect(() => {
+    if (!defaultBranchCode) return
+    if (activeBranch) return
+    setActiveBranch(defaultBranchCode)
+  }, [activeBranch, defaultBranchCode])
+
+  const effectiveBranch = activeBranch || defaultBranchCode
   const branchParts = useMemo(() =>
     parts.filter(part => !effectiveBranch || productMap.get(part.productCode)?.branchCode === effectiveBranch),
     [effectiveBranch, parts, productMap]
@@ -278,6 +285,7 @@ export function PartsPage() {
     setAppliedColumnFilters({})
     setPage(1)
     setSelected(new Set())
+    setActiveBranch(defaultBranchCode)
   }
 
   function handleBranchChange(branchCode: string) {
@@ -291,7 +299,7 @@ export function PartsPage() {
     downloadCsv(
       `parts_${new Date().toISOString().slice(0, 10)}.csv`,
       ['제품코드', '제품명', '부속품 ID', '부속품명', '규격', '컬러', '부속품 보관위치'],
-      filtered.map(part => {
+      sorted.map(part => {
         const product = productMap.get(part.productCode)
         return [
           part.productCode,
@@ -310,7 +318,7 @@ export function PartsPage() {
     downloadCsv(
       `parts_location_upload_template_${new Date().toISOString().slice(0, 10)}.csv`,
       ['제품코드', '제품명', '부속품 ID', '부속품명', '현재 보관위치', '변경 보관위치'],
-      filtered.map(part => {
+      sorted.map(part => {
         const product = productMap.get(part.productCode)
         return [
           part.productCode,
@@ -622,11 +630,10 @@ export function PartsPage() {
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
             <select
-              value={activeBranch}
+              value={activeBranch || defaultBranchCode}
               onChange={e => handleBranchChange(e.target.value)}
               className="w-64 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400"
             >
-              <option value="">법인</option>
               {branchOptions.map(b => (
                 <option key={b.code} value={b.code}>{branchLabel(b.code)}</option>
               ))}

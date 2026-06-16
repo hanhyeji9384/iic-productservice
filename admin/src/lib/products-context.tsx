@@ -9,12 +9,19 @@ type StockPatch = {
   isRestorationRepair?: boolean
 }
 
+type ProductManagementUpdate = {
+  productCode: string
+  hasDecoration?: boolean
+  isRestorationRepair?: boolean
+}
+
 type ProductsContextValue = {
   products: Product[]
   productChangeLogs: ProductChangeLog[]
   addProduct: (product: Product) => void
   updateProduct: (updated: Product) => void
   updateStockFields: (id: string, patch: StockPatch) => void
+  updateProductManagementFields: (updates: ProductManagementUpdate[]) => number
 }
 
 const ProductsContext = createContext<ProductsContextValue | null>(null)
@@ -96,8 +103,38 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
     setProducts(prev => prev.map(p => p.id === id ? { ...p, ...patch } : p))
   }
 
+  function updateProductManagementFields(updates: ProductManagementUpdate[]) {
+    const productByCode = new Map(products.map(product => [product.productCode, product]))
+    const nextById = new Map<string, Product>()
+    const changedAt = nowString()
+    const logs: ProductChangeLog[] = []
+
+    updates.forEach(update => {
+      const current = productByCode.get(update.productCode)
+      if (!current) return
+
+      const patch: StockPatch = {}
+      if (typeof update.hasDecoration === 'boolean') patch.hasDecoration = update.hasDecoration
+      if (typeof update.isRestorationRepair === 'boolean') patch.isRestorationRepair = update.isRestorationRepair
+      if (Object.keys(patch).length === 0) return
+
+      const updated = { ...current, ...patch }
+      const summary = buildProductManagementDiff(current, updated)
+      if (summary === '변경 없음') return
+
+      nextById.set(current.id, updated)
+      logs.push(buildProductLog(current, 'update', summary, changedAt))
+    })
+
+    if (nextById.size === 0) return 0
+
+    setProducts(prev => prev.map(product => nextById.get(product.id) ?? product))
+    setProductChangeLogs(prev => [...logs, ...prev])
+    return nextById.size
+  }
+
   return (
-    <ProductsContext.Provider value={{ products, productChangeLogs, addProduct, updateProduct, updateStockFields }}>
+    <ProductsContext.Provider value={{ products, productChangeLogs, addProduct, updateProduct, updateStockFields, updateProductManagementFields }}>
       {children}
     </ProductsContext.Provider>
   )

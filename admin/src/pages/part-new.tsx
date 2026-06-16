@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, ChevronDown } from 'lucide-react'
+import { ArrowLeft, ChevronDown, Search, X } from 'lucide-react'
 import { useParts } from '@/lib/parts-context'
 import { useProducts } from '@/lib/products-context'
 import { inputCls } from '@/lib/utils'
-import type { Part } from '@/lib/types'
+import type { Part, Product } from '@/lib/types'
 
 type Form = {
   productCode: string
@@ -30,29 +31,159 @@ function FieldLabel({ text, required }: { text: string; required?: boolean }) {
   )
 }
 
-function SelectField({
-  label, required, value, onChange, children, disabled,
+function ProductSearchCombo({
+  products,
+  value,
+  onChange,
+  disabled,
 }: {
-  label: string
-  required?: boolean
+  products: Product[]
   value: string
-  onChange: (v: string) => void
-  children: ReactNode
+  onChange: (productCode: string) => void
   disabled?: boolean
 }) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [searchedQuery, setSearchedQuery] = useState('')
+  const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const selected = products.find(product => product.productCode === value)
+
+  const filtered = searchedQuery.trim()
+    ? products.filter(product =>
+        product.name.toLowerCase().includes(searchedQuery.toLowerCase()) ||
+        product.productCode.toLowerCase().includes(searchedQuery.toLowerCase()) ||
+        product.barcode.toLowerCase().includes(searchedQuery.toLowerCase())
+      )
+    : []
+
+  useEffect(() => {
+    if (!open) return
+    function handleOutside(event: MouseEvent) {
+      const target = event.target as Node
+      if (!triggerRef.current?.contains(target) && !dropdownRef.current?.contains(target)) {
+        setOpen(false)
+      }
+    }
+    function handleScroll(event: Event) {
+      if (dropdownRef.current?.contains(event.target as Node)) return
+      setOpen(false)
+    }
+    document.addEventListener('mousedown', handleOutside)
+    window.addEventListener('scroll', handleScroll, true)
+    return () => {
+      document.removeEventListener('mousedown', handleOutside)
+      window.removeEventListener('scroll', handleScroll, true)
+    }
+  }, [open])
+
+  function handleOpen() {
+    if (disabled) return
+    if (open) {
+      setOpen(false)
+      return
+    }
+    const rect = triggerRef.current?.getBoundingClientRect()
+    if (rect) setDropdownRect(rect)
+    setOpen(true)
+    setTimeout(() => inputRef.current?.focus(), 0)
+  }
+
+  function handleClear(event: React.MouseEvent) {
+    event.stopPropagation()
+    onChange('')
+  }
+
   return (
     <div>
-      <FieldLabel text={label} required={required} />
+      <FieldLabel text="연결 제품" required />
       <div className="relative">
-        <select
-          value={value}
-          onChange={e => onChange(e.target.value)}
+        <button
+          ref={triggerRef}
+          type="button"
+          onClick={handleOpen}
           disabled={disabled}
-          className={`${inputCls} w-full appearance-none pl-3 pr-8 ${disabled ? 'bg-gray-50 text-gray-500 cursor-default' : 'cursor-pointer'}`}
+          className={`${inputCls} flex w-full items-center justify-between gap-2 pl-3 pr-2.5 text-left ${
+            disabled ? 'bg-gray-50 text-gray-500 cursor-default' : 'cursor-pointer'
+          } ${open ? 'border-gray-400' : ''}`}
         >
-          {children}
-        </select>
-        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+          <span className={selected ? 'truncate text-gray-900' : 'text-gray-300'}>
+            {selected ? `${selected.productCode} / ${selected.name}` : '제품 검색'}
+          </span>
+          <span className="flex items-center gap-1">
+            {selected && !disabled && (
+              <span onClick={handleClear} className="p-0.5 rounded text-gray-300 hover:text-gray-500 transition-colors">
+                <X className="w-3.5 h-3.5" />
+              </span>
+            )}
+            <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
+          </span>
+        </button>
+        {open && dropdownRect && createPortal(
+          <div
+            ref={dropdownRef}
+            className="fixed z-[9999] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl shadow-black/[0.08]"
+            style={{ top: dropdownRect.bottom + 4, left: dropdownRect.left, width: dropdownRect.width }}
+          >
+            <div className="border-b border-gray-100 p-2">
+              <div className="flex items-center gap-2">
+                <div className="flex flex-1 items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5">
+                  <Search className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={query}
+                    onChange={event => setQuery(event.target.value)}
+                    onKeyDown={event => event.key === 'Enter' && setSearchedQuery(query)}
+                    placeholder="제품명, 코드, 바코드 입력"
+                    className="flex-1 bg-transparent text-sm text-gray-800 placeholder:text-gray-300 focus:outline-none"
+                  />
+                  {query && (
+                    <button type="button" onClick={() => { setQuery(''); setSearchedQuery('') }} className="text-gray-300 hover:text-gray-500">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSearchedQuery(query)}
+                  className="flex-shrink-0 rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700"
+                >
+                  검색
+                </button>
+              </div>
+            </div>
+            <ul className="max-h-56 overflow-y-auto py-1">
+              {!searchedQuery.trim()
+                ? <li className="px-3 py-4 text-center text-xs text-gray-400">제품명 또는 코드를 입력 후 검색해주세요</li>
+                : filtered.length === 0
+                  ? <li className="px-3 py-4 text-center text-xs text-gray-400">검색 결과가 없습니다</li>
+                  : filtered.map(product => (
+                    <li key={product.id}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onChange(product.productCode)
+                          setOpen(false)
+                          setQuery('')
+                          setSearchedQuery('')
+                        }}
+                        className={`w-full px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50 ${
+                          product.productCode === value ? 'bg-gray-50 font-medium text-gray-900' : 'text-gray-700'
+                        }`}
+                      >
+                        {product.name}
+                        <span className="ml-2 font-mono text-[11px] text-gray-400">{product.productCode}</span>
+                      </button>
+                    </li>
+                  ))
+              }
+            </ul>
+          </div>,
+          document.body
+        )}
       </div>
     </div>
   )
@@ -174,14 +305,10 @@ export function PartNewPage() {
             />
             <p className="text-[11px] text-gray-400 mt-1">PS에서 자동 생성됩니다.</p>
           </div>
-          <SelectField label="연결 제품" required value={form.productCode} onChange={set('productCode')} disabled={isEdit}>
-            <option value="">제품 선택</option>
-            {products.map(product => (
-              <option key={product.id} value={product.productCode}>
-                {product.productCode} / {product.name}
-              </option>
-            ))}
-          </SelectField>
+          <div>
+            <ProductSearchCombo products={products} value={form.productCode} onChange={set('productCode')} disabled={isEdit} />
+            {errors.productCode && <p className="text-[11px] text-red-400 mt-1">{errors.productCode}</p>}
+          </div>
           <div>
             <FieldLabel text="부속품명" required />
             <input

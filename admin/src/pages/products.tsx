@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react'
-import { X, ArrowUp, ArrowDown, ArrowUpDown, Download, Check, Clock, List, Filter } from 'lucide-react'
+import { useEffect, useState, useMemo, useRef, type ChangeEvent } from 'react'
+import { X, ArrowUp, ArrowDown, ArrowUpDown, Download, Check, Clock, List, Filter, FileDown, Upload } from 'lucide-react'
 import { Pagination } from '@/components/pagination'
 import { SummaryCell } from '@/components/summary-cell'
+import { downloadCsv } from '@/lib/csv'
 import { useProducts } from '@/lib/products-context'
 import { BRANCHES } from '@/lib/mock-data'
 import type { Product, ProductChangeLog, SalesStatus } from '@/lib/types'
@@ -22,6 +23,7 @@ function fmtRetention(dateStr: string): string {
 type SortKey = 'productCode' | 'name' | 'brandCategory' | 'midCategory' | 'subCategory' | 'hasDecoration' | 'isRestorationRepair'
   | 'factory1' | 'factory2' | 'factory3' | 'releaseDate' | 'partsRetentionPeriod'
 type Tab = 'list' | 'history'
+type BulkYnValue = 'keep' | 'true' | 'false'
 
 const ITEMS_PER_PAGE = 15
 const HISTORY_PER_PAGE = 15
@@ -40,25 +42,116 @@ function isRestorationRepairProduct(product: Product) {
   return product.isRestorationRepair ?? /METAL|COMBI/.test(product.subCategory)
 }
 
+function parseCsvLine(line: string) {
+  const cells: string[] = []
+  let current = ''
+  let quoted = false
+
+  for (let i = 0; i < line.length; i += 1) {
+    const char = line[i]
+    const next = line[i + 1]
+    if (char === '"' && quoted && next === '"') {
+      current += '"'
+      i += 1
+    } else if (char === '"') {
+      quoted = !quoted
+    } else if (char === ',' && !quoted) {
+      cells.push(current)
+      current = ''
+    } else {
+      current += char
+    }
+  }
+  cells.push(current)
+  return cells.map(cell => cell.trim())
+}
+
+function normalizeHeader(header: string) {
+  return header.replace(/^\ufeff/, '').replace(/\s/g, '').toLowerCase()
+}
+
+function parseYn(value: string) {
+  const normalized = value.trim().toLowerCase()
+  if (['y', 'yes', 'true', '1', '예'].includes(normalized)) return true
+  if (['n', 'no', 'false', '0', '아니오'].includes(normalized)) return false
+  return undefined
+}
+
+function parseProductManagementUpdates(text: string) {
+  const lines = text
+    .replace(/^\ufeff/, '')
+    .split(/\r?\n/)
+    .filter(line => line.trim())
+
+  const [headerLine, ...bodyLines] = lines
+  if (!headerLine) return { rows: [], invalidCount: 0 }
+
+  const headers = parseCsvLine(headerLine).map(normalizeHeader)
+  const idx = (aliases: string[]) => headers.findIndex(header => aliases.includes(header))
+  const productCodeIdx = idx(['제품코드', 'productcode'])
+  const decorationIdx = idx(['변경장식보유여부', '장식보유여부', 'hasdecoration', 'decoration'])
+  const restorationIdx = idx(['변경복원수리', '복원수리', 'isrestorationrepair', 'restorationrepair'])
+
+  if (productCodeIdx < 0 || (decorationIdx < 0 && restorationIdx < 0)) return { rows: [], invalidCount: 0 }
+
+  let invalidCount = 0
+  const rows: Array<{ productCode: string; hasDecoration?: boolean; isRestorationRepair?: boolean }> = []
+
+  bodyLines.forEach(line => {
+    const cells = parseCsvLine(line)
+    const productCode = cells[productCodeIdx]?.trim() ?? ''
+    const hasDecoration = decorationIdx >= 0 ? parseYn(cells[decorationIdx] ?? '') : undefined
+    const isRestorationRepair = restorationIdx >= 0 ? parseYn(cells[restorationIdx] ?? '') : undefined
+
+    if (!productCode) {
+      invalidCount += 1
+      return
+    }
+    if (hasDecoration === undefined && isRestorationRepair === undefined) return
+    rows.push({ productCode, hasDecoration, isRestorationRepair })
+  })
+
+  return { rows, invalidCount }
+}
+
 export function ProductsPage() {
-  const { products, productChangeLogs, updateStockFields } = useProducts()
+  const uploadInputRef = useRef<HTMLInputElement>(null)
+  const { products, productChangeLogs, updateProductManagementFields } = useProducts()
 
   const branchOptions = useMemo(() => {
     const codes = [...new Set(products.map(p => p.branchCode).filter(Boolean))] as string[]
     return BRANCHES.filter(branch => codes.includes(branch.code))
   }, [products])
+  const defaultBranchCode = branchOptions.find(branch => branch.code === '1110')?.code ?? branchOptions[0]?.code ?? ''
+  const defaultBranchFilter = useMemo<Record<string, string>>(
+    () => {
+      const filter: Record<string, string> = {}
+      if (defaultBranchCode) filter.branch = defaultBranchCode
+      return filter
+    },
+    [defaultBranchCode]
+  )
   const [activeTab, setActiveTab] = useState<Tab>('list')
 
-  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({})
-  const [appliedColumnFilters, setAppliedColumnFilters] = useState<Record<string, string>>({})
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>(() => ({ ...defaultBranchFilter }))
+  const [appliedColumnFilters, setAppliedColumnFilters] = useState<Record<string, string>>(() => ({ ...defaultBranchFilter }))
   const [filterPopover, setFilterPopover] = useState<{ col: string; rect: DOMRect } | null>(null)
   const [page, setPage] = useState(1)
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc' | null>(null)
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [decorationValue, setDecorationValue] = useState<'true' | 'false'>('true')
-  const [restorationRepairValue, setRestorationRepairValue] = useState<'true' | 'false'>('true')
+  const [decorationValue, setDecorationValue] = useState<BulkYnValue>('keep')
+  const [restorationRepairValue, setRestorationRepairValue] = useState<BulkYnValue>('keep')
   const [historyPage, setHistoryPage] = useState(1)
+  const [uploadOpen, setUploadOpen] = useState(false)
+  const [uploadResult, setUploadResult] = useState('')
+
+  useEffect(() => {
+    if (!defaultBranchCode) return
+    if (appliedColumnFilters.branch) return
+    setColumnFilters(prev => ({ ...prev, branch: defaultBranchCode }))
+    setAppliedColumnFilters(prev => ({ ...prev, branch: defaultBranchCode }))
+  }, [appliedColumnFilters.branch, defaultBranchCode])
 
   function handleSort(key: SortKey) {
     if (sortKey !== key) { setSortKey(key); setSortDir('asc') }
@@ -145,24 +238,53 @@ export function ProductsPage() {
   }
 
   function handleExport() {
-    const headers = ['제품코드','바코드','제품명','브랜드','중분류','소분류','장식보유여부','복원수리','생산공장1','생산공장2','생산공장3','출시일','부품보유기간']
-    const rows = filtered.map(p => [
-      p.productCode, p.barcode, p.name, p.brandCategory, p.midCategory, p.subCategory,
-      hasDecorationProduct(p) ? 'Y' : 'N',
-      isRestorationRepairProduct(p) ? 'Y' : 'N',
-      p.factory1, p.factory2 ?? '', p.factory3 ?? '',
-      p.releaseDate, p.partsRetentionPeriod,
-    ])
-    const csv = [headers, ...rows]
-      .map(row => row.map(c => `"${String(c ?? '').replace(/"/g, '""')}"`).join(','))
-      .join('\n')
-    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `products_${new Date().toISOString().slice(0, 10)}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
+    downloadCsv(
+      `products_${new Date().toISOString().slice(0, 10)}.csv`,
+      ['제품코드','바코드','제품명','브랜드','중분류','소분류','장식보유여부','복원수리','생산공장1','생산공장2','생산공장3','출시일','부품보유기간'],
+      sorted.map(p => [
+        p.productCode, p.barcode, p.name, p.brandCategory, p.midCategory, p.subCategory,
+        hasDecorationProduct(p) ? 'Y' : 'N',
+        isRestorationRepairProduct(p) ? 'Y' : 'N',
+        p.factory1, p.factory2 ?? '', p.factory3 ?? '',
+        p.releaseDate, p.partsRetentionPeriod,
+      ])
+    )
+  }
+
+  function handleUploadTemplateDownload() {
+    downloadCsv(
+      `products_bulk_update_template_${new Date().toISOString().slice(0, 10)}.csv`,
+      ['제품코드', '제품명', '현재 장식보유여부', '변경 장식보유여부', '현재 복원수리', '변경 복원수리'],
+      sorted.map(product => [
+        product.productCode,
+        product.name,
+        hasDecorationProduct(product) ? 'Y' : 'N',
+        '',
+        isRestorationRepairProduct(product) ? 'Y' : 'N',
+        '',
+      ])
+    )
+  }
+
+  async function handleUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const { rows, invalidCount } = parseProductManagementUpdates(await file.text())
+    event.target.value = ''
+
+    if (rows.length === 0) {
+      setUploadResult(invalidCount > 0 ? `오류 ${invalidCount}건 — 제품코드가 비어있습니다.` : '업로드 항목을 찾지 못했습니다.')
+      return
+    }
+
+    const changedCount = updateProductManagementFields(rows)
+    setUploadOpen(false)
+    setSelected(new Set())
+    setUploadResult(
+      invalidCount > 0
+        ? `${changedCount}건 변경 완료, ${invalidCount}건 오류(제품코드 누락)`
+        : `${changedCount}건 변경 완료`
+    )
   }
 
   function applyFilter(updates: Record<string, string | undefined>) {
@@ -187,20 +309,34 @@ export function ProductsPage() {
   }
 
   function handleReset() {
-    setColumnFilters({})
-    setAppliedColumnFilters({})
+    setColumnFilters({ ...defaultBranchFilter })
+    setAppliedColumnFilters({ ...defaultBranchFilter })
     setPage(1)
     setSelected(new Set())
+    setUploadOpen(false)
+    setDecorationValue('keep')
+    setRestorationRepairValue('keep')
   }
 
-  function handleDecorationApply() {
-    selected.forEach(id => updateStockFields(id, { hasDecoration: decorationValue === 'true' }))
-    setSelected(new Set())
-  }
+  function handleBulkManagementApply() {
+    if (decorationValue === 'keep' && restorationRepairValue === 'keep') {
+      setUploadResult('변경할 값을 선택해 주세요.')
+      return
+    }
 
-  function handleRestorationRepairApply() {
-    selected.forEach(id => updateStockFields(id, { isRestorationRepair: restorationRepairValue === 'true' }))
+    const updates = products
+      .filter(product => selected.has(product.id))
+      .map(product => ({
+        productCode: product.productCode,
+        hasDecoration: decorationValue === 'keep' ? undefined : decorationValue === 'true',
+        isRestorationRepair: restorationRepairValue === 'keep' ? undefined : restorationRepairValue === 'true',
+      }))
+
+    const changedCount = updateProductManagementFields(updates)
+    setUploadResult(`${changedCount}건 변경 완료`)
     setSelected(new Set())
+    setDecorationValue('keep')
+    setRestorationRepairValue('keep')
   }
 
   function handleFilterIconClick(col: string, e: React.MouseEvent<HTMLButtonElement>) {
@@ -472,7 +608,7 @@ export function ProductsPage() {
     { key: 'history' as const, label: '변경 이력', Icon: Clock },
   ]
 
-  const hasAnyFilter = Object.values(appliedColumnFilters).some(Boolean)
+  const hasAnyFilter = Object.entries(appliedColumnFilters).some(([key, value]) => key !== 'branch' && Boolean(value))
 
   return (
     <div className="overflow-x-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -490,6 +626,55 @@ export function ProductsPage() {
               <Download className="w-4 h-4" />
               Excel 다운로드
             </button>
+            <input ref={uploadInputRef} type="file" accept=".csv,text/csv" onChange={handleUpload} className="hidden" />
+            <div className="relative">
+              <button
+                onClick={() => setUploadOpen(prev => !prev)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors text-sm font-medium ${
+                  uploadOpen ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <Upload className="w-4 h-4" />
+                일괄 변경
+              </button>
+              {uploadOpen && (
+                <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-2xl border border-gray-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
+                  <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-4 py-4">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">제품 변경사항 일괄 변경</p>
+                      <p className="mt-0.5 text-xs text-gray-400">장식보유여부, 복원수리 Y/N 수정</p>
+                    </div>
+                    <button onClick={() => setUploadOpen(false)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="space-y-2 p-3">
+                    <button
+                      onClick={handleUploadTemplateDownload}
+                      className="group flex w-full items-center gap-3 rounded-xl border border-gray-200 px-3.5 py-3 text-left hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-600 group-hover:bg-white">
+                        <FileDown className="w-4 h-4" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold text-gray-900">업로드 템플릿 다운로드</span>
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => uploadInputRef.current?.click()}
+                      className="group flex w-full items-center gap-3 rounded-xl bg-gray-950 px-3.5 py-3 text-left text-white hover:bg-gray-800 transition-colors"
+                    >
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white">
+                        <Upload className="w-4 h-4" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold">파일 선택</span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           )}
         </div>
@@ -501,6 +686,7 @@ export function ProductsPage() {
               onClick={() => {
                 setActiveTab(key)
                 setSelected(new Set())
+                setUploadOpen(false)
               }}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === key ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-gray-700'
@@ -519,22 +705,16 @@ export function ProductsPage() {
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
             <select
-              value={columnFilters.branch ?? ''}
+              value={columnFilters.branch ?? defaultBranchCode}
               onChange={e => {
                 const val = e.target.value
-                if (val) {
-                  setColumnFilters(prev => ({ ...prev, branch: val }))
-                  setAppliedColumnFilters(prev => ({ ...prev, branch: val }))
-                } else {
-                  setColumnFilters(prev => { const n = { ...prev }; delete n.branch; return n })
-                  setAppliedColumnFilters(prev => { const n = { ...prev }; delete n.branch; return n })
-                }
+                setColumnFilters(prev => ({ ...prev, branch: val }))
+                setAppliedColumnFilters(prev => ({ ...prev, branch: val }))
                 setPage(1)
                 setSelected(new Set())
               }}
               className="w-64 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400"
             >
-              <option value="">법인</option>
               {branchOptions.map(b => (
                 <option key={b.code} value={b.code}>{b.code} {b.name}</option>
               ))}
@@ -545,6 +725,14 @@ export function ProductsPage() {
               </button>
             )}
           </div>
+          {uploadResult && (
+            <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50/60 px-5 py-3 text-sm text-gray-600">
+              <span>{uploadResult}</span>
+              <button onClick={() => setUploadResult('')} className="p-1 text-gray-400 hover:text-gray-700">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="min-w-max w-full">
               <thead>
@@ -716,39 +904,39 @@ export function ProductsPage() {
                 <span className="text-xs text-gray-400 whitespace-nowrap">장식보유여부</span>
                 <select
                   value={decorationValue}
-                  onChange={e => setDecorationValue(e.target.value as 'true' | 'false')}
-                  className="w-20 px-2.5 py-1.5 text-sm bg-gray-800 border border-gray-600 rounded-lg outline-none focus:border-gray-400 text-white"
+                  onChange={e => setDecorationValue(e.target.value as BulkYnValue)}
+                  className="w-24 px-2.5 py-1.5 text-sm bg-gray-800 border border-gray-600 rounded-lg outline-none focus:border-gray-400 text-white"
                 >
+                  <option value="keep">유지</option>
                   <option value="true">Y</option>
                   <option value="false">N</option>
                 </select>
               </div>
-              <button
-                onClick={handleDecorationApply}
-                className="px-4 py-1.5 bg-white text-gray-900 text-sm font-semibold rounded-xl hover:bg-gray-100 transition-colors whitespace-nowrap"
-              >
-                장식 적용
-              </button>
               <div className="w-px h-5 bg-gray-600" />
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-400 whitespace-nowrap">복원수리</span>
                 <select
                   value={restorationRepairValue}
-                  onChange={e => setRestorationRepairValue(e.target.value as 'true' | 'false')}
-                  className="w-20 px-2.5 py-1.5 text-sm bg-gray-800 border border-gray-600 rounded-lg outline-none focus:border-gray-400 text-white"
+                  onChange={e => setRestorationRepairValue(e.target.value as BulkYnValue)}
+                  className="w-24 px-2.5 py-1.5 text-sm bg-gray-800 border border-gray-600 rounded-lg outline-none focus:border-gray-400 text-white"
                 >
+                  <option value="keep">유지</option>
                   <option value="true">Y</option>
                   <option value="false">N</option>
                 </select>
               </div>
               <button
-                onClick={handleRestorationRepairApply}
+                onClick={handleBulkManagementApply}
                 className="px-4 py-1.5 bg-white text-gray-900 text-sm font-semibold rounded-xl hover:bg-gray-100 transition-colors whitespace-nowrap"
               >
-                복원 적용
+                적용
               </button>
               <button
-                onClick={() => setSelected(new Set())}
+                onClick={() => {
+                  setSelected(new Set())
+                  setDecorationValue('keep')
+                  setRestorationRepairValue('keep')
+                }}
                 className="p-1.5 text-gray-400 hover:text-white transition-colors"
               >
                 <X className="w-4 h-4" />
