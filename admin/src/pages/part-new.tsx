@@ -23,6 +23,14 @@ const init: Form = {
   storageLocation: '',
 }
 
+const DEFAULT_PART_NAMES = ['힌지 (좌)', '힌지 (우)', '노즈패드', '렌즈 (클리어)', '렌즈 (그레이)', '힌지 세트', '템플 (좌)', '템플 (우)', '나사 세트']
+const DEFAULT_COLORS = ['Black', 'Clear', 'Silver', 'Gray', 'Gold']
+
+function uniqueOptions(values: string[]) {
+  return Array.from(new Set(values.map(value => value.trim()).filter(Boolean)))
+    .sort((a, b) => a.localeCompare(b, 'ko'))
+}
+
 function FieldLabel({ text, required }: { text: string; required?: boolean }) {
   return (
     <p className="text-xs font-medium text-gray-600 mb-1.5">
@@ -210,6 +218,14 @@ export function PartNewPage() {
 
   const [form, setForm] = useState<Form>(init)
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({})
+  const partNameOptions = useMemo(
+    () => uniqueOptions([...DEFAULT_PART_NAMES, ...parts.map(part => part.name), form.name]),
+    [parts, form.name]
+  )
+  const colorOptions = useMemo(
+    () => uniqueOptions([...DEFAULT_COLORS, ...parts.map(part => part.color), form.color]),
+    [parts, form.color]
+  )
 
   useEffect(() => {
     if (isEdit && existing) {
@@ -311,14 +327,17 @@ export function PartNewPage() {
           </div>
           <div>
             <FieldLabel text="부속품명" required />
-            <input
-              type="text"
-              placeholder="예: 힌지 (좌)"
+            <select
               value={form.name}
               disabled={isEdit}
               onChange={e => set('name')(e.target.value)}
-              className={`${inputCls} w-full ${isEdit ? 'bg-gray-50 text-gray-500 cursor-default' : ''} ${errors.name ? 'border-red-300 focus:border-red-400' : ''}`}
-            />
+              className={`${inputCls} w-full ${isEdit ? 'bg-gray-50 text-gray-500 cursor-default' : 'cursor-pointer'} ${errors.name ? 'border-red-300 focus:border-red-400' : ''}`}
+            >
+              <option value="">부속품명 선택</option>
+              {partNameOptions.map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
             {errors.name && <p className="text-[11px] text-red-400 mt-1">{errors.name}</p>}
           </div>
         </div>
@@ -337,14 +356,17 @@ export function PartNewPage() {
           </div>
           <div>
             <FieldLabel text="컬러" required />
-            <input
-              type="text"
-              placeholder="예: Black"
+            <select
               value={form.color}
               disabled={isEdit}
               onChange={e => set('color')(e.target.value)}
-              className={`${inputCls} w-full ${isEdit ? 'bg-gray-50 text-gray-500 cursor-default' : ''} ${errors.color ? 'border-red-300 focus:border-red-400' : ''}`}
-            />
+              className={`${inputCls} w-full ${isEdit ? 'bg-gray-50 text-gray-500 cursor-default' : 'cursor-pointer'} ${errors.color ? 'border-red-300 focus:border-red-400' : ''}`}
+            >
+              <option value="">컬러 선택</option>
+              {colorOptions.map(option => (
+                <option key={option} value={option}>{option}</option>
+              ))}
+            </select>
             {errors.color && <p className="text-[11px] text-red-400 mt-1">{errors.color}</p>}
           </div>
           <div>

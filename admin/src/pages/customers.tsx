@@ -78,11 +78,21 @@ function initialCustomers() {
   })
 }
 
+function getCustomerBranchOptions(customers: Pick<Customer, 'branchCode'>[]) {
+  const branchCodes = new Set(customers.map(customer => customer.branchCode).filter(Boolean))
+  return BRANCHES.filter(branch => branchCodes.has(branch.code))
+}
+
+function getDefaultCustomerBranchCode(customers: Pick<Customer, 'branchCode'>[]) {
+  const options = getCustomerBranchOptions(customers)
+  return options.find(branch => branch.code === '1110')?.code ?? options[0]?.code ?? ''
+}
+
 export function CustomersPage() {
   const navigate = useNavigate()
   const { langCode } = useParams()
-  const [activeBranch, setActiveBranch] = useState('')
   const [customers, setCustomers] = useState<CustomerRow[]>(initialCustomers)
+  const [activeBranch, setActiveBranch] = useState(() => getDefaultCustomerBranchCode(initialCustomers()))
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({})
   const [appliedColumnFilters, setAppliedColumnFilters] = useState<Record<string, string>>({})
   const [filterPopover, setFilterPopover] = useState<{ col: string; rect: DOMRect } | null>(null)
@@ -92,6 +102,7 @@ export function CustomersPage() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [removeTargets, setRemoveTargets] = useState<CustomerRow[] | null>(null)
   const [removeReason, setRemoveReason] = useState('')
+  const branchOptions = useMemo(() => getCustomerBranchOptions(customers), [customers])
 
   const filtered = useMemo(() => {
     return customers.filter(customer => {
@@ -400,8 +411,7 @@ export function CustomersPage() {
               onChange={e => { setActiveBranch(e.target.value); setPage(1); setSelectedIds(new Set()) }}
               className="w-64 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400"
             >
-              <option value="">법인</option>
-              {BRANCHES.map(b => <option key={b.code} value={b.code}>{b.code} {b.name}</option>)}
+              {branchOptions.map(b => <option key={b.code} value={b.code}>{b.code} {b.name}</option>)}
             </select>
             {hasActiveFilters && (
               <button onClick={handleReset} className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
