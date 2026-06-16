@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Check, ChevronDown, MapPin, Pencil, Plus, Search, Star, Trash2, X } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, ArrowUpDown, Check, ChevronDown, Filter, MapPin, Pencil, Plus, Search, Star, Trash2, X } from 'lucide-react'
 import { BRANCHES, COUNTRIES, MEMBERS, PRODUCTS } from '@/lib/mock-data'
 import { getCustomerById, getTicketsWithExtras, saveCustomerAddresses, upsertPrototypeCustomer } from '@/lib/prototype-storage'
 import type { Customer, CustomerAddress, Ticket, TicketStatus } from '@/lib/types'
@@ -96,6 +96,7 @@ type CustomerTicketFilterKey =
   | 'technician'
 
 type CustomerTicketFilters = Record<CustomerTicketFilterKey, string>
+type CustomerTicketSortKey = CustomerTicketFilterKey
 
 const INIT_TICKET_FILTERS: CustomerTicketFilters = {
   ticketNo: '',
@@ -108,6 +109,30 @@ const INIT_TICKET_FILTERS: CustomerTicketFilters = {
   repairDetail: '',
   technician: 'all',
 }
+
+const CUSTOMER_TICKET_FILTERABLE_COLS = new Set<CustomerTicketFilterKey>([
+  'ticketNo',
+  'status',
+  'productCode',
+  'purchaseDate',
+  'purchasePlace',
+  'receivedAt',
+  'symptom',
+  'repairDetail',
+  'technician',
+])
+
+const CUSTOMER_TICKET_COLUMNS: { key: CustomerTicketFilterKey; label: string; sort: CustomerTicketSortKey }[] = [
+  { key: 'ticketNo',      label: 'Ticket No.', sort: 'ticketNo' },
+  { key: 'status',        label: '상태',        sort: 'status' },
+  { key: 'productCode',   label: '제품코드',    sort: 'productCode' },
+  { key: 'purchaseDate',  label: '구매일',      sort: 'purchaseDate' },
+  { key: 'purchasePlace', label: '구매처',      sort: 'purchasePlace' },
+  { key: 'receivedAt',    label: '접수일시',    sort: 'receivedAt' },
+  { key: 'symptom',       label: '현상',        sort: 'symptom' },
+  { key: 'repairDetail',  label: '수리내용',    sort: 'repairDetail' },
+  { key: 'technician',    label: '서비스기술자', sort: 'technician' },
+]
 
 function toCustomerForm(customer?: Customer): CustomerForm {
   if (!customer) return EMPTY_CUSTOMER_FORM
@@ -149,6 +174,50 @@ function includesQuery(value: string | null | undefined, query: string) {
   return (value ?? '').toLowerCase().includes(q)
 }
 
+function makeTextOptions(values: Array<string | null | undefined>) {
+  const seen = new Set<string>()
+  const options: { value: string; label: string }[] = []
+  values.forEach(value => {
+    const text = (value ?? '').trim()
+    if (!text || seen.has(text)) return
+    seen.add(text)
+    options.push({ value: text, label: text })
+  })
+  return options.sort((a, b) => a.label.localeCompare(b.label, 'ko'))
+}
+
+function dateTimeWithTimezone(value?: string | null) {
+  if (!value || !value.trim()) return <span>-</span>
+  return (
+    <>
+      {value} <span className="font-sans text-gray-400">(KST)</span>
+    </>
+  )
+}
+
+function getCustomerTicketSortValue(ticket: Ticket, key: CustomerTicketSortKey) {
+  switch (key) {
+    case 'status':
+      return STATUS_LABELS[ticket.status]
+    case 'productCode':
+      return getProductCode(ticket)
+    case 'purchaseDate':
+      return getPurchaseDate(ticket)
+    case 'purchasePlace':
+      return getPurchasePlace(ticket)
+    case 'receivedAt':
+      return ticket.receivedAt
+    case 'symptom':
+      return getSymptom(ticket)
+    case 'repairDetail':
+      return ticket.repairDetail ?? ''
+    case 'technician':
+      return getTechnicianLabel(ticket)
+    default:
+      return ticket.ticketNo
+  }
+}
+
 export function CustomerDetailPage() {
   const { customerId, langCode } = useParams()
   const navigate = useNavigate()
@@ -169,6 +238,10 @@ export function CustomerDetailPage() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [ticketPage, setTicketPage] = useState(1)
   const [ticketFilters, setTicketFilters] = useState<CustomerTicketFilters>(INIT_TICKET_FILTERS)
+  const [appliedTicketFilters, setAppliedTicketFilters] = useState<CustomerTicketFilters>(INIT_TICKET_FILTERS)
+  const [ticketFilterPopover, setTicketFilterPopover] = useState<{ col: CustomerTicketFilterKey; rect: DOMRect } | null>(null)
+  const [ticketSortKey, setTicketSortKey] = useState<CustomerTicketSortKey | null>('receivedAt')
+  const [ticketSortDir, setTicketSortDir] = useState<'asc' | 'desc' | null>('desc')
   const [dateFrom, setDateFrom] = useState(monthsAgoStr(6))
   const [dateTo, setDateTo] = useState(todayStr())
 
@@ -179,7 +252,11 @@ export function CustomerDetailPage() {
     setCustomerEditMode(false)
     const addrs = next?.addresses ?? []
     setAddresses([...addrs.filter(a => a.isDefault), ...addrs.filter(a => !a.isDefault)])
-    setTicketFilters(INIT_TICKET_FILTERS)
+    setTicketFilters({ ...INIT_TICKET_FILTERS })
+    setAppliedTicketFilters({ ...INIT_TICKET_FILTERS })
+    setTicketFilterPopover(null)
+    setTicketSortKey('receivedAt')
+    setTicketSortDir('desc')
     setTicketPage(1)
   }, [customerId])
 
@@ -197,23 +274,42 @@ export function CustomerDetailPage() {
   const allCustomerTickets = getTicketsWithExtras().filter(t =>
     t.phone === currentCustomer.phone || t.email === currentCustomer.email
   )
-  const customerTickets = allCustomerTickets.filter(t => {
+  const filteredCustomerTickets = allCustomerTickets.filter(t => {
     const date = t.receivedAt.slice(0, 10)
     if (dateFrom && date < dateFrom) return false
     if (dateTo && date > dateTo) return false
-    if (ticketFilters.status !== 'all' && t.status !== ticketFilters.status) return false
-    if (ticketFilters.technician !== 'all' && t.technicianId !== ticketFilters.technician) return false
-    if (!includesQuery(t.ticketNo, ticketFilters.ticketNo)) return false
-    if (!includesQuery(getProductCode(t), ticketFilters.productCode)) return false
-    if (!includesQuery(getPurchaseDate(t), ticketFilters.purchaseDate)) return false
-    if (!includesQuery(getPurchasePlace(t), ticketFilters.purchasePlace)) return false
-    if (!includesQuery(t.receivedAt.slice(0, 10), ticketFilters.receivedAt)) return false
-    if (!includesQuery(getSymptom(t), ticketFilters.symptom)) return false
-    if (!includesQuery(t.repairDetail, ticketFilters.repairDetail)) return false
+    if (appliedTicketFilters.status !== 'all' && t.status !== appliedTicketFilters.status) return false
+    if (appliedTicketFilters.technician !== 'all') {
+      const selectedTechnician = MEMBERS.find(member => member.id === appliedTicketFilters.technician)
+      if (selectedTechnician) {
+        if (t.technicianId !== appliedTicketFilters.technician) return false
+      } else if (!includesQuery(getTechnicianLabel(t), appliedTicketFilters.technician)) {
+        return false
+      }
+    }
+    if (!includesQuery(t.ticketNo, appliedTicketFilters.ticketNo)) return false
+    if (!includesQuery(getProductCode(t), appliedTicketFilters.productCode)) return false
+    if (!includesQuery(getPurchaseDate(t), appliedTicketFilters.purchaseDate)) return false
+    if (!includesQuery(getPurchasePlace(t), appliedTicketFilters.purchasePlace)) return false
+    if (!includesQuery(t.receivedAt.slice(0, 10), appliedTicketFilters.receivedAt)) return false
+    if (!includesQuery(getSymptom(t), appliedTicketFilters.symptom)) return false
+    if (!includesQuery(t.repairDetail, appliedTicketFilters.repairDetail)) return false
     return true
   })
-  const totalPages = Math.max(1, Math.ceil(customerTickets.length / TICKETS_PER_PAGE))
-  const pagedTickets = customerTickets.slice((ticketPage - 1) * TICKETS_PER_PAGE, ticketPage * TICKETS_PER_PAGE)
+  const sortedCustomerTickets = ticketSortKey && ticketSortDir
+    ? [...filteredCustomerTickets].sort((a, b) => {
+        const av = String(getCustomerTicketSortValue(a, ticketSortKey))
+        const bv = String(getCustomerTicketSortValue(b, ticketSortKey))
+        return (av < bv ? -1 : av > bv ? 1 : 0) * (ticketSortDir === 'asc' ? 1 : -1)
+      })
+    : filteredCustomerTickets
+  const totalPages = Math.max(1, Math.ceil(sortedCustomerTickets.length / TICKETS_PER_PAGE))
+  const pagedTickets = sortedCustomerTickets.slice((ticketPage - 1) * TICKETS_PER_PAGE, ticketPage * TICKETS_PER_PAGE)
+  const symptomOptions = makeTextOptions(allCustomerTickets.map(ticket => getSymptom(ticket)))
+  const repairDetailOptions = makeTextOptions(allCustomerTickets.map(ticket => ticket.repairDetail))
+  const technicianOptions = MEMBERS
+    .filter(member => member.isTechnician)
+    .map(member => ({ value: member.id, label: `${member.name} (${member.loginId})` }))
 
   function commitAddresses(next: CustomerAddress[]) {
     setAddresses(next)
@@ -294,22 +390,198 @@ export function CustomerDetailPage() {
     setCustomerEditMode(false)
   }
 
-  function updateTicketFilter(key: CustomerTicketFilterKey, value: string) {
+  function setTicketColumn(key: CustomerTicketFilterKey) {
+    return (value: string) => setTicketFilters(prev => ({ ...prev, [key]: value }))
+  }
+
+  function applyTicketFilter(key: CustomerTicketFilterKey, value: string) {
     setTicketFilters(prev => ({ ...prev, [key]: value }))
+    setAppliedTicketFilters(prev => ({ ...prev, [key]: value }))
+    setTicketPage(1)
+    setTicketFilterPopover(null)
+  }
+
+  function applyCurrentTicketFilters() {
+    setAppliedTicketFilters({ ...ticketFilters })
+    setTicketPage(1)
+    setTicketFilterPopover(null)
+  }
+
+  function handleTicketSort(key: CustomerTicketSortKey) {
+    if (ticketSortKey !== key) {
+      setTicketSortKey(key)
+      setTicketSortDir('asc')
+    } else if (ticketSortDir === 'asc') {
+      setTicketSortDir('desc')
+    } else {
+      setTicketSortKey(null)
+      setTicketSortDir(null)
+    }
     setTicketPage(1)
   }
 
+  function TicketSortIcon({ col }: { col: CustomerTicketSortKey }) {
+    if (ticketSortKey !== col) return <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-400 flex-shrink-0" />
+    if (ticketSortDir === 'asc') return <ArrowUp className="w-3 h-3 text-gray-700 flex-shrink-0" />
+    return <ArrowDown className="w-3 h-3 text-gray-700 flex-shrink-0" />
+  }
+
+  function handleTicketFilterIconClick(col: CustomerTicketFilterKey, event: React.MouseEvent<HTMLButtonElement>) {
+    const rect = event.currentTarget.getBoundingClientRect()
+    setTicketFilterPopover(prev => prev?.col === col ? null : { col, rect })
+  }
+
+  function isTicketColumnFiltered(key: CustomerTicketFilterKey) {
+    return appliedTicketFilters[key] !== INIT_TICKET_FILTERS[key]
+  }
+
+  function getAppliedTicketFilterDisplay(key: CustomerTicketFilterKey) {
+    const value = appliedTicketFilters[key]
+    if (key === 'status') return STATUS_LABELS[value as TicketStatus] ?? value
+    if (key === 'technician') {
+      const member = MEMBERS.find(item => item.id === value)
+      return member ? `${member.name} (${member.loginId})` : value
+    }
+    return value
+  }
+
   function resetTicketFilters() {
-    setTicketFilters(INIT_TICKET_FILTERS)
+    setTicketFilters({ ...INIT_TICKET_FILTERS })
+    setAppliedTicketFilters({ ...INIT_TICKET_FILTERS })
     setDateFrom(monthsAgoStr(6))
     setDateTo(todayStr())
+    setTicketSortKey('receivedAt')
+    setTicketSortDir('desc')
+    setTicketFilterPopover(null)
     setTicketPage(1)
   }
 
   const ticketFilterActive =
     dateFrom !== monthsAgoStr(6) ||
     dateTo !== todayStr() ||
-    Object.entries(ticketFilters).some(([key, value]) => value !== INIT_TICKET_FILTERS[key as CustomerTicketFilterKey])
+    ticketSortKey !== 'receivedAt' ||
+    ticketSortDir !== 'desc' ||
+    Object.entries(appliedTicketFilters).some(([key, value]) => value !== INIT_TICKET_FILTERS[key as CustomerTicketFilterKey])
+
+  function renderTicketTextFilter(key: CustomerTicketFilterKey, placeholder: string) {
+    const value = ticketFilters[key]
+    return (
+      <div className="w-44 space-y-1.5">
+        <input
+          type="text"
+          value={value}
+          placeholder={placeholder}
+          onChange={event => setTicketColumn(key)(event.target.value)}
+          onKeyDown={event => event.key === 'Enter' && applyCurrentTicketFilters()}
+          className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-300"
+        />
+        <div className="flex gap-1.5">
+          {value && (
+            <button
+              type="button"
+              onClick={() => applyTicketFilter(key, '')}
+              className="flex-1 text-xs text-gray-400 hover:text-gray-600 py-1.5 border border-gray-200 rounded-lg transition-colors"
+            >
+              지우기
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={applyCurrentTicketFilters}
+            className="flex-1 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            적용
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  function renderTicketDateFilter(key: CustomerTicketFilterKey) {
+    const value = ticketFilters[key]
+    return (
+      <div className="w-44 space-y-1.5">
+        <input
+          type="date"
+          value={value}
+          onChange={event => setTicketColumn(key)(event.target.value)}
+          className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-300"
+        />
+        <div className="flex gap-1.5">
+          {value && (
+            <button
+              type="button"
+              onClick={() => applyTicketFilter(key, '')}
+              className="flex-1 text-xs text-gray-400 hover:text-gray-600 py-1.5 border border-gray-200 rounded-lg transition-colors"
+            >
+              지우기
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={applyCurrentTicketFilters}
+            className="flex-1 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            적용
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  function renderTicketSelectFilter(
+    key: CustomerTicketFilterKey,
+    options: { value: string; label: string }[],
+    emptyValue = 'all',
+  ) {
+    const current = ticketFilters[key]
+    return (
+      <div className="w-44">
+        <select
+          value={current}
+          onChange={event => applyTicketFilter(key, event.target.value)}
+          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700 focus:border-gray-300 focus:outline-none"
+        >
+          <option value={emptyValue}>전체</option>
+          {options.map(option => (
+            <option
+              key={option.value}
+              value={option.value}
+            >
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    )
+  }
+
+  function renderTicketFilterPopoverContent(key: CustomerTicketFilterKey) {
+    switch (key) {
+      case 'ticketNo':
+        return renderTicketTextFilter('ticketNo', '티켓번호')
+      case 'status':
+        return renderTicketSelectFilter('status',
+          (Object.keys(STATUS_LABELS) as TicketStatus[]).map(status => ({ value: status, label: STATUS_LABELS[status] }))
+        )
+      case 'productCode':
+        return renderTicketTextFilter('productCode', '제품코드')
+      case 'purchaseDate':
+        return renderTicketDateFilter('purchaseDate')
+      case 'purchasePlace':
+        return renderTicketTextFilter('purchasePlace', '구매처')
+      case 'receivedAt':
+        return renderTicketDateFilter('receivedAt')
+      case 'symptom':
+        return renderTicketSelectFilter('symptom', symptomOptions, '')
+      case 'repairDetail':
+        return renderTicketSelectFilter('repairDetail', repairDetailOptions, '')
+      case 'technician':
+        return renderTicketSelectFilter('technician', technicianOptions)
+      default:
+        return null
+    }
+  }
 
   return (
     <div className="min-w-0 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -555,13 +827,8 @@ export function CustomerDetailPage() {
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-5 py-3 border-b border-gray-100 space-y-2">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold text-gray-700">
+            <h3 className="text-xs font-semibold text-gray-700">
                 티켓
-                <span className="ml-1.5 text-gray-400 font-normal">
-                  {customerTickets.length !== allCustomerTickets.length
-                    ? `${customerTickets.length} / ${allCustomerTickets.length}건`
-                    : `${allCustomerTickets.length}건`}
-                </span>
               </h3>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -604,7 +871,7 @@ export function CustomerDetailPage() {
             <div className="px-5 py-8 text-center">
               <p className="text-xs text-gray-400">접수 이력이 없습니다.</p>
             </div>
-          ) : customerTickets.length === 0 ? (
+          ) : filteredCustomerTickets.length === 0 ? (
             <div className="px-5 py-8 text-center">
               <p className="text-xs text-gray-400">검색 결과가 없습니다.</p>
             </div>
@@ -614,54 +881,45 @@ export function CustomerDetailPage() {
                 <table className="min-w-[1320px] w-full">
                   <thead>
                     <tr className="border-b border-gray-100">
-                      <TicketHeader label="Ticket No." />
-                      <TicketHeader label="상태" />
-                      <TicketHeader label="제품코드" />
-                      <TicketHeader label="구매일" />
-                      <TicketHeader label="구매처" />
-                      <TicketHeader label="접수일" />
-                      <TicketHeader label="현상" />
-                      <TicketHeader label="수리내용" />
-                      <TicketHeader label="서비스기술자" />
-                    </tr>
-                    <tr className="border-b border-gray-100 bg-gray-50/70">
-                      <TicketFilterCell>
-                        <TicketTextFilter value={ticketFilters.ticketNo} placeholder="검색" onChange={value => updateTicketFilter('ticketNo', value)} />
-                      </TicketFilterCell>
-                      <TicketFilterCell>
-                        <TicketSelectFilter value={ticketFilters.status} onChange={value => updateTicketFilter('status', value)}>
-                          <option value="all">전체</option>
-                          {(Object.keys(STATUS_LABELS) as TicketStatus[]).map(status => (
-                            <option key={status} value={status}>{STATUS_LABELS[status]}</option>
-                          ))}
-                        </TicketSelectFilter>
-                      </TicketFilterCell>
-                      <TicketFilterCell>
-                        <TicketTextFilter value={ticketFilters.productCode} placeholder="제품코드" onChange={value => updateTicketFilter('productCode', value)} />
-                      </TicketFilterCell>
-                      <TicketFilterCell>
-                        <TicketTextFilter value={ticketFilters.purchaseDate} placeholder="YYYY-MM-DD" onChange={value => updateTicketFilter('purchaseDate', value)} />
-                      </TicketFilterCell>
-                      <TicketFilterCell>
-                        <TicketTextFilter value={ticketFilters.purchasePlace} placeholder="구매처" onChange={value => updateTicketFilter('purchasePlace', value)} />
-                      </TicketFilterCell>
-                      <TicketFilterCell>
-                        <TicketTextFilter value={ticketFilters.receivedAt} placeholder="YYYY-MM-DD" onChange={value => updateTicketFilter('receivedAt', value)} />
-                      </TicketFilterCell>
-                      <TicketFilterCell>
-                        <TicketTextFilter value={ticketFilters.symptom} placeholder="현상" onChange={value => updateTicketFilter('symptom', value)} />
-                      </TicketFilterCell>
-                      <TicketFilterCell>
-                        <TicketTextFilter value={ticketFilters.repairDetail} placeholder="수리내용" onChange={value => updateTicketFilter('repairDetail', value)} />
-                      </TicketFilterCell>
-                      <TicketFilterCell>
-                        <TicketSelectFilter value={ticketFilters.technician} onChange={value => updateTicketFilter('technician', value)}>
-                          <option value="all">전체</option>
-                          {MEMBERS.filter(member => member.isTechnician).map(member => (
-                            <option key={member.id} value={member.id}>{member.name}</option>
-                          ))}
-                        </TicketSelectFilter>
-                      </TicketFilterCell>
+                      {CUSTOMER_TICKET_COLUMNS.map(column => {
+                        const isFiltered = isTicketColumnFiltered(column.key)
+                        return (
+                          <th
+                            key={column.key}
+                            className={`px-4 py-3 text-left text-xs font-semibold tracking-wide whitespace-nowrap transition-colors ${
+                              isFiltered ? 'bg-blue-50 text-blue-700' : 'bg-gray-50/50 text-gray-500'
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => handleTicketSort(column.sort)}
+                                className="group flex items-center gap-1.5 hover:opacity-70 transition-opacity text-xs font-semibold tracking-wide"
+                              >
+                                {column.label} <TicketSortIcon col={column.sort} />
+                              </button>
+                              {CUSTOMER_TICKET_FILTERABLE_COLS.has(column.key) && (
+                                <button
+                                  type="button"
+                                  onClick={event => handleTicketFilterIconClick(column.key, event)}
+                                  className={`p-0.5 rounded transition-colors ${
+                                    ticketFilterPopover?.col === column.key || isFiltered
+                                      ? 'text-blue-500'
+                                      : 'text-gray-300 hover:text-gray-500'
+                                  }`}
+                                >
+                                  <Filter className="w-3 h-3" />
+                                </button>
+                              )}
+                            </div>
+                            {isFiltered && (
+                              <div className="mt-1 max-w-[120px] truncate text-[10px] font-medium text-blue-600 normal-case tracking-normal">
+                                {getAppliedTicketFilterDisplay(column.key)}
+                              </div>
+                            )}
+                          </th>
+                        )
+                      })}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -681,7 +939,7 @@ export function CustomerDetailPage() {
                         <td className="px-4 py-3 text-xs font-mono text-gray-700 whitespace-nowrap">{getProductCode(t)}</td>
                         <td className="px-4 py-3 text-xs text-gray-500 font-mono whitespace-nowrap">{getPurchaseDate(t) || '-'}</td>
                         <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">{getPurchasePlace(t) || '-'}</td>
-                        <td className="px-4 py-3 text-xs text-gray-500 font-mono whitespace-nowrap">{t.receivedAt.slice(0, 10)}</td>
+                        <td className="px-4 py-3 text-xs text-gray-500 font-mono whitespace-nowrap">{dateTimeWithTimezone(t.receivedAt)}</td>
                         <td className="px-4 py-3 text-xs text-gray-700 min-w-[140px]">{getSymptom(t) || '-'}</td>
                         <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">{t.repairDetail || '-'}</td>
                         <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">{getTechnicianLabel(t) || '-'}</td>
@@ -691,10 +949,7 @@ export function CustomerDetailPage() {
                 </table>
               </div>
               {totalPages > 1 && (
-                <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-between">
-                  <span className="text-[11px] text-gray-400">
-                    {(ticketPage - 1) * TICKETS_PER_PAGE + 1}–{Math.min(ticketPage * TICKETS_PER_PAGE, customerTickets.length)} / {customerTickets.length}건
-                  </span>
+                <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-end">
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => setTicketPage(p => Math.max(1, p - 1))}
@@ -722,6 +977,23 @@ export function CustomerDetailPage() {
           )}
         </div>
       </div>
+
+      {ticketFilterPopover && (
+        <>
+          <div className="fixed inset-0 z-[40]" onClick={() => setTicketFilterPopover(null)} />
+          <div
+            className="fixed z-[50] bg-white border border-gray-200 rounded-xl shadow-lg p-3 w-max"
+            style={{
+              top: ticketFilterPopover.rect.bottom + 6,
+              ...(ticketFilterPopover.rect.left + 240 > window.innerWidth
+                ? { right: Math.max(8, window.innerWidth - ticketFilterPopover.rect.right) }
+                : { left: ticketFilterPopover.rect.left }),
+            }}
+          >
+            {renderTicketFilterPopoverContent(ticketFilterPopover.col)}
+          </div>
+        </>
+      )}
 
       {/* 삭제 확인 */}
       {deleteTargetId && (
@@ -904,69 +1176,6 @@ function CountrySearchSelect({
         document.body
       )}
     </div>
-  )
-}
-
-function TicketHeader({ label }: { label: string }) {
-  return (
-    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50 whitespace-nowrap">
-      {label}
-    </th>
-  )
-}
-
-function TicketFilterCell({ children }: { children: React.ReactNode }) {
-  return <th className="px-3 py-2 text-left font-normal">{children}</th>
-}
-
-function TicketTextFilter({
-  value,
-  placeholder,
-  onChange,
-}: {
-  value: string
-  placeholder: string
-  onChange: (value: string) => void
-}) {
-  return (
-    <div className="relative">
-      <input
-        type="text"
-        value={value}
-        placeholder={placeholder}
-        onChange={event => onChange(event.target.value)}
-        className="w-full min-w-[110px] rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 pr-6 text-xs font-normal text-gray-700 placeholder:text-gray-300 focus:border-gray-400 focus:outline-none"
-      />
-      {value && (
-        <button
-          type="button"
-          onClick={() => onChange('')}
-          className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 transition-colors"
-        >
-          <X className="h-3 w-3" />
-        </button>
-      )}
-    </div>
-  )
-}
-
-function TicketSelectFilter({
-  value,
-  onChange,
-  children,
-}: {
-  value: string
-  onChange: (value: string) => void
-  children: React.ReactNode
-}) {
-  return (
-    <select
-      value={value}
-      onChange={event => onChange(event.target.value)}
-      className="w-full min-w-[110px] rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-normal text-gray-700 focus:border-gray-400 focus:outline-none"
-    >
-      {children}
-    </select>
   )
 }
 
