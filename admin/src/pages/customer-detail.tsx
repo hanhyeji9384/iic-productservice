@@ -1,9 +1,26 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Check, MapPin, Pencil, Plus, Star, Trash2, X } from 'lucide-react'
-import { BRANCHES } from '@/lib/mock-data'
+import { ArrowLeft, Check, MapPin, Pencil, Plus, Search, Star, Trash2, X } from 'lucide-react'
+import { BRANCHES, MEMBERS, PRODUCTS } from '@/lib/mock-data'
 import { getCustomerById, getTicketsWithExtras, saveCustomerAddresses } from '@/lib/prototype-storage'
 import type { CustomerAddress, TicketStatus } from '@/lib/types'
+
+function todayStr() { return new Date().toISOString().slice(0, 10) }
+function monthsAgoStr(n: number) {
+  const d = new Date(); d.setMonth(d.getMonth() - n); return d.toISOString().slice(0, 10)
+}
+function constrainMax3Y(next: { from: string; to: string }, changed: 'from' | 'to') {
+  if (!next.from || !next.to) return next
+  const ms = new Date(next.to).getTime() - new Date(next.from).getTime()
+  const maxMs = 3 * 365.25 * 24 * 60 * 60 * 1000
+  if (ms <= maxMs) return next
+  if (changed === 'from') {
+    const d = new Date(next.from); d.setFullYear(d.getFullYear() + 3)
+    return { ...next, to: d.toISOString().slice(0, 10) }
+  }
+  const d = new Date(next.to); d.setFullYear(d.getFullYear() - 3)
+  return { ...next, from: d.toISOString().slice(0, 10) }
+}
 
 const COUNTRY_NAMES: Record<string, string> = {
   KR: '한국', US: '미국', CN: '중국', JP: '일본', GB: '영국',
@@ -47,19 +64,28 @@ const STATUS_COLOR: Record<TicketStatus, string> = {
 
 type AddressForm = { address1: string; address2: string; zipCode: string; country: string }
 const EMPTY_FORM: AddressForm = { address1: '', address2: '', zipCode: '', country: 'KR' }
+const TICKETS_PER_PAGE = 10
 
 export function CustomerDetailPage() {
-  const { customerId } = useParams()
+  const { customerId, langCode } = useParams()
   const navigate = useNavigate()
 
   const base = getCustomerById(customerId)
 
-  const [addresses, setAddresses] = useState<CustomerAddress[]>(base?.addresses ?? [])
+  const [addresses, setAddresses] = useState<CustomerAddress[]>(() => {
+    const addrs = base?.addresses ?? []
+    return [...addrs.filter(a => a.isDefault), ...addrs.filter(a => !a.isDefault)]
+  })
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editForm, setEditForm] = useState<AddressForm>(EMPTY_FORM)
   const [showAddForm, setShowAddForm] = useState(false)
   const [addForm, setAddForm] = useState<AddressForm>(EMPTY_FORM)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+  const [ticketPage, setTicketPage] = useState(1)
+  const [ticketNoInput, setTicketNoInput] = useState('')
+  const [ticketNoQuery, setTicketNoQuery] = useState('')
+  const [dateFrom, setDateFrom] = useState(monthsAgoStr(6))
+  const [dateTo, setDateTo] = useState(todayStr())
 
   if (!base) {
     return (
@@ -72,11 +98,18 @@ export function CustomerDetailPage() {
 
   const customer = base
   const branchName = BRANCHES.find(b => b.code === customer.branchCode)?.name ?? customer.branchCode
-  const defaultAddr = addresses.find(a => a.isDefault)
-  const otherAddresses = addresses.filter(a => !a.isDefault)
-  const customerTickets = getTicketsWithExtras().filter(t =>
+  const allCustomerTickets = getTicketsWithExtras().filter(t =>
     t.phone === customer.phone || t.email === customer.email
   )
+  const customerTickets = allCustomerTickets.filter(t => {
+    const date = t.receivedAt.slice(0, 10)
+    if (dateFrom && date < dateFrom) return false
+    if (dateTo && date > dateTo) return false
+    if (ticketNoQuery.trim() && !t.ticketNo.toLowerCase().includes(ticketNoQuery.trim().toLowerCase())) return false
+    return true
+  })
+  const totalPages = Math.max(1, Math.ceil(customerTickets.length / TICKETS_PER_PAGE))
+  const pagedTickets = customerTickets.slice((ticketPage - 1) * TICKETS_PER_PAGE, ticketPage * TICKETS_PER_PAGE)
 
   function commitAddresses(next: CustomerAddress[]) {
     setAddresses(next)
@@ -203,86 +236,70 @@ export function CustomerDetailPage() {
             )}
           </div>
 
-          {/* 기본 주소 */}
-          <div className="p-5 space-y-3">
-            {defaultAddr ? (
-              editingId === defaultAddr.id ? (
-                <AddressEditForm
-                  form={editForm}
-                  onChange={setEditForm}
-                  onSave={() => saveEdit(defaultAddr.id)}
-                  onCancel={cancelEdit}
-                />
-              ) : (
-                <div className="rounded-xl border border-gray-200 p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-2.5">
-                      <Star className="w-4 h-4 text-amber-400 fill-amber-400 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <p className="text-[11px] font-semibold text-amber-600 mb-1">기본 주소</p>
-                        <p className="text-sm text-gray-800 font-medium">{defaultAddr.address1}</p>
-                        {defaultAddr.address2 && <p className="text-xs text-gray-500 mt-0.5">{defaultAddr.address2}</p>}
-                        <p className="text-[11px] text-gray-400 mt-0.5 font-mono">
-                          {[defaultAddr.zipCode, COUNTRY_NAMES[defaultAddr.country] ?? defaultAddr.country].filter(Boolean).join(' · ')}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <IconBtn icon={<Pencil className="w-3.5 h-3.5" />} onClick={() => startEdit(defaultAddr)} />
-                      <IconBtn icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => setDeleteTargetId(defaultAddr.id)} danger />
-                    </div>
-                  </div>
-                </div>
-              )
-            ) : !showAddForm ? (
+          <div className="p-5 space-y-2">
+            {addresses.length === 0 && !showAddForm ? (
               <div className="rounded-xl border border-dashed border-gray-200 py-6 text-center">
                 <MapPin className="w-5 h-5 text-gray-200 mx-auto mb-1.5" />
                 <p className="text-xs text-gray-400">등록된 주소가 없습니다.</p>
               </div>
-            ) : null}
-
-            {/* 추가 주소 목록 */}
-            {otherAddresses.length > 0 && (
-              <div className="space-y-2">
-                {otherAddresses.map(addr => (
-                  editingId === addr.id ? (
-                    <AddressEditForm
-                      key={addr.id}
-                      form={editForm}
-                      onChange={setEditForm}
-                      onSave={() => saveEdit(addr.id)}
-                      onCancel={cancelEdit}
-                    />
-                  ) : (
-                    <div key={addr.id} className="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex items-start gap-2.5">
-                          <MapPin className="w-4 h-4 text-gray-300 mt-0.5 flex-shrink-0" />
-                          <div>
-                            <p className="text-sm text-gray-700">{addr.address1}</p>
-                            {addr.address2 && <p className="text-xs text-gray-500 mt-0.5">{addr.address2}</p>}
-                            <p className="text-[11px] text-gray-400 mt-0.5 font-mono">
-                              {[addr.zipCode, COUNTRY_NAMES[addr.country] ?? addr.country].filter(Boolean).join(' · ')}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <button
-                            type="button"
-                            onClick={() => setDefault(addr.id)}
-                            className="px-2 py-1 rounded-lg text-[11px] text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700 transition-colors"
-                          >기본으로</button>
-                          <IconBtn icon={<Pencil className="w-3.5 h-3.5" />} onClick={() => startEdit(addr)} />
-                          <IconBtn icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => setDeleteTargetId(addr.id)} danger />
+            ) : (
+              addresses.map(addr =>
+                editingId === addr.id ? (
+                  <AddressEditForm
+                    key={addr.id}
+                    form={editForm}
+                    onChange={setEditForm}
+                    onSave={() => saveEdit(addr.id)}
+                    onCancel={cancelEdit}
+                  />
+                ) : addr.isDefault ? (
+                  <div key={addr.id} className="rounded-xl border border-gray-200 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-2.5">
+                        <Star className="w-4 h-4 text-amber-400 fill-amber-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-[11px] font-semibold text-amber-600 mb-1">기본 주소</p>
+                          <p className="text-sm text-gray-800 font-medium">{addr.address1}</p>
+                          {addr.address2 && <p className="text-xs text-gray-500 mt-0.5">{addr.address2}</p>}
+                          <p className="text-[11px] text-gray-400 mt-0.5 font-mono">
+                            {[addr.zipCode, COUNTRY_NAMES[addr.country] ?? addr.country].filter(Boolean).join(' · ')}
+                          </p>
                         </div>
                       </div>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <IconBtn icon={<Pencil className="w-3.5 h-3.5" />} onClick={() => startEdit(addr)} />
+                        <IconBtn icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => setDeleteTargetId(addr.id)} danger />
+                      </div>
                     </div>
-                  )
-                ))}
-              </div>
+                  </div>
+                ) : (
+                  <div key={addr.id} className="rounded-xl border border-gray-100 bg-gray-50/50 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-start gap-2.5">
+                        <MapPin className="w-4 h-4 text-gray-300 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-gray-700">{addr.address1}</p>
+                          {addr.address2 && <p className="text-xs text-gray-500 mt-0.5">{addr.address2}</p>}
+                          <p className="text-[11px] text-gray-400 mt-0.5 font-mono">
+                            {[addr.zipCode, COUNTRY_NAMES[addr.country] ?? addr.country].filter(Boolean).join(' · ')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setDefault(addr.id)}
+                          className="px-2 py-1 rounded-lg text-[11px] text-gray-500 border border-gray-200 hover:border-gray-300 hover:text-gray-700 transition-colors"
+                        >기본으로</button>
+                        <IconBtn icon={<Pencil className="w-3.5 h-3.5" />} onClick={() => startEdit(addr)} />
+                        <IconBtn icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => setDeleteTargetId(addr.id)} danger />
+                      </div>
+                    </div>
+                  </div>
+                )
+              )
             )}
 
-            {/* 새 주소 추가 폼 */}
             {showAddForm && (
               <AddressEditForm
                 form={addForm}
@@ -297,47 +314,148 @@ export function CustomerDetailPage() {
 
         {/* 티켓 이력 */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          <div className="px-5 py-3 border-b border-gray-100">
-            <h3 className="text-xs font-semibold text-gray-700">
-              접수 티켓
-              {customerTickets.length > 0 && (
-                <span className="ml-1.5 text-gray-400 font-normal">{customerTickets.length}건</span>
-              )}
-            </h3>
+          <div className="px-5 py-3 border-b border-gray-100 space-y-2">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-semibold text-gray-700">
+                티켓
+                <span className="ml-1.5 text-gray-400 font-normal">
+                  {customerTickets.length !== allCustomerTickets.length
+                    ? `${customerTickets.length} / ${allCustomerTickets.length}건`
+                    : `${allCustomerTickets.length}건`}
+                </span>
+              </h3>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="date"
+                  value={dateFrom}
+                  max={dateTo || todayStr()}
+                  onChange={e => {
+                    const next = constrainMax3Y({ from: e.target.value, to: dateTo }, 'from')
+                    setDateFrom(next.from); setDateTo(next.to); setTicketPage(1)
+                  }}
+                  className="px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400"
+                />
+                <span className="text-gray-400 text-xs">~</span>
+                <input
+                  type="date"
+                  value={dateTo}
+                  min={dateFrom || undefined}
+                  max={todayStr()}
+                  onChange={e => {
+                    const next = constrainMax3Y({ from: dateFrom, to: e.target.value }, 'to')
+                    setDateFrom(next.from); setDateTo(next.to); setTicketPage(1)
+                  }}
+                  className="px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400"
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg focus-within:border-gray-400 focus-within:bg-white transition-colors">
+                  <input
+                    type="text"
+                    value={ticketNoInput}
+                    placeholder="Ticket No."
+                    onChange={e => setTicketNoInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { setTicketNoQuery(ticketNoInput); setTicketPage(1) } }}
+                    className="w-32 bg-transparent text-xs text-gray-700 placeholder:text-gray-300 focus:outline-none"
+                  />
+                  {ticketNoInput && (
+                    <button onClick={() => { setTicketNoInput(''); setTicketNoQuery(''); setTicketPage(1) }} className="text-gray-300 hover:text-gray-500 transition-colors">
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+                <button
+                  onClick={() => { setTicketNoQuery(ticketNoInput); setTicketPage(1) }}
+                  className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-900 text-white rounded-lg text-xs font-medium hover:bg-gray-700 transition-colors"
+                >
+                  <Search className="w-3 h-3" />검색
+                </button>
+              </div>
+            </div>
           </div>
-          {customerTickets.length === 0 ? (
+          {allCustomerTickets.length === 0 ? (
             <div className="px-5 py-8 text-center">
               <p className="text-xs text-gray-400">접수 이력이 없습니다.</p>
             </div>
+          ) : customerTickets.length === 0 ? (
+            <div className="px-5 py-8 text-center">
+              <p className="text-xs text-gray-400">검색 결과가 없습니다.</p>
+            </div>
           ) : (
-            <div className="overflow-auto max-h-[480px]">
+            <>
               <table className="w-full">
-                <thead className="sticky top-0 z-10">
+                <thead>
                   <tr className="border-b border-gray-100">
-                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50">티켓 번호</th>
+                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50">Ticket No.</th>
+                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50">티켓유형</th>
                     <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50">상태</th>
-                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50">제품</th>
                     <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50">접수일</th>
-                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50">수리 부서</th>
+                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50">담당자</th>
+                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50">제품코드</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
-                  {customerTickets.map(t => (
-                    <tr key={t.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-5 py-3 text-xs font-mono text-gray-700">{t.ticketNo}</td>
-                      <td className="px-5 py-3">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium ${STATUS_COLOR[t.status]}`}>
-                          {STATUS_LABELS[t.status]}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3 text-xs text-gray-700">{t.productName}</td>
-                      <td className="px-5 py-3 text-xs text-gray-500 font-mono">{t.receivedAt.slice(0, 10)}</td>
-                      <td className="px-5 py-3 text-xs text-gray-500">{t.repairDepartment}</td>
-                    </tr>
-                  ))}
+                  {pagedTickets.map(t => {
+                    const technician = t.technicianId ? MEMBERS.find(m => m.id === t.technicianId) : null
+                    return (
+                      <tr key={t.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-5 py-3 whitespace-nowrap">
+                          <button
+                            onClick={() => navigate(`/${langCode}/tickets/${t.ticketNo}`)}
+                            className="text-xs font-mono font-semibold text-gray-900 hover:underline underline-offset-2 decoration-gray-400"
+                          >{t.ticketNo}</button>
+                        </td>
+                        <td className="px-5 py-3 text-xs text-gray-700">{t.repairDetail || '-'}</td>
+                        <td className="px-5 py-3">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium ${STATUS_COLOR[t.status]}`}>
+                            {STATUS_LABELS[t.status]}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3 text-xs text-gray-500 font-mono">{t.receivedAt.slice(0, 10)}</td>
+                        <td className="px-5 py-3 text-xs text-gray-700">
+                          {technician
+                            ? <>{technician.name} <span className="text-gray-400">({technician.loginId})</span></>
+                            : <span className="text-gray-400">-</span>}
+                        </td>
+                        <td className="px-5 py-3 text-xs font-mono text-gray-700">
+                          {PRODUCTS.find(p => p.name === t.productName)?.productCode ?? t.productName}
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
-            </div>
+              {totalPages > 1 && (
+                <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-between">
+                  <span className="text-[11px] text-gray-400">
+                    {(ticketPage - 1) * TICKETS_PER_PAGE + 1}–{Math.min(ticketPage * TICKETS_PER_PAGE, customerTickets.length)} / {customerTickets.length}건
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setTicketPage(p => Math.max(1, p - 1))}
+                      disabled={ticketPage === 1}
+                      className="px-2.5 py-1 rounded-lg text-xs text-gray-500 border border-gray-200 hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >이전</button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                      <button
+                        key={p}
+                        onClick={() => setTicketPage(p)}
+                        className={`w-7 h-7 rounded-lg text-xs transition-colors ${
+                          p === ticketPage ? 'bg-gray-900 text-white' : 'text-gray-500 border border-gray-200 hover:border-gray-300'
+                        }`}
+                      >{p}</button>
+                    ))}
+                    <button
+                      onClick={() => setTicketPage(p => Math.min(totalPages, p + 1))}
+                      disabled={ticketPage === totalPages}
+                      className="px-2.5 py-1 rounded-lg text-xs text-gray-500 border border-gray-200 hover:border-gray-300 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                    >다음</button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

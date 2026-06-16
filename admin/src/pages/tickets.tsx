@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, FileDown, Filter, Lock, Plus, ScanLine, Trash2, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, FileDown, Filter, Lock, Plus, Printer, ScanLine, Trash2, X } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Pagination } from '@/components/pagination'
@@ -522,8 +522,8 @@ export function TicketsPage() {
   }
 
   const tableColumns: { key: string; label: string; sort: SortKey | null }[] = [
-    { key: 'ticketNo', label: '티켓번호', sort: 'ticketNo' },
-    { key: 'receivedAt', label: '접수일', sort: 'receivedAt' },
+    { key: 'ticketNo', label: 'Ticket No.', sort: 'ticketNo' },
+    { key: 'receivedAt', label: '접수일시', sort: 'receivedAt' },
     { key: 'status', label: '상태', sort: 'status' },
     { key: 'hqReceivedAt', label: '본사입고일', sort: 'hqReceivedAt' },
     { key: 'expectedShipAt', label: '출고예정일', sort: 'expectedShipAt' },
@@ -843,7 +843,7 @@ export function TicketsPage() {
                     return (
                       <th
                         key={column.key}
-                        className={`px-4 py-3 text-left text-xs font-semibold tracking-wide whitespace-nowrap align-top transition-colors ${
+                        className={`px-4 py-3 text-left text-xs font-semibold tracking-wide whitespace-nowrap transition-colors ${
                           isFiltered ? 'bg-blue-50 text-blue-700' : 'bg-gray-50/50 text-gray-500'
                         }`}
                       >

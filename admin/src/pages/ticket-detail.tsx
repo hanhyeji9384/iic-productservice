@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Barcode, Copy, History, Package } from 'lucide-react'
-import { BRANCHES } from '@/lib/mock-data'
+import { BRANCHES, MEMBERS } from '@/lib/mock-data'
 import { getTicketsWithExtras } from '@/lib/prototype-storage'
 import type { PaymentCompleted, TicketStatus } from '@/lib/types'
 import { BarcodePrintModal } from '@/components/barcode-print-modal'
@@ -98,6 +98,12 @@ export function TicketDetailPage() {
 
   const statusMeta = STATUS_META[ticket.status]
   const branchLabel = BRANCHES.find(b => b.code === ticket.branchCode)?.name ?? ticket.branchCode
+  const receptionManager = ticket.technicianId ? MEMBERS.find(member => member.id === ticket.technicianId) : null
+  const receptionManagerName = ticket.technicianName || receptionManager?.name || null
+  const receptionManagerLoginId = receptionManager?.loginId || ticket.technicianId || null
+  const receptionManagerLabel = receptionManagerName
+    ? `${receptionManagerName}${receptionManagerLoginId ? `(${receptionManagerLoginId})` : ''}`
+    : '-'
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'overview', label: '개요' },
@@ -114,6 +120,7 @@ export function TicketDetailPage() {
           productName={ticket.productName}
           customerName={ticket.customerName}
           autoPrint={autoPrintBarcode}
+          presentation={autoPrintBarcode ? 'silent' : 'modal'}
           onClose={() => { setShowBarcodeModal(false); setAutoPrintBarcode(false) }}
         />
       )}
@@ -132,15 +139,20 @@ export function TicketDetailPage() {
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
               <p className="text-[11px] text-gray-400 mb-0.5">티켓번호</p>
-              <h1 className="text-base font-bold text-gray-900 tracking-tight truncate">
-                {ticket.ticketNo}
-              </h1>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <h1 className="text-base font-bold text-gray-900 tracking-tight truncate">
+                  {ticket.ticketNo}
+                </h1>
+                <span className="text-xs text-gray-400">
+                  {receptionManagerLabel}
+                </span>
+              </div>
             </div>
             {/* 액션 버튼 */}
             <div className="flex items-center gap-2 flex-shrink-0">
               <button
                 onClick={() => {
-                  if (ticketNo) localStorage.removeItem(`barcode_printed_${ticketNo}`)
+                  setAutoPrintBarcode(false)
                   setShowBarcodeModal(true)
                 }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
@@ -211,24 +223,6 @@ export function TicketDetailPage() {
                 {/* ── 좌측 컬럼 ── */}
                 <div className="space-y-4">
 
-                  {/* 고객 카드 */}
-                  <SectionCard title="고객">
-                    <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
-                      <Field label="고객명" value={ticket.customerName} />
-                      <Field label="국가" value="-" />
-                      <Field label="전화번호" value={ticket.phone} />
-                      <Field label="이메일" value={ticket.email} />
-                      <Field label="마케팅 동의" value="-" />
-                      <Field label="개인정보 동의" value="-" />
-                      <div className="col-span-2">
-                        <Field label="수령 유형" value="-" />
-                      </div>
-                      <div className="col-span-2">
-                        <Field label="수령 정보" value="-" />
-                      </div>
-                    </dl>
-                  </SectionCard>
-
                   {/* 접수 정보 카드 */}
                   <SectionCard title="접수 정보">
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
@@ -281,8 +275,26 @@ export function TicketDetailPage() {
                 {/* ── 우측 컬럼 ── */}
                 <div className="space-y-4">
 
-                  {/* 제품 카드 */}
-                  <SectionCard title="제품">
+                  {/* 고객 정보 카드 */}
+                  <SectionCard title="고객 정보">
+                    <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+                      <Field label="고객명" value={ticket.customerName} />
+                      <Field label="국가" value="-" />
+                      <Field label="전화번호" value={ticket.phone} />
+                      <Field label="이메일" value={ticket.email} />
+                      <Field label="마케팅 동의" value="-" />
+                      <Field label="개인정보 동의" value="-" />
+                      <div className="col-span-2">
+                        <Field label="수령 유형" value="-" />
+                      </div>
+                      <div className="col-span-2">
+                        <Field label="수령 정보" value="-" />
+                      </div>
+                    </dl>
+                  </SectionCard>
+
+                  {/* 제품 정보 카드 */}
+                  <SectionCard title="제품 정보">
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
                       <div className="col-span-2">
                         <Field label="제품명" value={ticket.productName} />

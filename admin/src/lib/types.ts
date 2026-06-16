@@ -31,6 +31,7 @@ export type CustomerAddress = {
   address2?: string
   zipCode?: string
   country: string
+  city?: string
 }
 
 export type Customer = {
@@ -79,6 +80,8 @@ export type Ticket = {
   productName: string
   repairDepartment: string
   repairDetail: string
+  technicianId?: string
+  technicianName?: string
   trackingNo: string | null
   paymentCompleted: PaymentCompleted
   paymentDate: string | null

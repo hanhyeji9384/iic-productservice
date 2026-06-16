@@ -3,12 +3,11 @@ import { createPortal } from 'react-dom'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { ArrowLeft, Check, ChevronDown, Search, X, UserCheck } from 'lucide-react'
 import { BRANCHES, STORES, PRODUCTS, MEMBERS } from '@/lib/mock-data'
-import { addPrototypeTicket, getCustomersWithOverrides, localTimestamp, upsertPrototypeCustomer } from '@/lib/prototype-storage'
+import { addPrototypeTicket, getCustomersWithOverrides, localTimestamp, saveCustomerAddresses, upsertPrototypeCustomer } from '@/lib/prototype-storage'
 import type { Customer, CustomerAddress, Ticket } from '@/lib/types'
 
-const REPAIR_DEPARTMENTS = ['본사', '협력업체', '해외법인']
-const REPAIR_DETAILS = ['부품 교체', '도금수리', '용접수리', '젠틀케어', '수리불가', '기타']
-
+const TICKET_BRANCH_CODES = ['1110', 'C1002']
+const TICKET_BRANCHES = BRANCHES.filter(branch => TICKET_BRANCH_CODES.includes(branch.code))
 const TECHNICIANS = MEMBERS.filter(m => m.isTechnician && m.status === 'active')
 
 // 현재 로그인한 사용자가 기술자인 경우 접수 담당자로 기본 세팅
@@ -39,9 +38,46 @@ type Form = {
   newAddressLine1: string
   newAddressLine2: string
   newAddressZipCode: string
-  repairDepartment: string
-  repairDetail: string
-  memo: string
+  newAddressCity: string
+}
+
+type SaveAction = 'save' | 'save_new' | 'save_open'
+
+type AddressForm = {
+  address1: string
+  address2: string
+  zipCode: string
+  country: string
+  city: string
+}
+
+const EMPTY_ADDRESS_FORM: AddressForm = { address1: '', address2: '', zipCode: '', country: 'KR', city: '' }
+
+function createInitialForm(branchCode: string): Form {
+  return {
+    branchCode,
+    receptionStoreCode: '',
+    receptionStoreName: '',
+    technicianId: LOGGED_IN_TECHNICIAN?.id ?? '',
+    technicianName: LOGGED_IN_TECHNICIAN?.name ?? '',
+    customerId: '',
+    customerLastName: '',
+    customerFirstName: '',
+    country: '',
+    phone: '',
+    email: '',
+    marketingAgree: false,
+    productName: '',
+    discontinuedYear: '',
+    receptionType: '',
+    deliveryAddressId: '',
+    pickupStoreCode: '',
+    pickupStoreName: '',
+    newAddressLine1: '',
+    newAddressLine2: '',
+    newAddressZipCode: '',
+    newAddressCity: '',
+  }
 }
 
 const COUNTRIES = [
@@ -72,17 +108,7 @@ function SectionCard({ title, children }: { title: string; children: React.React
   )
 }
 
-const selectInnerCls = 'w-full appearance-none pl-3 pr-8 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-gray-400 transition-colors hover:border-gray-300 cursor-pointer'
 const inputCls = 'w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-gray-400 transition-colors hover:border-gray-300 placeholder:text-gray-300'
-
-function Select({ value, onChange, children }: { value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; children: React.ReactNode }) {
-  return (
-    <div className="relative">
-      <select value={value} onChange={onChange} className={selectInnerCls}>{children}</select>
-      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-    </div>
-  )
-}
 
 interface StoreOption { code: string; name: string }
 
@@ -623,6 +649,12 @@ function AddressSelect({
     setOpen(true)
   }
 
+  function addressLabel(address: CustomerAddress) {
+    const countryName = COUNTRIES.find(country => country.code === address.country)?.name ?? address.country
+    const location = [countryName, address.city].filter(Boolean).join(' · ')
+    return `${address.isDefault ? '[기본] ' : ''}${location ? `${location} · ` : ''}${address.address1}${address.address2 ? ` ${address.address2}` : ''}`
+  }
+
   return (
     <div className="relative">
       <button
@@ -633,7 +665,7 @@ function AddressSelect({
       >
         <span className={selected ? 'text-gray-900 truncate' : 'text-gray-300'}>
           {selected
-            ? `${selected.isDefault ? '[기본] ' : ''}${selected.address1}${selected.address2 ? ` ${selected.address2}` : ''}`
+            ? addressLabel(selected)
             : '배송 주소 선택'}
         </span>
         <ChevronDown className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
@@ -649,7 +681,7 @@ function AddressSelect({
                 <button type="button" onClick={() => { onChange(a.id); setOpen(false) }}
                   className={`w-full text-left px-3 py-2 transition-colors hover:bg-gray-50 ${a.id === value ? 'bg-gray-50' : ''}`}>
                   <span className={`text-sm ${a.id === value ? 'text-gray-900 font-medium' : 'text-gray-700'}`}>
-                    {a.isDefault ? '[기본] ' : ''}{a.address1}{a.address2 ? ` ${a.address2}` : ''}
+                    {addressLabel(a)}
                   </span>
                 </button>
               </li>
@@ -658,6 +690,91 @@ function AddressSelect({
         </div>,
         document.body
       )}
+    </div>
+  )
+}
+
+function AddressEditor({
+  mode,
+  form,
+  onChange,
+  onSave,
+  onCancel,
+}: {
+  mode: 'add' | 'edit' | null
+  form: AddressForm
+  onChange: (form: AddressForm) => void
+  onSave: () => void
+  onCancel: () => void
+}) {
+  if (!mode) return null
+  const isOverseas = isOverseasCountry(form.country)
+  const canSave = !!form.address1.trim() && (!isOverseas || !!form.city.trim())
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-gray-50/60 p-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-gray-700">{mode === 'add' ? '주소 추가' : '주소 수정'}</p>
+        <button type="button" onClick={onCancel} className="text-gray-300 hover:text-gray-500 transition-colors">
+          <X className="w-3.5 h-3.5" />
+        </button>
+      </div>
+      <input
+        type="text"
+        value={form.address1}
+        onChange={e => onChange({ ...form, address1: e.target.value })}
+        placeholder="주소"
+        className={inputCls}
+      />
+      <div className="grid grid-cols-2 gap-2">
+        <input
+          type="text"
+          value={form.zipCode}
+          onChange={e => onChange({ ...form, zipCode: e.target.value })}
+          placeholder="우편번호"
+          className={inputCls}
+        />
+        <CountrySearchSelect
+          value={form.country}
+          onChange={country => {
+            const nextCountry = country || 'KR'
+            onChange({ ...form, country: nextCountry, city: nextCountry === 'KR' ? '' : form.city })
+          }}
+        />
+      </div>
+      {isOverseas && (
+        <input
+          type="text"
+          value={form.city}
+          onChange={e => onChange({ ...form, city: e.target.value })}
+          placeholder="City *"
+          className={inputCls}
+        />
+      )}
+      <input
+        type="text"
+        value={form.address2}
+        onChange={e => onChange({ ...form, address2: e.target.value })}
+        placeholder="상세주소"
+        className={inputCls}
+      />
+      <div className="flex justify-end gap-1.5">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-500 hover:bg-white transition-colors"
+        >
+          취소
+        </button>
+        <button
+          type="button"
+          disabled={!canSave}
+          onClick={onSave}
+          className="px-3 py-1.5 rounded-lg bg-gray-900 text-xs font-medium text-white hover:bg-gray-700 transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
+        >
+          저장
+        </button>
+      </div>
     </div>
   )
 }
@@ -697,6 +814,12 @@ function CustomerSearchCombo({
     onClear()
   }
 
+  function resetSearchOnly() {
+    setQuery('')
+    setSearched(false)
+    setResult(null)
+  }
+
   return (
     <div className="space-y-2">
       <div className="flex gap-2">
@@ -707,8 +830,17 @@ function CustomerSearchCombo({
             onChange={e => { setQuery(e.target.value); setSearched(false); setResult(null) }}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
             placeholder="전화번호 또는 이메일"
-            className={inputCls}
+            className={`${inputCls} pr-8`}
           />
+          {query && (
+            <button
+              type="button"
+              onClick={handleClear}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 transition-colors"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
         <button
           type="button"
@@ -723,7 +855,7 @@ function CustomerSearchCombo({
         result ? (
           <button
             type="button"
-            onClick={() => { onSelect(result); handleClear() }}
+            onClick={() => { onSelect(result); resetSearchOnly() }}
             className="w-full flex items-center gap-2.5 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors text-left"
           >
             <UserCheck className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
@@ -763,15 +895,23 @@ function defaultCountryForBranch(branchCode: string) {
   return BRANCHES.find(branch => branch.code === branchCode)?.country ?? 'KR'
 }
 
+function isOverseasCountry(country: string) {
+  return !!country && country !== 'KR'
+}
+
+function normalizeTicketBranchCode(branchCode?: string) {
+  return branchCode && TICKET_BRANCH_CODES.includes(branchCode) ? branchCode : ''
+}
+
 function buildCustomerId(form: Form) {
   if (form.customerId) return form.customerId
   const seed = (form.email || form.phone || Date.now().toString()).replace(/[^0-9a-z]/gi, '').toUpperCase()
   return `C-${seed}`
 }
 
-function shippingMethodLabel(form: Form) {
+function shippingMethodLabel(form: Form, branchCode = form.branchCode) {
   if (form.receptionType === 'STORE') return '자체수령'
-  if (form.receptionType === 'HOME' && form.branchCode === 'C1002') return '해외택배(DHL)'
+  if (form.receptionType === 'HOME' && branchCode === 'C1002') return '해외택배(DHL)'
   if (form.receptionType === 'HOME') return '택배(HQ)'
   return '-'
 }
@@ -780,34 +920,9 @@ export function TicketNewPage() {
   const navigate = useNavigate()
   const { langCode } = useParams()
   const location = useLocation()
-  const initBranch: string = (location.state as { branchCode?: string })?.branchCode || BRANCHES[0]?.code || ''
+  const initBranch = normalizeTicketBranchCode((location.state as { branchCode?: string } | null)?.branchCode)
 
-  const [form, setForm] = useState<Form>({
-    branchCode: initBranch,
-    receptionStoreCode: '',
-    receptionStoreName: '',
-    technicianId: LOGGED_IN_TECHNICIAN?.id ?? '',
-    technicianName: LOGGED_IN_TECHNICIAN?.name ?? '',
-    customerId: '',
-    customerLastName: '',
-    customerFirstName: '',
-    country: '',
-    phone: '',
-    email: '',
-    marketingAgree: false,
-    productName: '',
-    discontinuedYear: '',
-    receptionType: '',
-    deliveryAddressId: '',
-    pickupStoreCode: '',
-    pickupStoreName: '',
-    newAddressLine1: '',
-    newAddressLine2: '',
-    newAddressZipCode: '',
-    repairDepartment: REPAIR_DEPARTMENTS[0],
-    repairDetail: REPAIR_DETAILS[0],
-    memo: '',
-  })
+  const [form, setForm] = useState<Form>(() => createInitialForm(initBranch))
 
   // isFromDotCom: 신규 고객(미조회) 시 마케팅 동의 체크박스 활성화
   const [isFromDotCom, setIsFromDotCom] = useState(false)
@@ -815,17 +930,38 @@ export function TicketNewPage() {
   const [isNewCustomer, setIsNewCustomer] = useState(false)
   const [customerAddresses, setCustomerAddresses] = useState<CustomerAddress[]>([])
   const [customers, setCustomers] = useState<Customer[]>(() => getCustomersWithOverrides())
+  const [addressEditMode, setAddressEditMode] = useState<'add' | 'edit' | null>(null)
+  const [editingAddressId, setEditingAddressId] = useState('')
+  const [addressForm, setAddressForm] = useState<AddressForm>(EMPTY_ADDRESS_FORM)
 
   function set(key: keyof Form, value: string) {
     setForm(p => ({ ...p, [key]: value }))
   }
 
-  const branchStores = STORES.filter(s => s.branchCode === form.branchCode)
+  const branchStores = STORES.filter(s =>
+    TICKET_BRANCH_CODES.includes(s.branchCode) &&
+    (!form.branchCode || s.branchCode === form.branchCode)
+  )
+  const branchContextLabel = form.branchCode
+    ? TICKET_BRANCHES.find(branch => branch.code === form.branchCode)?.name ?? form.branchCode
+    : '전체'
+
+  function resolveTicketBranchCode() {
+    if (form.branchCode) return form.branchCode
+    const selectedStoreBranch = STORES.find(store => store.code === form.receptionStoreCode)?.branchCode
+    if (selectedStoreBranch && TICKET_BRANCH_CODES.includes(selectedStoreBranch)) return selectedStoreBranch
+    const selectedPickupBranch = STORES.find(store => store.code === form.pickupStoreCode)?.branchCode
+    if (selectedPickupBranch && TICKET_BRANCH_CODES.includes(selectedPickupBranch)) return selectedPickupBranch
+    return TICKET_BRANCH_CODES[0]
+  }
+  const newCustomerAddressCountry = form.country || defaultCountryForBranch(resolveTicketBranchCode())
+  const isNewCustomerAddressOverseas = isOverseasCountry(newCustomerAddressCountry)
 
   function resetCustomerFields() {
     setIsNewCustomer(false)
     setIsFromDotCom(false)
     setCustomerAddresses([])
+    resetAddressEditor()
     setForm(p => ({
       ...p,
       customerId: '',
@@ -834,14 +970,139 @@ export function TicketNewPage() {
       marketingAgree: false,
       receptionType: '', deliveryAddressId: '',
       pickupStoreCode: '', pickupStoreName: '',
-      newAddressLine1: '', newAddressLine2: '', newAddressZipCode: '',
+      newAddressLine1: '', newAddressLine2: '', newAddressZipCode: '', newAddressCity: '',
     }))
   }
 
-  function handleSave() {
+  function resetAddressEditor() {
+    setAddressEditMode(null)
+    setEditingAddressId('')
+    setAddressForm(EMPTY_ADDRESS_FORM)
+  }
+
+  function commitCustomerAddresses(next: CustomerAddress[], nextSelectedId?: string) {
+    const fallbackId = next.find(address => address.isDefault)?.id ?? next[0]?.id ?? ''
+    setCustomerAddresses(next)
+    if (form.customerId) {
+      saveCustomerAddresses(form.customerId, next)
+      setCustomers(getCustomersWithOverrides())
+    }
+    setForm(prev => ({
+      ...prev,
+      deliveryAddressId: nextSelectedId ?? (
+        next.some(address => address.id === prev.deliveryAddressId)
+          ? prev.deliveryAddressId
+          : fallbackId
+      ),
+    }))
+  }
+
+  function openAddressAdd() {
+    setAddressEditMode('add')
+    setEditingAddressId('')
+    setAddressForm({
+      address1: '',
+      address2: '',
+      zipCode: '',
+      country: form.country || defaultCountryForBranch(form.branchCode),
+      city: '',
+    })
+  }
+
+  function openAddressEdit() {
+    const selected = customerAddresses.find(address => address.id === form.deliveryAddressId)
+    if (!selected) return
+    setAddressEditMode('edit')
+    setEditingAddressId(selected.id)
+    setAddressForm({
+      address1: selected.address1,
+      address2: selected.address2 ?? '',
+      zipCode: selected.zipCode ?? '',
+      country: selected.country,
+      city: selected.city ?? '',
+    })
+  }
+
+  function saveAddressForm() {
+    if (!addressForm.address1.trim()) return
+    if (isOverseasCountry(addressForm.country) && !addressForm.city.trim()) return
+    if (addressEditMode === 'add') {
+      const addressId = `addr-${Date.now()}`
+      const next: CustomerAddress[] = [
+        ...customerAddresses,
+        {
+          id: addressId,
+          isDefault: customerAddresses.length === 0,
+          address1: addressForm.address1.trim(),
+          address2: addressForm.address2.trim() || undefined,
+          zipCode: addressForm.zipCode.trim() || undefined,
+          country: addressForm.country || form.country || defaultCountryForBranch(form.branchCode),
+          city: isOverseasCountry(addressForm.country) ? addressForm.city.trim() : undefined,
+        },
+      ]
+      commitCustomerAddresses(next, addressId)
+      resetAddressEditor()
+      return
+    }
+
+    const next = customerAddresses.map(address =>
+      address.id === editingAddressId
+        ? {
+            ...address,
+            address1: addressForm.address1.trim(),
+            address2: addressForm.address2.trim() || undefined,
+            zipCode: addressForm.zipCode.trim() || undefined,
+            country: addressForm.country || address.country,
+            city: isOverseasCountry(addressForm.country) ? addressForm.city.trim() : undefined,
+          }
+        : address
+    )
+    commitCustomerAddresses(next, editingAddressId)
+    resetAddressEditor()
+  }
+
+  function deleteSelectedAddress() {
+    if (!form.deliveryAddressId) return
+    const next = customerAddresses.filter(address => address.id !== form.deliveryAddressId)
+    if (next.length > 0 && !next.some(address => address.isDefault)) {
+      next[0] = { ...next[0], isDefault: true }
+    }
+    const nextSelectedId = next.find(address => address.isDefault)?.id ?? next[0]?.id ?? ''
+    commitCustomerAddresses(next, nextSelectedId)
+    resetAddressEditor()
+  }
+
+  function setSelectedAddressDefault() {
+    if (!form.deliveryAddressId) return
+    commitCustomerAddresses(
+      customerAddresses.map(address => ({ ...address, isDefault: address.id === form.deliveryAddressId })),
+      form.deliveryAddressId
+    )
+  }
+
+  function resetNewTicketForm() {
+    setIsNewCustomer(false)
+    setIsFromDotCom(false)
+    setCustomerAddresses([])
+    resetAddressEditor()
+    setForm(createInitialForm(form.branchCode))
+  }
+
+  function handleSave(action: SaveAction) {
     const customerName = formatCustomerName(form)
     const customerId = buildCustomerId(form)
     const addresses = [...customerAddresses]
+    const ticketBranchCode = resolveTicketBranchCode()
+    const selectedDeliveryAddress = customerAddresses.find(address => address.id === form.deliveryAddressId)
+    const deliveryCountry = isNewCustomer
+      ? (form.country || defaultCountryForBranch(ticketBranchCode))
+      : (selectedDeliveryAddress?.country || form.country || defaultCountryForBranch(ticketBranchCode))
+    const deliveryCity = isNewCustomer ? form.newAddressCity.trim() : selectedDeliveryAddress?.city?.trim()
+
+    if (form.receptionType === 'HOME' && isOverseasCountry(deliveryCountry) && !deliveryCity) {
+      alert('해외 자택수령 주소는 City 입력이 필요합니다.')
+      return
+    }
 
     if (isNewCustomer && form.receptionType === 'HOME' && form.newAddressLine1.trim()) {
       addresses.push({
@@ -850,7 +1111,8 @@ export function TicketNewPage() {
         address1: form.newAddressLine1.trim(),
         address2: form.newAddressLine2.trim() || undefined,
         zipCode: form.newAddressZipCode.trim() || undefined,
-        country: form.country || defaultCountryForBranch(form.branchCode),
+        country: form.country || defaultCountryForBranch(ticketBranchCode),
+        city: isOverseasCountry(deliveryCountry) ? form.newAddressCity.trim() : undefined,
       })
     }
 
@@ -860,8 +1122,8 @@ export function TicketNewPage() {
         name: customerName,
         email: form.email.trim(),
         phone: form.phone.trim(),
-        country: form.country || defaultCountryForBranch(form.branchCode),
-        branchCode: form.branchCode,
+        country: form.country || defaultCountryForBranch(ticketBranchCode),
+        branchCode: ticketBranchCode,
         ticketYn: 'Y',
         marketingAgree: form.marketingAgree ? 'Y' : 'N',
         registeredAt: localTimestamp(),
@@ -874,28 +1136,38 @@ export function TicketNewPage() {
     const ticket: Ticket = {
       id: `ticket-${ticketNo}`,
       ticketNo,
-      branchCode: form.branchCode,
+      branchCode: ticketBranchCode,
       receivedAt: localTimestamp(),
       status: 'RECEIVED',
       hqReceivedAt: null,
       expectedShipAt: null,
-      receptionPlace: form.receptionStoreName || BRANCHES.find(branch => branch.code === form.branchCode)?.name || '-',
+      receptionPlace: form.receptionStoreName || TICKET_BRANCHES.find(branch => branch.code === ticketBranchCode)?.name || '-',
       customerName: customerName || '-',
       phone: form.phone.trim(),
       email: form.email.trim(),
       productName: form.productName || '-',
-      repairDepartment: form.repairDepartment,
-      repairDetail: form.repairDetail,
+      repairDepartment: '',
+      repairDetail: '',
+      technicianId: form.technicianId || undefined,
+      technicianName: form.technicianName || undefined,
       trackingNo: null,
       paymentCompleted: 'N',
       paymentDate: null,
       reexportCondition: 'N',
-      shippingMethod: shippingMethodLabel(form),
+      shippingMethod: shippingMethodLabel(form, ticketBranchCode),
       shippedAt: null,
       soDocumentNo: null,
     }
 
     addPrototypeTicket(ticket)
+    if (action === 'save_new') {
+      resetNewTicketForm()
+      return
+    }
+    if (action === 'save_open') {
+      navigate(`/${langCode}/tickets/${ticketNo}`)
+      return
+    }
     navigate(`/${langCode}/tickets`)
   }
 
@@ -918,23 +1190,26 @@ export function TicketNewPage() {
               <h1 className="text-base font-bold text-gray-900 tracking-tight">신규 티켓 생성</h1>
             </div>
             <div className="flex items-center gap-3 flex-shrink-0">
-              <div className="relative">
-                <select
-                  value={form.branchCode}
-                  onChange={e => setForm(p => ({ ...p, branchCode: e.target.value, receptionStoreCode: '', receptionStoreName: '' }))}
-                  className="appearance-none pl-3 pr-8 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 focus:outline-none focus:border-gray-400 cursor-pointer hover:border-gray-300 transition-colors"
-                >
-                  {BRANCHES.map(b => (
-                    <option key={b.code} value={b.code}>{b.name}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-600">
+                {branchContextLabel}
               </div>
               <button
-                onClick={handleSave}
+                onClick={() => handleSave('save')}
+                className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors"
+              >
+                저장
+              </button>
+              <button
+                onClick={() => handleSave('save_new')}
+                className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors"
+              >
+                저장 후 신규생성
+              </button>
+              <button
+                onClick={() => handleSave('save_open')}
                 className="flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white rounded-lg text-xs font-medium hover:bg-gray-700 transition-colors"
               >
-                <Check className="w-3.5 h-3.5" />등록
+                <Check className="w-3.5 h-3.5" />저장 후 열기
               </button>
             </div>
           </div>
@@ -956,7 +1231,7 @@ export function TicketNewPage() {
                 </dd>
               </div>
               <div>
-                <FieldLabel>접수 담당자</FieldLabel>
+                <FieldLabel>담당자</FieldLabel>
                 <dd>
                   <TechnicianSearchSelect
                     value={form.technicianId}
@@ -974,6 +1249,7 @@ export function TicketNewPage() {
                         type="button"
                         disabled={!form.phone}
                         onClick={() => {
+                          resetAddressEditor()
                           const defaultId = type === 'HOME' ? (customerAddresses.find(a => a.isDefault)?.id ?? '') : ''
                           setForm(p => ({ ...p, receptionType: type, deliveryAddressId: defaultId, pickupStoreCode: '', pickupStoreName: '' }))
                         }}
@@ -1004,11 +1280,80 @@ export function TicketNewPage() {
                               onChange={e => set('newAddressLine2', e.target.value)}
                               placeholder="상세주소" className={inputCls} />
                           </div>
+                          {isNewCustomerAddressOverseas && (
+                            <input type="text" value={form.newAddressCity}
+                              onChange={e => set('newAddressCity', e.target.value)}
+                              placeholder="City *" className={inputCls} />
+                          )}
                         </div>
                       )
                       : customerAddresses.length === 0
-                        ? <p className="text-xs text-gray-400 px-1">등록된 주소가 없습니다. 고객 상세에서 추가해 주세요.</p>
-                        : <AddressSelect addresses={customerAddresses} value={form.deliveryAddressId} onChange={id => set('deliveryAddressId', id)} />
+                        ? (
+                          <div className="space-y-2">
+                            <p className="text-xs text-gray-400 px-1">등록된 주소가 없습니다. 아래에서 주소를 추가해 주세요.</p>
+                            {!addressEditMode && (
+                              <button
+                                type="button"
+                                onClick={openAddressAdd}
+                                className="w-full px-3 py-2 rounded-xl border border-dashed border-gray-300 text-xs text-gray-500 hover:border-gray-400 hover:text-gray-700 transition-colors"
+                              >
+                                주소 추가
+                              </button>
+                            )}
+                            <AddressEditor
+                              mode={addressEditMode}
+                              form={addressForm}
+                              onChange={setAddressForm}
+                              onSave={saveAddressForm}
+                              onCancel={resetAddressEditor}
+                            />
+                          </div>
+                        )
+                        : (
+                          <div className="space-y-2">
+                            <AddressSelect addresses={customerAddresses} value={form.deliveryAddressId} onChange={id => { set('deliveryAddressId', id); resetAddressEditor() }} />
+                            <div className="flex flex-wrap gap-1.5">
+                              <button
+                                type="button"
+                                onClick={openAddressAdd}
+                                className="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                              >
+                                주소 추가
+                              </button>
+                              <button
+                                type="button"
+                                disabled={!form.deliveryAddressId}
+                                onClick={openAddressEdit}
+                                className="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
+                              >
+                                수정
+                              </button>
+                              <button
+                                type="button"
+                                disabled={!form.deliveryAddressId}
+                                onClick={deleteSelectedAddress}
+                                className="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:border-red-200 hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
+                              >
+                                삭제
+                              </button>
+                              <button
+                                type="button"
+                                disabled={!form.deliveryAddressId || !!customerAddresses.find(address => address.id === form.deliveryAddressId)?.isDefault}
+                                onClick={setSelectedAddressDefault}
+                                className="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
+                              >
+                                기본 설정
+                              </button>
+                            </div>
+                            <AddressEditor
+                              mode={addressEditMode}
+                              form={addressForm}
+                              onChange={setAddressForm}
+                              onSave={saveAddressForm}
+                              onCancel={resetAddressEditor}
+                            />
+                          </div>
+                        )
                   )}
                   {form.receptionType === 'STORE' && (
                     <StoreSearchSelect
@@ -1036,6 +1381,7 @@ export function TicketNewPage() {
                       setIsNewCustomer(false)
                       setIsFromDotCom(false)
                       setCustomerAddresses(addrs)
+                      resetAddressEditor()
                       setForm(p => ({
                         ...p,
                         customerId: c.id,
@@ -1048,13 +1394,14 @@ export function TicketNewPage() {
                         deliveryAddressId: p.receptionType === 'HOME'
                           ? (addrs.find(a => a.isDefault)?.id ?? '')
                           : '',
-                        newAddressLine1: '', newAddressLine2: '', newAddressZipCode: '',
+                        newAddressLine1: '', newAddressLine2: '', newAddressZipCode: '', newAddressCity: '',
                       }))
                     }}
                     onNotFound={q => {
                       setIsNewCustomer(true)
                       setIsFromDotCom(true)
                       setCustomerAddresses([])
+                      resetAddressEditor()
                       const isEmail = q.includes('@')
                       setForm(p => ({
                         ...p,
@@ -1065,7 +1412,7 @@ export function TicketNewPage() {
                         country: defaultCountryForBranch(p.branchCode), marketingAgree: false,
                         receptionType: '', deliveryAddressId: '',
                         pickupStoreCode: '', pickupStoreName: '',
-                        newAddressLine1: '', newAddressLine2: '', newAddressZipCode: '',
+                        newAddressLine1: '', newAddressLine2: '', newAddressZipCode: '', newAddressCity: '',
                       }))
                     }}
                     onClear={resetCustomerFields}
@@ -1093,7 +1440,10 @@ export function TicketNewPage() {
               <div>
                 <FieldLabel>국가</FieldLabel>
                 <dd>
-                  <CountrySearchSelect value={form.country} onChange={v => set('country', v)} />
+                  <CountrySearchSelect
+                    value={form.country}
+                    onChange={country => setForm(p => ({ ...p, country, newAddressCity: !country || country === 'KR' ? '' : p.newAddressCity }))}
+                  />
                 </dd>
               </div>
               <div>
@@ -1157,34 +1507,6 @@ export function TicketNewPage() {
                 <dd>
                   <input type="text" readOnly value={form.discontinuedYear} placeholder="-"
                     className={`${inputCls} bg-gray-50 text-gray-500 cursor-not-allowed`} />
-                </dd>
-              </div>
-            </dl>
-          </SectionCard>
-
-          {/* 수리 정보 */}
-          <SectionCard title="수리 정보">
-            <dl className="space-y-5">
-              <div>
-                <FieldLabel>수리 부서</FieldLabel>
-                <dd>
-                  <Select value={form.repairDepartment} onChange={e => set('repairDepartment', e.target.value)}>
-                    {REPAIR_DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
-                  </Select>
-                </dd>
-              </div>
-              <div>
-                <FieldLabel>수리 내용</FieldLabel>
-                <dd>
-                  <Select value={form.repairDetail} onChange={e => set('repairDetail', e.target.value)}>
-                    {REPAIR_DETAILS.map(d => <option key={d} value={d}>{d}</option>)}
-                  </Select>
-                </dd>
-              </div>
-              <div>
-                <FieldLabel>메모</FieldLabel>
-                <dd>
-                  <textarea value={form.memo} onChange={e => set('memo', e.target.value)} rows={3} placeholder="요청사항 또는 특이사항" className={`${inputCls} resize-none`} />
                 </dd>
               </div>
             </dl>

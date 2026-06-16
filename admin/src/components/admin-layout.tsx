@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   UserCog, Shield, Package, Wrench, ArchiveX,
-  Store, Users, Ticket, PanelLeftClose, PanelLeftOpen, LogOut, ChevronRight,
+  Store, Users, Ticket, Truck, PanelLeftClose, PanelLeftOpen, LogOut, ChevronRight,
   AlertTriangle, KeyRound, CalendarDays, Download, ShieldCheck,
 } from 'lucide-react'
 import { useSession } from '@/lib/session-context'
@@ -59,7 +59,8 @@ const NAV: NavGroup[] = [
     label: '티켓 관리',
     icon: Ticket,
     children: [
-      { to: '/tickets', label: '티켓', icon: Ticket },
+      { to: '/tickets',  label: '티켓 관리', icon: Ticket },
+      { to: '/shipping', label: '출고 관리', icon: Truck },
     ],
   },
   {
