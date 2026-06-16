@@ -14,7 +14,7 @@ function fmtRetention(dateStr: string): string {
   return `${y}년 ${parseInt(m)}월`
 }
 
-type SortKey = 'productCode' | 'name' | 'productCategory' | 'stockAvailable' | 'isSafetyStock' | 'isRestorationRepair'
+type SortKey = 'productCode' | 'name' | 'midCategory' | 'subCategory' | 'stockAvailable' | 'isSafetyStock' | 'isRestorationRepair'
   | 'factory1' | 'factory2' | 'factory3' | 'releaseDate' | 'partsRetentionPeriod'
 type Tab = 'list' | 'history'
 type ProductsPageMode = 'list' | 'management'
@@ -29,10 +29,6 @@ const CHANGE_TYPE_STYLES: Record<ProductChangeLog['changeType'], { bg: string; l
 
 function isRestorationRepairProduct(product: Product) {
   return product.isRestorationRepair ?? /METAL|COMBI/.test(product.subCategory)
-}
-
-function productCategory(product: Product) {
-  return [product.brandCategory, product.midCategory, product.subCategory].filter(Boolean).join(' / ')
 }
 
 function getPsOfficeQuantity(product: Product) {
@@ -114,19 +110,21 @@ function parseProductManagementUpdates(text: string) {
 
   const headers = parseCsvLine(headerLine).map(normalizeHeader)
   const idx = (aliases: string[]) => headers.findIndex(header => aliases.includes(header))
-  const productCodeIdx = idx(['제품코드', '제품 코드', 'productcode'])
+  const productCodeIdx = idx(['제품id', '제품 id', '제품코드', '제품 코드', 'productid', 'productcode'])
   const nameIdx = idx(['변경제품명', '제품명', 'name', 'productname'])
   const categoryIdx = idx(['변경제품범주', '제품범주', 'productcategory', 'category'])
+  const brandIdx = idx(['변경브랜드', '브랜드', 'brand', 'brandcategory'])
+  const midCategoryIdx = idx(['변경중분류', '중분류', 'midcategory'])
+  const subCategoryIdx = idx(['변경소분류', '소분류', 'subcategory'])
   const factory1Idx = idx(['변경생산공장1', '생산공장1', 'factory1'])
   const factory2Idx = idx(['변경생산공장2', '생산공장2', 'factory2'])
   const factory3Idx = idx(['변경생산공장3', '생산공장3', 'factory3'])
   const releaseDateIdx = idx(['변경출시일', '출시일', 'releasedate'])
   const partsRetentionIdx = idx(['변경부품보유기한', '부품보유기한', '변경부품보유기간', '부품보유기간', 'partsretentionperiod'])
-  const stockLocationIdx = idx(['변경재고보관위치', '재고보관위치', 'stocklocation'])
   const safetyStockIdx = idx(['변경안전재고여부', '안전재고여부', 'issafetystock', 'safetystock'])
   const psQuantityIdx = idx(['변경ps수량', 'ps수량', 'psoffice수량', 'psquantity'])
   const threePlQuantityIdx = idx(['변경3pl수량', '3pl수량', 'threeplquantity'])
-  const restorationIdx = idx(['변경복원의뢰여부', '복원의뢰여부', '변경복원수리', '복원수리', 'isrestorationrepair', 'restorationrepair'])
+  const restorationIdx = idx(['변경복원가능여부', '복원가능여부', '변경복원의뢰여부', '복원의뢰여부', '변경복원수리', '복원수리', 'isrestorationrepair', 'restorationrepair'])
 
   if (productCodeIdx < 0) return { rows: [], invalidCount: 0 }
 
@@ -142,7 +140,6 @@ function parseProductManagementUpdates(text: string) {
     factory3?: string | null
     releaseDate?: string
     partsRetentionPeriod?: string
-    stockLocation?: string
     isSafetyStock?: boolean
     psQuantity?: number
     threePlQuantity?: number
@@ -153,6 +150,9 @@ function parseProductManagementUpdates(text: string) {
     const cells = parseCsvLine(line)
     const productCode = cells[productCodeIdx]?.trim() ?? ''
     const category = categoryIdx >= 0 ? parseProductCategory(cells[categoryIdx] ?? '') : undefined
+    const brandCategory = brandIdx >= 0 ? cells[brandIdx]?.trim() || undefined : category?.brandCategory
+    const midCategory = midCategoryIdx >= 0 ? cells[midCategoryIdx]?.trim() || undefined : category?.midCategory
+    const subCategory = subCategoryIdx >= 0 ? cells[subCategoryIdx]?.trim() || undefined : category?.subCategory
     const isSafetyStock = safetyStockIdx >= 0 ? parseYn(cells[safetyStockIdx] ?? '') : undefined
     const psQuantity = psQuantityIdx >= 0 ? parseNumber(cells[psQuantityIdx] ?? '') : undefined
     const threePlQuantity = threePlQuantityIdx >= 0 ? parseNumber(cells[threePlQuantityIdx] ?? '') : undefined
@@ -165,15 +165,14 @@ function parseProductManagementUpdates(text: string) {
     const row = {
       productCode,
       name: nameIdx >= 0 ? cells[nameIdx]?.trim() || undefined : undefined,
-      brandCategory: category?.brandCategory,
-      midCategory: category?.midCategory,
-      subCategory: category?.subCategory,
+      brandCategory,
+      midCategory,
+      subCategory,
       factory1: factory1Idx >= 0 ? cells[factory1Idx]?.trim() || undefined : undefined,
       factory2: factory2Idx >= 0 ? cells[factory2Idx]?.trim() || null : undefined,
       factory3: factory3Idx >= 0 ? cells[factory3Idx]?.trim() || null : undefined,
       releaseDate: releaseDateIdx >= 0 ? cells[releaseDateIdx]?.trim() || undefined : undefined,
       partsRetentionPeriod: partsRetentionIdx >= 0 ? cells[partsRetentionIdx]?.trim() || undefined : undefined,
-      stockLocation: stockLocationIdx >= 0 ? cells[stockLocationIdx]?.trim() || undefined : undefined,
       isSafetyStock,
       psQuantity,
       threePlQuantity,
@@ -241,7 +240,8 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     return <ArrowDown className="w-3 h-3 text-gray-700 flex-shrink-0" />
   }
 
-  const productCategories = useMemo(() => [...new Set(products.map(productCategory))].sort(), [products])
+  const midCategories = useMemo(() => [...new Set(products.map(p => p.midCategory))].sort(), [products])
+  const subCategories = useMemo(() => [...new Set(products.map(p => p.subCategory))].sort(), [products])
   const factories1 = useMemo(() => [...new Set(products.map(p => p.factory1))], [products])
   const factories2 = useMemo(() => [...new Set(products.map(p => p.factory2).filter(Boolean) as string[])], [products])
   const factories3 = useMemo(() => [...new Set(products.map(p => p.factory3).filter(Boolean) as string[])], [products])
@@ -255,10 +255,12 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
       if (appliedColumnFilters.branch && p.branchCode !== appliedColumnFilters.branch) return false
       if (appliedColumnFilters.productCode && !p.productCode.toLowerCase().includes(appliedColumnFilters.productCode.toLowerCase())) return false
       if (appliedColumnFilters.name && !p.name.toLowerCase().includes(appliedColumnFilters.name.toLowerCase())) return false
-      if (appliedColumnFilters.productCategory && !productCategory(p).toLowerCase().includes(appliedColumnFilters.productCategory.toLowerCase())) return false
+      if (appliedColumnFilters.midCategory && p.midCategory !== appliedColumnFilters.midCategory) return false
+      if (appliedColumnFilters.subCategory && p.subCategory !== appliedColumnFilters.subCategory) return false
       if (appliedColumnFilters.factory1 && p.factory1 !== appliedColumnFilters.factory1) return false
       if (appliedColumnFilters.factory2 && p.factory2 !== appliedColumnFilters.factory2) return false
       if (appliedColumnFilters.factory3 && p.factory3 !== appliedColumnFilters.factory3) return false
+      if (appliedColumnFilters.isSafetyStock && p.isSafetyStock !== (appliedColumnFilters.isSafetyStock === 'true')) return false
       if (appliedColumnFilters.stockAvailable && hasAvailableStock(p) !== (appliedColumnFilters.stockAvailable === 'true')) return false
       if (appliedColumnFilters.restorationRepair && isRestorationRepairProduct(p) !== (appliedColumnFilters.restorationRepair === 'true')) return false
       if (appliedColumnFilters.releaseDateFrom && p.releaseDate < appliedColumnFilters.releaseDateFrom) return false
@@ -272,18 +274,14 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     if (!sortKey || !sortDir) return filtered
     const dir = sortDir === 'asc' ? 1 : -1
     return [...filtered].sort((a, b) => {
-      const av = sortKey === 'productCategory'
-        ? productCategory(a)
-        : sortKey === 'stockAvailable'
+      const av = sortKey === 'stockAvailable'
           ? hasAvailableStock(a)
           : sortKey === 'isRestorationRepair'
             ? isRestorationRepairProduct(a)
             : sortKey === 'isSafetyStock'
               ? a.isSafetyStock
               : a[sortKey as keyof Product]
-      const bv = sortKey === 'productCategory'
-        ? productCategory(b)
-        : sortKey === 'stockAvailable'
+      const bv = sortKey === 'stockAvailable'
           ? hasAvailableStock(b)
           : sortKey === 'isRestorationRepair'
             ? isRestorationRepairProduct(b)
@@ -320,54 +318,56 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
   }
 
   function handleExport() {
-    downloadCsv(
-      `products_${new Date().toISOString().slice(0, 10)}.csv`,
-      ['제품명','제품 코드','제품범주','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','재고보유여부','복원 의뢰 여부'],
-      sorted.map(p => [
-        p.name,
-        p.productCode,
-        productCategory(p),
-        p.factory1,
-        p.factory2 ?? '',
-        p.factory3 ?? '',
-        p.releaseDate,
-        p.partsRetentionPeriod,
-        hasAvailableStock(p) ? 'Y' : 'N',
-        isRestorationRepairProduct(p) ? 'Y' : 'N',
-      ])
-    )
+    const headers = isManagementMode
+      ? ['제품 ID','제품명','중분류','소분류','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','안전재고여부','복원 가능 여부']
+      : ['제품명','제품 코드','중분류','소분류','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','재고보유여부','복원 가능 여부']
+    const rows = isManagementMode
+      ? sorted.map(p => [
+          p.productCode,
+          p.name,
+          p.midCategory,
+          p.subCategory,
+          p.factory1,
+          p.factory2 ?? '',
+          p.factory3 ?? '',
+          p.releaseDate,
+          p.partsRetentionPeriod,
+          p.isSafetyStock ? 'Y' : 'N',
+          isRestorationRepairProduct(p) ? 'Y' : 'N',
+        ])
+      : sorted.map(p => [
+          p.name,
+          p.productCode,
+          p.midCategory,
+          p.subCategory,
+          p.factory1,
+          p.factory2 ?? '',
+          p.factory3 ?? '',
+          p.releaseDate,
+          p.partsRetentionPeriod,
+          hasAvailableStock(p) ? 'Y' : 'N',
+          isRestorationRepairProduct(p) ? 'Y' : 'N',
+        ])
+
+    downloadCsv(`products_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows)
   }
 
   function handleUploadTemplateDownload() {
     downloadCsv(
       `products_bulk_update_template_${new Date().toISOString().slice(0, 10)}.csv`,
-      ['제품 코드', '현재 제품명', '변경 제품명', '현재 제품범주', '변경 제품범주', '현재 생산공장1', '변경 생산공장1', '현재 생산공장2', '변경 생산공장2', '현재 생산공장3', '변경 생산공장3', '현재 출시일', '변경 출시일', '현재 부품보유기한', '변경 부품보유기한', '현재 재고보관위치', '변경 재고보관위치', '현재 안전재고여부', '변경 안전재고여부', '현재 PS수량', '변경 PS수량', '현재 3PL수량', '변경 3PL수량', '현재 복원 의뢰 여부', '변경 복원 의뢰 여부'],
+      ['제품 ID','제품명','중분류','소분류','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','안전재고여부','복원 가능 여부'],
       sorted.map(product => [
         product.productCode,
         product.name,
-        '',
-        productCategory(product),
-        '',
+        product.midCategory,
+        product.subCategory,
         product.factory1,
-        '',
         product.factory2 ?? '',
-        '',
         product.factory3 ?? '',
-        '',
         product.releaseDate,
-        '',
         product.partsRetentionPeriod,
-        '',
-        product.stockLocation,
-        '',
         product.isSafetyStock ? 'Y' : 'N',
-        '',
-        getPsOfficeQuantity(product),
-        '',
-        product.threePlQuantity ?? 0,
-        '',
         isRestorationRepairProduct(product) ? 'Y' : 'N',
-        '',
       ])
     )
   }
@@ -379,7 +379,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     event.target.value = ''
 
     if (rows.length === 0) {
-      setUploadResult(invalidCount > 0 ? `오류 ${invalidCount}건 — 제품 코드가 비어있습니다.` : '업로드 항목을 찾지 못했습니다.')
+      setUploadResult(invalidCount > 0 ? `오류 ${invalidCount}건 — 제품 ID가 비어있습니다.` : '업로드 항목을 찾지 못했습니다.')
       return
     }
 
@@ -388,7 +388,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     setSelected(new Set())
     setUploadResult(
       invalidCount > 0
-        ? `${changedCount}건 변경 완료, ${invalidCount}건 오류(제품 코드 누락)`
+        ? `${changedCount}건 변경 완료, ${invalidCount}건 오류(제품 ID 누락)`
         : `${changedCount}건 변경 완료`
     )
   }
@@ -452,6 +452,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
 
   function getAppliedFilterDisplay(col: string): string {
     switch (col) {
+      case 'isSafetyStock':
       case 'restorationRepair':
       case 'stockAvailable':
         return appliedColumnFilters[col] === 'true' ? 'Y' : 'N'
@@ -483,33 +484,40 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
 
   function renderFilterPopoverContent(col: string) {
     switch (col) {
-      case 'productCategory':
+      case 'midCategory':
+      case 'subCategory': {
+        const options = col === 'midCategory' ? midCategories : subCategories
         return (
           <div className="space-y-1 max-h-64 overflow-y-auto">
-            <button onClick={() => applyFilter({ productCategory: undefined })}
-              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.productCategory ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            <button onClick={() => applyFilter({ [col]: undefined })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters[col] ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
             >전체</button>
-            {productCategories.map(category => (
-              <button key={category} onClick={() => applyFilter({ productCategory: category })}
-                className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.productCategory === category ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-              >{category}</button>
+            {options.map(option => (
+              <button key={option} onClick={() => applyFilter({ [col]: option })}
+                className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters[col] === option ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              >{option}</button>
             ))}
           </div>
         )
+      }
+      case 'isSafetyStock':
       case 'stockAvailable':
+      case 'restorationRepair': {
+        const labelKey = col === 'restorationRepair' ? 'restorationRepair' : col
         return (
           <div className="space-y-1">
-            <button onClick={() => applyFilter({ stockAvailable: undefined })}
-              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.stockAvailable ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            <button onClick={() => applyFilter({ [labelKey]: undefined })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters[labelKey] ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
             >전체</button>
-            <button onClick={() => applyFilter({ stockAvailable: 'true' })}
-              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.stockAvailable === 'true' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            <button onClick={() => applyFilter({ [labelKey]: 'true' })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters[labelKey] === 'true' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
             >Y</button>
-            <button onClick={() => applyFilter({ stockAvailable: 'false' })}
-              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.stockAvailable === 'false' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            <button onClick={() => applyFilter({ [labelKey]: 'false' })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters[labelKey] === 'false' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
             >N</button>
           </div>
         )
+      }
       case 'factory1':
       case 'factory2':
       case 'factory3': {
@@ -527,20 +535,6 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           </div>
         )
       }
-      case 'restorationRepair':
-        return (
-          <div className="space-y-1">
-            <button onClick={() => applyFilter({ restorationRepair: undefined })}
-              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.restorationRepair ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >전체</button>
-            <button onClick={() => applyFilter({ restorationRepair: 'true' })}
-              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.restorationRepair === 'true' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >Y</button>
-            <button onClick={() => applyFilter({ restorationRepair: 'false' })}
-              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.restorationRepair === 'false' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >N</button>
-          </div>
-        )
       case 'releaseDate':
         return (
           <div className="space-y-2">
@@ -583,7 +577,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
         )
       case 'productCode':
       case 'name': {
-        const placeholder = col === 'productCode' ? '제품 코드 검색...' : '제품명 검색...'
+        const placeholder = col === 'productCode' ? '제품 ID 검색...' : '제품명 검색...'
         return (
           <div className="w-44 space-y-1.5">
             <input type="text" value={columnFilters[col] ?? ''}
@@ -608,15 +602,17 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
   }
 
   const FILTERABLE_COLS = new Set([
-    'name', 'productCode', 'productCategory', 'factory1', 'factory2', 'factory3',
-    'releaseDate', 'partsRetentionPeriod', 'stockAvailable', 'isRestorationRepair',
+    'name', 'productCode', 'midCategory', 'subCategory', 'factory1', 'factory2', 'factory3',
+    'releaseDate', 'partsRetentionPeriod', 'isSafetyStock', 'stockAvailable', 'isRestorationRepair',
   ])
 
   const COL_FILTER_KEY: Record<string, string> = {
     productCode: 'productCode',
     name: 'name',
-    productCategory: 'productCategory',
+    midCategory: 'midCategory',
+    subCategory: 'subCategory',
     stockAvailable: 'stockAvailable',
+    isSafetyStock: 'isSafetyStock',
     isRestorationRepair: 'restorationRepair',
     factory1: 'factory1',
     factory2: 'factory2',
@@ -625,18 +621,33 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     partsRetentionPeriod: 'partsRetention',
   }
 
-  const tableColumns: { key: string; label: string; sort: SortKey | null }[] = [
+  const listTableColumns: { key: string; label: string; sort: SortKey | null }[] = [
     { key: 'name',                 label: '제품명',      sort: 'name' },
     { key: 'productCode',          label: '제품 코드',    sort: 'productCode' },
-    { key: 'productCategory',      label: '제품범주',    sort: 'productCategory' },
+    { key: 'midCategory',          label: '중분류',      sort: 'midCategory' },
+    { key: 'subCategory',          label: '소분류',      sort: 'subCategory' },
     { key: 'factory1',             label: '생산공장1',   sort: 'factory1' },
     { key: 'factory2',             label: '생산공장2',   sort: 'factory2' },
     { key: 'factory3',             label: '생산공장3',   sort: 'factory3' },
     { key: 'releaseDate',          label: '출시일',      sort: 'releaseDate' },
     { key: 'partsRetentionPeriod', label: '부품보유기한', sort: 'partsRetentionPeriod' },
     { key: 'stockAvailable',       label: '재고보유여부', sort: 'stockAvailable' },
-    { key: 'isRestorationRepair',  label: '복원 의뢰 여부', sort: 'isRestorationRepair' },
+    { key: 'isRestorationRepair',  label: '복원 가능 여부', sort: 'isRestorationRepair' },
   ]
+  const managementTableColumns: { key: string; label: string; sort: SortKey | null }[] = [
+    { key: 'productCode',          label: '제품 ID',     sort: 'productCode' },
+    { key: 'name',                 label: '제품명',      sort: 'name' },
+    { key: 'midCategory',          label: '중분류',      sort: 'midCategory' },
+    { key: 'subCategory',          label: '소분류',      sort: 'subCategory' },
+    { key: 'factory1',             label: '생산공장1',   sort: 'factory1' },
+    { key: 'factory2',             label: '생산공장2',   sort: 'factory2' },
+    { key: 'factory3',             label: '생산공장3',   sort: 'factory3' },
+    { key: 'releaseDate',          label: '출시일',      sort: 'releaseDate' },
+    { key: 'partsRetentionPeriod', label: '부품보유기한', sort: 'partsRetentionPeriod' },
+    { key: 'isSafetyStock',        label: '안전재고여부', sort: 'isSafetyStock' },
+    { key: 'isRestorationRepair',  label: '복원 가능 여부', sort: 'isRestorationRepair' },
+  ]
+  const tableColumns = isManagementMode ? managementTableColumns : listTableColumns
 
   const tabs = isManagementMode
     ? [
@@ -648,8 +659,8 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
   const hasAnyFilter = Object.entries(appliedColumnFilters).some(([key, value]) => key !== 'branch' && Boolean(value))
 
   return (
-    <div className="overflow-x-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="min-w-[1420px] space-y-6">
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="space-y-6">
 
         {/* 헤더 */}
         <div className="flex items-center justify-between">
@@ -681,7 +692,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                       <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-4 py-4">
                         <div>
                           <p className="text-sm font-semibold text-gray-900">제품 변경사항 일괄 변경</p>
-                          <p className="mt-0.5 text-xs text-gray-400">제품 정보, 재고 정보, 복원 의뢰 여부 수정</p>
+                          <p className="mt-0.5 text-xs text-gray-400">제품 정보, 재고 정보, 복원 가능 여부 수정</p>
                         </div>
                         <button onClick={() => setUploadOpen(false)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
                           <X className="w-4 h-4" />
@@ -856,36 +867,65 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                         </button>
                       </td>
                       )}
-                      <td className="px-5 py-3.5 whitespace-nowrap text-sm font-semibold text-gray-900">{p.name}</td>
-                      <td className="px-5 py-3.5 whitespace-nowrap">
-                        {isManagementMode ? (
+                      {isManagementMode ? (
+                        <>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
                           <Link to={`${pfx}/product-management/${p.id}/edit`} className="font-mono text-sm font-normal text-gray-600 underline-offset-4 hover:text-gray-950 hover:underline">
                             {p.productCode}
                           </Link>
-                        ) : (
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm font-semibold text-gray-900">{p.name}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.midCategory}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.subCategory}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.factory1}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{p.factory2 ?? '—'}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{p.factory3 ?? '—'}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.releaseDate}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{fmtRetention(p.partsRetentionPeriod)}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
+                            p.isSafetyStock ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                          }`}>
+                            {p.isSafetyStock ? 'Y' : 'N'}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
+                            isRestorationRepairProduct(p) ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                          }`}>
+                            {isRestorationRepairProduct(p) ? 'Y' : 'N'}
+                          </span>
+                        </td>
+                        </>
+                      ) : (
+                        <>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm font-semibold text-gray-900">{p.name}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
                           <span className="font-mono text-sm font-normal text-gray-600">{p.productCode}</span>
-                        )}
-                      </td>
-                      <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{productCategory(p)}</td>
-                      <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.factory1}</td>
-                      <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{p.factory2 ?? '—'}</td>
-                      <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{p.factory3 ?? '—'}</td>
-                      <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.releaseDate}</td>
-                      <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{fmtRetention(p.partsRetentionPeriod)}</td>
-                      <td className="px-5 py-3.5 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
-                          hasAvailableStock(p) ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
-                        }`}>
-                          {hasAvailableStock(p) ? 'Y' : 'N'}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
-                          isRestorationRepairProduct(p) ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
-                        }`}>
-                          {isRestorationRepairProduct(p) ? 'Y' : 'N'}
-                        </span>
-                      </td>
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.midCategory}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.subCategory}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.factory1}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{p.factory2 ?? '—'}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{p.factory3 ?? '—'}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.releaseDate}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{fmtRetention(p.partsRetentionPeriod)}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
+                            hasAvailableStock(p) ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
+                          }`}>
+                            {hasAvailableStock(p) ? 'Y' : 'N'}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
+                            isRestorationRepairProduct(p) ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                          }`}>
+                            {isRestorationRepairProduct(p) ? 'Y' : 'N'}
+                          </span>
+                        </td>
+                        </>
+                      )}
                     </tr>
                   )
                 })}
@@ -961,7 +1001,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
               </div>
               <div className="w-px h-5 bg-gray-600" />
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400 whitespace-nowrap">복원 의뢰 여부</span>
+                <span className="text-xs text-gray-400 whitespace-nowrap">복원 가능 여부</span>
                 <select
                   value={restorationRepairValue}
                   onChange={e => setRestorationRepairValue(e.target.value as BulkYnValue)}

@@ -317,7 +317,7 @@ export function PartsPage() {
   function handleTemplateDownload() {
     downloadCsv(
       `parts_location_upload_template_${new Date().toISOString().slice(0, 10)}.csv`,
-      ['제품코드', '제품명', '부속품 ID', '부속품명', '현재 보관위치', '변경 보관위치'],
+      ['제품코드', '제품명', '부속품 ID', '부속품명', '규격', '컬러', '부속품 보관위치'],
       sorted.map(part => {
         const product = productMap.get(part.productCode)
         return [
@@ -325,8 +325,9 @@ export function PartsPage() {
           product?.name ?? '',
           part.partCode,
           part.name,
+          part.specification,
+          part.color,
           part.storageLocation,
-          '',
         ]
       })
     )

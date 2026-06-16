@@ -145,18 +145,14 @@ export function ProductNewPage() {
     if (!form.subCategory) errs.subCategory = '소분류를 선택하세요.'
     if (!form.factory1) errs.factory1 = '생산공장1을 선택하세요.'
     if (!form.releaseDate) errs.releaseDate = '출시일을 입력하세요.'
-    if (!form.quantity || isNaN(Number(form.quantity)) || Number(form.quantity) < 0)
-      errs.quantity = '0 이상의 숫자를 입력하세요.'
-    if (!form.threePlQuantity || isNaN(Number(form.threePlQuantity)) || Number(form.threePlQuantity) < 0)
-      errs.threePlQuantity = '0 이상의 숫자를 입력하세요.'
     setErrors(errs)
     return Object.keys(errs).length === 0
   }
 
   function handleSave() {
     if (!validate()) return
-    const psQuantity = Number(form.quantity)
-    const threePlQuantity = Number(form.threePlQuantity)
+    const psQuantity = isEdit ? (existing!.psQuantity ?? existing!.quantity) : Number(form.quantity || 0)
+    const threePlQuantity = isEdit ? (existing!.threePlQuantity ?? 0) : Number(form.threePlQuantity || 0)
     const payload = {
       id: isEdit ? existing!.id : `P${Date.now()}`,
       productCode: form.productCode,
@@ -171,7 +167,7 @@ export function ProductNewPage() {
       releaseDate: form.releaseDate,
       partsRetentionPeriod: form.partsRetentionPeriod,
       salesStatus: isEdit ? existing!.salesStatus : '사용중',
-      stockLocation: form.stockLocation.trim(),
+      stockLocation: isEdit ? existing!.stockLocation : '',
       isSafetyStock: form.isSafetyStock,
       quantity: psQuantity,
       psQuantity,
@@ -228,14 +224,14 @@ export function ProductNewPage() {
         <h2 className="text-sm font-semibold text-gray-900">기본 정보</h2>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <FieldLabel text="제품 코드" required />
+            <FieldLabel text="제품 ID" required />
             <input
               type="text"
               value={form.productCode}
               readOnly
               className={`${inputCls} w-full bg-gray-50 text-gray-500 cursor-default select-none`}
             />
-            <p className="text-[11px] text-gray-400 mt-1">제품 코드는 자동 부여됩니다.</p>
+            <p className="text-[11px] text-gray-400 mt-1">제품 ID는 자동 부여됩니다.</p>
           </div>
           <div>
             <FieldLabel text="제품명" required />
@@ -328,45 +324,9 @@ export function ProductNewPage() {
         </div>
       </section>
 
-      {/* 재고 정보 */}
+      {/* 관리 정보 */}
       <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-900">재고 정보</h2>
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <FieldLabel text="재고보관위치" />
-            <input
-              type="text"
-              placeholder="예: A1-01"
-              value={form.stockLocation}
-              onChange={e => set('stockLocation')(e.target.value)}
-              className={`${inputCls} w-full`}
-            />
-          </div>
-          <div>
-            <FieldLabel text="PS수량(사용중인 수량)" required />
-            <input
-              type="number"
-              min={0}
-              placeholder="0"
-              value={form.quantity}
-              onChange={e => { set('quantity')(e.target.value); setErrors(p => ({ ...p, quantity: '' })) }}
-              className={`${inputCls} w-full ${errors.quantity ? 'border-red-300 focus:border-red-400' : ''}`}
-            />
-            {errors.quantity && <p className="text-[11px] text-red-400 mt-1">{errors.quantity}</p>}
-          </div>
-          <div>
-            <FieldLabel text="3PL수량(사용중인 수량)" required />
-            <input
-              type="number"
-              min={0}
-              placeholder="0"
-              value={form.threePlQuantity}
-              onChange={e => { set('threePlQuantity')(e.target.value); setErrors(p => ({ ...p, threePlQuantity: '' })) }}
-              className={`${inputCls} w-full ${errors.threePlQuantity ? 'border-red-300 focus:border-red-400' : ''}`}
-            />
-            {errors.threePlQuantity && <p className="text-[11px] text-red-400 mt-1">{errors.threePlQuantity}</p>}
-          </div>
-        </div>
+        <h2 className="text-sm font-semibold text-gray-900">관리 정보</h2>
         <div className="flex gap-6">
           <label className="flex items-center gap-2.5 cursor-pointer select-none">
             <div
@@ -392,7 +352,7 @@ export function ProductNewPage() {
                 form.isRestorationRepair ? 'translate-x-4' : 'translate-x-0.5'
               }`} />
             </div>
-            <span className="text-sm text-gray-700">복원 의뢰 여부</span>
+            <span className="text-sm text-gray-700">복원 가능 여부</span>
           </label>
         </div>
       </section>

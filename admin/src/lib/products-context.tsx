@@ -12,7 +12,6 @@ type StockPatch = Partial<Pick<Product,
   | 'factory3'
   | 'releaseDate'
   | 'partsRetentionPeriod'
-  | 'stockLocation'
   | 'quantity'
   | 'psQuantity'
   | 'threePlQuantity'
@@ -32,7 +31,6 @@ type ProductManagementUpdate = {
   factory3?: string | null
   releaseDate?: string
   partsRetentionPeriod?: string
-  stockLocation?: string
   isSafetyStock?: boolean
   psQuantity?: number
   threePlQuantity?: number
@@ -102,11 +100,10 @@ function buildProductManagementDiff(current: Product, updated: Product) {
   if ((current.factory3 ?? '') !== (updated.factory3 ?? '')) diffs.push(`생산공장3: ${current.factory3 ?? '-'} → ${updated.factory3 ?? '-'}`)
   if (current.releaseDate !== updated.releaseDate) diffs.push(`출시일: ${current.releaseDate} → ${updated.releaseDate}`)
   if (current.partsRetentionPeriod !== updated.partsRetentionPeriod) diffs.push(`부품보유기한: ${current.partsRetentionPeriod || '-'} → ${updated.partsRetentionPeriod || '-'}`)
-  if (current.stockLocation !== updated.stockLocation) diffs.push(`재고보관위치: ${current.stockLocation || '-'} → ${updated.stockLocation || '-'}`)
   if (current.isSafetyStock !== updated.isSafetyStock) diffs.push(`안전재고여부: ${yn(current.isSafetyStock)} → ${yn(updated.isSafetyStock)}`)
   if (num(current.psQuantity, current.quantity) !== num(updated.psQuantity, updated.quantity)) diffs.push(`PS수량: ${num(current.psQuantity, current.quantity)} → ${num(updated.psQuantity, updated.quantity)}`)
   if (num(current.threePlQuantity) !== num(updated.threePlQuantity)) diffs.push(`3PL수량: ${num(current.threePlQuantity)} → ${num(updated.threePlQuantity)}`)
-  if (isRestorationRepairProduct(current) !== isRestorationRepairProduct(updated)) diffs.push(`복원 의뢰 여부: ${yn(isRestorationRepairProduct(current))} → ${yn(isRestorationRepairProduct(updated))}`)
+  if (isRestorationRepairProduct(current) !== isRestorationRepairProduct(updated)) diffs.push(`복원 가능 여부: ${yn(isRestorationRepairProduct(current))} → ${yn(isRestorationRepairProduct(updated))}`)
   return diffs.join(' / ') || '변경 없음'
 }
 
@@ -167,7 +164,6 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       if (update.factory3 !== undefined) patch.factory3 = update.factory3
       if (typeof update.releaseDate === 'string') patch.releaseDate = update.releaseDate
       if (typeof update.partsRetentionPeriod === 'string') patch.partsRetentionPeriod = update.partsRetentionPeriod
-      if (typeof update.stockLocation === 'string') patch.stockLocation = update.stockLocation
       if (typeof update.isSafetyStock === 'boolean') patch.isSafetyStock = update.isSafetyStock
       if (typeof update.psQuantity === 'number') {
         patch.psQuantity = update.psQuantity
