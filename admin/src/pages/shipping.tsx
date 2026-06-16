@@ -51,11 +51,8 @@ export function ShippingPage() {
 
   const allTickets = getTicketsWithExtras()
 
-  const baseTickets = useMemo(() =>
-    isTbd ? [] : allTickets.filter(t =>
-      t.status === 'READY_TO_SHIP' && t.shippingMethod === currentTab.method
-    ),
-    [isTbd, allTickets, currentTab.method]
+  const baseTickets = isTbd ? [] : allTickets.filter(t =>
+    t.status === 'READY_TO_SHIP' && t.shippingMethod === currentTab.method
   )
 
   const filtered = useMemo(() => {

@@ -69,7 +69,7 @@ function branchLabel(branchCode: string) {
 
 function parseBulkRegisterCsv(text: string) {
   const lines = text
-    .replace(/^﻿/, '')
+    .replace(/^\ufeff/, '')
     .split(/\r?\n/)
     .filter(line => line.trim())
   const [headerLine, ...bodyLines] = lines
