@@ -610,10 +610,9 @@ export function CustomersPage() {
                 ) : paginated.map(customer => (
                   <tr
                     key={customer.id}
-                    onClick={() => !customer.privacyRemoved && navigate(`/${langCode}/customers/${customer.id}`)}
-                    className={`hover:bg-gray-50/50 transition-colors ${!customer.privacyRemoved ? 'cursor-pointer' : ''}`}
+                    className="hover:bg-gray-50/50 transition-colors"
                   >
-                    <td className="px-5 py-3.5 whitespace-nowrap" onClick={e => e.stopPropagation()}>
+                    <td className="px-5 py-3.5 whitespace-nowrap">
                       <input
                         type="checkbox"
                         aria-label={`${customer.id} 선택`}
@@ -623,7 +622,18 @@ export function CustomersPage() {
                         className="w-4 h-4 rounded border-gray-300 text-gray-900 focus:ring-gray-300 disabled:opacity-30"
                       />
                     </td>
-                    <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono font-medium text-gray-900">{customer.id}</td>
+                    <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono font-medium text-gray-900">
+                      {customer.privacyRemoved ? (
+                        <span className="text-gray-400">{customer.id}</span>
+                      ) : (
+                        <button
+                          onClick={() => navigate(`/${langCode}/customers/${customer.id}`)}
+                          className="font-mono font-semibold text-gray-900 underline-offset-2 hover:underline"
+                        >
+                          {customer.id}
+                        </button>
+                      )}
+                    </td>
                     <td className="px-5 py-3.5 whitespace-nowrap text-sm font-semibold text-gray-900">
                       {customer.privacyRemoved ? <span className="text-gray-400">제거됨</span> : maskName(customer.name)}
                     </td>

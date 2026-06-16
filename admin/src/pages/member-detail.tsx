@@ -4,7 +4,7 @@ import { ArrowLeft, Trash2, Check, ChevronDown, Globe, Building2, Mail, Calendar
 import { ROLES } from '@/lib/mock-data'
 import { OPTICAL_STORES, HQ_ROLES, FRANCHISE_ROLES, getBranchName, BranchMultiSelect, StoreMultiSelect } from '@/components/members/branch-store-select'
 import { useMembers } from '@/lib/members-context'
-import { formatDateTime, formatDate, inputCls } from '@/lib/utils'
+import { formatDateTime, inputCls } from '@/lib/utils'
 import type { Member } from '@/lib/types'
 
 type EditForm = {
@@ -16,6 +16,10 @@ type EditForm = {
   expiresAt: string
   managedBranches: string[]
   assignedStores: string[]
+}
+
+function formatMemberCreatedAt(value: string) {
+  return value.includes(':') ? formatDateTime(value) : `${value.slice(0, 10)} 00:00:00`
 }
 
 function formFromMember(m: Member): EditForm {
@@ -198,7 +202,7 @@ export function MemberDetailPage() {
                 <Calendar className="w-3.5 h-3.5 text-gray-400" />
                 <p className="text-xs text-gray-400">생성 일시</p>
               </div>
-              <p className="text-sm text-gray-600">{formatDate(member.createdAt)}</p>
+              <p className="text-sm font-mono text-gray-600">{formatMemberCreatedAt(member.createdAt)} <span className="font-sans text-gray-400">(KST)</span></p>
             </div>
             <div>
               <div className="flex items-center gap-1.5 mb-0.5">

@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom'
-import { UserPlus, Edit, Shield, History, Users, Search, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown, X, Filter } from 'lucide-react'
+import { UserPlus, Shield, History, Users, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown, X, Filter } from 'lucide-react'
 import { ROLES, BRANCHES, STORES } from '@/lib/mock-data'
 import { Pagination } from '@/components/pagination'
 import { SummaryCell } from '@/components/summary-cell'
@@ -18,6 +18,9 @@ function getRoleName(roleId: string) {
   return ROLES.find(r => r.id === roleId)?.name ?? roleId
 }
 
+function formatMemberCreatedAt(value: string) {
+  return value.includes(':') ? formatDateTime(value) : `${value.slice(0, 10)} 00:00:00`
+}
 
 const CHANGE_TYPE_STYLES: Record<MemberChangeLog['changeType'], { bg: string; label: string }> = {
   CREATE: { bg: 'bg-gray-100 text-gray-500', label: '생성' },
@@ -42,10 +45,10 @@ export function MembersPage() {
   const LOG_PAGE_SIZE = 10
   const [logsPage, setLogsPage] = useState(1)
 
-  type SortKey = 'name' | 'loginId' | 'email' | 'status' | 'lastLoginAt'
+  type SortKey = 'name' | 'loginId' | 'email' | 'status' | 'createdAt' | 'lastLoginAt'
   type SortDir = 'asc' | 'desc' | null
-  const [sortKey, setSortKey] = useState<SortKey | null>(null)
-  const [sortDir, setSortDir] = useState<SortDir>(null)
+  const [sortKey, setSortKey] = useState<SortKey | null>('createdAt')
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
 
   function handleSort(key: SortKey) {
     if (sortKey !== key) { setSortKey(key); setSortDir('asc') }
@@ -76,9 +79,26 @@ export function MembersPage() {
     [members, appliedColumnFilters]
   )
 
-  function handleSearch() {
+  function applyCurrentColumnFilters() {
     setAppliedColumnFilters(columnFilters)
     setCurrentPage(1)
+    setFilterPopover(null)
+  }
+
+  function applyColumnFilterPatch(patch: Record<string, string>) {
+    const next = { ...columnFilters }
+    Object.entries(patch).forEach(([key, value]) => {
+      if (value) next[key] = value
+      else delete next[key]
+    })
+    setColumnFilters(next)
+    setAppliedColumnFilters(next)
+    setCurrentPage(1)
+    setFilterPopover(null)
+  }
+
+  function applyColumnFilter(key: string, value: string) {
+    applyColumnFilterPatch({ [key]: value })
   }
 
   function handleReset() {
@@ -116,21 +136,29 @@ export function MembersPage() {
   function renderFilterPopoverContent(col: string) {
     if (col === 'name' || col === 'loginId' || col === 'email') {
       const placeholder = col === 'name' ? '이름 검색...' : col === 'loginId' ? 'ID 검색...' : '이메일 검색...'
+      const value = columnFilters[col] ?? ''
       return (
-        <div className="w-44">
+        <div className="w-44 space-y-1.5">
           <input
             type="text"
-            value={columnFilters[col] ?? ''}
+            value={value}
             onChange={e => setColumnFilters(p => ({ ...p, [col]: e.target.value }))}
+            onKeyDown={e => e.key === 'Enter' && applyCurrentColumnFilters()}
             placeholder={placeholder}
             className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-300"
           />
-          {columnFilters[col] && (
+          <div className="flex gap-1.5">
+            {value && (
+              <button
+                onClick={() => applyColumnFilter(col, '')}
+                className="flex-1 text-xs text-gray-400 hover:text-gray-600 py-1.5 border border-gray-200 rounded-lg transition-colors"
+              >지우기</button>
+            )}
             <button
-              onClick={() => setColumnFilters(p => { const n = { ...p }; delete n[col]; return n })}
-              className="mt-1.5 w-full text-xs text-gray-400 hover:text-gray-600 py-1"
-            >지우기</button>
-          )}
+              onClick={applyCurrentColumnFilters}
+              className="flex-1 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
+            >적용</button>
+          </div>
         </div>
       )
     }
@@ -138,12 +166,12 @@ export function MembersPage() {
       return (
         <div className="space-y-1">
           <button
-            onClick={() => setColumnFilters(p => { const n = {...p}; delete n.role; return n })}
+            onClick={() => applyColumnFilter('role', '')}
             className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.role ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
           >전체</button>
           {ROLES.map(r => (
             <button key={r.id}
-              onClick={() => setColumnFilters(p => ({ ...p, role: r.id }))}
+              onClick={() => applyColumnFilter('role', r.id)}
               className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.role === r.id ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
             >{r.name}</button>
           ))}
@@ -155,10 +183,7 @@ export function MembersPage() {
         <div className="space-y-1">
           {[{ v: '', l: '전체' }, { v: 'active', l: '활성' }, { v: 'inactive', l: '비활성' }].map(opt => (
             <button key={opt.v || 'all'}
-              onClick={() => {
-                if (opt.v) setColumnFilters(p => ({ ...p, status: opt.v }))
-                else setColumnFilters(p => { const n = {...p}; delete n.status; return n })
-              }}
+              onClick={() => applyColumnFilter('status', opt.v)}
               className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${(opt.v ? columnFilters.status === opt.v : !columnFilters.status) ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
             >{opt.l}</button>
           ))}
@@ -180,12 +205,18 @@ export function MembersPage() {
               onChange={e => setColumnFilters(p => ({ ...p, loginTo: e.target.value }))}
               className="w-full px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-300" />
           </div>
-          {(columnFilters.loginFrom || columnFilters.loginTo) && (
+          <div className="flex gap-1.5">
+            {(columnFilters.loginFrom || columnFilters.loginTo) && (
+              <button
+                onClick={() => applyColumnFilterPatch({ loginFrom: '', loginTo: '' })}
+                className="flex-1 text-xs text-gray-400 hover:text-gray-600 py-1.5 border border-gray-200 rounded-lg transition-colors"
+              >지우기</button>
+            )}
             <button
-              onClick={() => setColumnFilters(p => { const n = {...p}; delete n.loginFrom; delete n.loginTo; return n })}
-              className="w-full text-xs text-gray-400 hover:text-gray-600 py-1"
-            >지우기</button>
-          )}
+              onClick={applyCurrentColumnFilters}
+              className="flex-1 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
+            >적용</button>
+          </div>
         </div>
       )
     }
@@ -196,12 +227,12 @@ export function MembersPage() {
       return (
         <div className="space-y-1">
           <button
-            onClick={() => setColumnFilters(p => { const n = {...p}; delete n.branch; return n })}
+            onClick={() => applyColumnFilter('branch', '')}
             className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.branch ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
           >전체</button>
           {availableBranches.map(b => (
             <button key={b.code}
-              onClick={() => setColumnFilters(p => ({ ...p, branch: b.code }))}
+              onClick={() => applyColumnFilter('branch', b.code)}
               className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.branch === b.code ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
             >{b.code} {b.name}</button>
           ))}
@@ -214,12 +245,12 @@ export function MembersPage() {
       return (
         <div className="space-y-1">
           <button
-            onClick={() => setColumnFilters(p => { const n = {...p}; delete n.store; return n })}
+            onClick={() => applyColumnFilter('store', '')}
             className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.store ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
           >전체</button>
           {availableStores.map(s => (
             <button key={s.code}
-              onClick={() => setColumnFilters(p => ({ ...p, store: s.code }))}
+              onClick={() => applyColumnFilter('store', s.code)}
               className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.store === s.code ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
             >{s.name}</button>
           ))}
@@ -270,19 +301,13 @@ export function MembersPage() {
           <>
             {/* 테이블 */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-              <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
-                <button
-                  onClick={handleSearch}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-black text-white rounded-lg text-xs font-medium hover:bg-gray-800 transition-colors"
-                >
-                  <Search className="w-3.5 h-3.5" />검색
-                </button>
-                {hasActiveFilters && (
+              {hasActiveFilters && (
+                <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-end">
                   <button onClick={handleReset} className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
                     <X className="w-3 h-3" />초기화
                   </button>
-                )}
-              </div>
+                </div>
+              )}
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
@@ -413,6 +438,13 @@ export function MembersPage() {
                         )
                       })()}
 
+                      {/* 등록일시 */}
+                      <th className="px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap text-gray-500">
+                        <button onClick={() => handleSort('createdAt')} className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
+                          등록일시 <SortIcon col="createdAt" />
+                        </button>
+                      </th>
+
                       {/* 마지막 로그인 */}
                       {(() => {
                         const isFiltered = !!(appliedColumnFilters.loginFrom || appliedColumnFilters.loginTo)
@@ -484,8 +516,6 @@ export function MembersPage() {
                           </th>
                         )
                       })()}
-
-                      <th className="px-6 py-4 bg-gray-50/50 whitespace-nowrap w-[60px]"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -502,7 +532,14 @@ export function MembersPage() {
                       >
                         <td className="px-5 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{maskName(m.name)}</td>
                         <td className="px-5 py-4 whitespace-nowrap text-xs text-gray-400 font-mono">{m.loginId}</td>
-                        <td className="px-5 py-4 text-sm text-gray-600">{m.email}</td>
+                        <td className="px-5 py-4 text-sm text-gray-600">
+                          <button
+                            onClick={() => navigate(`${pfx}/members/${m.id}`)}
+                            className="text-left font-medium text-gray-900 underline-offset-2 hover:underline"
+                          >
+                            {m.email}
+                          </button>
+                        </td>
                         <td className="px-6 py-4">
                           <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-gray-100 text-gray-700 border border-gray-200">
                             <Shield className="w-3 h-3 mr-1" />
@@ -521,6 +558,9 @@ export function MembersPage() {
                             {m.status === 'active' ? '활성' : '비활성'}
                           </span>
                         </td>
+                        <td className="px-5 py-4 whitespace-nowrap text-sm font-mono text-gray-500">
+                          {formatMemberCreatedAt(m.createdAt)}<span className="text-gray-400 font-sans"> (KST)</span>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500">
                           {formatDateTime(m.lastLoginAt)}{m.lastLoginAt && <span className="text-gray-400 font-sans"> (KST)</span>}
                         </td>
@@ -536,15 +576,6 @@ export function MembersPage() {
                             const names = stores.map(sc => STORES.find(s => s.code === sc)?.name ?? sc)
                             return <>{names.length === 1 ? names[0] : `${names[0]} +${names.length - 1}`}</>
                           })()}
-                        </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
-                          <button
-                            onClick={() => navigate(`${pfx}/members/${m.id}`)}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                            title="상세보기"
-                          >
-                            <Edit className="w-4 h-4 text-gray-500" />
-                          </button>
                         </td>
                       </tr>
                     ))}

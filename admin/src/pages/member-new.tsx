@@ -4,7 +4,7 @@ import { ArrowLeft, Check, ChevronDown, Globe, Building2 } from 'lucide-react'
 import { ROLES } from '@/lib/mock-data'
 import { OPTICAL_STORES, HQ_ROLES, FRANCHISE_ROLES, getBranchName, BranchMultiSelect, StoreMultiSelect } from '@/components/members/branch-store-select'
 import { useMembers } from '@/lib/members-context'
-import { inputCls } from '@/lib/utils'
+import { cn, inputCls } from '@/lib/utils'
 
 type NewForm = {
   name: string
@@ -19,11 +19,17 @@ type NewForm = {
   assignedStores: string[]
 }
 
+function localTimestamp() {
+  const d = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+
 export function MemberNewPage() {
   const navigate = useNavigate()
   const { langCode } = useParams()
   const pfx = `/${langCode}`
-  const { addMember } = useMembers()
+  const { members, addMember } = useMembers()
 
   const defaultRoleId = ROLES[0]?.id ?? ''
   const isStoreOwnerRole = (roleId: string) => FRANCHISE_ROLES.includes(roleId)
@@ -33,20 +39,44 @@ export function MemberNewPage() {
     managedBranches: HQ_ROLES.includes(defaultRoleId) ? ['*'] : [],
     assignedStores: [],
   })
+  const [attemptedSave, setAttemptedSave] = useState(false)
+
+  const normalizedLoginId = form.loginId.trim().toLowerCase()
+  const normalizedEmail = form.email.trim().toLowerCase()
+  const isDuplicateLoginId = Boolean(normalizedLoginId) && members.some(member =>
+    member.loginId.trim().toLowerCase() === normalizedLoginId
+  )
+  const isDuplicateEmail = Boolean(normalizedEmail) && members.some(member =>
+    member.email.trim().toLowerCase() === normalizedEmail
+  )
+  const nameError = attemptedSave && !form.name.trim() ? '이름을 입력해주세요.' : ''
+  const loginIdError = isDuplicateLoginId
+    ? '이미 등록된 로그인 ID입니다.'
+    : attemptedSave && !normalizedLoginId
+      ? '로그인 ID를 입력해주세요.'
+      : ''
+  const emailError = isDuplicateEmail
+    ? '이미 등록된 이메일입니다.'
+    : attemptedSave && !normalizedEmail
+      ? '이메일을 입력해주세요.'
+      : ''
 
   function handleSave() {
+    setAttemptedSave(true)
+    if (nameError || loginIdError || emailError || !form.name.trim() || !normalizedLoginId || !normalizedEmail) return
+
     addMember({
       id: String(Date.now()),
-      loginId: form.loginId,
-      name: form.name,
-      email: form.email,
-      tel: form.tel || undefined,
+      loginId: form.loginId.trim(),
+      name: form.name.trim(),
+      email: form.email.trim(),
+      tel: form.tel.trim() || undefined,
       country: 'KR',
       roleId: form.roleId,
       isTechnician: form.isTechnician,
       status: form.status,
       expiresAt: form.expiresAt || null,
-      createdAt: new Date().toISOString().slice(0, 10),
+      createdAt: localTimestamp(),
       lastLoginAt: null,
       managedBranches: form.managedBranches,
       assignedStores: form.assignedStores,
@@ -86,11 +116,23 @@ export function MemberNewPage() {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <p className="text-xs text-gray-400 mb-1.5">이름 <span className="text-red-400">*</span></p>
-              <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={inputCls} placeholder="홍길동" />
+              <input
+                value={form.name}
+                onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                className={cn(inputCls, nameError && 'border-red-300 bg-red-50 focus:border-red-400')}
+                placeholder="홍길동"
+              />
+              {nameError && <p className="mt-1 text-[11px] text-red-500">{nameError}</p>}
             </div>
             <div>
               <p className="text-xs text-gray-400 mb-1.5">로그인 ID <span className="text-red-400">*</span></p>
-              <input value={form.loginId} onChange={e => setForm(f => ({ ...f, loginId: e.target.value }))} className={inputCls} placeholder="monster001" />
+              <input
+                value={form.loginId}
+                onChange={e => setForm(f => ({ ...f, loginId: e.target.value }))}
+                className={cn(inputCls, loginIdError && 'border-red-300 bg-red-50 focus:border-red-400')}
+                placeholder="monster001"
+              />
+              {loginIdError && <p className="mt-1 text-[11px] text-red-500">{loginIdError}</p>}
             </div>
           </div>
 
@@ -129,7 +171,14 @@ export function MemberNewPage() {
 
           <div>
             <p className="text-xs text-gray-400 mb-1.5">이메일 <span className="text-red-400">*</span></p>
-            <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className={inputCls} placeholder="name@gentlemonster.com" />
+            <input
+              type="email"
+              value={form.email}
+              onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+              className={cn(inputCls, emailError && 'border-red-300 bg-red-50 focus:border-red-400')}
+              placeholder="name@gentlemonster.com"
+            />
+            {emailError && <p className="mt-1 text-[11px] text-red-500">{emailError}</p>}
           </div>
 
           <div className="px-3 py-2.5 bg-blue-50 border border-blue-100 rounded-xl text-[11px] text-blue-500">
