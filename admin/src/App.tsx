@@ -20,6 +20,7 @@ import { TicketsPage } from '@/pages/tickets'
 import { TicketDetailPage } from '@/pages/ticket-detail'
 import { TicketNewPage } from '@/pages/ticket-new'
 import { ShippingPage } from '@/pages/shipping'
+import { InvoicePackingPage } from '@/pages/invoice-packing'
 import { DownloadLogsPage } from '@/pages/download-logs'
 import { PrivacyLogsPage } from '@/pages/privacy-logs'
 import { ProductsProvider } from '@/lib/products-context'
@@ -89,6 +90,7 @@ export default function App() {
           <Route path="tickets/new" element={<TicketNewPage />} />
           <Route path="tickets/:ticketNo" element={<TicketDetailPage />} />
           <Route path="shipping" element={<ShippingPage />} />
+          <Route path="invoice-packing" element={<InvoicePackingPage />} />
           <Route path="global-tickets" element={<PlaceholderPage title="국가별 티켓 관리" />} />
 
           {/* 에러 페이지 */}

@@ -64,6 +64,7 @@ export type TicketStatus =
   | 'PICKUP_WAITING'
 
 export type PaymentCompleted = 'Y' | 'N' | 'C'
+export type TicketReceptionTag = 'RETURN_COMPONENTS' | 'MODIFIED' | 'PRE_RECEPTION'
 
 export type Ticket = {
   id: string
@@ -77,6 +78,8 @@ export type Ticket = {
   customerName: string
   phone: string
   email: string
+  receptionTitle?: string
+  receptionTags?: TicketReceptionTag[]
   productName: string
   repairDepartment: string
   repairDetail: string

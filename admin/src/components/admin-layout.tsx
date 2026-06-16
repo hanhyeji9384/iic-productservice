@@ -4,7 +4,7 @@ import { NavLink, Outlet, useLocation, useNavigate, useParams } from 'react-rout
 import {
   UserCog, Shield, Package, Wrench, ArchiveX,
   Store, Users, Ticket, Truck, PanelLeftClose, PanelLeftOpen, LogOut, ChevronRight,
-  AlertTriangle, KeyRound, CalendarDays, Download, ShieldCheck,
+  AlertTriangle, KeyRound, CalendarDays, Download, ShieldCheck, FileText,
 } from 'lucide-react'
 import { useSession } from '@/lib/session-context'
 import { SessionWarningModal } from '@/components/session-warning-modal'
@@ -59,8 +59,9 @@ const NAV: NavGroup[] = [
     label: '티켓 관리',
     icon: Ticket,
     children: [
-      { to: '/tickets',  label: '티켓 관리', icon: Ticket },
-      { to: '/shipping', label: '출고 관리', icon: Truck },
+      { to: '/tickets',         label: '티켓 관리',             icon: Ticket },
+      { to: '/shipping',        label: '출고 관리',             icon: Truck },
+      { to: '/invoice-packing', label: '인보이스/패킹리스트', icon: FileText },
     ],
   },
   {

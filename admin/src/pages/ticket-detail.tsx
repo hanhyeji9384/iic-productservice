@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Barcode, Copy, History, Package } from 'lucide-react'
 import { BRANCHES, MEMBERS } from '@/lib/mock-data'
 import { getTicketsWithExtras } from '@/lib/prototype-storage'
-import type { PaymentCompleted, TicketStatus } from '@/lib/types'
+import type { PaymentCompleted, Ticket, TicketReceptionTag, TicketStatus } from '@/lib/types'
 import { BarcodePrintModal } from '@/components/barcode-print-modal'
 
 const STATUS_META: Record<TicketStatus, { label: string; className: string }> = {
@@ -24,6 +24,26 @@ const STATUS_META: Record<TicketStatus, { label: string; className: string }> = 
 }
 
 const PAYMENT_META: Record<PaymentCompleted, string> = { Y: '완료', N: '미완료', C: '취소' }
+
+const RECEPTION_TAG_META: Record<TicketReceptionTag, { label: string; className: string }> = {
+  RETURN_COMPONENTS: {
+    label: '구성품 반송',
+    className: 'border-amber-200 bg-amber-50 text-amber-700',
+  },
+  MODIFIED: {
+    label: '수정',
+    className: 'border-blue-200 bg-blue-50 text-blue-700',
+  },
+  PRE_RECEPTION: {
+    label: '사전',
+    className: 'border-violet-200 bg-violet-50 text-violet-700',
+  },
+}
+
+function getReceptionTitle(ticket: Ticket) {
+  if (ticket.receptionTitle) return ticket.receptionTitle
+  return /online/i.test(ticket.receptionPlace) ? 'PS 온라인 접수' : null
+}
 
 type Tab = 'overview' | 'pricing' | 'kakao' | 'email'
 
@@ -104,6 +124,8 @@ export function TicketDetailPage() {
   const receptionManagerLabel = receptionManagerName
     ? `${receptionManagerName}${receptionManagerLoginId ? `(${receptionManagerLoginId})` : ''}`
     : '-'
+  const receptionTitle = getReceptionTitle(ticket)
+  const receptionTags = ticket.receptionTags ?? []
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'overview', label: '개요' },
@@ -147,6 +169,26 @@ export function TicketDetailPage() {
                   {receptionManagerLabel}
                 </span>
               </div>
+              {(receptionTitle || receptionTags.length > 0) && (
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  {receptionTitle && (
+                    <span className="inline-flex items-center rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] font-medium text-gray-600">
+                      {receptionTitle}
+                    </span>
+                  )}
+                  {receptionTags.map(tag => {
+                    const meta = RECEPTION_TAG_META[tag]
+                    return (
+                      <span
+                        key={tag}
+                        className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${meta.className}`}
+                      >
+                        {meta.label}
+                      </span>
+                    )
+                  })}
+                </div>
+              )}
             </div>
             {/* 액션 버튼 */}
             <div className="flex items-center gap-2 flex-shrink-0">

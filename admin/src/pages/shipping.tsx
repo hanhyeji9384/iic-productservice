@@ -1,5 +1,5 @@
-import { useMemo, useRef, useState, useEffect } from 'react'
-import { ArrowDown, ArrowUp, ArrowUpDown, Filter, Printer, X } from 'lucide-react'
+import { useMemo, useState, useEffect } from 'react'
+import { ArrowDown, ArrowUp, ArrowUpDown, Filter, Printer } from 'lucide-react'
 import { PRODUCTS } from '@/lib/mock-data'
 import { getTicketsWithExtras } from '@/lib/prototype-storage'
 import { maskName } from '@/lib/masking'

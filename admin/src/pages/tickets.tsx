@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, FileDown, Filter, Lock, Plus, Printer, ScanLine, Trash2, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, FileDown, FileText, Filter, Lock, Plus, ScanLine, Trash2, X } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Pagination } from '@/components/pagination'
@@ -812,6 +812,10 @@ export function TicketsPage() {
           {selectedIds.size > 0 && (
             <div className="px-5 py-2.5 border-b border-blue-100 bg-blue-50 flex items-center gap-3">
               <span className="text-xs font-semibold text-blue-700">{selectedIds.size}개 선택됨</span>
+              <button
+                onClick={() => navigate(`/${langCode}/invoice-packing`, { state: { selectedTicketNos: [...selectedIds], branchCode: effectiveBranch } })}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-700 transition-colors"
+              ><FileText className="w-3 h-3" />문서 생성</button>
               <button
                 onClick={() => setBulkEditModalOpen(true)}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors"
