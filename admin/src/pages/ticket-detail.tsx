@@ -220,25 +220,30 @@ function MessageTemplatePanel({
   channel: MessageChannel
   enabled?: boolean
 }) {
-  const [kind, setKind] = useState<TemplateKind>('AUTO')
-  const [query, setQuery] = useState('')
+  const [templateQuery, setTemplateQuery] = useState('')
   const [selectedTemplateId, setSelectedTemplateId] = useState('')
   const [sentLogs, setSentLogs] = useState<MessageLog[]>([])
   const channelLabel = channel === 'kakao' ? '알림톡' : '이메일'
   const Icon = channel === 'kakao' ? MessageSquare : Mail
   const receiver = channel === 'kakao' ? ticket.phone : ticket.email
-  const templates = MESSAGE_TEMPLATES.filter(template => template.channel === channel && template.kind === kind)
+  const templates = MESSAGE_TEMPLATES.filter(template => template.channel === channel)
   const filteredTemplates = templates.filter(template => {
-    const keyword = query.trim().toLowerCase()
+    const keyword = templateQuery.trim().toLowerCase()
     if (!keyword) return true
     return (
       template.id.toLowerCase().includes(keyword) ||
       template.title.toLowerCase().includes(keyword) ||
-      template.stage.toLowerCase().includes(keyword)
+      template.stage.toLowerCase().includes(keyword) ||
+      TEMPLATE_KIND_LABEL[template.kind].includes(keyword)
     )
   })
-  const selectedTemplate = filteredTemplates.find(template => template.id === selectedTemplateId)
+  const selectedTemplate = templates.find(template => template.id === selectedTemplateId)
   const logs = [...sentLogs, ...getInitialMessageLogs(ticket, channel)]
+
+  function handleSelectTemplate(template: MessageTemplate) {
+    setSelectedTemplateId(template.id)
+    setTemplateQuery(template.title)
+  }
 
   function handleSend() {
     if (!selectedTemplate) return
@@ -247,7 +252,7 @@ function MessageTemplatePanel({
         id: `${ticket.ticketNo}-${channel}-${Date.now()}`,
         templateTitle: selectedTemplate.title,
         sentAt: nowLocalText(),
-        kind,
+        kind: selectedTemplate.kind,
         status: '성공',
       },
       ...prev,
@@ -279,44 +284,22 @@ function MessageTemplatePanel({
                 <p className="text-xs text-gray-400">고객 수신처: {receiver || '-'}</p>
               </div>
             </div>
-            <div className="inline-flex rounded-xl border border-gray-200 bg-gray-50 p-1">
-              {(['AUTO', 'MANUAL'] as TemplateKind[]).map(item => (
-                <button
-                  key={item}
-                  onClick={() => { setKind(item); setSelectedTemplateId('') }}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-                    kind === item ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'
-                  }`}
-                >
-                  {TEMPLATE_KIND_LABEL[item]} 템플릿
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-[1fr_1.3fr_auto] gap-3 p-5">
-          <label className="relative">
+        <div className="grid grid-cols-[1fr_auto] gap-3 p-5">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-300" />
             <input
-              value={query}
-              onChange={event => { setQuery(event.target.value); setSelectedTemplateId('') }}
-              placeholder="템플릿명, 코드 검색"
+              value={templateQuery}
+              onChange={event => {
+                setTemplateQuery(event.target.value)
+                setSelectedTemplateId('')
+              }}
+              placeholder="템플릿명 검색"
               className="h-10 w-full rounded-xl border border-gray-200 pl-9 pr-3 text-sm outline-none transition-colors focus:border-gray-400"
             />
-          </label>
-          <select
-            value={selectedTemplateId}
-            onChange={event => setSelectedTemplateId(event.target.value)}
-            className="h-10 rounded-xl border border-gray-200 px-3 text-sm text-gray-700 outline-none transition-colors focus:border-gray-400"
-          >
-            <option value="">템플릿 선택</option>
-            {filteredTemplates.map(template => (
-              <option key={template.id} value={template.id}>
-                {template.title} · {template.id}
-              </option>
-            ))}
-          </select>
+          </div>
           <button
             disabled={!selectedTemplate}
             onClick={handleSend}
@@ -324,6 +307,32 @@ function MessageTemplatePanel({
           >
             <Send className="h-3.5 w-3.5" />전송
           </button>
+          <div className="col-span-2 max-h-64 overflow-y-auto rounded-xl border border-gray-200 bg-white">
+            {filteredTemplates.length > 0 ? (
+              <div className="divide-y divide-gray-100">
+                {filteredTemplates.map(template => (
+                  <button
+                    key={template.id}
+                    type="button"
+                    onClick={() => handleSelectTemplate(template)}
+                    className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors hover:bg-gray-50 ${
+                      selectedTemplateId === template.id ? 'bg-gray-50 ring-1 ring-inset ring-gray-300' : ''
+                    }`}
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-medium text-gray-800">{template.title}</span>
+                      <span className="mt-0.5 block text-xs text-gray-400">{template.id} · {template.stage}</span>
+                    </span>
+                    <span className="shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">
+                      {TEMPLATE_KIND_LABEL[template.kind]}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="px-3 py-6 text-center text-xs text-gray-400">검색 결과가 없습니다.</div>
+            )}
+          </div>
         </div>
       </div>
 
