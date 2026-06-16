@@ -7,6 +7,7 @@ import { BRANCHES, MEMBERS } from '@/lib/mock-data'
 import { addDownloadLog } from '@/lib/download-logs'
 import { maskEmail, maskName, maskPhone } from '@/lib/masking'
 import { getTicketsWithExtras } from '@/lib/prototype-storage'
+import { getSoDocumentInfo } from '@/lib/ticket-so'
 import type { PaymentCompleted, Ticket, TicketStatus } from '@/lib/types'
 
 const ITEMS_PER_PAGE = 20
@@ -227,6 +228,15 @@ function PaymentBadge({ value }: { value: PaymentCompleted }) {
   )
 }
 
+function SoStatusBadge({ ticket }: { ticket: Ticket }) {
+  const info = getSoDocumentInfo(ticket)
+  return (
+    <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${info.className}`}>
+      {info.label}
+    </span>
+  )
+}
+
 export function TicketsPage() {
   const [activeBranch, setActiveBranch] = useState('')
   const branchOptions = useMemo(() => {
@@ -312,6 +322,7 @@ export function TicketsPage() {
       '배송방법': t.shippingMethod,
       '출고일': t.shippedAt ?? '',
       'SO문서번호': t.soDocumentNo ?? '',
+      'SO상태': getSoDocumentInfo(t).label,
       '본사입고일': t.hqReceivedAt ?? '',
       '출고예정일': t.expectedShipAt ?? '',
     }))
@@ -541,6 +552,7 @@ export function TicketsPage() {
     { key: 'shippingMethod', label: '출고방식', sort: 'shippingMethod' },
     { key: 'shippedAt', label: '출고완료일', sort: 'shippedAt' },
     { key: 'soDocumentNo', label: 'SO문서번호', sort: 'soDocumentNo' },
+    { key: 'soStatus', label: 'SO상태', sort: null },
   ]
 
   function renderTextFilter(key: ColumnFilterKey, placeholder: string) {
@@ -928,6 +940,7 @@ export function TicketsPage() {
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs text-gray-700">{ticket.shippingMethod}</td>
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs text-gray-600">{displayValue(ticket.shippedAt)}</td>
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs font-mono text-gray-600">{displayValue(ticket.soDocumentNo)}</td>
+                    <td className="px-4 py-3.5 whitespace-nowrap"><SoStatusBadge ticket={ticket} /></td>
                   </tr>
                 ))}
               </tbody>

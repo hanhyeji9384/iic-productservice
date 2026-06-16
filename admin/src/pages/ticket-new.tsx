@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
-import { ArrowLeft, Check, ChevronDown, Search, X, UserCheck } from 'lucide-react'
+import { ArrowLeft, Check, ChevronDown, RotateCcw, Search, X, UserCheck } from 'lucide-react'
 import { BRANCHES, STORES, PRODUCTS, MEMBERS } from '@/lib/mock-data'
-import { addPrototypeTicket, getCustomersWithOverrides, localTimestamp, saveCustomerAddresses, upsertPrototypeCustomer } from '@/lib/prototype-storage'
+import { addPrototypeTicket, getCustomersWithOverrides, getTicketsWithExtras, localTimestamp, saveCustomerAddresses, upsertPrototypeCustomer } from '@/lib/prototype-storage'
 import type { Customer, CustomerAddress, Ticket } from '@/lib/types'
 
 const TICKET_BRANCH_CODES = ['1110', 'C1002']
@@ -42,6 +42,11 @@ type Form = {
 }
 
 type SaveAction = 'save' | 'save_new' | 'save_open'
+
+type TicketNewLocationState = {
+  branchCode?: string
+  reRepairSourceTicketNo?: string
+}
 
 type AddressForm = {
   address1: string
@@ -916,20 +921,59 @@ function shippingMethodLabel(form: Form, branchCode = form.branchCode) {
   return '-'
 }
 
+function receptionTypeFromTicket(ticket: Ticket): Form['receptionType'] {
+  if (ticket.shippingMethod.includes('행낭') || ticket.shippingMethod.includes('자체')) return 'STORE'
+  if (ticket.shippingMethod && ticket.shippingMethod !== '-') return 'HOME'
+  return ''
+}
+
+function createReRepairForm(sourceTicket: Ticket, sourceCustomer?: Customer): Form {
+  const branchCode = normalizeTicketBranchCode(sourceTicket.branchCode) || TICKET_BRANCH_CODES[0]
+  const { lastName, firstName } = splitName(sourceTicket.customerName)
+  const receptionType = receptionTypeFromTicket(sourceTicket)
+  const addresses = sourceCustomer?.addresses ?? []
+
+  return {
+    ...createInitialForm(branchCode),
+    customerId: sourceCustomer?.id ?? '',
+    customerLastName: lastName,
+    customerFirstName: firstName,
+    country: sourceCustomer?.country ?? defaultCountryForBranch(branchCode),
+    phone: sourceTicket.phone,
+    email: sourceTicket.email,
+    marketingAgree: sourceCustomer?.marketingAgree === 'Y',
+    productName: sourceTicket.productName,
+    receptionStoreName: sourceTicket.receptionPlace,
+    receptionType,
+    deliveryAddressId: receptionType === 'HOME'
+      ? (addresses.find(address => address.isDefault)?.id ?? addresses[0]?.id ?? '')
+      : '',
+  }
+}
+
 export function TicketNewPage() {
   const navigate = useNavigate()
   const { langCode } = useParams()
   const location = useLocation()
-  const initBranch = normalizeTicketBranchCode((location.state as { branchCode?: string } | null)?.branchCode)
+  const locationState = (location.state as TicketNewLocationState | null) ?? {}
+  const sourceTicket = locationState.reRepairSourceTicketNo
+    ? getTicketsWithExtras().find(ticket => ticket.ticketNo === locationState.reRepairSourceTicketNo)
+    : undefined
+  const initialCustomers = getCustomersWithOverrides()
+  const sourceCustomer = sourceTicket
+    ? initialCustomers.find(customer => customer.email === sourceTicket.email || customer.phone === sourceTicket.phone)
+    : undefined
+  const initBranch = normalizeTicketBranchCode(sourceTicket?.branchCode ?? locationState.branchCode)
 
-  const [form, setForm] = useState<Form>(() => createInitialForm(initBranch))
+  const [reRepairSourceTicket, setReRepairSourceTicket] = useState<Ticket | undefined>(() => sourceTicket)
+  const [form, setForm] = useState<Form>(() => reRepairSourceTicket ? createReRepairForm(reRepairSourceTicket, sourceCustomer) : createInitialForm(initBranch))
 
   // isFromDotCom: 신규 고객(미조회) 시 마케팅 동의 체크박스 활성화
   const [isFromDotCom, setIsFromDotCom] = useState(false)
   // isNewCustomer: 고객 조회 결과 없음 → 신규 등록 모드
   const [isNewCustomer, setIsNewCustomer] = useState(false)
-  const [customerAddresses, setCustomerAddresses] = useState<CustomerAddress[]>([])
-  const [customers, setCustomers] = useState<Customer[]>(() => getCustomersWithOverrides())
+  const [customerAddresses, setCustomerAddresses] = useState<CustomerAddress[]>(() => sourceCustomer?.addresses ?? [])
+  const [customers, setCustomers] = useState<Customer[]>(() => initialCustomers)
   const [addressEditMode, setAddressEditMode] = useState<'add' | 'edit' | null>(null)
   const [editingAddressId, setEditingAddressId] = useState('')
   const [addressForm, setAddressForm] = useState<AddressForm>(EMPTY_ADDRESS_FORM)
@@ -1081,6 +1125,7 @@ export function TicketNewPage() {
   }
 
   function resetNewTicketForm() {
+    setReRepairSourceTicket(undefined)
     setIsNewCustomer(false)
     setIsFromDotCom(false)
     setCustomerAddresses([])
@@ -1145,6 +1190,9 @@ export function TicketNewPage() {
       customerName: customerName || '-',
       phone: form.phone.trim(),
       email: form.email.trim(),
+      receptionTitle: reRepairSourceTicket ? '재수리 접수' : undefined,
+      originalTicketNo: reRepairSourceTicket?.ticketNo,
+      reRepairYn: reRepairSourceTicket ? 'Y' : 'N',
       productName: form.productName || '-',
       repairDepartment: '',
       repairDetail: '',
@@ -1216,6 +1264,21 @@ export function TicketNewPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-4">
+          {reRepairSourceTicket && (
+            <div className="col-span-2 rounded-2xl border border-blue-100 bg-blue-50 px-5 py-4">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 rounded-lg bg-white p-1.5 text-blue-700 shadow-sm">
+                  <RotateCcw className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-blue-900">재수리 접수</p>
+                  <p className="mt-1 text-xs text-blue-700">
+                    기존 티켓번호 <span className="font-mono font-semibold">{reRepairSourceTicket.ticketNo}</span> 기준으로 고객 정보와 제품 정보를 불러왔습니다.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 접수 정보 */}
           <SectionCard title="접수 정보">

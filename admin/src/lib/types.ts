@@ -65,6 +65,8 @@ export type TicketStatus =
 
 export type PaymentCompleted = 'Y' | 'N' | 'C'
 export type TicketReceptionTag = 'RETURN_COMPONENTS' | 'MODIFIED' | 'PRE_RECEPTION'
+export type RepairChargeType = 'PAID' | 'FREE'
+export type SapSendFlag = 'Y' | 'N'
 
 export type Ticket = {
   id: string
@@ -80,18 +82,26 @@ export type Ticket = {
   email: string
   receptionTitle?: string
   receptionTags?: TicketReceptionTag[]
+  originalTicketNo?: string
+  reRepairYn?: 'Y' | 'N'
   productName: string
   repairDepartment: string
   repairDetail: string
+  repairChargeType?: RepairChargeType
+  repairCost?: number | null
   technicianId?: string
   technicianName?: string
   trackingNo: string | null
   paymentCompleted: PaymentCompleted
   paymentDate: string | null
+  paymentApprovalNo?: string | null
   reexportCondition: 'Y' | 'N'
+  b2cYn?: 'Y' | 'N'
   shippingMethod: string
   shippedAt: string | null
   soDocumentNo: string | null
+  sapSendFlag?: SapSendFlag
+  sapSentAt?: string | null
 }
 
 export type Member = {

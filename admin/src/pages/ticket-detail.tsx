@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Barcode, Copy, History, Package } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Barcode, CheckCircle2, Circle, History, Package, RotateCcw } from 'lucide-react'
 import { BRANCHES, MEMBERS } from '@/lib/mock-data'
 import { getTicketsWithExtras } from '@/lib/prototype-storage'
+import { formatCurrency, formatRepairChargeType, getSoDocumentInfo } from '@/lib/ticket-so'
 import type { PaymentCompleted, Ticket, TicketReceptionTag, TicketStatus } from '@/lib/types'
 import { BarcodePrintModal } from '@/components/barcode-print-modal'
 
@@ -78,6 +79,32 @@ function SectionCard({
   )
 }
 
+function ConditionRow({
+  label,
+  required,
+  value,
+  met,
+}: {
+  label: string
+  required: string
+  value: string
+  met: boolean
+}) {
+  return (
+    <div className="grid grid-cols-[1.1fr_0.8fr_1fr_auto] items-center gap-3 border-b border-gray-100 py-2.5 last:border-b-0">
+      <span className="text-xs font-medium text-gray-700">{label}</span>
+      <span className="text-xs text-gray-400">{required}</span>
+      <span className="text-xs text-gray-600">{value}</span>
+      <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[11px] font-semibold ${
+        met ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
+      }`}>
+        {met ? <CheckCircle2 className="h-3 w-3" /> : <Circle className="h-3 w-3" />}
+        {met ? '충족' : '대기'}
+      </span>
+    </div>
+  )
+}
+
 function PlaceholderTab({ message }: { message: string }) {
   return (
     <div className="py-16 text-center text-sm text-gray-400">{message}</div>
@@ -85,7 +112,7 @@ function PlaceholderTab({ message }: { message: string }) {
 }
 
 export function TicketDetailPage() {
-  const { ticketNo } = useParams<{ ticketNo: string }>()
+  const { langCode = 'ko', ticketNo } = useParams<{ langCode: string; ticketNo: string }>()
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [showBarcodeModal, setShowBarcodeModal] = useState(false)
@@ -117,6 +144,7 @@ export function TicketDetailPage() {
   }
 
   const statusMeta = STATUS_META[ticket.status]
+  const soInfo = getSoDocumentInfo(ticket)
   const branchLabel = BRANCHES.find(b => b.code === ticket.branchCode)?.name ?? ticket.branchCode
   const receptionManager = ticket.technicianId ? MEMBERS.find(member => member.id === ticket.technicianId) : null
   const receptionManagerName = ticket.technicianName || receptionManager?.name || null
@@ -204,8 +232,16 @@ export function TicketDetailPage() {
               <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors">
                 <Package className="w-3.5 h-3.5" />재고요청
               </button>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors">
-                <Copy className="w-3.5 h-3.5" />티켓 복제
+              <button
+                onClick={() => navigate(`/${langCode}/tickets/new`, {
+                  state: {
+                    branchCode: ticket.branchCode,
+                    reRepairSourceTicketNo: ticket.ticketNo,
+                  },
+                })}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />재수리 접수
               </button>
             </div>
           </div>
@@ -225,7 +261,12 @@ export function TicketDetailPage() {
             </div>
             <div className="px-8">
               <p className="text-[11px] text-gray-400 mb-1.5">SO 문서번호</p>
-              <p className="text-sm text-gray-800">{ticket.soDocumentNo || '-'}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-gray-800">{ticket.soDocumentNo || '-'}</p>
+                <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${soInfo.className}`}>
+                  {soInfo.label}
+                </span>
+              </div>
             </div>
             <div className="px-8">
               <p className="text-[11px] text-gray-400 mb-1.5">법인</p>
@@ -270,8 +311,9 @@ export function TicketDetailPage() {
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
                       <Field label="접수처" value={ticket.receptionPlace} />
                       <Field label="접수처 유형" value="-" />
-                      <Field label="b2c 여부" value="-" />
-                      <Field label="재수리 여부" value="-" />
+                      <Field label="B2C 여부" value={soInfo.b2cYn} />
+                      <Field label="재수리 여부" value={ticket.reRepairYn} />
+                      <Field label="기존 티켓번호" value={ticket.originalTicketNo} />
                       <Field label="긴급 수리 여부" value="-" />
                       <Field label="보증서 동봉" value="-" />
                       <Field label="구매 증빙 여부" value="-" />
@@ -356,8 +398,8 @@ export function TicketDetailPage() {
                       <Field label="출고 예정일" value={ticket.expectedShipAt} />
                       <Field label="수리 진행처" value={ticket.repairDepartment} />
                       <Field label="수리 내용" value={ticket.repairDetail} />
-                      <Field label="수리비용 결정" value="-" />
-                      <Field label="수리 비용" value="-" />
+                      <Field label="수리비용 결정" value={formatRepairChargeType(soInfo.repairChargeType)} />
+                      <Field label="수리 비용" value={formatCurrency(soInfo.repairCost)} />
                       <Field label="서비스 기술자" value="-" />
                       <Field label="수리 진행일" value="-" />
                       <Field label="문제현상" value="-" />
@@ -373,12 +415,61 @@ export function TicketDetailPage() {
                       <Field label="결제 완료 여부" value={PAYMENT_META[ticket.paymentCompleted]} />
                       <Field label="결제 일자" value={ticket.paymentDate} />
                       <Field label="결제 수단" value="-" />
+                      <Field label="결제 승인 번호" value={soInfo.paymentApprovalNo} />
                       <Field label="대체 승인 번호" value="-" />
                       <Field label="최종 결제 요청" value="-" />
                       <div className="col-span-2">
                         <Field label="결제 URL" value="-" />
                       </div>
                     </dl>
+                  </SectionCard>
+
+                  {/* SO 문서번호 카드 */}
+                  <SectionCard title="SO 문서번호">
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                          <p className="text-xs text-gray-500">
+                            AS-IS 기준으로 서비스 종료 시점에 조건을 만족한 유상 결제 건을 SAP SD001로 전송합니다.
+                          </p>
+                          <p className="mt-1 text-[11px] text-gray-400">
+                            SAP에서 생성된 SO 문서번호는 티켓의 SAP SO 번호로 연동되어 조회/엑셀에 표시됩니다.
+                          </p>
+                        </div>
+                        <span className={`inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-semibold ${soInfo.className}`}>
+                          {soInfo.label}
+                        </span>
+                      </div>
+                      {soInfo.cancelReviewNeeded && (
+                        <div className="flex gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+                          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+                          <p>취소 건은 결제 취소 처리와 실제 출고 여부에 따라 SO 발행 대상 제외 여부를 확인해야 합니다.</p>
+                        </div>
+                      )}
+                      <dl className="grid grid-cols-2 gap-x-6 gap-y-3">
+                        <Field label="SAP SO 문서번호" value={ticket.soDocumentNo} />
+                        <Field label="SAP 전송 여부" value={soInfo.sapSendFlag} />
+                      </dl>
+                      <div className="rounded-xl border border-gray-100">
+                        <div className="grid grid-cols-[1.1fr_0.8fr_1fr_auto] gap-3 border-b border-gray-100 bg-gray-50/60 px-3 py-2 text-[11px] font-medium text-gray-400">
+                          <span>조건</span>
+                          <span>필수값</span>
+                          <span>현재값</span>
+                          <span>상태</span>
+                        </div>
+                        <div className="px-3">
+                          {soInfo.conditions.map(condition => (
+                            <ConditionRow
+                              key={condition.key}
+                              label={condition.label}
+                              required={condition.required}
+                              value={condition.value}
+                              met={condition.met}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </SectionCard>
 
                   {/* 환불 계좌 카드 */}

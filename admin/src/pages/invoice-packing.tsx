@@ -18,6 +18,9 @@ import { maskName } from '@/lib/masking'
 import type { Ticket, TicketStatus } from '@/lib/types'
 
 const ITEMS_PER_PAGE = 20
+const TABLE_HEADER_CLASS = 'bg-gray-50/50 px-4 py-3 text-left text-[10px] font-medium leading-none text-gray-500'
+const HISTORY_HEADER_CLASS = 'bg-gray-50/50 px-5 py-3 text-left text-[10px] font-medium leading-none text-gray-500'
+const MODAL_HEADER_CLASS = 'px-3 py-2 text-left text-[10px] font-medium leading-none text-gray-500'
 
 type DocumentKind = 'CORP' | 'HQ'
 type DocumentPreviewTab = 'invoice' | 'packing'
@@ -69,7 +72,7 @@ const DOCUMENT_KIND_OPTIONS: {
     value: 'CORP',
     label: '법인 인보이스 생성',
     shortLabel: '법인 인보이스',
-    helper: '생성 후 선택 티켓은 Office 이동중으로 표시됩니다.',
+    helper: '생성 후 선택 티켓은 법인 발송 완료로 표시됩니다.',
   },
   {
     value: 'HQ',
@@ -79,10 +82,14 @@ const DOCUMENT_KIND_OPTIONS: {
   },
 ]
 
-const TARGET_STATUS: TicketStatus[] = ['READY_TO_SHIP', 'REPAIR_DONE', 'SHIPPING']
+const TARGET_STATUS: TicketStatus[] = ['READY_TO_SHIP']
 
 const BRANCH_EN: Record<string, string> = {
   '1110': 'IICOMBINED CO., LTD.',
+  '1210': 'TAMBURINS CO., LTD.',
+  '1310': 'NUDAKE CO., LTD.',
+  '1410': 'NUFLA CO., LTD.',
+  '1610': 'ATII CO., LTD.',
   C1002: 'IICOMBINED U.S.A. INC.',
 }
 
@@ -152,15 +159,32 @@ function defaultLineItem(ticket: Ticket): DocumentLineItem {
   }
 }
 
+function hasBranchInvoiceInfo(ticket: Ticket) {
+  return BRANCHES.some(branch => branch.code === ticket.branchCode)
+}
+
+function requiresHqCorporateMovement(ticket: Ticket) {
+  const values = [
+    ticket.receptionPlace,
+    ticket.shippingMethod,
+    ticket.repairDepartment,
+  ].join(' ')
+
+  return (
+    ticket.branchCode !== '1110' ||
+    ticket.reexportCondition === 'Y' ||
+    values.includes('Global') ||
+    values.includes('US_') ||
+    values.includes('해외택배') ||
+    values.includes('Office')
+  )
+}
+
 function isGlobalDocumentTarget(ticket: Ticket) {
   return (
     TARGET_STATUS.includes(ticket.status) &&
-    (
-      ticket.branchCode === 'C1002' ||
-      ticket.shippingMethod.includes('해외택배') ||
-      ticket.receptionPlace.includes('Global') ||
-      ticket.receptionPlace.includes('US_')
-    )
+    hasBranchInvoiceInfo(ticket) &&
+    requiresHqCorporateMovement(ticket)
   )
 }
 
@@ -195,7 +219,7 @@ function makeLog(
     createdAt,
     createdByName: '한혜지',
     createdById: 'monster563',
-    statusEffect: kind === 'CORP' ? 'Office 이동중 자동 변경' : 'Invoice/Packing List 번호 저장',
+    statusEffect: kind === 'CORP' ? '법인 발송 완료 자동 변경' : 'Invoice/Packing List 번호 저장',
     invoiceUrl: `#${id}-invoice`,
     packingUrl: kind === 'HQ' ? `#${id}-packing` : undefined,
     items: lineItems,
@@ -203,11 +227,12 @@ function makeLog(
 }
 
 function buildInitialLogs(tickets: Ticket[]) {
-  const usTargets = tickets.filter(ticket => ticket.branchCode === 'C1002').slice(0, 3)
-  const hqTargets = tickets.filter(ticket => ticket.shippingMethod.includes('해외택배(DHL)')).slice(0, 4)
+  const documentTargets = tickets.filter(isGlobalDocumentTarget)
+  const corporateTargets = documentTargets.filter(ticket => ticket.branchCode !== '1110').slice(0, 3)
+  const hqTargets = documentTargets.slice(0, 4)
 
   return [
-    ...(usTargets.length ? [makeLog('doc-20260616-001', 'CORP', 'C1002', usTargets, '2026-06-16 09:30:00')] : []),
+    ...(corporateTargets.length ? [makeLog('doc-20260616-001', 'CORP', corporateTargets[0].branchCode, corporateTargets, '2026-06-16 09:30:00')] : []),
     ...(hqTargets.length ? [makeLog('doc-20260616-002', 'HQ', '1110', hqTargets, '2026-06-16 10:15:00')] : []),
   ]
 }
@@ -392,10 +417,7 @@ export function InvoicePackingPage() {
   const [previewLog, setPreviewLog] = useState<InvoicePackingLog | null>(null)
   const [previewTab, setPreviewTab] = useState<DocumentPreviewTab>('invoice')
 
-  const branchOptions = useMemo(
-    () => BRANCHES.filter(item => item.code === '1110' || item.code === 'C1002'),
-    []
-  )
+  const branchOptions = useMemo(() => BRANCHES, [])
 
   const documentCandidates = useMemo(() => {
     const normalizedQuery = appliedQuery.trim().toLowerCase()
@@ -455,10 +477,10 @@ export function InvoicePackingPage() {
   }
 
   function SortIcon({ col }: { col: SortKey }) {
-    if (sortKey !== col) return <ArrowUpDown className="h-3 w-3 text-gray-300 group-hover:text-gray-400" />
+    if (sortKey !== col) return <ArrowUpDown className="h-2 w-2 text-gray-300 group-hover:text-gray-400" />
     return sortDir === 'asc'
-      ? <ArrowUp className="h-3 w-3 text-gray-700" />
-      : <ArrowDown className="h-3 w-3 text-gray-700" />
+      ? <ArrowUp className="h-2 w-2 text-gray-700" />
+      : <ArrowDown className="h-2 w-2 text-gray-700" />
   }
 
   function toggleCurrentPage() {
@@ -539,7 +561,7 @@ export function InvoicePackingPage() {
 
   function statusLabel(ticket: Ticket) {
     const current = ticketDocumentState[ticket.ticketNo]?.globalDeliveryStatus
-    if (current === 'B') return 'Office 이동중'
+    if (current === 'B') return '법인 발송 완료'
     return '발송대기'
   }
 
@@ -564,7 +586,7 @@ export function InvoicePackingPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-gray-900">인보이스/패킹리스트</h1>
-            <p className="mt-1 text-sm text-gray-400">글로벌 출고 문서</p>
+            <p className="mt-1 text-sm text-gray-400">HQ-법인 간 이동 문서</p>
           </div>
         </div>
 
@@ -706,22 +728,22 @@ export function InvoicePackingPage() {
                         ['customerName', '고객명'],
                         ['productName', '제품명'],
                       ].map(([key, label]) => (
-                        <th key={key} className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold tracking-wide text-gray-500">
+                        <th key={key} className={TABLE_HEADER_CLASS}>
                           <button
                             type="button"
                             onClick={() => handleSort(key as SortKey)}
-                            className="group flex items-center gap-1.5 transition-opacity hover:opacity-70"
+                            className="group flex items-center gap-1 text-[10px] font-medium leading-none transition-opacity hover:opacity-70"
                           >
                             {label} <SortIcon col={key as SortKey} />
                           </button>
                         </th>
                       ))}
-                      <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold tracking-wide text-gray-500">접수처</th>
-                      <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold tracking-wide text-gray-500">출고방식</th>
-                      <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold tracking-wide text-gray-500">수리내용</th>
-                      <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold tracking-wide text-gray-500">글로벌 배송상태</th>
-                      <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold tracking-wide text-gray-500">법인 인보이스 No.</th>
-                      <th className="bg-gray-50/50 px-4 py-3 text-left text-xs font-semibold tracking-wide text-gray-500">HQ 문서 No.</th>
+                      <th className={TABLE_HEADER_CLASS}>접수처</th>
+                      <th className={TABLE_HEADER_CLASS}>출고방식</th>
+                      <th className={TABLE_HEADER_CLASS}>수리내용</th>
+                      <th className={TABLE_HEADER_CLASS}>글로벌 배송상태</th>
+                      <th className={TABLE_HEADER_CLASS}>법인 인보이스 No.</th>
+                      <th className={TABLE_HEADER_CLASS}>HQ 문서 No.</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -774,14 +796,14 @@ export function InvoicePackingPage() {
                 <table className="min-w-[1280px] w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="bg-gray-50/50 px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500">문서명</th>
-                      <th className="bg-gray-50/50 px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500">문서 유형</th>
-                      <th className="bg-gray-50/50 px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500">법인</th>
-                      <th className="bg-gray-50/50 px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500">대상 건수</th>
-                      <th className="bg-gray-50/50 px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500">생성일시</th>
-                      <th className="bg-gray-50/50 px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500">생성자</th>
-                      <th className="bg-gray-50/50 px-5 py-3 text-left text-xs font-semibold tracking-wide text-gray-500">처리 결과</th>
-                      <th className="bg-gray-50/50 px-5 py-3 text-right text-xs font-semibold tracking-wide text-gray-500">미리보기</th>
+                      <th className={HISTORY_HEADER_CLASS}>문서명</th>
+                      <th className={HISTORY_HEADER_CLASS}>문서 유형</th>
+                      <th className={HISTORY_HEADER_CLASS}>법인</th>
+                      <th className={HISTORY_HEADER_CLASS}>대상 건수</th>
+                      <th className={HISTORY_HEADER_CLASS}>생성일시</th>
+                      <th className={HISTORY_HEADER_CLASS}>생성자</th>
+                      <th className={HISTORY_HEADER_CLASS}>처리 결과</th>
+                      <th className={`${HISTORY_HEADER_CLASS} text-right`}>미리보기</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
@@ -846,13 +868,13 @@ export function InvoicePackingPage() {
               <table className="w-full min-w-[920px]">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">Ticket No.</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">법인</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">제품명</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">Category</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">Material</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">HS Code</th>
-                    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-500">Unit Price</th>
+                    <th className={MODAL_HEADER_CLASS}>Ticket No.</th>
+                    <th className={MODAL_HEADER_CLASS}>법인</th>
+                    <th className={MODAL_HEADER_CLASS}>제품명</th>
+                    <th className={MODAL_HEADER_CLASS}>Category</th>
+                    <th className={MODAL_HEADER_CLASS}>Material</th>
+                    <th className={MODAL_HEADER_CLASS}>HS Code</th>
+                    <th className={MODAL_HEADER_CLASS}>Unit Price</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">

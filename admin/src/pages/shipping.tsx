@@ -124,9 +124,9 @@ export function ShippingPage() {
   }
 
   function SortIcon({ col }: { col: SortKey }) {
-    if (sortKey !== col) return <ArrowUpDown className="w-3 h-3 text-gray-300 group-hover:text-gray-400 flex-shrink-0" />
-    if (sortDir === 'asc') return <ArrowUp className="w-3 h-3 text-gray-700 flex-shrink-0" />
-    return <ArrowDown className="w-3 h-3 text-gray-700 flex-shrink-0" />
+    if (sortKey !== col) return <ArrowUpDown className="h-2 w-2 flex-shrink-0 text-gray-300 group-hover:text-gray-400" />
+    if (sortDir === 'asc') return <ArrowUp className="h-2 w-2 flex-shrink-0 text-gray-700" />
+    return <ArrowDown className="h-2 w-2 flex-shrink-0 text-gray-700" />
   }
 
   function toggleAll() {
@@ -247,14 +247,14 @@ export function ShippingPage() {
                     return (
                       <th
                         key={col.key}
-                        className={`px-4 py-3 text-left text-[11px] font-semibold tracking-wide whitespace-nowrap transition-colors ${
+                        className={`px-4 py-3 text-left text-[10px] font-medium leading-none whitespace-nowrap transition-colors ${
                           isFiltered ? 'bg-blue-50 text-blue-700' : 'bg-gray-50/50 text-gray-500'
                         }`}
                       >
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => handleSort(col.sort)}
-                            className="group flex items-center gap-1 hover:text-gray-700 transition-colors"
+                            className="group flex items-center gap-1 text-[10px] font-medium leading-none hover:text-gray-700 transition-colors"
                           >
                             {col.label}
                             <SortIcon col={col.sort} />
@@ -262,13 +262,13 @@ export function ShippingPage() {
                           {col.filterable && (
                             <button
                               onClick={e => handleFilterIconClick(col.key, e)}
-                              className={`p-0.5 rounded transition-colors ${
+                              className={`rounded transition-colors ${
                                 filterPopover?.col === col.key || isFiltered
                                   ? 'text-blue-500'
                                   : 'text-gray-300 hover:text-gray-500'
                               }`}
                             >
-                              <Filter className="w-3 h-3" />
+                              <Filter className="h-2.5 w-2.5" />
                             </button>
                           )}
                         </div>
