@@ -85,6 +85,9 @@ export type Ticket = {
   originalTicketNo?: string
   reRepairYn?: 'Y' | 'N'
   productName: string
+  purchaseDate?: string | null
+  purchasePlace?: string | null
+  symptom?: string | null
   repairDepartment: string
   repairDetail: string
   repairChargeType?: RepairChargeType

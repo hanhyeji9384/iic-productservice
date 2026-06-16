@@ -67,33 +67,6 @@ function branchLabel(branchCode: string) {
   return branch ? `${branch.code} ${branch.name}` : branchCode
 }
 
-function parseStorageUpdates(text: string) {
-  const lines = text
-    .replace(/^\ufeff/, '')
-    .split(/\r?\n/)
-    .filter(line => line.trim())
-
-  const [headerLine, ...bodyLines] = lines
-  if (!headerLine) return []
-
-  const headers = parseCsvLine(headerLine).map(normalizeHeader)
-  const partCodeIndex = headers.findIndex(header =>
-    ['부속품id', '부속품아이디', 'partcode', 'accessoryid'].includes(header)
-  )
-  const storageIndex = headers.findIndex(header =>
-    ['변경보관위치', '부속품보관위치', '보관위치', 'storagelocation', 'location'].includes(header)
-  )
-  if (partCodeIndex < 0 || storageIndex < 0) return []
-
-  return bodyLines
-    .map(parseCsvLine)
-    .map(row => ({
-      partCode: row[partCodeIndex] ?? '',
-      storageLocation: row[storageIndex] ?? '',
-    }))
-    .filter(row => row.partCode.trim() && row.storageLocation.trim())
-}
-
 function parseBulkRegisterCsv(text: string) {
   const lines = text
     .replace(/^﻿/, '')
@@ -141,9 +114,8 @@ export function PartsPage() {
   const navigate = useNavigate()
   const { langCode } = useParams()
   const pfx = `/${langCode}`
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const bulkRegisterInputRef = useRef<HTMLInputElement>(null)
-  const { parts, partChangeLogs, addParts, deletePart, updatePartStorageLocations } = useParts()
+  const { parts, partChangeLogs, addParts, deletePart } = useParts()
   const { products } = useProducts()
 
   const productMap = useMemo(() => new Map(products.map(product => [product.productCode, product])), [products])
@@ -166,10 +138,8 @@ export function PartsPage() {
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc' | null>(null)
   const [uploadResult, setUploadResult] = useState('')
-  const [uploadOpen, setUploadOpen] = useState(false)
   const [bulkRegisterOpen, setBulkRegisterOpen] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [bulkStorageLocation, setBulkStorageLocation] = useState('')
   const [historyPage, setHistoryPage] = useState(1)
 
   useEffect(() => {
@@ -292,7 +262,6 @@ export function PartsPage() {
     setActiveBranch(branchCode)
     setPage(1)
     setSelected(new Set())
-    setBulkStorageLocation('')
   }
 
   function handleExport() {
@@ -312,57 +281,6 @@ export function PartsPage() {
         ]
       })
     )
-  }
-
-  function handleTemplateDownload() {
-    downloadCsv(
-      `parts_location_upload_template_${new Date().toISOString().slice(0, 10)}.csv`,
-      ['제품코드', '제품명', '부속품 ID', '부속품명', '규격', '컬러', '부속품 보관위치'],
-      sorted.map(part => {
-        const product = productMap.get(part.productCode)
-        return [
-          part.productCode,
-          product?.name ?? '',
-          part.partCode,
-          part.name,
-          part.specification,
-          part.color,
-          part.storageLocation,
-        ]
-      })
-    )
-  }
-
-  async function handleUpload(event: ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0]
-    if (!file) return
-    const updates = parseStorageUpdates(await file.text())
-    if (updates.length === 0) {
-      setUploadResult('업로드 항목을 찾지 못했습니다.')
-      event.target.value = ''
-      return
-    }
-    const changedCount = updatePartStorageLocations(updates)
-    setUploadResult(`${changedCount}건의 보관위치를 업데이트했습니다.`)
-    setUploadOpen(false)
-    setSelected(new Set())
-    setBulkStorageLocation('')
-    event.target.value = ''
-  }
-
-  function handleBulkStorageApply() {
-    const storageLocation = bulkStorageLocation.trim()
-    if (!storageLocation) {
-      setUploadResult('변경할 보관위치를 입력해 주세요.')
-      return
-    }
-    const updates = parts
-      .filter(part => selected.has(part.id))
-      .map(part => ({ partCode: part.partCode, storageLocation }))
-    const changedCount = updatePartStorageLocations(updates)
-    setUploadResult(`${changedCount}건의 보관위치를 수정했습니다.`)
-    setSelected(new Set())
-    setBulkStorageLocation('')
   }
 
   function handleBulkRegisterTemplateDownload() {
@@ -411,7 +329,6 @@ export function PartsPage() {
     selected.forEach(id => deletePart(id))
     setUploadResult(`${selected.size}개 부속품을 삭제했습니다.`)
     setSelected(new Set())
-    setBulkStorageLocation('')
   }
 
   const tabs = [
@@ -493,13 +410,12 @@ export function PartsPage() {
               <Download className="w-4 h-4" />
               Excel 다운로드
             </button>
-            <input ref={fileInputRef} type="file" accept=".csv,text/csv" onChange={handleUpload} className="hidden" />
             <input ref={bulkRegisterInputRef} type="file" accept=".csv,text/csv" onChange={handleBulkRegisterUpload} className="hidden" />
 
             {/* 일괄 등록 */}
             <div className="relative">
               <button
-                onClick={() => { setBulkRegisterOpen(prev => !prev); setUploadOpen(false) }}
+                onClick={() => setBulkRegisterOpen(prev => !prev)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors text-sm font-medium ${
                   bulkRegisterOpen ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
@@ -545,55 +461,6 @@ export function PartsPage() {
                 </div>
               )}
             </div>
-
-            {/* 보관위치 일괄변경 */}
-            <div className="relative">
-              <button
-                onClick={() => { setUploadOpen(prev => !prev); setBulkRegisterOpen(false) }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors text-sm font-medium ${
-                  uploadOpen ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <Upload className="w-4 h-4" />
-                보관위치 일괄변경
-              </button>
-              {uploadOpen && (
-                <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-2xl border border-gray-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
-                  <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-4 py-4">
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">보관위치 일괄변경</p>
-                    </div>
-                    <button onClick={() => setUploadOpen(false)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                  <div className="space-y-2 p-3">
-                    <button
-                      onClick={handleTemplateDownload}
-                      className="group flex w-full items-center gap-3 rounded-xl border border-gray-200 px-3.5 py-3 text-left hover:border-gray-300 hover:bg-gray-50 transition-colors"
-                    >
-                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-600 group-hover:bg-white">
-                        <FileDown className="w-4 h-4" />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-sm font-semibold text-gray-900">업로드 템플릿 다운로드</span>
-                      </span>
-                    </button>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="group flex w-full items-center gap-3 rounded-xl bg-gray-950 px-3.5 py-3 text-left text-white hover:bg-gray-800 transition-colors"
-                    >
-                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white">
-                        <Upload className="w-4 h-4" />
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block text-sm font-semibold">파일 선택</span>
-                      </span>
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
             <button
               onClick={() => navigate(`${pfx}/parts/new`)}
               className="flex items-center gap-2 px-4 py-2.5 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors text-sm font-medium"
@@ -612,8 +479,6 @@ export function PartsPage() {
               onClick={() => {
                 setActiveTab(key)
                 setSelected(new Set())
-                setBulkStorageLocation('')
-                setUploadOpen(false)
                 setBulkRegisterOpen(false)
               }}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
@@ -847,24 +712,6 @@ export function PartsPage() {
             <div className="flex items-center gap-4 bg-gray-900 text-white rounded-2xl px-5 py-3.5 shadow-2xl border border-gray-700">
               <span className="text-sm font-semibold whitespace-nowrap">{selected.size}개 선택</span>
               <div className="w-px h-5 bg-gray-600" />
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400 whitespace-nowrap">보관위치</span>
-                <input
-                  type="text"
-                  placeholder="변경할 위치"
-                  value={bulkStorageLocation}
-                  onChange={event => setBulkStorageLocation(event.target.value)}
-                  onKeyDown={event => event.key === 'Enter' && handleBulkStorageApply()}
-                  className="w-32 px-2.5 py-1.5 text-sm bg-gray-800 border border-gray-600 rounded-lg outline-none focus:border-gray-400 text-white placeholder:text-gray-500"
-                />
-              </div>
-              <button
-                onClick={handleBulkStorageApply}
-                className="px-4 py-1.5 bg-white text-gray-900 text-sm font-semibold rounded-xl hover:bg-gray-100 transition-colors whitespace-nowrap"
-              >
-                수정
-              </button>
-              <div className="w-px h-5 bg-gray-600" />
               <button
                 onClick={handleBulkDelete}
                 className="flex items-center gap-1.5 px-4 py-1.5 bg-red-500/10 text-red-200 text-sm font-semibold rounded-xl hover:bg-red-500/20 hover:text-red-100 transition-colors whitespace-nowrap"
@@ -873,7 +720,7 @@ export function PartsPage() {
                 선택 삭제
               </button>
               <button
-                onClick={() => { setSelected(new Set()); setBulkStorageLocation('') }}
+                onClick={() => setSelected(new Set())}
                 className="p-1.5 text-gray-400 hover:text-white transition-colors"
               >
                 <X className="w-4 h-4" />

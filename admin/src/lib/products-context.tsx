@@ -94,7 +94,7 @@ function buildProductLog(product: Product, changeType: ProductChangeLog['changeT
 
 function buildProductManagementDiff(current: Product, updated: Product) {
   const diffs: string[] = []
-  if (current.barcode !== updated.barcode) diffs.push(`88코드: ${current.barcode || '-'} → ${updated.barcode || '-'}`)
+  if (current.barcode !== updated.barcode) diffs.push(`바코드: ${current.barcode || '-'} → ${updated.barcode || '-'}`)
   if (current.name !== updated.name) diffs.push(`제품명: ${current.name} → ${updated.name}`)
   if (current.brandCategory !== updated.brandCategory || current.midCategory !== updated.midCategory || current.subCategory !== updated.subCategory) {
     diffs.push(`제품범주: ${current.brandCategory}/${current.midCategory}/${current.subCategory} → ${updated.brandCategory}/${updated.midCategory}/${updated.subCategory}`)
@@ -103,7 +103,7 @@ function buildProductManagementDiff(current: Product, updated: Product) {
   if ((current.factory2 ?? '') !== (updated.factory2 ?? '')) diffs.push(`생산공장2: ${current.factory2 ?? '-'} → ${updated.factory2 ?? '-'}`)
   if ((current.factory3 ?? '') !== (updated.factory3 ?? '')) diffs.push(`생산공장3: ${current.factory3 ?? '-'} → ${updated.factory3 ?? '-'}`)
   if (current.releaseDate !== updated.releaseDate) diffs.push(`출시일: ${current.releaseDate} → ${updated.releaseDate}`)
-  if (current.partsRetentionPeriod !== updated.partsRetentionPeriod) diffs.push(`부품보유기한: ${current.partsRetentionPeriod || '-'} → ${updated.partsRetentionPeriod || '-'}`)
+  if (current.partsRetentionPeriod !== updated.partsRetentionPeriod) diffs.push(`부품보유기간: ${current.partsRetentionPeriod || '-'} → ${updated.partsRetentionPeriod || '-'}`)
   if ((current.hasDecoration ?? false) !== (updated.hasDecoration ?? false)) diffs.push(`장식보유여부: ${yn(current.hasDecoration ?? false)} → ${yn(updated.hasDecoration ?? false)}`)
   if (current.salesStatus !== updated.salesStatus) diffs.push(`판매상태: ${current.salesStatus} → ${updated.salesStatus}`)
   if (num(current.psQuantity, current.quantity) !== num(updated.psQuantity, updated.quantity)) diffs.push(`PS수량: ${num(current.psQuantity, current.quantity)} → ${num(updated.psQuantity, updated.quantity)}`)

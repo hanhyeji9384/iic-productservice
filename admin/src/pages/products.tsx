@@ -87,18 +87,6 @@ function parseYn(value: string) {
   return undefined
 }
 
-function parseNumber(value: string) {
-  const normalized = value.trim()
-  if (!normalized) return undefined
-  const parsed = Number(normalized)
-  return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined
-}
-
-function parseSalesStatus(value: string): SalesStatus | undefined {
-  const normalized = value.trim()
-  return SALES_STATUSES.find(status => status === normalized)
-}
-
 function ynLabel(value: boolean | undefined) {
   return value ? 'Y' : 'N'
 }
@@ -114,20 +102,6 @@ function salesStatusBadgeClass(status: SalesStatus) {
   return 'bg-gray-100 text-gray-600'
 }
 
-function parseProductCategory(value: string) {
-  const parts = value
-    .split(/\/|>|,/)
-    .map(part => part.trim())
-    .filter(Boolean)
-
-  if (parts.length < 3) return undefined
-  return {
-    brandCategory: parts[0],
-    midCategory: parts[1],
-    subCategory: parts.slice(2).join(' / '),
-  }
-}
-
 function parseProductManagementUpdates(text: string) {
   const lines = text
     .replace(/^\ufeff/, '')
@@ -140,56 +114,22 @@ function parseProductManagementUpdates(text: string) {
   const headers = parseCsvLine(headerLine).map(normalizeHeader)
   const idx = (aliases: string[]) => headers.findIndex(header => aliases.includes(header))
   const productCodeIdx = idx(['제품id', '제품 id', '제품코드', '제품 코드', 'productid', 'productcode'])
-  const barcodeIdx = idx(['변경88코드', '88코드', '변경바코드', '바코드', 'barcode'])
-  const nameIdx = idx(['변경제품명', '제품명', 'name', 'productname'])
-  const categoryIdx = idx(['변경제품범주', '제품범주', 'productcategory', 'category'])
-  const brandIdx = idx(['변경브랜드', '브랜드', 'brand', 'brandcategory'])
-  const midCategoryIdx = idx(['변경중분류', '중분류', 'midcategory'])
-  const subCategoryIdx = idx(['변경소분류', '소분류', 'subcategory'])
-  const factory1Idx = idx(['변경생산공장1', '생산공장1', 'factory1'])
-  const factory2Idx = idx(['변경생산공장2', '생산공장2', 'factory2'])
-  const factory3Idx = idx(['변경생산공장3', '생산공장3', 'factory3'])
-  const releaseDateIdx = idx(['변경출시일', '출시일', 'releasedate'])
-  const partsRetentionIdx = idx(['변경부품보유기한', '부품보유기한', '변경부품보유기간', '부품보유기간', 'partsretentionperiod'])
-  const psQuantityIdx = idx(['변경ps수량', 'ps수량', 'psoffice수량', 'psquantity'])
-  const threePlQuantityIdx = idx(['변경3pl수량', '3pl수량', 'threeplquantity'])
-  const decorationIdx = idx(['변경장식보유여부', '장식보유여부', 'hasdecoration', 'decoration'])
-  const salesStatusIdx = idx(['변경판매상태', '판매상태', 'salesstatus'])
-  const restorationIdx = idx(['변경복원가능여부', '복원가능여부', '변경복원의뢰여부', '복원의뢰여부', '변경복원수리', '복원수리', 'isrestorationrepair', 'restorationrepair'])
+  const decorationIdx = idx(['변경장식보유여부', '장식보유여부', '장식 보유 여부', 'hasdecoration', 'decoration'])
+  const restorationIdx = idx(['변경복원가능여부', '복원가능여부', '복원 가능 여부', '변경복원의뢰여부', '복원의뢰여부', '변경복원수리', '복원수리', 'isrestorationrepair', 'restorationrepair'])
 
   if (productCodeIdx < 0) return { rows: [], invalidCount: 0 }
 
   let invalidCount = 0
   const rows: Array<{
     productCode: string
-    barcode?: string
-    name?: string
-    brandCategory?: string
-    midCategory?: string
-    subCategory?: string
-    factory1?: string
-    factory2?: string | null
-    factory3?: string | null
-    releaseDate?: string
-    partsRetentionPeriod?: string
     hasDecoration?: boolean
-    salesStatus?: SalesStatus
-    psQuantity?: number
-    threePlQuantity?: number
     isRestorationRepair?: boolean
   }> = []
 
   bodyLines.forEach(line => {
     const cells = parseCsvLine(line)
     const productCode = cells[productCodeIdx]?.trim() ?? ''
-    const category = categoryIdx >= 0 ? parseProductCategory(cells[categoryIdx] ?? '') : undefined
-    const brandCategory = brandIdx >= 0 ? cells[brandIdx]?.trim() || undefined : category?.brandCategory
-    const midCategory = midCategoryIdx >= 0 ? cells[midCategoryIdx]?.trim() || undefined : category?.midCategory
-    const subCategory = subCategoryIdx >= 0 ? cells[subCategoryIdx]?.trim() || undefined : category?.subCategory
-    const psQuantity = psQuantityIdx >= 0 ? parseNumber(cells[psQuantityIdx] ?? '') : undefined
-    const threePlQuantity = threePlQuantityIdx >= 0 ? parseNumber(cells[threePlQuantityIdx] ?? '') : undefined
     const hasDecoration = decorationIdx >= 0 ? parseYn(cells[decorationIdx] ?? '') : undefined
-    const salesStatus = salesStatusIdx >= 0 ? parseSalesStatus(cells[salesStatusIdx] ?? '') : undefined
     const isRestorationRepair = restorationIdx >= 0 ? parseYn(cells[restorationIdx] ?? '') : undefined
 
     if (!productCode) {
@@ -198,20 +138,7 @@ function parseProductManagementUpdates(text: string) {
     }
     const row = {
       productCode,
-      barcode: barcodeIdx >= 0 ? cells[barcodeIdx]?.trim() || undefined : undefined,
-      name: nameIdx >= 0 ? cells[nameIdx]?.trim() || undefined : undefined,
-      brandCategory,
-      midCategory,
-      subCategory,
-      factory1: factory1Idx >= 0 ? cells[factory1Idx]?.trim() || undefined : undefined,
-      factory2: factory2Idx >= 0 ? cells[factory2Idx]?.trim() || null : undefined,
-      factory3: factory3Idx >= 0 ? cells[factory3Idx]?.trim() || null : undefined,
-      releaseDate: releaseDateIdx >= 0 ? cells[releaseDateIdx]?.trim() || undefined : undefined,
-      partsRetentionPeriod: partsRetentionIdx >= 0 ? cells[partsRetentionIdx]?.trim() || undefined : undefined,
       hasDecoration,
-      salesStatus,
-      psQuantity,
-      threePlQuantity,
       isRestorationRepair,
     }
 
@@ -364,39 +291,40 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
 
   function handleExport() {
     const headers = isManagementMode
-      ? ['제품 ID','88코드','제품명','브랜드','중분류','소분류','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','안전재고여부','장식보유여부','판매상태','복원 가능 여부']
-      : ['제품명','제품 코드','브랜드','중분류','소분류','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','재고보유여부','복원 가능 여부']
+      ? ['브랜드','바코드','제품 코드','제품명','중분류','소분류','복원 가능 여부','장식 보유 여부','생산공장1','생산공장2','생산공장3','출시일','판매상태','부품보유기간','안전재고여부']
+      : ['브랜드','제품 코드','제품명','중분류','소분류','복원 가능 여부','장식 보유 여부','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','재고보유여부']
     const rows = isManagementMode
       ? sorted.map(p => [
-          p.productCode,
-          p.barcode,
-          p.name,
           p.brandCategory,
+          p.barcode,
+          p.productCode,
+          p.name,
           p.midCategory,
           p.subCategory,
+          isRestorationRepairProduct(p) ? 'Y' : 'N',
+          ynLabel(p.hasDecoration),
           p.factory1,
           p.factory2 ?? '',
           p.factory3 ?? '',
           p.releaseDate,
+          p.salesStatus,
           p.partsRetentionPeriod,
           safetyStockLabel(p),
-          ynLabel(p.hasDecoration),
-          p.salesStatus,
-          isRestorationRepairProduct(p) ? 'Y' : 'N',
         ])
       : sorted.map(p => [
-          p.name,
-          p.productCode,
           p.brandCategory,
+          p.productCode,
+          p.name,
           p.midCategory,
           p.subCategory,
+          isRestorationRepairProduct(p) ? 'Y' : 'N',
+          ynLabel(p.hasDecoration),
           p.factory1,
           p.factory2 ?? '',
           p.factory3 ?? '',
           p.releaseDate,
           p.partsRetentionPeriod,
           hasAvailableStock(p) ? 'Y' : 'N',
-          isRestorationRepairProduct(p) ? 'Y' : 'N',
         ])
 
     downloadCsv(`products_${new Date().toISOString().slice(0, 10)}.csv`, headers, rows)
@@ -405,23 +333,13 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
   function handleUploadTemplateDownload() {
     downloadCsv(
       `products_bulk_update_template_${new Date().toISOString().slice(0, 10)}.csv`,
-      ['제품 ID','88코드','제품명','브랜드','중분류','소분류','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','안전재고여부','장식보유여부','판매상태','복원 가능 여부'],
+      ['제품 코드','제품명','바코드','복원 가능 여부','장식 보유 여부'],
       sorted.map(product => [
         product.productCode,
-        product.barcode,
         product.name,
-        product.brandCategory,
-        product.midCategory,
-        product.subCategory,
-        product.factory1,
-        product.factory2 ?? '',
-        product.factory3 ?? '',
-        product.releaseDate,
-        product.partsRetentionPeriod,
-        safetyStockLabel(product),
-        ynLabel(product.hasDecoration),
-        product.salesStatus,
+        product.barcode,
         isRestorationRepairProduct(product) ? 'Y' : 'N',
+        ynLabel(product.hasDecoration),
       ])
     )
   }
@@ -433,7 +351,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     event.target.value = ''
 
     if (rows.length === 0) {
-      setUploadResult(invalidCount > 0 ? `오류 ${invalidCount}건 — 제품 ID가 비어있습니다.` : '업로드 항목을 찾지 못했습니다.')
+      setUploadResult(invalidCount > 0 ? `오류 ${invalidCount}건 — 제품 코드가 비어있습니다.` : '업로드 항목을 찾지 못했습니다.')
       return
     }
 
@@ -442,7 +360,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     setSelected(new Set())
     setUploadResult(
       invalidCount > 0
-        ? `${changedCount}건 변경 완료, ${invalidCount}건 오류(제품 ID 누락)`
+        ? `${changedCount}건 변경 완료, ${invalidCount}건 오류(제품 코드 누락)`
         : `${changedCount}건 변경 완료`
     )
   }
@@ -661,7 +579,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
       case 'productCode':
       case 'barcode':
       case 'name': {
-        const placeholder = col === 'productCode' ? '제품 ID 검색...' : col === 'barcode' ? '88코드 검색...' : '제품명 검색...'
+        const placeholder = col === 'productCode' ? '제품 코드 검색...' : col === 'barcode' ? '바코드 검색...' : '제품명 검색...'
         return (
           <div className="w-44 space-y-1.5">
             <input type="text" value={columnFilters[col] ?? ''}
@@ -710,35 +628,36 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
   }
 
   const listTableColumns: { key: string; label: string; sort: SortKey | null }[] = [
-    { key: 'name',                 label: '제품명',      sort: 'name' },
-    { key: 'productCode',          label: '제품 코드',    sort: 'productCode' },
     { key: 'brandCategory',        label: '브랜드',      sort: 'brandCategory' },
+    { key: 'productCode',          label: '제품 코드',    sort: 'productCode' },
+    { key: 'name',                 label: '제품명',      sort: 'name' },
     { key: 'midCategory',          label: '중분류',      sort: 'midCategory' },
     { key: 'subCategory',          label: '소분류',      sort: 'subCategory' },
+    { key: 'isRestorationRepair',  label: '복원 가능 여부', sort: 'isRestorationRepair' },
+    { key: 'hasDecoration',        label: '장식 보유 여부', sort: 'hasDecoration' },
     { key: 'factory1',             label: '생산공장1',   sort: 'factory1' },
     { key: 'factory2',             label: '생산공장2',   sort: 'factory2' },
     { key: 'factory3',             label: '생산공장3',   sort: 'factory3' },
     { key: 'releaseDate',          label: '출시일',      sort: 'releaseDate' },
     { key: 'partsRetentionPeriod', label: '부품보유기한', sort: 'partsRetentionPeriod' },
     { key: 'stockAvailable',       label: '재고보유여부', sort: 'stockAvailable' },
-    { key: 'isRestorationRepair',  label: '복원 가능 여부', sort: 'isRestorationRepair' },
   ]
   const managementTableColumns: { key: string; label: string; sort: SortKey | null }[] = [
-    { key: 'productCode',          label: '제품 ID',     sort: 'productCode' },
-    { key: 'barcode',              label: '88코드',      sort: 'barcode' },
-    { key: 'name',                 label: '제품명',      sort: 'name' },
     { key: 'brandCategory',        label: '브랜드',      sort: 'brandCategory' },
+    { key: 'barcode',              label: '바코드',      sort: 'barcode' },
+    { key: 'productCode',          label: '제품 코드',    sort: 'productCode' },
+    { key: 'name',                 label: '제품명',      sort: 'name' },
     { key: 'midCategory',          label: '중분류',      sort: 'midCategory' },
     { key: 'subCategory',          label: '소분류',      sort: 'subCategory' },
+    { key: 'isRestorationRepair',  label: '복원 가능 여부', sort: 'isRestorationRepair' },
+    { key: 'hasDecoration',        label: '장식 보유 여부', sort: 'hasDecoration' },
     { key: 'factory1',             label: '생산공장1',   sort: 'factory1' },
     { key: 'factory2',             label: '생산공장2',   sort: 'factory2' },
     { key: 'factory3',             label: '생산공장3',   sort: 'factory3' },
     { key: 'releaseDate',          label: '출시일',      sort: 'releaseDate' },
-    { key: 'partsRetentionPeriod', label: '부품보유기한', sort: 'partsRetentionPeriod' },
-    { key: 'isSafetyStock',        label: '안전재고여부', sort: 'isSafetyStock' },
-    { key: 'hasDecoration',        label: '장식보유여부', sort: 'hasDecoration' },
     { key: 'salesStatus',          label: '판매상태',    sort: 'salesStatus' },
-    { key: 'isRestorationRepair',  label: '복원 가능 여부', sort: 'isRestorationRepair' },
+    { key: 'partsRetentionPeriod', label: '부품보유기간', sort: 'partsRetentionPeriod' },
+    { key: 'isSafetyStock',        label: '안전재고여부', sort: 'isSafetyStock' },
   ]
   const tableColumns = isManagementMode ? managementTableColumns : listTableColumns
 
@@ -792,7 +711,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                       <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-4 py-4">
                         <div>
                           <p className="text-sm font-semibold text-gray-900">제품 변경사항 일괄 변경</p>
-                          <p className="mt-0.5 text-xs text-gray-400">제품 정보, 재고 정보, 복원 가능 여부 수정</p>
+                          <p className="mt-0.5 text-xs text-gray-400">복원 가능 여부, 장식 보유 여부만 수정</p>
                         </div>
                         <button onClick={() => setUploadOpen(false)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
                           <X className="w-4 h-4" />
@@ -970,19 +889,36 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                       {isManagementMode ? (
                         <>
                         <td className="px-5 py-3.5 whitespace-nowrap">
+                          <span className="text-sm text-gray-700">{p.brandCategory}</span>
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono text-gray-600">{p.barcode}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
                           <Link to={`${pfx}/product-management/${p.id}/edit`} className="font-mono text-sm font-normal text-gray-600 underline-offset-4 hover:text-gray-950 hover:underline">
                             {p.productCode}
                           </Link>
                         </td>
-                        <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono text-gray-600">{p.barcode}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm font-semibold text-gray-900">{p.name}</td>
-                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.brandCategory}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.midCategory}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.subCategory}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(isRestorationRepairProduct(p))}`}>
+                            {ynLabel(isRestorationRepairProduct(p))}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(p.hasDecoration)}`}>
+                            {ynLabel(p.hasDecoration)}
+                          </span>
+                        </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.factory1}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{p.factory2 ?? '—'}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{p.factory3 ?? '—'}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.releaseDate}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${salesStatusBadgeClass(p.salesStatus)}`}>
+                            {p.salesStatus}
+                          </span>
+                        </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{fmtRetention(p.partsRetentionPeriod)}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
                           {hasSafetyStockShortage(p) ? (
@@ -991,31 +927,26 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                             <span className="text-sm text-gray-300">—</span>
                           )}
                         </td>
+                        </>
+                      ) : (
+                        <>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.brandCategory}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(p.hasDecoration)}`}>
-                            {ynLabel(p.hasDecoration)}
-                          </span>
+                          <span className="font-mono text-sm font-normal text-gray-600">{p.productCode}</span>
                         </td>
-                        <td className="px-5 py-3.5 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${salesStatusBadgeClass(p.salesStatus)}`}>
-                            {p.salesStatus}
-                          </span>
-                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm font-semibold text-gray-900">{p.name}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.midCategory}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.subCategory}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(isRestorationRepairProduct(p))}`}>
                             {ynLabel(isRestorationRepairProduct(p))}
                           </span>
                         </td>
-                        </>
-                      ) : (
-                        <>
-                        <td className="px-5 py-3.5 whitespace-nowrap text-sm font-semibold text-gray-900">{p.name}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
-                          <span className="font-mono text-sm font-normal text-gray-600">{p.productCode}</span>
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(p.hasDecoration)}`}>
+                            {ynLabel(p.hasDecoration)}
+                          </span>
                         </td>
-                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.brandCategory}</td>
-                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.midCategory}</td>
-                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.subCategory}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.factory1}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{p.factory2 ?? '—'}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{p.factory3 ?? '—'}</td>
@@ -1024,11 +955,6 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                         <td className="px-5 py-3.5 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(hasAvailableStock(p), true)}`}>
                             {ynLabel(hasAvailableStock(p))}
-                          </span>
-                        </td>
-                        <td className="px-5 py-3.5 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(isRestorationRepairProduct(p))}`}>
-                            {ynLabel(isRestorationRepairProduct(p))}
                           </span>
                         </td>
                         </>

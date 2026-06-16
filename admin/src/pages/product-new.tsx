@@ -229,17 +229,17 @@ export function ProductNewPage() {
         <h2 className="text-sm font-semibold text-gray-900">기본 정보</h2>
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <FieldLabel text="제품 ID" required />
+            <FieldLabel text="제품 코드" required />
             <input
               type="text"
               value={form.productCode}
               readOnly
               className={`${inputCls} w-full bg-gray-50 text-gray-500 cursor-default select-none`}
             />
-            <p className="text-[11px] text-gray-400 mt-1">제품 ID는 자동 부여됩니다.</p>
+            <p className="text-[11px] text-gray-400 mt-1">제품 코드는 자동 부여됩니다.</p>
           </div>
           <div>
-            <FieldLabel text="88코드" required />
+            <FieldLabel text="바코드" required />
             <input
               type="text"
               placeholder="예: 8809639031001"
@@ -329,7 +329,7 @@ export function ProductNewPage() {
             {errors.releaseDate && <p className="text-[11px] text-red-400 mt-1">{errors.releaseDate}</p>}
           </div>
           <div>
-            <FieldLabel text="부품보유기한" />
+            <FieldLabel text="부품보유기간" />
             <input
               type="date"
               value={form.partsRetentionPeriod}

@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Check, MapPin, Pencil, Plus, Search, Star, Trash2, X } from 'lucide-react'
-import { BRANCHES, MEMBERS, PRODUCTS } from '@/lib/mock-data'
-import { getCustomerById, getTicketsWithExtras, saveCustomerAddresses } from '@/lib/prototype-storage'
-import type { CustomerAddress, TicketStatus } from '@/lib/types'
+import { ArrowLeft, Check, ChevronDown, MapPin, Pencil, Plus, Search, Star, Trash2, X } from 'lucide-react'
+import { BRANCHES, COUNTRIES, MEMBERS, PRODUCTS } from '@/lib/mock-data'
+import { getCustomerById, getTicketsWithExtras, saveCustomerAddresses, upsertPrototypeCustomer } from '@/lib/prototype-storage'
+import type { Customer, CustomerAddress, Ticket, TicketStatus } from '@/lib/types'
+import { inputCls } from '@/lib/utils'
 
 function todayStr() { return new Date().toISOString().slice(0, 10) }
 function monthsAgoStr(n: number) {
@@ -66,11 +68,95 @@ type AddressForm = { address1: string; address2: string; zipCode: string; countr
 const EMPTY_FORM: AddressForm = { address1: '', address2: '', zipCode: '', country: 'KR' }
 const TICKETS_PER_PAGE = 10
 
+type CustomerForm = {
+  name: string
+  phone: string
+  country: string
+  branchCode: string
+  marketingAgree: 'Y' | 'N'
+}
+
+const EMPTY_CUSTOMER_FORM: CustomerForm = {
+  name: '',
+  phone: '',
+  country: 'KR',
+  branchCode: '1110',
+  marketingAgree: 'N',
+}
+
+type CustomerTicketFilterKey =
+  | 'ticketNo'
+  | 'status'
+  | 'productCode'
+  | 'purchaseDate'
+  | 'purchasePlace'
+  | 'receivedAt'
+  | 'symptom'
+  | 'repairDetail'
+  | 'technician'
+
+type CustomerTicketFilters = Record<CustomerTicketFilterKey, string>
+
+const INIT_TICKET_FILTERS: CustomerTicketFilters = {
+  ticketNo: '',
+  status: 'all',
+  productCode: '',
+  purchaseDate: '',
+  purchasePlace: '',
+  receivedAt: '',
+  symptom: '',
+  repairDetail: '',
+  technician: 'all',
+}
+
+function toCustomerForm(customer?: Customer): CustomerForm {
+  if (!customer) return EMPTY_CUSTOMER_FORM
+  return {
+    name: customer.name,
+    phone: customer.phone,
+    country: customer.country,
+    branchCode: customer.branchCode,
+    marketingAgree: customer.marketingAgree,
+  }
+}
+
+function getProductCode(ticket: Ticket) {
+  return PRODUCTS.find(product => product.name === ticket.productName)?.productCode ?? ticket.productName
+}
+
+function getPurchaseDate(ticket: Ticket) {
+  return ticket.purchaseDate ?? ''
+}
+
+function getPurchasePlace(ticket: Ticket) {
+  return ticket.purchasePlace ?? ''
+}
+
+function getSymptom(ticket: Ticket) {
+  return ticket.symptom ?? ''
+}
+
+function getTechnicianLabel(ticket: Ticket) {
+  const technician = ticket.technicianId ? MEMBERS.find(member => member.id === ticket.technicianId) : null
+  if (ticket.technicianName) return ticket.technicianName
+  if (technician) return `${technician.name} (${technician.loginId})`
+  return ''
+}
+
+function includesQuery(value: string | null | undefined, query: string) {
+  const q = query.trim().toLowerCase()
+  if (!q) return true
+  return (value ?? '').toLowerCase().includes(q)
+}
+
 export function CustomerDetailPage() {
   const { customerId, langCode } = useParams()
   const navigate = useNavigate()
 
   const base = getCustomerById(customerId)
+  const [customer, setCustomer] = useState<Customer | undefined>(base)
+  const [customerForm, setCustomerForm] = useState<CustomerForm>(() => toCustomerForm(base))
+  const [customerEditMode, setCustomerEditMode] = useState(false)
 
   const [addresses, setAddresses] = useState<CustomerAddress[]>(() => {
     const addrs = base?.addresses ?? []
@@ -82,12 +168,22 @@ export function CustomerDetailPage() {
   const [addForm, setAddForm] = useState<AddressForm>(EMPTY_FORM)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [ticketPage, setTicketPage] = useState(1)
-  const [ticketNoInput, setTicketNoInput] = useState('')
-  const [ticketNoQuery, setTicketNoQuery] = useState('')
+  const [ticketFilters, setTicketFilters] = useState<CustomerTicketFilters>(INIT_TICKET_FILTERS)
   const [dateFrom, setDateFrom] = useState(monthsAgoStr(6))
   const [dateTo, setDateTo] = useState(todayStr())
 
-  if (!base) {
+  useEffect(() => {
+    const next = getCustomerById(customerId)
+    setCustomer(next)
+    setCustomerForm(toCustomerForm(next))
+    setCustomerEditMode(false)
+    const addrs = next?.addresses ?? []
+    setAddresses([...addrs.filter(a => a.isDefault), ...addrs.filter(a => !a.isDefault)])
+    setTicketFilters(INIT_TICKET_FILTERS)
+    setTicketPage(1)
+  }, [customerId])
+
+  if (!customer) {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
         <p className="text-gray-400 text-sm">고객을 찾을 수 없습니다.</p>
@@ -96,16 +192,24 @@ export function CustomerDetailPage() {
     )
   }
 
-  const customer = base
-  const branchName = BRANCHES.find(b => b.code === customer.branchCode)?.name ?? customer.branchCode
+  const currentCustomer = customer
+  const branchName = BRANCHES.find(b => b.code === currentCustomer.branchCode)?.name ?? currentCustomer.branchCode
   const allCustomerTickets = getTicketsWithExtras().filter(t =>
-    t.phone === customer.phone || t.email === customer.email
+    t.phone === currentCustomer.phone || t.email === currentCustomer.email
   )
   const customerTickets = allCustomerTickets.filter(t => {
     const date = t.receivedAt.slice(0, 10)
     if (dateFrom && date < dateFrom) return false
     if (dateTo && date > dateTo) return false
-    if (ticketNoQuery.trim() && !t.ticketNo.toLowerCase().includes(ticketNoQuery.trim().toLowerCase())) return false
+    if (ticketFilters.status !== 'all' && t.status !== ticketFilters.status) return false
+    if (ticketFilters.technician !== 'all' && t.technicianId !== ticketFilters.technician) return false
+    if (!includesQuery(t.ticketNo, ticketFilters.ticketNo)) return false
+    if (!includesQuery(getProductCode(t), ticketFilters.productCode)) return false
+    if (!includesQuery(getPurchaseDate(t), ticketFilters.purchaseDate)) return false
+    if (!includesQuery(getPurchasePlace(t), ticketFilters.purchasePlace)) return false
+    if (!includesQuery(t.receivedAt.slice(0, 10), ticketFilters.receivedAt)) return false
+    if (!includesQuery(getSymptom(t), ticketFilters.symptom)) return false
+    if (!includesQuery(t.repairDetail, ticketFilters.repairDetail)) return false
     return true
   })
   const totalPages = Math.max(1, Math.ceil(customerTickets.length / TICKETS_PER_PAGE))
@@ -113,7 +217,7 @@ export function CustomerDetailPage() {
 
   function commitAddresses(next: CustomerAddress[]) {
     setAddresses(next)
-    saveCustomerAddresses(customer.id, next)
+    saveCustomerAddresses(currentCustomer.id, next)
   }
 
   function setDefault(id: string) {
@@ -165,6 +269,48 @@ export function CustomerDetailPage() {
     setDeleteTargetId(null)
   }
 
+  function updateCustomerForm<K extends keyof CustomerForm>(key: K, value: CustomerForm[K]) {
+    setCustomerForm(prev => ({ ...prev, [key]: value }))
+  }
+
+  function cancelCustomerEdit() {
+    setCustomerForm(toCustomerForm(currentCustomer))
+    setCustomerEditMode(false)
+  }
+
+  function saveCustomerInfo() {
+    if (!customerForm.name.trim() || !customerForm.phone.trim()) return
+    const next: Customer = {
+      ...currentCustomer,
+      name: customerForm.name.trim(),
+      phone: customerForm.phone.trim(),
+      country: customerForm.country,
+      branchCode: customerForm.branchCode,
+      marketingAgree: customerForm.marketingAgree,
+      addresses,
+    }
+    upsertPrototypeCustomer(next)
+    setCustomer(next)
+    setCustomerEditMode(false)
+  }
+
+  function updateTicketFilter(key: CustomerTicketFilterKey, value: string) {
+    setTicketFilters(prev => ({ ...prev, [key]: value }))
+    setTicketPage(1)
+  }
+
+  function resetTicketFilters() {
+    setTicketFilters(INIT_TICKET_FILTERS)
+    setDateFrom(monthsAgoStr(6))
+    setDateTo(todayStr())
+    setTicketPage(1)
+  }
+
+  const ticketFilterActive =
+    dateFrom !== monthsAgoStr(6) ||
+    dateTo !== todayStr() ||
+    Object.entries(ticketFilters).some(([key, value]) => value !== INIT_TICKET_FILTERS[key as CustomerTicketFilterKey])
+
   return (
     <div className="min-w-0 w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
       <button
@@ -179,45 +325,138 @@ export function CustomerDetailPage() {
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
             <h3 className="text-xs font-semibold text-gray-700">기본 정보</h3>
-            <span className="text-[11px] font-mono text-gray-400">{base.id}</span>
+            {customerEditMode ? (
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={cancelCustomerEdit}
+                  className="px-2.5 py-1 rounded-lg border border-gray-200 text-[11px] font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={saveCustomerInfo}
+                  disabled={!customerForm.name.trim() || !customerForm.phone.trim()}
+                  className="px-2.5 py-1 rounded-lg bg-gray-900 text-[11px] font-medium text-white hover:bg-gray-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  저장
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-mono text-gray-400">{customer.id}</span>
+                <button
+                  type="button"
+                  onClick={() => setCustomerEditMode(true)}
+                  className="px-2.5 py-1 rounded-lg border border-gray-200 text-[11px] font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors"
+                >
+                  수정
+                </button>
+              </div>
+            )}
           </div>
           <div className="p-5">
-            <dl className="grid grid-cols-3 gap-x-8 gap-y-4">
-              <div>
-                <dt className="text-[11px] font-medium text-gray-400 mb-0.5">이름</dt>
-                <dd className="text-sm text-gray-900 font-semibold">{base.name}</dd>
+            {customerEditMode ? (
+              <div className="grid grid-cols-3 gap-x-4 gap-y-4">
+                <CustomerInput label="이름" required>
+                  <input
+                    type="text"
+                    value={customerForm.name}
+                    onChange={e => updateCustomerForm('name', e.target.value)}
+                    className={inputCls}
+                  />
+                </CustomerInput>
+                <CustomerInput label="전화번호" required>
+                  <input
+                    type="text"
+                    value={customerForm.phone}
+                    onChange={e => updateCustomerForm('phone', e.target.value)}
+                    className={`${inputCls} font-mono`}
+                  />
+                </CustomerInput>
+                <CustomerInput label="이메일">
+                  <input
+                    type="text"
+                    value={customer.email}
+                    readOnly
+                    className={`${inputCls} bg-gray-50 text-gray-500 cursor-not-allowed`}
+                  />
+                </CustomerInput>
+                <CustomerInput label="국가">
+                  <CountrySearchSelect
+                    value={customerForm.country}
+                    onChange={country => updateCustomerForm('country', country)}
+                  />
+                </CustomerInput>
+                <CustomerInput label="법인">
+                  <select
+                    value={customerForm.branchCode}
+                    onChange={e => updateCustomerForm('branchCode', e.target.value)}
+                    className={`${inputCls} cursor-pointer`}
+                  >
+                    {BRANCHES.map(branch => (
+                      <option key={branch.code} value={branch.code}>{branch.code} {branch.name}</option>
+                    ))}
+                  </select>
+                </CustomerInput>
+                <CustomerInput label="마케팅 동의">
+                  <select
+                    value={customerForm.marketingAgree}
+                    onChange={e => updateCustomerForm('marketingAgree', e.target.value as 'Y' | 'N')}
+                    className={`${inputCls} cursor-pointer`}
+                  >
+                    <option value="Y">동의</option>
+                    <option value="N">미동의</option>
+                  </select>
+                </CustomerInput>
+                <CustomerInput label="등록일">
+                  <input
+                    type="text"
+                    value={customer.registeredAt}
+                    readOnly
+                    className={`${inputCls} bg-gray-50 text-gray-500 font-mono cursor-not-allowed`}
+                  />
+                </CustomerInput>
               </div>
-              <div>
-                <dt className="text-[11px] font-medium text-gray-400 mb-0.5">전화번호</dt>
-                <dd className="text-sm text-gray-900 font-mono">{base.phone}</dd>
-              </div>
-              <div>
-                <dt className="text-[11px] font-medium text-gray-400 mb-0.5">이메일</dt>
-                <dd className="text-sm text-gray-900 truncate">{base.email}</dd>
-              </div>
-              <div>
-                <dt className="text-[11px] font-medium text-gray-400 mb-0.5">국가</dt>
-                <dd className="text-sm text-gray-900">{COUNTRY_NAMES[base.country] ?? base.country}</dd>
-              </div>
-              <div>
-                <dt className="text-[11px] font-medium text-gray-400 mb-0.5">법인</dt>
-                <dd className="text-sm text-gray-900">{branchName}</dd>
-              </div>
-              <div>
-                <dt className="text-[11px] font-medium text-gray-400 mb-0.5">마케팅 동의</dt>
-                <dd>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
-                    base.marketingAgree === 'Y' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
-                  }`}>
-                    {base.marketingAgree === 'Y' ? '동의' : '미동의'}
-                  </span>
-                </dd>
-              </div>
-              <div className="col-span-3">
-                <dt className="text-[11px] font-medium text-gray-400 mb-0.5">등록일</dt>
-                <dd className="text-sm text-gray-600 font-mono">{base.registeredAt}</dd>
-              </div>
-            </dl>
+            ) : (
+              <dl className="grid grid-cols-3 gap-x-8 gap-y-4">
+                <div>
+                  <dt className="text-[11px] font-medium text-gray-400 mb-0.5">이름</dt>
+                  <dd className="text-sm text-gray-900 font-semibold">{customer.name}</dd>
+                </div>
+                <div>
+                  <dt className="text-[11px] font-medium text-gray-400 mb-0.5">전화번호</dt>
+                  <dd className="text-sm text-gray-900 font-mono">{customer.phone}</dd>
+                </div>
+                <div>
+                  <dt className="text-[11px] font-medium text-gray-400 mb-0.5">이메일</dt>
+                  <dd className="text-sm text-gray-900 truncate">{customer.email}</dd>
+                </div>
+                <div>
+                  <dt className="text-[11px] font-medium text-gray-400 mb-0.5">국가</dt>
+                  <dd className="text-sm text-gray-900">{COUNTRY_NAMES[customer.country] ?? customer.country}</dd>
+                </div>
+                <div>
+                  <dt className="text-[11px] font-medium text-gray-400 mb-0.5">법인</dt>
+                  <dd className="text-sm text-gray-900">{branchName}</dd>
+                </div>
+                <div>
+                  <dt className="text-[11px] font-medium text-gray-400 mb-0.5">마케팅 동의</dt>
+                  <dd>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
+                      customer.marketingAgree === 'Y' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                    }`}>
+                      {customer.marketingAgree === 'Y' ? '동의' : '미동의'}
+                    </span>
+                  </dd>
+                </div>
+                <div className="col-span-3">
+                  <dt className="text-[11px] font-medium text-gray-400 mb-0.5">등록일</dt>
+                  <dd className="text-sm text-gray-600 font-mono">{customer.registeredAt}</dd>
+                </div>
+              </dl>
+            )}
           </div>
         </div>
 
@@ -350,29 +589,15 @@ export function CustomerDetailPage() {
                   className="px-2 py-1.5 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400"
                 />
               </div>
-              <div className="flex items-center gap-1">
-                <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg focus-within:border-gray-400 focus-within:bg-white transition-colors">
-                  <input
-                    type="text"
-                    value={ticketNoInput}
-                    placeholder="Ticket No."
-                    onChange={e => setTicketNoInput(e.target.value)}
-                    onKeyDown={e => { if (e.key === 'Enter') { setTicketNoQuery(ticketNoInput); setTicketPage(1) } }}
-                    className="w-32 bg-transparent text-xs text-gray-700 placeholder:text-gray-300 focus:outline-none"
-                  />
-                  {ticketNoInput && (
-                    <button onClick={() => { setTicketNoInput(''); setTicketNoQuery(''); setTicketPage(1) }} className="text-gray-300 hover:text-gray-500 transition-colors">
-                      <X className="w-3 h-3" />
-                    </button>
-                  )}
-                </div>
+              {ticketFilterActive && (
                 <button
-                  onClick={() => { setTicketNoQuery(ticketNoInput); setTicketPage(1) }}
-                  className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-900 text-white rounded-lg text-xs font-medium hover:bg-gray-700 transition-colors"
+                  type="button"
+                  onClick={resetTicketFilters}
+                  className="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors"
                 >
-                  <Search className="w-3 h-3" />검색
+                  필터 초기화
                 </button>
-              </div>
+              )}
             </div>
           </div>
           {allCustomerTickets.length === 0 ? (
@@ -385,48 +610,86 @@ export function CustomerDetailPage() {
             </div>
           ) : (
             <>
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-100">
-                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50">Ticket No.</th>
-                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50">티켓유형</th>
-                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50">상태</th>
-                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50">접수일</th>
-                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50">담당자</th>
-                    <th className="px-5 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50">제품코드</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {pagedTickets.map(t => {
-                    const technician = t.technicianId ? MEMBERS.find(m => m.id === t.technicianId) : null
-                    return (
+              <div className="overflow-x-auto">
+                <table className="min-w-[1320px] w-full">
+                  <thead>
+                    <tr className="border-b border-gray-100">
+                      <TicketHeader label="Ticket No." />
+                      <TicketHeader label="상태" />
+                      <TicketHeader label="제품코드" />
+                      <TicketHeader label="구매일" />
+                      <TicketHeader label="구매처" />
+                      <TicketHeader label="접수일" />
+                      <TicketHeader label="현상" />
+                      <TicketHeader label="수리내용" />
+                      <TicketHeader label="서비스기술자" />
+                    </tr>
+                    <tr className="border-b border-gray-100 bg-gray-50/70">
+                      <TicketFilterCell>
+                        <TicketTextFilter value={ticketFilters.ticketNo} placeholder="검색" onChange={value => updateTicketFilter('ticketNo', value)} />
+                      </TicketFilterCell>
+                      <TicketFilterCell>
+                        <TicketSelectFilter value={ticketFilters.status} onChange={value => updateTicketFilter('status', value)}>
+                          <option value="all">전체</option>
+                          {(Object.keys(STATUS_LABELS) as TicketStatus[]).map(status => (
+                            <option key={status} value={status}>{STATUS_LABELS[status]}</option>
+                          ))}
+                        </TicketSelectFilter>
+                      </TicketFilterCell>
+                      <TicketFilterCell>
+                        <TicketTextFilter value={ticketFilters.productCode} placeholder="제품코드" onChange={value => updateTicketFilter('productCode', value)} />
+                      </TicketFilterCell>
+                      <TicketFilterCell>
+                        <TicketTextFilter value={ticketFilters.purchaseDate} placeholder="YYYY-MM-DD" onChange={value => updateTicketFilter('purchaseDate', value)} />
+                      </TicketFilterCell>
+                      <TicketFilterCell>
+                        <TicketTextFilter value={ticketFilters.purchasePlace} placeholder="구매처" onChange={value => updateTicketFilter('purchasePlace', value)} />
+                      </TicketFilterCell>
+                      <TicketFilterCell>
+                        <TicketTextFilter value={ticketFilters.receivedAt} placeholder="YYYY-MM-DD" onChange={value => updateTicketFilter('receivedAt', value)} />
+                      </TicketFilterCell>
+                      <TicketFilterCell>
+                        <TicketTextFilter value={ticketFilters.symptom} placeholder="현상" onChange={value => updateTicketFilter('symptom', value)} />
+                      </TicketFilterCell>
+                      <TicketFilterCell>
+                        <TicketTextFilter value={ticketFilters.repairDetail} placeholder="수리내용" onChange={value => updateTicketFilter('repairDetail', value)} />
+                      </TicketFilterCell>
+                      <TicketFilterCell>
+                        <TicketSelectFilter value={ticketFilters.technician} onChange={value => updateTicketFilter('technician', value)}>
+                          <option value="all">전체</option>
+                          {MEMBERS.filter(member => member.isTechnician).map(member => (
+                            <option key={member.id} value={member.id}>{member.name}</option>
+                          ))}
+                        </TicketSelectFilter>
+                      </TicketFilterCell>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {pagedTickets.map(t => (
                       <tr key={t.id} className="hover:bg-gray-50/50 transition-colors">
-                        <td className="px-5 py-3 whitespace-nowrap">
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <button
                             onClick={() => navigate(`/${langCode}/tickets/${t.ticketNo}`)}
                             className="text-xs font-mono font-semibold text-gray-900 hover:underline underline-offset-2 decoration-gray-400"
                           >{t.ticketNo}</button>
                         </td>
-                        <td className="px-5 py-3 text-xs text-gray-700">{t.repairDetail || '-'}</td>
-                        <td className="px-5 py-3">
+                        <td className="px-4 py-3 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium ${STATUS_COLOR[t.status]}`}>
                             {STATUS_LABELS[t.status]}
                           </span>
                         </td>
-                        <td className="px-5 py-3 text-xs text-gray-500 font-mono">{t.receivedAt.slice(0, 10)}</td>
-                        <td className="px-5 py-3 text-xs text-gray-700">
-                          {technician
-                            ? <>{technician.name} <span className="text-gray-400">({technician.loginId})</span></>
-                            : <span className="text-gray-400">-</span>}
-                        </td>
-                        <td className="px-5 py-3 text-xs font-mono text-gray-700">
-                          {PRODUCTS.find(p => p.name === t.productName)?.productCode ?? t.productName}
-                        </td>
+                        <td className="px-4 py-3 text-xs font-mono text-gray-700 whitespace-nowrap">{getProductCode(t)}</td>
+                        <td className="px-4 py-3 text-xs text-gray-500 font-mono whitespace-nowrap">{getPurchaseDate(t) || '-'}</td>
+                        <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">{getPurchasePlace(t) || '-'}</td>
+                        <td className="px-4 py-3 text-xs text-gray-500 font-mono whitespace-nowrap">{t.receivedAt.slice(0, 10)}</td>
+                        <td className="px-4 py-3 text-xs text-gray-700 min-w-[140px]">{getSymptom(t) || '-'}</td>
+                        <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">{t.repairDetail || '-'}</td>
+                        <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">{getTechnicianLabel(t) || '-'}</td>
                       </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               {totalPages > 1 && (
                 <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-between">
                   <span className="text-[11px] text-gray-400">
@@ -492,6 +755,218 @@ function IconBtn({ icon, onClick, danger }: { icon: React.ReactNode; onClick: ()
     >
       {icon}
     </button>
+  )
+}
+
+function CustomerInput({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <span className="block text-[11px] font-medium text-gray-400 mb-1">
+        {label}{required && <span className="ml-0.5 text-red-400">*</span>}
+      </span>
+      {children}
+    </label>
+  )
+}
+
+function CountrySearchSelect({
+  value,
+  onChange,
+}: {
+  value: string
+  onChange: (code: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const selected = COUNTRIES.find(country => country.code === value)
+  const filtered = query.trim()
+    ? COUNTRIES.filter(country =>
+        country.name.toLowerCase().includes(query.toLowerCase()) ||
+        country.code.toLowerCase().includes(query.toLowerCase())
+      )
+    : COUNTRIES
+
+  useEffect(() => {
+    if (!open) return
+    function handleOutside(event: MouseEvent) {
+      const target = event.target as Node
+      if (!triggerRef.current?.contains(target) && !dropdownRef.current?.contains(target)) {
+        setOpen(false)
+        setQuery('')
+      }
+    }
+    function handleScroll(event: Event) {
+      if (dropdownRef.current?.contains(event.target as Node)) return
+      setOpen(false)
+      setQuery('')
+    }
+    document.addEventListener('mousedown', handleOutside)
+    window.addEventListener('scroll', handleScroll, true)
+    return () => {
+      document.removeEventListener('mousedown', handleOutside)
+      window.removeEventListener('scroll', handleScroll, true)
+    }
+  }, [open])
+
+  function handleOpen() {
+    if (open) {
+      setOpen(false)
+      return
+    }
+    const rect = triggerRef.current?.getBoundingClientRect()
+    if (rect) setDropdownRect(rect)
+    setOpen(true)
+    setQuery('')
+    setTimeout(() => inputRef.current?.focus(), 0)
+  }
+
+  function handleSelect(code: string) {
+    onChange(code)
+    setOpen(false)
+    setQuery('')
+  }
+
+  function handleClear(event: React.MouseEvent) {
+    event.stopPropagation()
+    onChange('')
+  }
+
+  return (
+    <div className="relative">
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={handleOpen}
+        className={`flex w-full items-center justify-between rounded-xl border bg-white py-2 pl-3 pr-2.5 text-sm transition-colors hover:border-gray-300 ${
+          open ? 'border-gray-400' : 'border-gray-200'
+        }`}
+      >
+        <span className={selected ? 'text-gray-900' : 'text-gray-300'}>
+          {selected ? `${selected.name} (${selected.code})` : '국가 검색 또는 선택'}
+        </span>
+        <span className="flex flex-shrink-0 items-center gap-1">
+          {selected && (
+            <span onClick={handleClear} className="cursor-pointer rounded p-0.5 text-gray-300 transition-colors hover:text-gray-500">
+              <X className="h-3.5 w-3.5" />
+            </span>
+          )}
+          <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform duration-150 ${open ? 'rotate-180' : ''}`} />
+        </span>
+      </button>
+
+      {open && dropdownRect && createPortal(
+        <div
+          ref={dropdownRef}
+          className="fixed z-[9999] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl shadow-black/[0.08]"
+          style={{ top: dropdownRect.bottom + 4, left: dropdownRect.left, width: dropdownRect.width }}
+        >
+          <div className="border-b border-gray-100 p-2">
+            <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5">
+              <Search className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
+              <input
+                ref={inputRef}
+                type="text"
+                value={query}
+                onChange={event => setQuery(event.target.value)}
+                placeholder="국가명 또는 코드 검색"
+                className="flex-1 bg-transparent text-sm text-gray-800 placeholder:text-gray-300 focus:outline-none"
+              />
+              {query && (
+                <button type="button" onClick={() => setQuery('')} className="text-gray-300 transition-colors hover:text-gray-500">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+          <ul className="max-h-52 overflow-y-auto py-1">
+            {filtered.length === 0 ? (
+              <li className="px-3 py-4 text-center text-xs text-gray-400">검색 결과가 없습니다</li>
+            ) : filtered.map(country => (
+              <li key={country.code}>
+                <button
+                  type="button"
+                  onClick={() => handleSelect(country.code)}
+                  className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50 ${
+                    country.code === value ? 'bg-gray-50 font-medium text-gray-900' : 'text-gray-700'
+                  }`}
+                >
+                  <span>{country.name}</span>
+                  <span className="font-mono text-[11px] text-gray-400">{country.code}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>,
+        document.body
+      )}
+    </div>
+  )
+}
+
+function TicketHeader({ label }: { label: string }) {
+  return (
+    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 bg-gray-50 whitespace-nowrap">
+      {label}
+    </th>
+  )
+}
+
+function TicketFilterCell({ children }: { children: React.ReactNode }) {
+  return <th className="px-3 py-2 text-left font-normal">{children}</th>
+}
+
+function TicketTextFilter({
+  value,
+  placeholder,
+  onChange,
+}: {
+  value: string
+  placeholder: string
+  onChange: (value: string) => void
+}) {
+  return (
+    <div className="relative">
+      <input
+        type="text"
+        value={value}
+        placeholder={placeholder}
+        onChange={event => onChange(event.target.value)}
+        className="w-full min-w-[110px] rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 pr-6 text-xs font-normal text-gray-700 placeholder:text-gray-300 focus:border-gray-400 focus:outline-none"
+      />
+      {value && (
+        <button
+          type="button"
+          onClick={() => onChange('')}
+          className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 transition-colors"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
+    </div>
+  )
+}
+
+function TicketSelectFilter({
+  value,
+  onChange,
+  children,
+}: {
+  value: string
+  onChange: (value: string) => void
+  children: React.ReactNode
+}) {
+  return (
+    <select
+      value={value}
+      onChange={event => onChange(event.target.value)}
+      className="w-full min-w-[110px] rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-normal text-gray-700 focus:border-gray-400 focus:outline-none"
+    >
+      {children}
+    </select>
   )
 }
 
