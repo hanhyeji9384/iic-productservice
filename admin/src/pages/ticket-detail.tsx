@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
-import { AlertTriangle, ArrowLeft, Barcode, CheckCircle2, Circle, History, Package, RotateCcw } from 'lucide-react'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import { AlertTriangle, ArrowLeft, Barcode, CheckCircle2, Circle, History, Mail, MessageSquare, Package, RotateCcw, Search, Send } from 'lucide-react'
 import { BRANCHES, MEMBERS } from '@/lib/mock-data'
 import { getTicketsWithExtras } from '@/lib/prototype-storage'
 import { formatCurrency, formatRepairChargeType, getSoDocumentInfo } from '@/lib/ticket-so'
@@ -26,6 +26,46 @@ const STATUS_META: Record<TicketStatus, { label: string; className: string }> = 
 
 const PAYMENT_META: Record<PaymentCompleted, string> = { Y: '완료', N: '미완료', C: '취소' }
 
+type TemplateKind = 'AUTO' | 'MANUAL'
+type MessageChannel = 'kakao' | 'email'
+type MessageTemplate = {
+  id: string
+  channel: MessageChannel
+  kind: TemplateKind
+  title: string
+  stage: string
+}
+
+type MessageLog = {
+  id: string
+  templateTitle: string
+  sentAt: string
+  kind: TemplateKind
+  status: string
+}
+
+const TEMPLATE_KIND_LABEL: Record<TemplateKind, string> = {
+  AUTO: '자동',
+  MANUAL: '수동',
+}
+
+const MESSAGE_TEMPLATES: MessageTemplate[] = [
+  { id: '024040000393', channel: 'kakao', kind: 'AUTO',   title: '[판정] 무상 수리 안내',       stage: '판정' },
+  { id: '024040000395', channel: 'kakao', kind: 'AUTO',   title: '[판정] 유상 결제 안내',       stage: '판정' },
+  { id: '024040000494', channel: 'kakao', kind: 'AUTO',   title: '[출고] 매장 수령 안내',       stage: '출고' },
+  { id: '024040001151', channel: 'kakao', kind: 'AUTO',   title: '[출고] 택배 출고 안내',       stage: '출고' },
+  { id: '025050000154', channel: 'kakao', kind: 'MANUAL', title: '[수동] 제품 교환 안내',       stage: '판정' },
+  { id: '025050000157', channel: 'kakao', kind: 'MANUAL', title: '[수동] 수리 불가 안내',       stage: '판정' },
+  { id: '025050000219', channel: 'kakao', kind: 'MANUAL', title: '[수동] 운송장 정보 안내',     stage: '출고' },
+  { id: 'mail-judgement-free',     channel: 'email', kind: 'AUTO',   title: '[판정] 무상 수리 안내',       stage: '판정' },
+  { id: 'mail-judgement-paid',     channel: 'email', kind: 'AUTO',   title: '[판정] 유상 결제 안내',       stage: '판정' },
+  { id: 'mail-ship-out-delivery',  channel: 'email', kind: 'AUTO',   title: '[출고] 배송 출고 안내',       stage: '출고' },
+  { id: 'mail-moving-store',       channel: 'email', kind: 'AUTO',   title: '[출고] 매장 이동 안내',       stage: '출고' },
+  { id: 'mail-repair-cancel',      channel: 'email', kind: 'MANUAL', title: '[수동] 수리 취소 안내',       stage: '취소' },
+  { id: 'mail-no-repair',          channel: 'email', kind: 'MANUAL', title: '[수동] 수리 불가 안내',       stage: '판정' },
+  { id: 'mail-address-check',      channel: 'email', kind: 'MANUAL', title: '[수동] 주소 확인 요청',       stage: '출고' },
+]
+
 const RECEPTION_TAG_META: Record<TicketReceptionTag, { label: string; className: string }> = {
   RETURN_COMPONENTS: {
     label: '구성품 반송',
@@ -46,6 +86,14 @@ function getReceptionTitle(ticket: Ticket) {
   return /online/i.test(ticket.receptionPlace) ? 'PS 온라인 접수' : null
 }
 
+function getMemberLabel(id?: string, name?: string) {
+  const member = id ? MEMBERS.find(item => item.id === id) : null
+  const displayName = name || member?.name
+  const loginId = member?.loginId || id
+  if (!displayName) return null
+  return `${displayName}${loginId ? `(${loginId})` : ''}`
+}
+
 type Tab = 'overview' | 'pricing' | 'kakao' | 'email'
 
 function Field({ label, value }: { label: string; value?: string | null }) {
@@ -54,6 +102,25 @@ function Field({ label, value }: { label: string; value?: string | null }) {
       <dt className="text-[11px] font-medium text-gray-400 mb-0.5">{label}</dt>
       <dd className="text-sm text-gray-800">{value || '-'}</dd>
     </div>
+  )
+}
+
+function ManagerMeta({
+  label,
+  value,
+}: {
+  label: string
+  value: string
+}) {
+  const isEmpty = value === '-'
+
+  return (
+    <span className="inline-flex min-w-0 items-center gap-1.5">
+      <span className="text-[11px] font-medium text-gray-400">{label}</span>
+      <span className={`max-w-[220px] truncate text-xs font-semibold ${isEmpty ? 'text-gray-300' : 'text-gray-800'}`}>
+        {value}
+      </span>
+    </span>
   )
 }
 
@@ -111,23 +178,214 @@ function PlaceholderTab({ message }: { message: string }) {
   )
 }
 
+function isOverseasTicket(ticket: Ticket) {
+  const channelText = `${ticket.branchCode} ${ticket.receptionPlace} ${ticket.shippingMethod}`
+  return ticket.branchCode === 'C1002' || ticket.reexportCondition === 'Y' || /해외|DHL|FedEx|Global|US/i.test(channelText)
+}
+
+function getInitialMessageLogs(ticket: Ticket, channel: MessageChannel): MessageLog[] {
+  if (channel === 'kakao') {
+    return [
+      {
+        id: `${ticket.ticketNo}-kakao-1`,
+        templateTitle: '[판정] 유상 결제 안내',
+        sentAt: ticket.paymentDate ?? ticket.receivedAt,
+        kind: 'AUTO',
+        status: '성공',
+      },
+    ]
+  }
+
+  return [
+    {
+      id: `${ticket.ticketNo}-email-1`,
+      templateTitle: '[접수] 수리 서비스 접수 안내',
+      sentAt: ticket.receivedAt,
+      kind: 'AUTO',
+      status: '성공',
+    },
+  ]
+}
+
+function nowLocalText() {
+  return new Date().toLocaleString('sv-SE', { hour12: false }).replace('T', ' ')
+}
+
+function MessageTemplatePanel({
+  ticket,
+  channel,
+  enabled = true,
+}: {
+  ticket: Ticket
+  channel: MessageChannel
+  enabled?: boolean
+}) {
+  const [kind, setKind] = useState<TemplateKind>('AUTO')
+  const [query, setQuery] = useState('')
+  const [selectedTemplateId, setSelectedTemplateId] = useState('')
+  const [sentLogs, setSentLogs] = useState<MessageLog[]>([])
+  const channelLabel = channel === 'kakao' ? '알림톡' : '이메일'
+  const Icon = channel === 'kakao' ? MessageSquare : Mail
+  const receiver = channel === 'kakao' ? ticket.phone : ticket.email
+  const templates = MESSAGE_TEMPLATES.filter(template => template.channel === channel && template.kind === kind)
+  const filteredTemplates = templates.filter(template => {
+    const keyword = query.trim().toLowerCase()
+    if (!keyword) return true
+    return (
+      template.id.toLowerCase().includes(keyword) ||
+      template.title.toLowerCase().includes(keyword) ||
+      template.stage.toLowerCase().includes(keyword)
+    )
+  })
+  const selectedTemplate = filteredTemplates.find(template => template.id === selectedTemplateId)
+  const logs = [...sentLogs, ...getInitialMessageLogs(ticket, channel)]
+
+  function handleSend() {
+    if (!selectedTemplate) return
+    setSentLogs(prev => [
+      {
+        id: `${ticket.ticketNo}-${channel}-${Date.now()}`,
+        templateTitle: selectedTemplate.title,
+        sentAt: nowLocalText(),
+        kind,
+        status: '성공',
+      },
+      ...prev,
+    ])
+    window.alert(`${channelLabel} '${selectedTemplate.title}' 발송 처리했습니다.`)
+  }
+
+  if (!enabled) {
+    return (
+      <div className="rounded-2xl border border-gray-200 bg-gray-50 px-5 py-10 text-center">
+        <MessageSquare className="mx-auto mb-3 h-6 w-6 text-gray-300" />
+        <p className="text-sm font-medium text-gray-600">해외 접수 건은 이메일만 발송합니다.</p>
+        <p className="mt-1 text-xs text-gray-400">알림톡 발송은 국내 접수 건에만 노출됩니다.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-2xl border border-gray-200 bg-white">
+        <div className="border-b border-gray-100 px-5 py-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-gray-900 text-white">
+                <Icon className="h-4 w-4" />
+              </span>
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">{channelLabel} 발송</h3>
+                <p className="text-xs text-gray-400">고객 수신처: {receiver || '-'}</p>
+              </div>
+            </div>
+            <div className="inline-flex rounded-xl border border-gray-200 bg-gray-50 p-1">
+              {(['AUTO', 'MANUAL'] as TemplateKind[]).map(item => (
+                <button
+                  key={item}
+                  onClick={() => { setKind(item); setSelectedTemplateId('') }}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                    kind === item ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  {TEMPLATE_KIND_LABEL[item]} 템플릿
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-[1fr_1.3fr_auto] gap-3 p-5">
+          <label className="relative">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-300" />
+            <input
+              value={query}
+              onChange={event => { setQuery(event.target.value); setSelectedTemplateId('') }}
+              placeholder="템플릿명, 코드 검색"
+              className="h-10 w-full rounded-xl border border-gray-200 pl-9 pr-3 text-sm outline-none transition-colors focus:border-gray-400"
+            />
+          </label>
+          <select
+            value={selectedTemplateId}
+            onChange={event => setSelectedTemplateId(event.target.value)}
+            className="h-10 rounded-xl border border-gray-200 px-3 text-sm text-gray-700 outline-none transition-colors focus:border-gray-400"
+          >
+            <option value="">템플릿 선택</option>
+            {filteredTemplates.map(template => (
+              <option key={template.id} value={template.id}>
+                {template.title} · {template.id}
+              </option>
+            ))}
+          </select>
+          <button
+            disabled={!selectedTemplate}
+            onClick={handleSend}
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-gray-900 px-4 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:bg-gray-200 disabled:text-gray-400"
+          >
+            <Send className="h-3.5 w-3.5" />전송
+          </button>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-gray-200 bg-white">
+        <div className="border-b border-gray-100 px-5 py-3">
+          <h3 className="text-xs font-semibold text-gray-700">{channelLabel} 발송 내역</h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[720px] text-left text-sm">
+            <thead className="bg-gray-50 text-[11px] font-medium text-gray-400">
+              <tr>
+                <th className="px-5 py-3">템플릿 명</th>
+                <th className="px-5 py-3">고객명</th>
+                <th className="px-5 py-3">수신처</th>
+                <th className="px-5 py-3">발송일시</th>
+                <th className="px-5 py-3">유형</th>
+                <th className="px-5 py-3">상태</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {logs.map(log => (
+                <tr key={log.id}>
+                  <td className="px-5 py-3 text-gray-800">{log.templateTitle}</td>
+                  <td className="px-5 py-3 text-gray-500">{ticket.customerName}</td>
+                  <td className="px-5 py-3 text-gray-500">{receiver || '-'}</td>
+                  <td className="px-5 py-3 font-mono text-xs text-gray-500">{log.sentAt}</td>
+                  <td className="px-5 py-3 text-gray-500">{TEMPLATE_KIND_LABEL[log.kind]}발송</td>
+                  <td className="px-5 py-3">
+                    <span className="inline-flex rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                      {log.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function TicketDetailPage() {
   const { langCode = 'ko', ticketNo } = useParams<{ langCode: string; ticketNo: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [showBarcodeModal, setShowBarcodeModal] = useState(false)
   const [autoPrintBarcode, setAutoPrintBarcode] = useState(false)
   const ticket = getTicketsWithExtras().find(t => t.ticketNo === ticketNo)
+  const autoPrintRequested = (location.state as { autoPrintBarcodeOnce?: boolean } | null)?.autoPrintBarcodeOnce === true
 
   useEffect(() => {
-    if (!ticketNo) return
+    if (!ticketNo || !autoPrintRequested) return
     const key = `barcode_printed_${ticketNo}`
     if (!localStorage.getItem(key)) {
       localStorage.setItem(key, '1')
       setAutoPrintBarcode(true)
       setShowBarcodeModal(true)
     }
-  }, [ticketNo])
+    navigate(location.pathname, { replace: true, state: null })
+  }, [autoPrintRequested, location.pathname, navigate, ticketNo])
 
   if (!ticket) {
     return (
@@ -146,14 +404,12 @@ export function TicketDetailPage() {
   const statusMeta = STATUS_META[ticket.status]
   const soInfo = getSoDocumentInfo(ticket)
   const branchLabel = BRANCHES.find(b => b.code === ticket.branchCode)?.name ?? ticket.branchCode
-  const receptionManager = ticket.technicianId ? MEMBERS.find(member => member.id === ticket.technicianId) : null
-  const receptionManagerName = ticket.technicianName || receptionManager?.name || null
-  const receptionManagerLoginId = receptionManager?.loginId || ticket.technicianId || null
-  const receptionManagerLabel = receptionManagerName
-    ? `${receptionManagerName}${receptionManagerLoginId ? `(${receptionManagerLoginId})` : ''}`
-    : '-'
+  const technicianLabel = getMemberLabel(ticket.technicianId, ticket.technicianName) || '-'
+  const judgementManagerLabel =
+    getMemberLabel(ticket.judgementManagerId, ticket.judgementManagerName) || '-'
   const receptionTitle = getReceptionTitle(ticket)
   const receptionTags = ticket.receptionTags ?? []
+  const kakaoEnabled = !isOverseasTicket(ticket)
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'overview', label: '개요' },
@@ -186,51 +442,59 @@ export function TicketDetailPage() {
         {/* ── 상단 헤더 카드 ── */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
           {/* 1행: 티켓번호 + 액션 버튼 */}
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="min-w-[280px] flex-1">
               <p className="text-[11px] text-gray-400 mb-0.5">티켓번호</p>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <h1 className="text-base font-bold text-gray-900 tracking-tight truncate">
                   {ticket.ticketNo}
                 </h1>
-                <span className="text-xs text-gray-400">
-                  {receptionManagerLabel}
-                </span>
               </div>
               {(receptionTitle || receptionTags.length > 0) && (
                 <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                  {receptionTitle && (
-                    <span className="inline-flex items-center rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] font-medium text-gray-600">
-                      {receptionTitle}
-                    </span>
-                  )}
+	                  {receptionTitle && (
+	                    <span className="inline-flex items-center whitespace-nowrap rounded-md border border-gray-200 bg-gray-50 px-2 py-0.5 text-[11px] font-medium text-gray-600">
+	                      {receptionTitle}
+	                    </span>
+	                  )}
                   {receptionTags.map(tag => {
                     const meta = RECEPTION_TAG_META[tag]
                     return (
                       <span
-                        key={tag}
-                        className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${meta.className}`}
-                      >
-                        {meta.label}
-                      </span>
+	                        key={tag}
+	                        className={`inline-flex items-center whitespace-nowrap rounded-md border px-2 py-0.5 text-[11px] font-semibold ${meta.className}`}
+	                      >
+	                        {meta.label}
+	                      </span>
                     )
                   })}
                 </div>
               )}
+              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                <ManagerMeta label="서비스 기술자" value={technicianLabel} />
+                <span className="hidden h-3 w-px bg-gray-200 sm:inline-block" />
+                <ManagerMeta label="판정 담당자" value={judgementManagerLabel} />
+              </div>
             </div>
             {/* 액션 버튼 */}
-            <div className="flex items-center gap-2 flex-shrink-0">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <button
                 onClick={() => {
                   setAutoPrintBarcode(false)
                   setShowBarcodeModal(true)
                 }}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
               >
                 <Barcode className="w-3.5 h-3.5" />바코드 출력
               </button>
-              <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors">
+              <button className="flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors">
                 <Package className="w-3.5 h-3.5" />재고요청
+              </button>
+              <button
+                onClick={() => window.alert('구성품 반송 기능은 TBD입니다.')}
+                className="flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                <Package className="w-3.5 h-3.5" />구성품 반송
               </button>
               <button
                 onClick={() => navigate(`/${langCode}/tickets/new`, {
@@ -239,7 +503,7 @@ export function TicketDetailPage() {
                     reRepairSourceTicketNo: ticket.ticketNo,
                   },
                 })}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
+                className="flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />재수리 접수
               </button>
@@ -263,18 +527,16 @@ export function TicketDetailPage() {
               <p className="text-[11px] text-gray-400 mb-1.5">SO 문서번호</p>
               <div className="flex items-center gap-2">
                 <p className="text-sm text-gray-800">{ticket.soDocumentNo || '-'}</p>
-                <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${soInfo.className}`}>
-                  {soInfo.label}
-                </span>
+                {soInfo.status !== 'NOT_READY' && (
+                  <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${soInfo.className}`}>
+                    {soInfo.label}
+                  </span>
+                )}
               </div>
             </div>
             <div className="px-8">
               <p className="text-[11px] text-gray-400 mb-1.5">법인</p>
               <p className="text-sm text-gray-800">{branchLabel}</p>
-            </div>
-            <div className="pl-8">
-              <p className="text-[11px] text-gray-400 mb-1.5">접수일</p>
-              <p className="text-sm text-gray-800">{ticket.receivedAt} <span className="text-xs text-gray-400">(KST)</span></p>
             </div>
           </div>
         </div>
@@ -307,11 +569,12 @@ export function TicketDetailPage() {
                 <div className="space-y-4">
 
                   {/* 접수 정보 카드 */}
-                  <SectionCard title="접수 정보">
-                    <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
-                      <Field label="접수처" value={ticket.receptionPlace} />
-                      <Field label="접수처 유형" value="-" />
-                      <Field label="B2C 여부" value={soInfo.b2cYn} />
+	                  <SectionCard title="접수 정보">
+	                    <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+	                      <Field label="접수일시" value={`${ticket.receivedAt} (KST)`} />
+	                      <Field label="접수처" value={ticket.receptionPlace} />
+	                      <Field label="접수처 유형" value="-" />
+	                      <Field label="B2C 여부" value={soInfo.b2cYn} />
                       <Field label="재수리 여부" value={ticket.reRepairYn} />
                       <Field label="기존 티켓번호" value={ticket.originalTicketNo} />
                       <Field label="긴급 수리 여부" value="-" />
@@ -400,7 +663,7 @@ export function TicketDetailPage() {
                       <Field label="수리 내용" value={ticket.repairDetail} />
                       <Field label="수리비용 결정" value={formatRepairChargeType(soInfo.repairChargeType)} />
                       <Field label="수리 비용" value={formatCurrency(soInfo.repairCost)} />
-                      <Field label="서비스 기술자" value="-" />
+                      <Field label="서비스 기술자" value={technicianLabel} />
                       <Field label="수리 진행일" value="-" />
                       <Field label="문제현상" value="-" />
                       <Field label="렌즈 유형" value="-" />
@@ -436,9 +699,11 @@ export function TicketDetailPage() {
                             SAP에서 생성된 SO 문서번호는 티켓의 SAP SO 번호로 연동되어 조회/엑셀에 표시됩니다.
                           </p>
                         </div>
-                        <span className={`inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-semibold ${soInfo.className}`}>
-                          {soInfo.label}
-                        </span>
+                        {soInfo.status !== 'NOT_READY' && (
+                          <span className={`inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-semibold ${soInfo.className}`}>
+                            {soInfo.label}
+                          </span>
+                        )}
                       </div>
                       {soInfo.cancelReviewNeeded && (
                         <div className="flex gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
@@ -502,10 +767,10 @@ export function TicketDetailPage() {
               <PlaceholderTab message="가격결정 — SAP 연동 수리비 산출 테이블" />
             )}
             {activeTab === 'kakao' && (
-              <PlaceholderTab message="알림톡 발송내역" />
+              <MessageTemplatePanel ticket={ticket} channel="kakao" enabled={kakaoEnabled} />
             )}
             {activeTab === 'email' && (
-              <PlaceholderTab message="메일 발송내역" />
+              <MessageTemplatePanel ticket={ticket} channel="email" />
             )}
           </div>
         </div>

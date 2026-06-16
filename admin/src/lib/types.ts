@@ -84,6 +84,9 @@ export type Ticket = {
   receptionTags?: TicketReceptionTag[]
   originalTicketNo?: string
   reRepairYn?: 'Y' | 'N'
+  judgementManagerId?: string
+  judgementManagerName?: string
+  judgementCompletedAt?: string | null
   productName: string
   purchaseDate?: string | null
   purchasePlace?: string | null
@@ -97,6 +100,7 @@ export type Ticket = {
   trackingNo: string | null
   paymentCompleted: PaymentCompleted
   paymentDate: string | null
+  paymentExpiresAt?: string | null
   paymentApprovalNo?: string | null
   reexportCondition: 'Y' | 'N'
   b2cYn?: 'Y' | 'N'

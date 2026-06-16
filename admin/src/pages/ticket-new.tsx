@@ -10,7 +10,7 @@ const TICKET_BRANCH_CODES = ['1110', 'C1002']
 const TICKET_BRANCHES = BRANCHES.filter(branch => TICKET_BRANCH_CODES.includes(branch.code))
 const TECHNICIANS = MEMBERS.filter(m => m.isTechnician && m.status === 'active')
 
-// 현재 로그인한 사용자가 기술자인 경우 접수 담당자로 기본 세팅
+// 현재 로그인한 사용자가 기술자인 경우 서비스 기술자로 기본 세팅
 const LOGGED_IN_TECHNICIAN = (() => {
   const me = MEMBERS.find(m => m.loginId === 'monster563')
   return me?.isTechnician && me?.status === 'active' ? me : null
@@ -1213,7 +1213,7 @@ export function TicketNewPage() {
       return
     }
     if (action === 'save_open') {
-      navigate(`/${langCode}/tickets/${ticketNo}`)
+      navigate(`/${langCode}/tickets/${ticketNo}`, { state: { autoPrintBarcodeOnce: true } })
       return
     }
     navigate(`/${langCode}/tickets`)
@@ -1294,7 +1294,7 @@ export function TicketNewPage() {
                 </dd>
               </div>
               <div>
-                <FieldLabel>담당자</FieldLabel>
+                <FieldLabel>서비스 기술자</FieldLabel>
                 <dd>
                   <TechnicianSearchSelect
                     value={form.technicianId}
