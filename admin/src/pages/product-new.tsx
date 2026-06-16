@@ -3,15 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronDown } from 'lucide-react'
 import { useProducts } from '@/lib/products-context'
 import { inputCls } from '@/lib/utils'
-import type { SalesStatus } from '@/lib/types'
-
-const SALES_STATUSES: SalesStatus[] = ['사용중', '종료 예정', '판매 종료 (P)', '판매 종료 (C)']
-
-function addYears(date: Date, years: number): string {
-  const d = new Date(date)
-  d.setFullYear(d.getFullYear() + years)
-  return d.toISOString().slice(0, 10)
-}
 
 const BRANDS = ['GENTLE MONSTER', 'TAMBURINS']
 
@@ -40,10 +31,10 @@ type Form = {
   factory3: string
   releaseDate: string
   partsRetentionPeriod: string
-  salesStatus: SalesStatus
   stockLocation: string
   isSafetyStock: boolean
   quantity: string
+  threePlQuantity: string
   hasDecoration: boolean
   isRestorationRepair: boolean
 }
@@ -53,9 +44,8 @@ const init: Form = {
   brandCategory: BRANDS[0], midCategory: '', subCategory: '',
   factory1: '', factory2: '', factory3: '',
   releaseDate: '', partsRetentionPeriod: '',
-  salesStatus: '사용중',
   stockLocation: '', isSafetyStock: false,
-  quantity: '', hasDecoration: false,
+  quantity: '', threePlQuantity: '0', hasDecoration: false,
   isRestorationRepair: false,
 }
 
@@ -125,10 +115,10 @@ export function ProductNewPage() {
         factory3: existing.factory3 ?? '',
         releaseDate: existing.releaseDate,
         partsRetentionPeriod: existing.partsRetentionPeriod,
-        salesStatus: existing.salesStatus,
         stockLocation: existing.stockLocation,
         isSafetyStock: existing.isSafetyStock,
-        quantity: String(existing.quantity),
+        quantity: String(existing.psQuantity ?? existing.quantity),
+        threePlQuantity: String(existing.threePlQuantity ?? 0),
         hasDecoration: existing.hasDecoration ?? false,
         isRestorationRepair: existing.isRestorationRepair ?? false,
       })
@@ -136,16 +126,6 @@ export function ProductNewPage() {
       setForm(prev => ({ ...prev, productCode: nextPsCode }))
     }
   }, [])
-
-  function handleSalesStatusChange(status: SalesStatus) {
-    setForm(prev => ({
-      ...prev,
-      salesStatus: status,
-      partsRetentionPeriod: status === '종료 예정'
-        ? (prev.partsRetentionPeriod || addYears(new Date(), 3))
-        : prev.partsRetentionPeriod,
-    }))
-  }
 
   const set = (key: keyof Form) => (val: string | boolean) =>
     setForm(prev => ({ ...prev, [key]: val }))
@@ -160,7 +140,6 @@ export function ProductNewPage() {
 
   function validate(): boolean {
     const errs: Partial<Record<keyof Form, string>> = {}
-    if (!form.barcode.trim()) errs.barcode = '필수 입력입니다.'
     if (!form.name.trim()) errs.name = '필수 입력입니다.'
     if (!form.midCategory) errs.midCategory = '중분류를 선택하세요.'
     if (!form.subCategory) errs.subCategory = '소분류를 선택하세요.'
@@ -168,16 +147,20 @@ export function ProductNewPage() {
     if (!form.releaseDate) errs.releaseDate = '출시일을 입력하세요.'
     if (!form.quantity || isNaN(Number(form.quantity)) || Number(form.quantity) < 0)
       errs.quantity = '0 이상의 숫자를 입력하세요.'
+    if (!form.threePlQuantity || isNaN(Number(form.threePlQuantity)) || Number(form.threePlQuantity) < 0)
+      errs.threePlQuantity = '0 이상의 숫자를 입력하세요.'
     setErrors(errs)
     return Object.keys(errs).length === 0
   }
 
   function handleSave() {
     if (!validate()) return
+    const psQuantity = Number(form.quantity)
+    const threePlQuantity = Number(form.threePlQuantity)
     const payload = {
       id: isEdit ? existing!.id : `P${Date.now()}`,
       productCode: form.productCode,
-      barcode: form.barcode.trim(),
+      barcode: isEdit ? existing!.barcode : form.productCode,
       name: form.name.trim(),
       brandCategory: form.brandCategory,
       midCategory: form.midCategory,
@@ -187,10 +170,12 @@ export function ProductNewPage() {
       factory3: form.factory3 || null,
       releaseDate: form.releaseDate,
       partsRetentionPeriod: form.partsRetentionPeriod,
-      salesStatus: form.salesStatus,
+      salesStatus: isEdit ? existing!.salesStatus : '사용중',
       stockLocation: form.stockLocation.trim(),
       isSafetyStock: form.isSafetyStock,
-      quantity: Number(form.quantity),
+      quantity: psQuantity,
+      psQuantity,
+      threePlQuantity,
       hasDecoration: form.hasDecoration,
       isRestorationRepair: form.isRestorationRepair,
       dataSource: 'PS' as const,
@@ -199,7 +184,7 @@ export function ProductNewPage() {
     }
     if (isEdit) updateProduct(payload)
     else addProduct(payload)
-    navigate(`${pfx}/products`)
+    navigate(`${pfx}/product-management`)
   }
 
   const midOptions = MID_CATEGORIES[form.brandCategory] ?? []
@@ -211,15 +196,15 @@ export function ProductNewPage() {
       {/* 상단 네비 */}
       <div className="flex items-center justify-between">
         <button
-          onClick={() => navigate(`${pfx}/products`)}
+          onClick={() => navigate(`${pfx}/product-management`)}
           className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          제품 목록
+          제품 관리
         </button>
         <div className="flex gap-2">
           <button
-            onClick={() => navigate(`${pfx}/products`)}
+            onClick={() => navigate(`${pfx}/product-management`)}
             className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
           >
             취소
@@ -241,27 +226,16 @@ export function ProductNewPage() {
       {/* 기본 정보 */}
       <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
         <h2 className="text-sm font-semibold text-gray-900">기본 정보</h2>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <FieldLabel text="제품코드" required />
+            <FieldLabel text="제품 코드" required />
             <input
               type="text"
               value={form.productCode}
               readOnly
               className={`${inputCls} w-full bg-gray-50 text-gray-500 cursor-default select-none`}
             />
-            <p className="text-[11px] text-gray-400 mt-1">PS 등록 제품코드는 자동 부여됩니다.</p>
-          </div>
-          <div>
-            <FieldLabel text="바코드" required />
-            <input
-              type="text"
-              placeholder="예: 8809639031001"
-              value={form.barcode}
-              onChange={e => { set('barcode')(e.target.value); setErrors(p => ({ ...p, barcode: '' })) }}
-              className={`${inputCls} w-full ${errors.barcode ? 'border-red-300 focus:border-red-400' : ''}`}
-            />
-            {errors.barcode && <p className="text-[11px] text-red-400 mt-1">{errors.barcode}</p>}
+            <p className="text-[11px] text-gray-400 mt-1">제품 코드는 자동 부여됩니다.</p>
           </div>
           <div>
             <FieldLabel text="제품명" required />
@@ -279,7 +253,7 @@ export function ProductNewPage() {
 
       {/* 분류 */}
       <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
-        <h2 className="text-sm font-semibold text-gray-900">분류</h2>
+        <h2 className="text-sm font-semibold text-gray-900">제품범주</h2>
         <div className="grid grid-cols-3 gap-4">
           <SelectField label="브랜드" required value={form.brandCategory} onChange={handleBrandChange}>
             {BRANDS.map(b => <option key={b} value={b}>{b}</option>)}
@@ -342,28 +316,34 @@ export function ProductNewPage() {
             />
             {errors.releaseDate && <p className="text-[11px] text-red-400 mt-1">{errors.releaseDate}</p>}
           </div>
-          <SelectField label="판매 상태" required value={form.salesStatus} onChange={v => handleSalesStatusChange(v as SalesStatus)}>
-            {SALES_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-          </SelectField>
           <div>
-            <FieldLabel text="부품보유기간 만료일" />
+            <FieldLabel text="부품보유기한" />
             <input
               type="date"
               value={form.partsRetentionPeriod}
               onChange={e => set('partsRetentionPeriod')(e.target.value)}
               className={`${inputCls} w-full`}
             />
-            <p className="text-[11px] text-gray-400 mt-1">종료 예정 시 자동으로 오늘 +3년이 설정됩니다.</p>
           </div>
         </div>
       </section>
 
-      {/* 재고 정보 — 신규 등록 시에만 표시 */}
-      {!isEdit && <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
+      {/* 재고 정보 */}
+      <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
         <h2 className="text-sm font-semibold text-gray-900">재고 정보</h2>
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <FieldLabel text="수량" required />
+            <FieldLabel text="재고보관위치" />
+            <input
+              type="text"
+              placeholder="예: A1-01"
+              value={form.stockLocation}
+              onChange={e => set('stockLocation')(e.target.value)}
+              className={`${inputCls} w-full`}
+            />
+          </div>
+          <div>
+            <FieldLabel text="PS수량(사용중인 수량)" required />
             <input
               type="number"
               min={0}
@@ -373,6 +353,18 @@ export function ProductNewPage() {
               className={`${inputCls} w-full ${errors.quantity ? 'border-red-300 focus:border-red-400' : ''}`}
             />
             {errors.quantity && <p className="text-[11px] text-red-400 mt-1">{errors.quantity}</p>}
+          </div>
+          <div>
+            <FieldLabel text="3PL수량(사용중인 수량)" required />
+            <input
+              type="number"
+              min={0}
+              placeholder="0"
+              value={form.threePlQuantity}
+              onChange={e => { set('threePlQuantity')(e.target.value); setErrors(p => ({ ...p, threePlQuantity: '' })) }}
+              className={`${inputCls} w-full ${errors.threePlQuantity ? 'border-red-300 focus:border-red-400' : ''}`}
+            />
+            {errors.threePlQuantity && <p className="text-[11px] text-red-400 mt-1">{errors.threePlQuantity}</p>}
           </div>
         </div>
         <div className="flex gap-6">
@@ -387,20 +379,7 @@ export function ProductNewPage() {
                 form.isSafetyStock ? 'translate-x-4' : 'translate-x-0.5'
               }`} />
             </div>
-            <span className="text-sm text-gray-700">안전재고</span>
-          </label>
-          <label className="flex items-center gap-2.5 cursor-pointer select-none">
-            <div
-              onClick={() => set('hasDecoration')(!form.hasDecoration)}
-              className={`w-9 h-5 rounded-full transition-colors relative flex-shrink-0 ${
-                form.hasDecoration ? 'bg-gray-900' : 'bg-gray-200'
-              }`}
-            >
-              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
-                form.hasDecoration ? 'translate-x-4' : 'translate-x-0.5'
-              }`} />
-            </div>
-            <span className="text-sm text-gray-700">장식보유</span>
+            <span className="text-sm text-gray-700">안전재고여부</span>
           </label>
           <label className="flex items-center gap-2.5 cursor-pointer select-none">
             <div
@@ -413,10 +392,10 @@ export function ProductNewPage() {
                 form.isRestorationRepair ? 'translate-x-4' : 'translate-x-0.5'
               }`} />
             </div>
-            <span className="text-sm text-gray-700">복원수리</span>
+            <span className="text-sm text-gray-700">복원 의뢰 여부</span>
           </label>
         </div>
-      </section>}
+      </section>
 
     </div>
   )

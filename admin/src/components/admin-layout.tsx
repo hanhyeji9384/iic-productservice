@@ -36,9 +36,10 @@ const NAV: NavGroup[] = [
     label: '마스터 관리',
     icon: Package,
     children: [
-      { to: '/products', label: '제품 관리',        icon: Package },
-      { to: '/parts',    label: '부품 관리',        icon: Wrench },
-      { to: '/stores',   label: '매장/거래처 관리', icon: Store },
+      { to: '/products',           label: '제품 리스트',      icon: Package },
+      { to: '/product-management', label: '제품 관리',        icon: Package },
+      { to: '/parts',              label: '부품 관리',        icon: Wrench },
+      { to: '/stores',             label: '매장/거래처 관리', icon: Store },
     ],
   },
   {

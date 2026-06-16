@@ -40,7 +40,8 @@ export const PERMISSION_MENUS: PermissionMenu[] = [
   { id: 'download-logs',  label: '다운로드 로그',  parentLabel: '로그 관리' },
   { id: 'privacy-logs',   label: '개인정보 처리 로그', parentLabel: '로그 관리' },
   // 마스터 관리
-  { id: 'products',       label: '제품',           parentLabel: '마스터 관리' },
+  { id: 'product-list',   label: '제품 리스트',    parentLabel: '마스터 관리' },
+  { id: 'products',       label: '제품 관리',      parentLabel: '마스터 관리' },
   { id: 'parts',          label: '부품',           parentLabel: '마스터 관리' },
   { id: 'stores',         label: '매장/거래처',    parentLabel: '마스터 관리' },
   // 재고 관리
@@ -86,6 +87,7 @@ export const INITIAL_ROLES: PermissionRole[] = [
     description: '티켓·고객·제품 CRUD, 회원 조회',
     permissions: custom({
       members:          { read: true },
+      'product-list':   { read: true },
       products:         { read: true, write: true },
       parts:            { read: true, write: true },
       stores:           { read: true, write: true },

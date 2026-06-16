@@ -628,7 +628,7 @@ export function CustomersPage() {
                       ) : (
                         <button
                           onClick={() => navigate(`/${langCode}/customers/${customer.id}`)}
-                          className="font-mono font-semibold text-gray-900 underline-offset-2 hover:underline"
+                          className="font-mono text-sm font-normal text-gray-600 underline-offset-2 hover:text-gray-900 hover:underline"
                         >
                           {customer.id}
                         </button>

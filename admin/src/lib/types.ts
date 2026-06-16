@@ -170,7 +170,9 @@ export type Product = {
   discontinuedYear?: string    // 단종년도 (SAP 제공, 없을 수 있음)
   stockLocation: string        // 재고보관위치
   isSafetyStock: boolean       // 안전재고여부
-  quantity: number             // 수량
+  quantity: number             // 기본 수량
+  psQuantity?: number          // PS 보유 수량
+  threePlQuantity?: number     // 3PL 보유 수량
   hasDecoration?: boolean      // 장식보유여부
   isRestorationRepair?: boolean // 복원수리 여부
   dataSource: 'SAP' | 'PS'     // 데이터 출처

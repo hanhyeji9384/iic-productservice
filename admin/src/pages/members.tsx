@@ -535,7 +535,7 @@ export function MembersPage() {
                         <td className="px-5 py-4 text-sm text-gray-600">
                           <button
                             onClick={() => navigate(`${pfx}/members/${m.id}`)}
-                            className="text-left font-medium text-gray-900 underline-offset-2 hover:underline"
+                            className="text-left text-sm font-normal text-gray-600 underline-offset-2 hover:text-gray-900 hover:underline"
                           >
                             {m.email}
                           </button>

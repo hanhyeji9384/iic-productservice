@@ -2,16 +2,40 @@ import { createContext, useContext, useState, type ReactNode } from 'react'
 import { PRODUCTS as INITIAL_PRODUCTS, PRODUCT_CHANGE_LOGS as INITIAL_PRODUCT_CHANGE_LOGS } from './mock-data'
 import type { Product, ProductChangeLog } from './types'
 
-type StockPatch = {
-  stockLocation?: string
-  quantity?: number
-  hasDecoration?: boolean
-  isRestorationRepair?: boolean
-}
+type StockPatch = Partial<Pick<Product,
+  | 'name'
+  | 'brandCategory'
+  | 'midCategory'
+  | 'subCategory'
+  | 'factory1'
+  | 'factory2'
+  | 'factory3'
+  | 'releaseDate'
+  | 'partsRetentionPeriod'
+  | 'stockLocation'
+  | 'quantity'
+  | 'psQuantity'
+  | 'threePlQuantity'
+  | 'isSafetyStock'
+  | 'hasDecoration'
+  | 'isRestorationRepair'
+>>
 
 type ProductManagementUpdate = {
   productCode: string
-  hasDecoration?: boolean
+  name?: string
+  brandCategory?: string
+  midCategory?: string
+  subCategory?: string
+  factory1?: string
+  factory2?: string | null
+  factory3?: string | null
+  releaseDate?: string
+  partsRetentionPeriod?: string
+  stockLocation?: string
+  isSafetyStock?: boolean
+  psQuantity?: number
+  threePlQuantity?: number
   isRestorationRepair?: boolean
 }
 
@@ -31,8 +55,6 @@ const CURRENT_ADMIN = {
   id: 'monster563',
 }
 
-const DEFAULT_DECORATION_PRODUCT_IDS = new Set(['P01', 'P02', 'P06', 'P08', 'P10', 'P11', 'P12', 'P14', 'P20', 'P21', 'P22'])
-
 function nowString() {
   const d = new Date()
   const pad = (n: number) => String(n).padStart(2, '0')
@@ -43,16 +65,16 @@ function logId(type: ProductChangeLog['changeType'], productId: string) {
   return `${type}-${productId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
 }
 
-function hasDecorationProduct(product: Product) {
-  return product.hasDecoration ?? DEFAULT_DECORATION_PRODUCT_IDS.has(product.id)
-}
-
 function isRestorationRepairProduct(product: Product) {
   return product.isRestorationRepair ?? /METAL|COMBI/.test(product.subCategory)
 }
 
 function yn(value: boolean) {
   return value ? 'Y' : 'N'
+}
+
+function num(value: number | undefined, fallback = 0) {
+  return value ?? fallback
 }
 
 function buildProductLog(product: Product, changeType: ProductChangeLog['changeType'], summary: string, changedAt = nowString()): ProductChangeLog {
@@ -71,8 +93,20 @@ function buildProductLog(product: Product, changeType: ProductChangeLog['changeT
 
 function buildProductManagementDiff(current: Product, updated: Product) {
   const diffs: string[] = []
-  if (hasDecorationProduct(current) !== hasDecorationProduct(updated)) diffs.push(`장식보유여부: ${yn(hasDecorationProduct(current))} → ${yn(hasDecorationProduct(updated))}`)
-  if (isRestorationRepairProduct(current) !== isRestorationRepairProduct(updated)) diffs.push(`복원수리: ${yn(isRestorationRepairProduct(current))} → ${yn(isRestorationRepairProduct(updated))}`)
+  if (current.name !== updated.name) diffs.push(`제품명: ${current.name} → ${updated.name}`)
+  if (current.brandCategory !== updated.brandCategory || current.midCategory !== updated.midCategory || current.subCategory !== updated.subCategory) {
+    diffs.push(`제품범주: ${current.brandCategory}/${current.midCategory}/${current.subCategory} → ${updated.brandCategory}/${updated.midCategory}/${updated.subCategory}`)
+  }
+  if (current.factory1 !== updated.factory1) diffs.push(`생산공장1: ${current.factory1} → ${updated.factory1}`)
+  if ((current.factory2 ?? '') !== (updated.factory2 ?? '')) diffs.push(`생산공장2: ${current.factory2 ?? '-'} → ${updated.factory2 ?? '-'}`)
+  if ((current.factory3 ?? '') !== (updated.factory3 ?? '')) diffs.push(`생산공장3: ${current.factory3 ?? '-'} → ${updated.factory3 ?? '-'}`)
+  if (current.releaseDate !== updated.releaseDate) diffs.push(`출시일: ${current.releaseDate} → ${updated.releaseDate}`)
+  if (current.partsRetentionPeriod !== updated.partsRetentionPeriod) diffs.push(`부품보유기한: ${current.partsRetentionPeriod || '-'} → ${updated.partsRetentionPeriod || '-'}`)
+  if (current.stockLocation !== updated.stockLocation) diffs.push(`재고보관위치: ${current.stockLocation || '-'} → ${updated.stockLocation || '-'}`)
+  if (current.isSafetyStock !== updated.isSafetyStock) diffs.push(`안전재고여부: ${yn(current.isSafetyStock)} → ${yn(updated.isSafetyStock)}`)
+  if (num(current.psQuantity, current.quantity) !== num(updated.psQuantity, updated.quantity)) diffs.push(`PS수량: ${num(current.psQuantity, current.quantity)} → ${num(updated.psQuantity, updated.quantity)}`)
+  if (num(current.threePlQuantity) !== num(updated.threePlQuantity)) diffs.push(`3PL수량: ${num(current.threePlQuantity)} → ${num(updated.threePlQuantity)}`)
+  if (isRestorationRepairProduct(current) !== isRestorationRepairProduct(updated)) diffs.push(`복원 의뢰 여부: ${yn(isRestorationRepairProduct(current))} → ${yn(isRestorationRepairProduct(updated))}`)
   return diffs.join(' / ') || '변경 없음'
 }
 
@@ -85,6 +119,16 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
   }
 
   function updateProduct(updated: Product) {
+    const current = products.find(product => product.id === updated.id)
+    if (current) {
+      const summary = buildProductManagementDiff(current, updated)
+      if (summary !== '변경 없음') {
+        setProductChangeLogs(prev => [
+          buildProductLog(current, 'update', summary),
+          ...prev,
+        ])
+      }
+    }
     setProducts(prev => prev.map(p => p.id === updated.id ? updated : p))
   }
 
@@ -114,7 +158,22 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       if (!current) return
 
       const patch: StockPatch = {}
-      if (typeof update.hasDecoration === 'boolean') patch.hasDecoration = update.hasDecoration
+      if (typeof update.name === 'string') patch.name = update.name
+      if (typeof update.brandCategory === 'string') patch.brandCategory = update.brandCategory
+      if (typeof update.midCategory === 'string') patch.midCategory = update.midCategory
+      if (typeof update.subCategory === 'string') patch.subCategory = update.subCategory
+      if (typeof update.factory1 === 'string') patch.factory1 = update.factory1
+      if (update.factory2 !== undefined) patch.factory2 = update.factory2
+      if (update.factory3 !== undefined) patch.factory3 = update.factory3
+      if (typeof update.releaseDate === 'string') patch.releaseDate = update.releaseDate
+      if (typeof update.partsRetentionPeriod === 'string') patch.partsRetentionPeriod = update.partsRetentionPeriod
+      if (typeof update.stockLocation === 'string') patch.stockLocation = update.stockLocation
+      if (typeof update.isSafetyStock === 'boolean') patch.isSafetyStock = update.isSafetyStock
+      if (typeof update.psQuantity === 'number') {
+        patch.psQuantity = update.psQuantity
+        patch.quantity = update.psQuantity
+      }
+      if (typeof update.threePlQuantity === 'number') patch.threePlQuantity = update.threePlQuantity
       if (typeof update.isRestorationRepair === 'boolean') patch.isRestorationRepair = update.isRestorationRepair
       if (Object.keys(patch).length === 0) return
 

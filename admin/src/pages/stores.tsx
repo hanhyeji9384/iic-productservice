@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { X, Download, ArrowUp, ArrowDown, ArrowUpDown, Filter } from 'lucide-react'
 import { Pagination } from '@/components/pagination'
-import { BRANCHES, STORES } from '@/lib/mock-data'
+import { STORES } from '@/lib/mock-data'
 import type { Store } from '@/lib/types'
 
 const ITEMS_PER_PAGE = 30
@@ -68,31 +68,13 @@ export function StoresPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc' | null>(null)
   const [filterPopover, setFilterPopover] = useState<{ col: string; rect: DOMRect } | null>(null)
 
-  const branchOptions = useMemo(() => BRANCHES.filter(b => STORES.some(s => s.branchCode === b.code)), [])
-  const defaultBranchCode = branchOptions.find(branch => branch.code === '1110')?.code ?? branchOptions[0]?.code ?? ''
-  const defaultBranchFilter = useMemo<Record<string, string>>(
-    () => {
-      const filter: Record<string, string> = {}
-      if (defaultBranchCode) filter.branch = defaultBranchCode
-      return filter
-    },
-    [defaultBranchCode]
-  )
-  const [columnFilters, setColumnFilters] = useState<Record<string, string>>(() => ({ ...defaultBranchFilter }))
-  const [appliedColumnFilters, setAppliedColumnFilters] = useState<Record<string, string>>(() => ({ ...defaultBranchFilter }))
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({})
+  const [appliedColumnFilters, setAppliedColumnFilters] = useState<Record<string, string>>({})
   const cities = useMemo(() => [...new Set(STORES.map(s => displayValue(s.address1)))].filter(city => city !== '-').sort(), [])
   const storeGroups = useMemo(() => [...new Set(STORES.map(s => s.storeGroup))].sort((a, b) => a - b), [])
 
-  useEffect(() => {
-    if (!defaultBranchCode) return
-    if (appliedColumnFilters.branch) return
-    setColumnFilters(prev => ({ ...prev, branch: defaultBranchCode }))
-    setAppliedColumnFilters(prev => ({ ...prev, branch: defaultBranchCode }))
-  }, [appliedColumnFilters.branch, defaultBranchCode])
-
   const filtered = useMemo(() => {
     return STORES.filter(store => {
-      if (appliedColumnFilters.branch && store.branchCode !== appliedColumnFilters.branch) return false
       if (appliedColumnFilters.code && !store.code.toLowerCase().includes(appliedColumnFilters.code.toLowerCase())) return false
       if (appliedColumnFilters.name && !store.name.toLowerCase().includes(appliedColumnFilters.name.toLowerCase())) return false
       if (appliedColumnFilters.tel1) {
@@ -157,8 +139,8 @@ export function StoresPage() {
   }
 
   function handleReset() {
-    setColumnFilters({ ...defaultBranchFilter })
-    setAppliedColumnFilters({ ...defaultBranchFilter })
+    setColumnFilters({})
+    setAppliedColumnFilters({})
     setPage(1)
   }
 
@@ -269,7 +251,7 @@ export function StoresPage() {
   }
 
   const FILTERABLE_COLS = new Set(['code', 'name', 'tel1', 'city', 'status', 'storeGroup'])
-  const hasAnyFilter = Object.entries(appliedColumnFilters).some(([key, value]) => key !== 'branch' && Boolean(value))
+  const hasAnyFilter = Object.values(appliedColumnFilters).some(Boolean)
 
   return (
     <div className="overflow-x-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -286,33 +268,18 @@ export function StoresPage() {
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          {hasAnyFilter && (
           <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
-            <select
-              value={columnFilters.branch ?? defaultBranchCode}
-              onChange={e => {
-                const val = e.target.value
-                setColumnFilters(prev => ({ ...prev, branch: val }))
-                setAppliedColumnFilters(prev => ({ ...prev, branch: val }))
-                setPage(1)
-              }}
-              className="w-64 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400"
-            >
-              {branchOptions.map(b => (
-                <option key={b.code} value={b.code}>{b.code} {b.name}</option>
-              ))}
-            </select>
-            {hasAnyFilter && (
-              <button onClick={handleReset} className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-                <X className="w-3 h-3" />초기화
-              </button>
-            )}
+            <button onClick={handleReset} className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+              <X className="w-3 h-3" />초기화
+            </button>
           </div>
+          )}
           <div className="overflow-x-auto">
-            <table className="min-w-[1080px] w-full">
+            <table className="min-w-[980px] w-full">
               <thead>
                 <tr className="border-b border-gray-200">
                   {([
-                    { key: 'branch',     label: '법인',         sort: null },
                     { key: 'code',       label: '계정 ID',      sort: 'code' as SortKey },
                     { key: 'name',       label: '이름',         sort: 'name' as SortKey },
                     { key: 'city',       label: '시',           sort: 'city' as SortKey },
@@ -362,7 +329,7 @@ export function StoresPage() {
               <tbody className="divide-y divide-gray-100">
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="px-6 py-12 text-center text-sm text-gray-400">
+                    <td colSpan={8} className="px-6 py-12 text-center text-sm text-gray-400">
                       검색 결과가 없습니다.
                     </td>
                   </tr>
@@ -374,9 +341,6 @@ export function StoresPage() {
                     tabIndex={0}
                     className="hover:bg-gray-50/50 transition-colors cursor-pointer focus:outline-none focus:bg-gray-50"
                   >
-                    <td className="px-5 py-3.5 whitespace-nowrap text-xs text-gray-600">
-                      {(() => { const b = BRANCHES.find(br => br.code === store.branchCode); return b ? `${b.code} ${b.name}` : store.branchCode })()}
-                    </td>
                     <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono font-medium text-gray-900">{store.code}</td>
                     <td className="px-5 py-3.5 whitespace-nowrap text-sm font-semibold text-gray-900">{store.name}</td>
                     <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{displayValue(store.address1)}</td>
