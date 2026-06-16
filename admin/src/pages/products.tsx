@@ -1,12 +1,12 @@
 import { useEffect, useState, useMemo, useRef, type ChangeEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { X, ArrowUp, ArrowDown, ArrowUpDown, Download, Check, Clock, List, Filter, FileDown, Upload } from 'lucide-react'
+import { X, ArrowUp, ArrowDown, ArrowUpDown, Download, Check, Clock, List, Filter, FileDown, Upload, RefreshCw } from 'lucide-react'
 import { Pagination } from '@/components/pagination'
 import { SummaryCell } from '@/components/summary-cell'
 import { downloadCsv } from '@/lib/csv'
 import { useProducts } from '@/lib/products-context'
 import { BRANCHES } from '@/lib/mock-data'
-import type { Product, ProductChangeLog } from '@/lib/types'
+import type { Product, ProductChangeLog, SalesStatus } from '@/lib/types'
 
 function fmtRetention(dateStr: string): string {
   if (!dateStr) return '—'
@@ -14,7 +14,7 @@ function fmtRetention(dateStr: string): string {
   return `${y}년 ${parseInt(m)}월`
 }
 
-type SortKey = 'productCode' | 'name' | 'midCategory' | 'subCategory' | 'stockAvailable' | 'isSafetyStock' | 'isRestorationRepair'
+type SortKey = 'productCode' | 'barcode' | 'name' | 'brandCategory' | 'midCategory' | 'subCategory' | 'stockAvailable' | 'isSafetyStock' | 'hasDecoration' | 'salesStatus' | 'isRestorationRepair'
   | 'factory1' | 'factory2' | 'factory3' | 'releaseDate' | 'partsRetentionPeriod'
 type Tab = 'list' | 'history'
 type ProductsPageMode = 'list' | 'management'
@@ -22,6 +22,7 @@ type BulkYnValue = 'keep' | 'true' | 'false'
 
 const ITEMS_PER_PAGE = 15
 const HISTORY_PER_PAGE = 15
+const SALES_STATUSES: SalesStatus[] = ['사용중', '종료 예정', '판매 종료 (P)', '판매 종료 (C)']
 
 const CHANGE_TYPE_STYLES: Record<ProductChangeLog['changeType'], { bg: string; label: string }> = {
   update: { bg: 'bg-blue-50 text-blue-700', label: '수정' },
@@ -41,6 +42,14 @@ function getAvailableStock(product: Product) {
 
 function hasAvailableStock(product: Product) {
   return getAvailableStock(product) >= 1
+}
+
+function hasSafetyStockShortage(product: Product) {
+  return getAvailableStock(product) < 5
+}
+
+function safetyStockLabel(product: Product) {
+  return hasSafetyStockShortage(product) ? '부족' : ''
 }
 
 function parseCsvLine(line: string) {
@@ -85,6 +94,26 @@ function parseNumber(value: string) {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : undefined
 }
 
+function parseSalesStatus(value: string): SalesStatus | undefined {
+  const normalized = value.trim()
+  return SALES_STATUSES.find(status => status === normalized)
+}
+
+function ynLabel(value: boolean | undefined) {
+  return value ? 'Y' : 'N'
+}
+
+function ynBadgeClass(value: boolean | undefined, negative = false) {
+  if (value) return 'bg-emerald-50 text-emerald-700'
+  return negative ? 'bg-red-50 text-red-700' : 'bg-gray-100 text-gray-500'
+}
+
+function salesStatusBadgeClass(status: SalesStatus) {
+  if (status === '사용중') return 'bg-emerald-50 text-emerald-700'
+  if (status === '종료 예정') return 'bg-amber-50 text-amber-700'
+  return 'bg-gray-100 text-gray-600'
+}
+
 function parseProductCategory(value: string) {
   const parts = value
     .split(/\/|>|,/)
@@ -111,6 +140,7 @@ function parseProductManagementUpdates(text: string) {
   const headers = parseCsvLine(headerLine).map(normalizeHeader)
   const idx = (aliases: string[]) => headers.findIndex(header => aliases.includes(header))
   const productCodeIdx = idx(['제품id', '제품 id', '제품코드', '제품 코드', 'productid', 'productcode'])
+  const barcodeIdx = idx(['변경88코드', '88코드', '변경바코드', '바코드', 'barcode'])
   const nameIdx = idx(['변경제품명', '제품명', 'name', 'productname'])
   const categoryIdx = idx(['변경제품범주', '제품범주', 'productcategory', 'category'])
   const brandIdx = idx(['변경브랜드', '브랜드', 'brand', 'brandcategory'])
@@ -121,9 +151,10 @@ function parseProductManagementUpdates(text: string) {
   const factory3Idx = idx(['변경생산공장3', '생산공장3', 'factory3'])
   const releaseDateIdx = idx(['변경출시일', '출시일', 'releasedate'])
   const partsRetentionIdx = idx(['변경부품보유기한', '부품보유기한', '변경부품보유기간', '부품보유기간', 'partsretentionperiod'])
-  const safetyStockIdx = idx(['변경안전재고여부', '안전재고여부', 'issafetystock', 'safetystock'])
   const psQuantityIdx = idx(['변경ps수량', 'ps수량', 'psoffice수량', 'psquantity'])
   const threePlQuantityIdx = idx(['변경3pl수량', '3pl수량', 'threeplquantity'])
+  const decorationIdx = idx(['변경장식보유여부', '장식보유여부', 'hasdecoration', 'decoration'])
+  const salesStatusIdx = idx(['변경판매상태', '판매상태', 'salesstatus'])
   const restorationIdx = idx(['변경복원가능여부', '복원가능여부', '변경복원의뢰여부', '복원의뢰여부', '변경복원수리', '복원수리', 'isrestorationrepair', 'restorationrepair'])
 
   if (productCodeIdx < 0) return { rows: [], invalidCount: 0 }
@@ -131,6 +162,7 @@ function parseProductManagementUpdates(text: string) {
   let invalidCount = 0
   const rows: Array<{
     productCode: string
+    barcode?: string
     name?: string
     brandCategory?: string
     midCategory?: string
@@ -140,7 +172,8 @@ function parseProductManagementUpdates(text: string) {
     factory3?: string | null
     releaseDate?: string
     partsRetentionPeriod?: string
-    isSafetyStock?: boolean
+    hasDecoration?: boolean
+    salesStatus?: SalesStatus
     psQuantity?: number
     threePlQuantity?: number
     isRestorationRepair?: boolean
@@ -153,9 +186,10 @@ function parseProductManagementUpdates(text: string) {
     const brandCategory = brandIdx >= 0 ? cells[brandIdx]?.trim() || undefined : category?.brandCategory
     const midCategory = midCategoryIdx >= 0 ? cells[midCategoryIdx]?.trim() || undefined : category?.midCategory
     const subCategory = subCategoryIdx >= 0 ? cells[subCategoryIdx]?.trim() || undefined : category?.subCategory
-    const isSafetyStock = safetyStockIdx >= 0 ? parseYn(cells[safetyStockIdx] ?? '') : undefined
     const psQuantity = psQuantityIdx >= 0 ? parseNumber(cells[psQuantityIdx] ?? '') : undefined
     const threePlQuantity = threePlQuantityIdx >= 0 ? parseNumber(cells[threePlQuantityIdx] ?? '') : undefined
+    const hasDecoration = decorationIdx >= 0 ? parseYn(cells[decorationIdx] ?? '') : undefined
+    const salesStatus = salesStatusIdx >= 0 ? parseSalesStatus(cells[salesStatusIdx] ?? '') : undefined
     const isRestorationRepair = restorationIdx >= 0 ? parseYn(cells[restorationIdx] ?? '') : undefined
 
     if (!productCode) {
@@ -164,6 +198,7 @@ function parseProductManagementUpdates(text: string) {
     }
     const row = {
       productCode,
+      barcode: barcodeIdx >= 0 ? cells[barcodeIdx]?.trim() || undefined : undefined,
       name: nameIdx >= 0 ? cells[nameIdx]?.trim() || undefined : undefined,
       brandCategory,
       midCategory,
@@ -173,7 +208,8 @@ function parseProductManagementUpdates(text: string) {
       factory3: factory3Idx >= 0 ? cells[factory3Idx]?.trim() || null : undefined,
       releaseDate: releaseDateIdx >= 0 ? cells[releaseDateIdx]?.trim() || undefined : undefined,
       partsRetentionPeriod: partsRetentionIdx >= 0 ? cells[partsRetentionIdx]?.trim() || undefined : undefined,
-      isSafetyStock,
+      hasDecoration,
+      salesStatus,
       psQuantity,
       threePlQuantity,
       isRestorationRepair,
@@ -215,7 +251,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc' | null>(null)
   const [selected, setSelected] = useState<Set<string>>(new Set())
-  const [safetyStockValue, setSafetyStockValue] = useState<BulkYnValue>('keep')
+  const [decorationValue, setDecorationValue] = useState<BulkYnValue>('keep')
   const [restorationRepairValue, setRestorationRepairValue] = useState<BulkYnValue>('keep')
   const [historyPage, setHistoryPage] = useState(1)
   const [uploadOpen, setUploadOpen] = useState(false)
@@ -240,6 +276,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     return <ArrowDown className="w-3 h-3 text-gray-700 flex-shrink-0" />
   }
 
+  const brandCategories = useMemo(() => [...new Set(products.map(p => p.brandCategory))].sort(), [products])
   const midCategories = useMemo(() => [...new Set(products.map(p => p.midCategory))].sort(), [products])
   const subCategories = useMemo(() => [...new Set(products.map(p => p.subCategory))].sort(), [products])
   const factories1 = useMemo(() => [...new Set(products.map(p => p.factory1))], [products])
@@ -254,13 +291,17 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     return products.filter(p => {
       if (appliedColumnFilters.branch && p.branchCode !== appliedColumnFilters.branch) return false
       if (appliedColumnFilters.productCode && !p.productCode.toLowerCase().includes(appliedColumnFilters.productCode.toLowerCase())) return false
+      if (appliedColumnFilters.barcode && !p.barcode.toLowerCase().includes(appliedColumnFilters.barcode.toLowerCase())) return false
       if (appliedColumnFilters.name && !p.name.toLowerCase().includes(appliedColumnFilters.name.toLowerCase())) return false
+      if (appliedColumnFilters.brandCategory && p.brandCategory !== appliedColumnFilters.brandCategory) return false
       if (appliedColumnFilters.midCategory && p.midCategory !== appliedColumnFilters.midCategory) return false
       if (appliedColumnFilters.subCategory && p.subCategory !== appliedColumnFilters.subCategory) return false
       if (appliedColumnFilters.factory1 && p.factory1 !== appliedColumnFilters.factory1) return false
       if (appliedColumnFilters.factory2 && p.factory2 !== appliedColumnFilters.factory2) return false
       if (appliedColumnFilters.factory3 && p.factory3 !== appliedColumnFilters.factory3) return false
-      if (appliedColumnFilters.isSafetyStock && p.isSafetyStock !== (appliedColumnFilters.isSafetyStock === 'true')) return false
+      if (appliedColumnFilters.isSafetyStock && hasSafetyStockShortage(p) !== (appliedColumnFilters.isSafetyStock === 'true')) return false
+      if (appliedColumnFilters.hasDecoration && (p.hasDecoration ?? false) !== (appliedColumnFilters.hasDecoration === 'true')) return false
+      if (appliedColumnFilters.salesStatus && p.salesStatus !== appliedColumnFilters.salesStatus) return false
       if (appliedColumnFilters.stockAvailable && hasAvailableStock(p) !== (appliedColumnFilters.stockAvailable === 'true')) return false
       if (appliedColumnFilters.restorationRepair && isRestorationRepairProduct(p) !== (appliedColumnFilters.restorationRepair === 'true')) return false
       if (appliedColumnFilters.releaseDateFrom && p.releaseDate < appliedColumnFilters.releaseDateFrom) return false
@@ -279,15 +320,19 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           : sortKey === 'isRestorationRepair'
             ? isRestorationRepairProduct(a)
             : sortKey === 'isSafetyStock'
-              ? a.isSafetyStock
-              : a[sortKey as keyof Product]
+              ? hasSafetyStockShortage(a)
+              : sortKey === 'hasDecoration'
+                ? a.hasDecoration ?? false
+                : a[sortKey as keyof Product]
       const bv = sortKey === 'stockAvailable'
           ? hasAvailableStock(b)
           : sortKey === 'isRestorationRepair'
             ? isRestorationRepairProduct(b)
             : sortKey === 'isSafetyStock'
-              ? b.isSafetyStock
-              : b[sortKey as keyof Product]
+              ? hasSafetyStockShortage(b)
+              : sortKey === 'hasDecoration'
+                ? b.hasDecoration ?? false
+                : b[sortKey as keyof Product]
       const sortableA = av
       const sortableB = bv
       if (sortableA == null && sortableB == null) return 0
@@ -319,12 +364,14 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
 
   function handleExport() {
     const headers = isManagementMode
-      ? ['제품 ID','제품명','중분류','소분류','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','안전재고여부','복원 가능 여부']
-      : ['제품명','제품 코드','중분류','소분류','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','재고보유여부','복원 가능 여부']
+      ? ['제품 ID','88코드','제품명','브랜드','중분류','소분류','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','안전재고여부','장식보유여부','판매상태','복원 가능 여부']
+      : ['제품명','제품 코드','브랜드','중분류','소분류','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','재고보유여부','복원 가능 여부']
     const rows = isManagementMode
       ? sorted.map(p => [
           p.productCode,
+          p.barcode,
           p.name,
+          p.brandCategory,
           p.midCategory,
           p.subCategory,
           p.factory1,
@@ -332,12 +379,15 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           p.factory3 ?? '',
           p.releaseDate,
           p.partsRetentionPeriod,
-          p.isSafetyStock ? 'Y' : 'N',
+          safetyStockLabel(p),
+          ynLabel(p.hasDecoration),
+          p.salesStatus,
           isRestorationRepairProduct(p) ? 'Y' : 'N',
         ])
       : sorted.map(p => [
           p.name,
           p.productCode,
+          p.brandCategory,
           p.midCategory,
           p.subCategory,
           p.factory1,
@@ -355,10 +405,12 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
   function handleUploadTemplateDownload() {
     downloadCsv(
       `products_bulk_update_template_${new Date().toISOString().slice(0, 10)}.csv`,
-      ['제품 ID','제품명','중분류','소분류','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','안전재고여부','복원 가능 여부'],
+      ['제품 ID','88코드','제품명','브랜드','중분류','소분류','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','안전재고여부','장식보유여부','판매상태','복원 가능 여부'],
       sorted.map(product => [
         product.productCode,
+        product.barcode,
         product.name,
+        product.brandCategory,
         product.midCategory,
         product.subCategory,
         product.factory1,
@@ -366,7 +418,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
         product.factory3 ?? '',
         product.releaseDate,
         product.partsRetentionPeriod,
-        product.isSafetyStock ? 'Y' : 'N',
+        safetyStockLabel(product),
+        ynLabel(product.hasDecoration),
+        product.salesStatus,
         isRestorationRepairProduct(product) ? 'Y' : 'N',
       ])
     )
@@ -420,12 +474,22 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     setPage(1)
     setSelected(new Set())
     setUploadOpen(false)
-    setSafetyStockValue('keep')
+    setDecorationValue('keep')
+    setRestorationRepairValue('keep')
+  }
+
+  function handleRefresh() {
+    setPage(1)
+    setSelected(new Set())
+    setFilterPopover(null)
+    setUploadOpen(false)
+    setUploadResult('')
+    setDecorationValue('keep')
     setRestorationRepairValue('keep')
   }
 
   function handleBulkManagementApply() {
-    if (safetyStockValue === 'keep' && restorationRepairValue === 'keep') {
+    if (decorationValue === 'keep' && restorationRepairValue === 'keep') {
       setUploadResult('변경할 값을 선택해 주세요.')
       return
     }
@@ -434,14 +498,14 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
       .filter(product => selected.has(product.id))
       .map(product => ({
         productCode: product.productCode,
-        isSafetyStock: safetyStockValue === 'keep' ? undefined : safetyStockValue === 'true',
+        hasDecoration: decorationValue === 'keep' ? undefined : decorationValue === 'true',
         isRestorationRepair: restorationRepairValue === 'keep' ? undefined : restorationRepairValue === 'true',
       }))
 
     const changedCount = updateProductManagementFields(updates)
     setUploadResult(`${changedCount}건 변경 완료`)
     setSelected(new Set())
-    setSafetyStockValue('keep')
+    setDecorationValue('keep')
     setRestorationRepairValue('keep')
   }
 
@@ -453,6 +517,8 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
   function getAppliedFilterDisplay(col: string): string {
     switch (col) {
       case 'isSafetyStock':
+        return appliedColumnFilters[col] === 'true' ? '부족' : '정상'
+      case 'hasDecoration':
       case 'restorationRepair':
       case 'stockAvailable':
         return appliedColumnFilters[col] === 'true' ? 'Y' : 'N'
@@ -484,9 +550,10 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
 
   function renderFilterPopoverContent(col: string) {
     switch (col) {
+      case 'brandCategory':
       case 'midCategory':
       case 'subCategory': {
-        const options = col === 'midCategory' ? midCategories : subCategories
+        const options = col === 'brandCategory' ? brandCategories : col === 'midCategory' ? midCategories : subCategories
         return (
           <div className="space-y-1 max-h-64 overflow-y-auto">
             <button onClick={() => applyFilter({ [col]: undefined })}
@@ -501,9 +568,12 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
         )
       }
       case 'isSafetyStock':
+      case 'hasDecoration':
       case 'stockAvailable':
       case 'restorationRepair': {
         const labelKey = col === 'restorationRepair' ? 'restorationRepair' : col
+        const trueLabel = col === 'isSafetyStock' ? '부족' : 'Y'
+        const falseLabel = col === 'isSafetyStock' ? '정상' : 'N'
         return (
           <div className="space-y-1">
             <button onClick={() => applyFilter({ [labelKey]: undefined })}
@@ -511,13 +581,26 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
             >전체</button>
             <button onClick={() => applyFilter({ [labelKey]: 'true' })}
               className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters[labelKey] === 'true' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >Y</button>
+            >{trueLabel}</button>
             <button onClick={() => applyFilter({ [labelKey]: 'false' })}
               className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters[labelKey] === 'false' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >N</button>
+            >{falseLabel}</button>
           </div>
         )
       }
+      case 'salesStatus':
+        return (
+          <div className="space-y-1">
+            <button onClick={() => applyFilter({ salesStatus: undefined })}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.salesStatus ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >전체</button>
+            {SALES_STATUSES.map(status => (
+              <button key={status} onClick={() => applyFilter({ salesStatus: status })}
+                className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.salesStatus === status ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              >{status}</button>
+            ))}
+          </div>
+        )
       case 'factory1':
       case 'factory2':
       case 'factory3': {
@@ -576,8 +659,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           </div>
         )
       case 'productCode':
+      case 'barcode':
       case 'name': {
-        const placeholder = col === 'productCode' ? '제품 ID 검색...' : '제품명 검색...'
+        const placeholder = col === 'productCode' ? '제품 ID 검색...' : col === 'barcode' ? '88코드 검색...' : '제품명 검색...'
         return (
           <div className="w-44 space-y-1.5">
             <input type="text" value={columnFilters[col] ?? ''}
@@ -602,17 +686,21 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
   }
 
   const FILTERABLE_COLS = new Set([
-    'name', 'productCode', 'midCategory', 'subCategory', 'factory1', 'factory2', 'factory3',
-    'releaseDate', 'partsRetentionPeriod', 'isSafetyStock', 'stockAvailable', 'isRestorationRepair',
+    'name', 'productCode', 'barcode', 'brandCategory', 'midCategory', 'subCategory', 'factory1', 'factory2', 'factory3',
+    'releaseDate', 'partsRetentionPeriod', 'isSafetyStock', 'hasDecoration', 'salesStatus', 'stockAvailable', 'isRestorationRepair',
   ])
 
   const COL_FILTER_KEY: Record<string, string> = {
     productCode: 'productCode',
+    barcode: 'barcode',
     name: 'name',
+    brandCategory: 'brandCategory',
     midCategory: 'midCategory',
     subCategory: 'subCategory',
     stockAvailable: 'stockAvailable',
     isSafetyStock: 'isSafetyStock',
+    hasDecoration: 'hasDecoration',
+    salesStatus: 'salesStatus',
     isRestorationRepair: 'restorationRepair',
     factory1: 'factory1',
     factory2: 'factory2',
@@ -624,6 +712,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
   const listTableColumns: { key: string; label: string; sort: SortKey | null }[] = [
     { key: 'name',                 label: '제품명',      sort: 'name' },
     { key: 'productCode',          label: '제품 코드',    sort: 'productCode' },
+    { key: 'brandCategory',        label: '브랜드',      sort: 'brandCategory' },
     { key: 'midCategory',          label: '중분류',      sort: 'midCategory' },
     { key: 'subCategory',          label: '소분류',      sort: 'subCategory' },
     { key: 'factory1',             label: '생산공장1',   sort: 'factory1' },
@@ -636,7 +725,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
   ]
   const managementTableColumns: { key: string; label: string; sort: SortKey | null }[] = [
     { key: 'productCode',          label: '제품 ID',     sort: 'productCode' },
+    { key: 'barcode',              label: '88코드',      sort: 'barcode' },
     { key: 'name',                 label: '제품명',      sort: 'name' },
+    { key: 'brandCategory',        label: '브랜드',      sort: 'brandCategory' },
     { key: 'midCategory',          label: '중분류',      sort: 'midCategory' },
     { key: 'subCategory',          label: '소분류',      sort: 'subCategory' },
     { key: 'factory1',             label: '생산공장1',   sort: 'factory1' },
@@ -645,6 +736,8 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     { key: 'releaseDate',          label: '출시일',      sort: 'releaseDate' },
     { key: 'partsRetentionPeriod', label: '부품보유기한', sort: 'partsRetentionPeriod' },
     { key: 'isSafetyStock',        label: '안전재고여부', sort: 'isSafetyStock' },
+    { key: 'hasDecoration',        label: '장식보유여부', sort: 'hasDecoration' },
+    { key: 'salesStatus',          label: '판매상태',    sort: 'salesStatus' },
     { key: 'isRestorationRepair',  label: '복원 가능 여부', sort: 'isRestorationRepair' },
   ]
   const tableColumns = isManagementMode ? managementTableColumns : listTableColumns
@@ -667,6 +760,13 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           <h1 className="text-xl font-bold text-gray-900">{isManagementMode ? '제품 관리' : '제품 리스트'}</h1>
           {activeTab === 'list' && (
           <div className="flex items-center gap-2">
+            <button
+              onClick={handleRefresh}
+              className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors text-sm font-medium"
+            >
+              <RefreshCw className="w-4 h-4" />
+              새로고침
+            </button>
             <button
               onClick={handleExport}
               className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors text-sm font-medium"
@@ -874,7 +974,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                             {p.productCode}
                           </Link>
                         </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono text-gray-600">{p.barcode}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm font-semibold text-gray-900">{p.name}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.brandCategory}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.midCategory}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.subCategory}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.factory1}</td>
@@ -883,17 +985,25 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.releaseDate}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{fmtRetention(p.partsRetentionPeriod)}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
-                            p.isSafetyStock ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
-                          }`}>
-                            {p.isSafetyStock ? 'Y' : 'N'}
+                          {hasSafetyStockShortage(p) ? (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-red-50 text-red-700">부족</span>
+                          ) : (
+                            <span className="text-sm text-gray-300">—</span>
+                          )}
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(p.hasDecoration)}`}>
+                            {ynLabel(p.hasDecoration)}
                           </span>
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
-                            isRestorationRepairProduct(p) ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
-                          }`}>
-                            {isRestorationRepairProduct(p) ? 'Y' : 'N'}
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${salesStatusBadgeClass(p.salesStatus)}`}>
+                            {p.salesStatus}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(isRestorationRepairProduct(p))}`}>
+                            {ynLabel(isRestorationRepairProduct(p))}
                           </span>
                         </td>
                         </>
@@ -903,6 +1013,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                         <td className="px-5 py-3.5 whitespace-nowrap">
                           <span className="font-mono text-sm font-normal text-gray-600">{p.productCode}</span>
                         </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.brandCategory}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.midCategory}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.subCategory}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.factory1}</td>
@@ -911,17 +1022,13 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.releaseDate}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{fmtRetention(p.partsRetentionPeriod)}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
-                            hasAvailableStock(p) ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'
-                          }`}>
-                            {hasAvailableStock(p) ? 'Y' : 'N'}
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(hasAvailableStock(p), true)}`}>
+                            {ynLabel(hasAvailableStock(p))}
                           </span>
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${
-                            isRestorationRepairProduct(p) ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
-                          }`}>
-                            {isRestorationRepairProduct(p) ? 'Y' : 'N'}
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(isRestorationRepairProduct(p))}`}>
+                            {ynLabel(isRestorationRepairProduct(p))}
                           </span>
                         </td>
                         </>
@@ -988,10 +1095,10 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
               <span className="text-sm font-semibold whitespace-nowrap">{selected.size}개 선택</span>
               <div className="w-px h-5 bg-gray-600" />
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400 whitespace-nowrap">안전재고여부</span>
+                <span className="text-xs text-gray-400 whitespace-nowrap">장식보유여부</span>
                 <select
-                  value={safetyStockValue}
-                  onChange={e => setSafetyStockValue(e.target.value as BulkYnValue)}
+                  value={decorationValue}
+                  onChange={e => setDecorationValue(e.target.value as BulkYnValue)}
                   className="w-24 px-2.5 py-1.5 text-sm bg-gray-800 border border-gray-600 rounded-lg outline-none focus:border-gray-400 text-white"
                 >
                   <option value="keep">유지</option>
@@ -1021,7 +1128,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
               <button
                 onClick={() => {
                   setSelected(new Set())
-                  setSafetyStockValue('keep')
+                  setDecorationValue('keep')
                   setRestorationRepairValue('keep')
                 }}
                 className="p-1.5 text-gray-400 hover:text-white transition-colors"

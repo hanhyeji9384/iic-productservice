@@ -4,6 +4,7 @@ import type { Product, ProductChangeLog } from './types'
 
 type StockPatch = Partial<Pick<Product,
   | 'name'
+  | 'barcode'
   | 'brandCategory'
   | 'midCategory'
   | 'subCategory'
@@ -15,14 +16,15 @@ type StockPatch = Partial<Pick<Product,
   | 'quantity'
   | 'psQuantity'
   | 'threePlQuantity'
-  | 'isSafetyStock'
   | 'hasDecoration'
+  | 'salesStatus'
   | 'isRestorationRepair'
 >>
 
 type ProductManagementUpdate = {
   productCode: string
   name?: string
+  barcode?: string
   brandCategory?: string
   midCategory?: string
   subCategory?: string
@@ -31,7 +33,8 @@ type ProductManagementUpdate = {
   factory3?: string | null
   releaseDate?: string
   partsRetentionPeriod?: string
-  isSafetyStock?: boolean
+  hasDecoration?: boolean
+  salesStatus?: Product['salesStatus']
   psQuantity?: number
   threePlQuantity?: number
   isRestorationRepair?: boolean
@@ -91,6 +94,7 @@ function buildProductLog(product: Product, changeType: ProductChangeLog['changeT
 
 function buildProductManagementDiff(current: Product, updated: Product) {
   const diffs: string[] = []
+  if (current.barcode !== updated.barcode) diffs.push(`88코드: ${current.barcode || '-'} → ${updated.barcode || '-'}`)
   if (current.name !== updated.name) diffs.push(`제품명: ${current.name} → ${updated.name}`)
   if (current.brandCategory !== updated.brandCategory || current.midCategory !== updated.midCategory || current.subCategory !== updated.subCategory) {
     diffs.push(`제품범주: ${current.brandCategory}/${current.midCategory}/${current.subCategory} → ${updated.brandCategory}/${updated.midCategory}/${updated.subCategory}`)
@@ -100,7 +104,8 @@ function buildProductManagementDiff(current: Product, updated: Product) {
   if ((current.factory3 ?? '') !== (updated.factory3 ?? '')) diffs.push(`생산공장3: ${current.factory3 ?? '-'} → ${updated.factory3 ?? '-'}`)
   if (current.releaseDate !== updated.releaseDate) diffs.push(`출시일: ${current.releaseDate} → ${updated.releaseDate}`)
   if (current.partsRetentionPeriod !== updated.partsRetentionPeriod) diffs.push(`부품보유기한: ${current.partsRetentionPeriod || '-'} → ${updated.partsRetentionPeriod || '-'}`)
-  if (current.isSafetyStock !== updated.isSafetyStock) diffs.push(`안전재고여부: ${yn(current.isSafetyStock)} → ${yn(updated.isSafetyStock)}`)
+  if ((current.hasDecoration ?? false) !== (updated.hasDecoration ?? false)) diffs.push(`장식보유여부: ${yn(current.hasDecoration ?? false)} → ${yn(updated.hasDecoration ?? false)}`)
+  if (current.salesStatus !== updated.salesStatus) diffs.push(`판매상태: ${current.salesStatus} → ${updated.salesStatus}`)
   if (num(current.psQuantity, current.quantity) !== num(updated.psQuantity, updated.quantity)) diffs.push(`PS수량: ${num(current.psQuantity, current.quantity)} → ${num(updated.psQuantity, updated.quantity)}`)
   if (num(current.threePlQuantity) !== num(updated.threePlQuantity)) diffs.push(`3PL수량: ${num(current.threePlQuantity)} → ${num(updated.threePlQuantity)}`)
   if (isRestorationRepairProduct(current) !== isRestorationRepairProduct(updated)) diffs.push(`복원 가능 여부: ${yn(isRestorationRepairProduct(current))} → ${yn(isRestorationRepairProduct(updated))}`)
@@ -156,6 +161,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
 
       const patch: StockPatch = {}
       if (typeof update.name === 'string') patch.name = update.name
+      if (typeof update.barcode === 'string') patch.barcode = update.barcode
       if (typeof update.brandCategory === 'string') patch.brandCategory = update.brandCategory
       if (typeof update.midCategory === 'string') patch.midCategory = update.midCategory
       if (typeof update.subCategory === 'string') patch.subCategory = update.subCategory
@@ -164,7 +170,8 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       if (update.factory3 !== undefined) patch.factory3 = update.factory3
       if (typeof update.releaseDate === 'string') patch.releaseDate = update.releaseDate
       if (typeof update.partsRetentionPeriod === 'string') patch.partsRetentionPeriod = update.partsRetentionPeriod
-      if (typeof update.isSafetyStock === 'boolean') patch.isSafetyStock = update.isSafetyStock
+      if (typeof update.hasDecoration === 'boolean') patch.hasDecoration = update.hasDecoration
+      if (typeof update.salesStatus === 'string') patch.salesStatus = update.salesStatus
       if (typeof update.psQuantity === 'number') {
         patch.psQuantity = update.psQuantity
         patch.quantity = update.psQuantity
