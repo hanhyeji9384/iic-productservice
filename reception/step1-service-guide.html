@@ -41,87 +41,46 @@
 
     .guide-steps {
       display: grid;
-      grid-template-columns: 0.9fr 1.1fr;
-      gap: 28px;
-      padding: 28px;
+      grid-template-columns: repeat(2, 1fr);
+      grid-auto-rows: 1fr;
+      gap: 1px;
+      aspect-ratio: 1 / 1;
       border: 1px solid var(--gray-200);
       margin-bottom: 40px;
-      background: #fafafa;
+      background: var(--gray-200);
     }
 
-    .guide-flow-intro {
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 260px;
-      padding: 28px;
+    .guide-step {
+      min-height: 0;
+      padding: 24px;
       background: #fff;
-      border: 1px solid var(--gray-200);
     }
 
-    .guide-flow-kicker {
-      margin-bottom: 18px;
-      font-size: 10px;
-      color: var(--gray-400);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-    }
-
-    .guide-flow-title {
-      margin-bottom: 16px;
-      font-size: 20px;
-      font-weight: 500;
-      line-height: 1.4;
-    }
-
-    .guide-flow-copy {
-      font-size: 13px;
-      color: #555;
-      line-height: 1.9;
-      white-space: pre-line;
-    }
-
-    .guide-flow-list {
-      display: grid;
-      gap: 12px;
-    }
-
-    .guide-flow-item {
-      display: grid;
-      grid-template-columns: 34px 1fr;
-      gap: 14px;
-      align-items: flex-start;
-      padding: 18px 0;
-      border-bottom: 1px solid var(--gray-200);
-    }
-
-    .guide-flow-item:last-child {
-      border-bottom: 0;
-    }
-
-    .guide-flow-num {
+    .guide-step-num {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 34px;
-      height: 34px;
+      width: 32px;
+      height: 32px;
       border: 1px solid #111;
       border-radius: 50%;
+      margin-bottom: 22px;
       font-size: 11px;
       font-weight: 500;
       color: #111;
     }
 
-    .guide-flow-item-title {
-      margin-bottom: 6px;
+    .guide-step-title {
+      margin-bottom: 12px;
       font-size: 14px;
       font-weight: 500;
+      line-height: 1.45;
     }
 
-    .guide-flow-item-copy {
+    .guide-step-copy {
       font-size: 12px;
       color: #555;
-      line-height: 1.75;
+      line-height: 1.8;
       white-space: pre-line;
     }
 
@@ -144,45 +103,6 @@
       color: #555;
       line-height: 1.85;
       white-space: pre-line;
-    }
-
-    .terms-cta-card {
-      display: flex;
-      justify-content: space-between;
-      gap: 20px;
-      align-items: center;
-      padding: 22px 24px;
-      border: 1px solid var(--gray-200);
-      margin-bottom: 16px;
-      background: #fff;
-    }
-
-    .terms-cta-title {
-      margin-bottom: 6px;
-      font-size: 15px;
-      font-weight: 500;
-    }
-
-    .terms-cta-copy {
-      font-size: 12px;
-      color: var(--gray-500);
-      line-height: 1.7;
-    }
-
-    .terms-open-btn {
-      min-width: 180px;
-      height: 44px;
-      border: 1px solid #111;
-      background: #111;
-      color: #fff;
-      font-family: inherit;
-      font-size: 12px;
-      cursor: pointer;
-    }
-
-    .terms-open-btn.is-confirmed {
-      background: #fff;
-      color: #111;
     }
 
     .terms-modal-overlay {
@@ -284,10 +204,6 @@
     }
 
     @media (max-width: 900px) {
-      .guide-steps {
-        grid-template-columns: 1fr;
-      }
-
       .selected-product {
         flex-direction: column;
       }
@@ -296,14 +212,6 @@
         text-align: left;
       }
 
-      .terms-cta-card {
-        display: block;
-      }
-
-      .terms-open-btn {
-        width: 100%;
-        margin-top: 18px;
-      }
     }
   </style>
 </head>
@@ -352,18 +260,11 @@
     <p class="section-label">이용 방법</p>
     <div class="guide-steps" id="guide-steps"></div>
 
-    <div class="terms-cta-card">
-      <div>
-        <p class="terms-cta-title">수리 신청 전 확인사항</p>
-        <p class="terms-cta-copy" id="terms-status-text">수리 기간, 발송 유의사항, 보관 및 폐기 안내를 확인해 주세요.</p>
-      </div>
-      <button type="button" class="terms-open-btn" id="terms-open-btn" onclick="openTermsModal()">확인사항 보기</button>
-    </div>
-    <p id="agreement-error" style="display:none;font-size:12px;color:#c00;margin:-4px 0 28px;">필수 확인사항을 확인하고 동의해 주세요.</p>
+    <p id="agreement-error" style="display:none;font-size:12px;color:#c00;margin:-16px 0 28px;">필수 확인사항을 확인하고 동의해 주세요.</p>
 
     <div class="btn-wrap">
       <a href="step1.html" class="btn btn-secondary" id="txt-btn-prev">이전</a>
-      <a href="step2-service-type.html" class="btn btn-primary" id="txt-btn-next">동의하고 다음</a>
+      <a href="step2-service-type.html" class="btn btn-primary" id="txt-btn-next">다음</a>
     </div>
   </div>
 </main>
@@ -371,7 +272,7 @@
 <div id="terms-modal-overlay" class="terms-modal-overlay" onclick="if(event.target===this)closeTermsModal()">
   <div class="terms-modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-terms-title">
     <div class="terms-modal-header">
-      <span class="terms-modal-title" id="modal-terms-title">수리 신청 전, 꼭 확인해 주세요</span>
+      <span class="terms-modal-title" id="modal-terms-title">수리 신청 전, 꼭 확인해 주세요.</span>
       <button type="button" class="terms-modal-close" aria-label="닫기" onclick="closeTermsModal()">&times;</button>
     </div>
     <div class="terms-modal-body">
@@ -379,7 +280,7 @@
       <div class="agreement-list" id="agreement-list"></div>
     </div>
     <div class="terms-modal-footer">
-      <button type="button" class="terms-modal-agree" id="modal-agree-btn" onclick="confirmTerms()" disabled>확인하고 동의하기</button>
+      <button type="button" class="terms-modal-agree" id="modal-agree-btn" onclick="confirmTerms()" disabled>다음</button>
     </div>
   </div>
 </div>
@@ -423,7 +324,7 @@ var STEP1_GUIDE = {
       ['제품을 보내실 때', '케이스·보증 카드는 분실 위험이 있으니 동봉하지 말아 주세요.\n› 동봉된 경우, 분실 방지를 위해 함께 반송될 수 있습니다.\n별도 제작 렌즈는 빼고 보내주세요. 수리 중 손상될 수 있으며, 동봉된 렌즈의 파손에 대해서는 보상이 제공되지 않습니다.'],
       ['제품 보관 및 폐기 안내', '프로덕트 서비스팀은 제품 판정일로부터 30일간 보관합니다.\n30일 이내 결제 확인 또는 회신이 없으면, 제품은 반송되거나 관련 법령에 따라 폐기될 수 있습니다.\n› 폐기 후에는 보상·반환이 불가합니다.']
     ],
-    fullTerms: '제1조 [목적]\n본 약관은 젠틀몬스터 제품의 수리 서비스(이하 “서비스”) 이용과 관련하여, 고객과 젠틀몬스터(이하 “회사”) 간의 권리, 의무 및 기타 필요한 사항을 규정함을 목적으로 합니다.\n\n제2조 [보증 기준]\n회사는 젠틀몬스터 정품 제품에 한하여 아래 기준으로 보증 서비스를 제공합니다.\n수리 보증 기간: 최초 구매일로부터 36개월\n품질 보증 기간: 최초 구매일로부터 24개월\n품질 보증 기간 내 제조상 결함으로 인한 제품 이상은 무상 수리를 제공합니다.\n\n보증 적용 여부는 프로덕트 서비스팀의 실물 검수 과정을 통해 판정됩니다.\n공식 구매 증빙(보증 카드, 구매 영수증 등)이 확인되지 않은 제품은 보증 및 서비스 제공이 제한됩니다.\n외부에서 제작된 렌즈, 사설 코패드, 케이스 등은 보증 및 서비스 대상에 포함되지 않습니다.\n\n제3조 [수리 서비스 이용 및 절차]\n고객은 수리 접수 시 회사가 지정한 절차에 따라 제품을 발송해야 합니다.\n케이스 및 보증 카드는 분실 위험이 있으므로 동봉하지 않습니다.\n외부 제작 렌즈는 수리 중 손상될 우려가 있어 미삽입 상태로 발송해야 합니다.\n렌즈 파손에 대해서는 보상이 제공되지 않습니다.\n제품은 도착일 기준으로 순차적으로 점검 및 수리가 진행됩니다.\n유상 수리의 경우, 고객의 결제 완료 이후 수리가 시작됩니다.\n서비스 진행 내용(판정, 비용, 출고 예정일 등)은 이메일·카카오톡·My Account를 통해 안내됩니다.\n\n제4조 [수리 기간 및 비용]\n수리 기간은 서비스 유형 및 협력업체 여부에 따라 상이하며, 아래 기준을 원칙으로 합니다.\n본사 수리: 입고일로부터 약 10–15일 내외\n협력업체 수리: 입고일로부터 약 25–30일 내외\n\n유상 수리의 경우, 비용은 제품의 상태에 따라 산정됩니다.\n수리비 결제 지연 또는 고객 응답 지연으로 인한 지체에 대해서는 회사가 책임지지 않습니다.\n\n제5조 [제품 보관 및 처리]\n회사는 서비스 판정일 기준 30일간 제품을 무상 보관합니다.\n보관 기간 내 결제 확인이 이루어지지 않거나 고객 회신이 없을 경우, 제품은 반송되거나 관련 법령에 따라 적절한 방식으로 폐기될 수 있습니다.\n제품 폐기 이후에는 어떠한 형태의 보상이나 반환이 불가합니다.\n\n제6조 [기타]\n본 약관에서 정하지 않은 사항은 「전자상거래 등에서의 소비자보호에 관한 법률」 및 관련 규정을 따릅니다.',
+    fullTerms: '제1조 [목적]\n본 약관은 젠틀몬스터 제품의 수리 서비스(이하 “서비스”) 이용과 관련하여,\n고객과 젠틀몬스터(이하 “회사”) 간의 권리, 의무 및 기타 필요한 사항을 규정함을 목적으로 합니다.\n\n제2조 [보증 기준]\n회사는 젠틀몬스터 정품 제품에 한하여 아래 기준으로 보증 서비스를 제공합니다.\n수리 보증 기간: 최초 구매일로부터 36개월\n품질 보증 기간: 최초 구매일로부터 24개월\n품질 보증 기간 내 제조상 결함으로 인한 제품 이상은 무상 수리를 제공합니다.\n\n보증 적용 여부는 프로덕트 서비스팀의 실물 검수 과정을 통해 판정됩니다.\n공식 구매 증빙(보증 카드, 구매 영수증 등)이 확인되지 않은 제품은 보증 및 서비스 제공이 제한됩니다.\n외부에서 제작된 렌즈, 사설 코패드, 케이스 등은 보증 및 서비스 대상에 포함되지 않습니다.\n\n제3조 [수리 서비스 이용 및 절차]\n고객은 수리 접수 시 회사가 지정한 절차에 따라 제품을 발송해야 합니다.\n케이스 및 보증 카드는 분실 위험이 있으므로 동봉하지 않습니다.\n외부 제작 렌즈는 수리 중 손상될 우려가 있어 미삽입 상태로 발송해야 합니다.\n렌즈 파손에 대해서는 보상이 제공되지 않습니다.\n제품은 도착일 기준으로 순차적으로 점검 및 수리가 진행됩니다.\n유상 수리의 경우, 고객의 결제 완료 이후 수리가 시작됩니다.\n서비스 진행 내용(판정, 비용, 출고 예정일 등)은 이메일·카카오톡·My Account를 통해 안내됩니다.\n\n제4조 [수리 기간 및 비용]\n수리 기간은 서비스 유형 및 협력업체 여부에 따라 상이하며, 아래 기준을 원칙으로 합니다.\n본사 수리: 입고일로부터 약 10–15일 내외\n협력업체 수리: 입고일로부터 약 25–30일 내외\n\n유상 수리의 경우, 비용은 제품의 상태에 따라 산정됩니다.\n수리비 결제 지연 또는 고객 응답 지연으로 인한 지체에 대해서는 회사가 책임지지 않습니다.\n\n제5조 [제품 보관 및 처리]\n회사는 서비스 판정일 기준 30일간 제품을 무상 보관합니다.\n보관 기간 내 결제 확인이 이루어지지 않거나 고객 회신이 없을 경우,\n제품은 반송되거나 관련 법령에 따라 적절한 방식으로 폐기될 수 있습니다.\n제품 폐기 이후에는 어떠한 형태의 보상이나 반환이 불가합니다.\n\n제6조 [기타]\n본 약관에서 정하지 않은 사항은 「전자상거래 등에서의 소비자보호에 관한 법률」 및 관련 규정을 따릅니다.',
     checks: [{ id: 'terms', text: '수리 서비스 약관 전체 내용에 동의합니다. (필수)' }]
   },
   ie: {
@@ -490,27 +391,13 @@ function renderGuide() {
 
   var steps = document.getElementById('guide-steps');
   if (steps) {
-    var first = data.steps[0];
-    var rest = data.steps.slice(1);
-    steps.innerHTML = '<div class="guide-flow-intro">'
-      + '<div>'
-      + '<p class="guide-flow-kicker">Service Flow</p>'
-      + '<p class="guide-flow-title">' + first[0].replace(/^1단계 · /, '') + '</p>'
-      + '<p class="guide-flow-copy">' + first[1] + '</p>'
+    steps.innerHTML = data.steps.map(function(step, index) {
+      return '<div class="guide-step">'
+      + '<span class="guide-step-num">' + String(index + 1).padStart(2, '0') + '</span>'
+      + '<p class="guide-step-title">' + step[0].replace(/^[0-9]단계 · /, '') + '</p>'
+      + '<p class="guide-step-copy">' + step[1] + '</p>'
       + '</div>'
-      + '<p class="guide-flow-copy" style="color:#888;">제품 선택 정보에 따라 이후 단계에서 가능한 서비스와 배송 방식이 안내됩니다.</p>'
-      + '</div>'
-      + '<div class="guide-flow-list">'
-      + rest.map(function(step, index) {
-        return '<div class="guide-flow-item">'
-          + '<span class="guide-flow-num">' + String(index + 2).padStart(2, '0') + '</span>'
-          + '<div>'
-          + '<p class="guide-flow-item-title">' + step[0].replace(/^[0-9]단계 · /, '') + '</p>'
-          + '<p class="guide-flow-item-copy">' + step[1] + '</p>'
-          + '</div>'
-          + '</div>';
-      }).join('')
-      + '</div>';
+    }).join('');
   }
 
   var termsHtml = data.terms.map(function(section) {
@@ -520,7 +407,7 @@ function renderGuide() {
       + '</div>';
   }).join('');
   if (currentGuideLine === 'organic') {
-    termsHtml += '<details class="terms-toggle"><summary>수리 서비스 약관 보기</summary><div class="terms-toggle-body">' + data.fullTerms + '</div></details>';
+    termsHtml += '<details class="terms-toggle"><summary>수리 서비스 약관 보기 (PDF)</summary><div class="terms-toggle-body">' + data.fullTerms + '</div></details>';
   } else {
     termsHtml += '<details class="terms-toggle"><summary>수리 서비스 약관 보기 (PDF)</summary><div class="terms-toggle-body">IE 수리 서비스 약관 PDF는 추후 연결 예정입니다.</div></details>';
   }
@@ -536,7 +423,6 @@ function renderGuide() {
     }).join('');
   }
   termsConfirmed = !!psState.serviceGuideAgreed && psState.termsAgreeYn === 'Y';
-  updateTermsStatus();
 
   var prev = document.getElementById('txt-btn-prev');
   if (prev) prev.href = 'step1.html' + getQueryStringForStep1();
@@ -567,28 +453,17 @@ function onTermsCheckChange() {
   if (btn) btn.disabled = !isReady();
 }
 
-function updateTermsStatus() {
-  var status = document.getElementById('terms-status-text');
-  var btn = document.getElementById('terms-open-btn');
-  if (status) {
-    status.textContent = termsConfirmed
-      ? '확인사항 동의가 완료되었습니다.'
-      : '수리 기간, 발송 유의사항, 보관 및 폐기 안내를 확인해 주세요.';
-  }
-  if (btn) {
-    btn.textContent = termsConfirmed ? '확인사항 다시 보기' : '확인사항 보기';
-    btn.classList.toggle('is-confirmed', termsConfirmed);
-  }
-}
-
 function confirmTerms() {
   if (!isReady()) {
     onTermsCheckChange();
     return;
   }
   termsConfirmed = true;
-  updateTermsStatus();
-  closeTermsModal();
+  psState.serviceGuideAgreed = true;
+  psState.termsAgreeYn = 'Y';
+  psState.ieDataResetConsent = currentGuideLine === 'ie' ? !!document.getElementById('agree-data')?.checked : false;
+  try { localStorage.setItem('ps-state', JSON.stringify(psState)); } catch(ex) {}
+  window.location.href = 'step2-service-type.html' + getNextQueryString();
 }
 
 function isReady() {
@@ -605,20 +480,8 @@ window.addEventListener('load', function() {
   var next = document.getElementById('txt-btn-next');
   if (next) {
     next.addEventListener('click', function(e) {
-      if (!termsConfirmed || !isReady()) {
-        e.preventDefault();
-        var error = document.getElementById('agreement-error');
-        if (error) error.style.display = 'block';
-        openTermsModal();
-        return;
-      }
-
-      psState.serviceGuideAgreed = true;
-      psState.termsAgreeYn = 'Y';
-      psState.ieDataResetConsent = currentGuideLine === 'ie' ? !!document.getElementById('agree-data')?.checked : false;
-      try { localStorage.setItem('ps-state', JSON.stringify(psState)); } catch(ex) {}
       e.preventDefault();
-      window.location.href = 'step2-service-type.html' + getNextQueryString();
+      openTermsModal();
     });
   }
 });
