@@ -124,7 +124,7 @@
       </label>
     </div>
 
-    <div id="domestic-schedule-options">
+    <div id="domestic-schedule-options" style="display:none;">
       <!-- 긴급 수리 -->
       <p id="lbl-urgent" class="section-label">긴급 수리 <span style="font-size:10px;color:#999;text-transform:none;letter-spacing:0;">(선택)</span></p>
       <label class="check-item" id="urgent-check-item" style="margin-bottom:8px;">
@@ -161,7 +161,7 @@
 
     <div class="btn-wrap">
       <a href="step2-service-type.html" id="btn-prev" class="btn btn-secondary">이전</a>
-      <a href="step3-details.html" class="btn btn-primary" id="btn-total-care-next" style="opacity:0.4;pointer-events:none;">다음 — 사진·렌즈</a>
+      <a href="step3-details.html" class="btn btn-primary" id="btn-total-care-next">다음 — 사진·렌즈</a>
     </div>
 
   </div>
@@ -215,20 +215,10 @@ function selectFitting(label, value) {
 }
 
 function updateTotalCareNextBtn() {
-  if (isUsMarket()) {
-    var usBtn = document.getElementById('btn-total-care-next');
-    if (usBtn) {
-      usBtn.style.opacity = '';
-      usBtn.style.pointerEvents = '';
-    }
-    return;
-  }
-  var isUrgent = document.getElementById('urgent-check').checked;
-  var ready = isUrgent || !!calSelectedDate;
   var btn = document.getElementById('btn-total-care-next');
   if (!btn) return;
-  btn.style.opacity = ready ? '' : '0.4';
-  btn.style.pointerEvents = ready ? '' : 'none';
+  btn.style.opacity = '';
+  btn.style.pointerEvents = '';
 }
 
 // ─── 긴급 수리 ───
@@ -262,7 +252,7 @@ function syncMarketAvailability() {
   var calWrap = document.getElementById('cal-wrapper-el');
   var selWrap = document.getElementById('dispatch-selected-wrap');
   var dispErr = document.getElementById('dispatch-error');
-  if (schedule) schedule.style.display = hiddenForUs ? 'none' : '';
+  if (schedule) schedule.style.display = 'none';
   if (hiddenForUs) {
     if (urgentCheck) urgentCheck.checked = false;
     if (urgentItem) urgentItem.classList.remove('selected');
@@ -411,22 +401,9 @@ function validateAndSave(event) {
     disclaimerCheck.focus();
     return;
   }
-  var isUrgent = document.getElementById('urgent-check').checked;
-  var hiddenForUs = isUsMarket();
-  if (!hiddenForUs && !isUrgent && !calSelectedDate) {
-    event.preventDefault();
-    var dispErr = document.getElementById('dispatch-error');
-    if (dispErr) {
-      dispErr.style.display = 'block';
-      dispErr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-    return;
-  }
   savePsState({
     serviceType: 'total-care',
     fittingOption: selectedFitting,
-    urgentRepair: hiddenForUs ? false : isUrgent,
-    dispatchDate: hiddenForUs || isUrgent ? null : calSelectedDate,
   });
 }
 
