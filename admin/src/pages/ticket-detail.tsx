@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { AlertTriangle, ArrowLeft, Barcode, CheckCircle2, Circle, History, Mail, MessageSquare, Package, RotateCcw, Search, Send } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Barcode, CheckCircle2, ChevronDown, Circle, History, Mail, MessageSquare, Package, RotateCcw, Search, Send } from 'lucide-react'
 import { BRANCHES, MEMBERS } from '@/lib/mock-data'
 import { getTicketsWithExtras } from '@/lib/prototype-storage'
 import { formatCurrency, formatRepairChargeType, getSoDocumentInfo } from '@/lib/ticket-so'
@@ -86,6 +86,11 @@ function getReceptionTitle(ticket: Ticket) {
   return /online/i.test(ticket.receptionPlace) ? 'PS 온라인 접수' : null
 }
 
+function isOnlineAutoCreatedTicket(ticket: Ticket) {
+  const sourceText = `${ticket.receptionTitle ?? ''} ${ticket.receptionPlace}`
+  return /online|온라인/i.test(sourceText)
+}
+
 function getMemberLabel(id?: string, name?: string) {
   const member = id ? MEMBERS.find(item => item.id === id) : null
   const displayName = name || member?.name
@@ -101,6 +106,35 @@ function Field({ label, value }: { label: string; value?: string | null }) {
     <div>
       <dt className="text-[11px] font-medium text-gray-400 mb-0.5">{label}</dt>
       <dd className="text-sm text-gray-800">{value || '-'}</dd>
+    </div>
+  )
+}
+
+function TicketLinkField({
+  label,
+  ticketNo,
+  onClick,
+}: {
+  label: string
+  ticketNo?: string | null
+  onClick: (ticketNo: string) => void
+}) {
+  return (
+    <div>
+      <dt className="text-[11px] font-medium text-gray-400 mb-0.5">{label}</dt>
+      <dd className="text-sm text-gray-800">
+        {ticketNo ? (
+          <button
+            type="button"
+            onClick={() => onClick(ticketNo)}
+            className="font-mono text-sm text-gray-900 underline-offset-4 hover:underline"
+          >
+            {ticketNo}
+          </button>
+        ) : (
+          '-'
+        )}
+      </dd>
     </div>
   )
 }
@@ -221,8 +255,10 @@ function MessageTemplatePanel({
   enabled?: boolean
 }) {
   const [templateQuery, setTemplateQuery] = useState('')
+  const [templateSelectOpen, setTemplateSelectOpen] = useState(false)
   const [selectedTemplateId, setSelectedTemplateId] = useState('')
   const [sentLogs, setSentLogs] = useState<MessageLog[]>([])
+  const templateSelectRef = useRef<HTMLDivElement>(null)
   const channelLabel = channel === 'kakao' ? '알림톡' : '이메일'
   const Icon = channel === 'kakao' ? MessageSquare : Mail
   const receiver = channel === 'kakao' ? ticket.phone : ticket.email
@@ -240,9 +276,19 @@ function MessageTemplatePanel({
   const selectedTemplate = templates.find(template => template.id === selectedTemplateId)
   const logs = [...sentLogs, ...getInitialMessageLogs(ticket, channel)]
 
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (!templateSelectRef.current?.contains(event.target as Node)) setTemplateSelectOpen(false)
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
   function handleSelectTemplate(template: MessageTemplate) {
     setSelectedTemplateId(template.id)
-    setTemplateQuery(template.title)
+    setTemplateQuery('')
+    setTemplateSelectOpen(false)
   }
 
   function handleSend() {
@@ -287,52 +333,77 @@ function MessageTemplatePanel({
           </div>
         </div>
 
-        <div className="grid grid-cols-[1fr_auto] gap-3 p-5">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-300" />
-            <input
-              value={templateQuery}
-              onChange={event => {
-                setTemplateQuery(event.target.value)
-                setSelectedTemplateId('')
+        <div ref={templateSelectRef} className="px-5 py-5">
+          <div className="grid grid-cols-[1fr_auto] gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setTemplateQuery('')
+                setTemplateSelectOpen(prev => !prev)
               }}
-              placeholder="템플릿명 검색"
-              className="h-10 w-full rounded-xl border border-gray-200 pl-9 pr-3 text-sm outline-none transition-colors focus:border-gray-400"
-            />
+              className={`flex h-10 w-full items-center justify-between gap-3 rounded-xl border px-3 text-left text-sm outline-none transition-colors ${
+                templateSelectOpen ? 'border-gray-400' : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              {selectedTemplate ? (
+                <span className="min-w-0">
+                  <span className="block truncate font-medium text-gray-800">{selectedTemplate.title}</span>
+                  <span className="block truncate text-[11px] text-gray-400">
+                    {selectedTemplate.id} · {selectedTemplate.stage} · {TEMPLATE_KIND_LABEL[selectedTemplate.kind]}
+                  </span>
+                </span>
+              ) : (
+                <span className="text-gray-400">템플릿 선택</span>
+              )}
+              <ChevronDown className={`h-4 w-4 shrink-0 text-gray-300 transition-transform ${templateSelectOpen ? 'rotate-180' : ''}`} />
+            </button>
+            <button
+              disabled={!selectedTemplate}
+              onClick={handleSend}
+              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-gray-900 px-4 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:bg-gray-200 disabled:text-gray-400"
+            >
+              <Send className="h-3.5 w-3.5" />전송
+            </button>
           </div>
-          <button
-            disabled={!selectedTemplate}
-            onClick={handleSend}
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-xl bg-gray-900 px-4 text-sm font-medium text-white transition-colors hover:bg-gray-700 disabled:bg-gray-200 disabled:text-gray-400"
-          >
-            <Send className="h-3.5 w-3.5" />전송
-          </button>
-          <div className="col-span-2 max-h-64 overflow-y-auto rounded-xl border border-gray-200 bg-white">
-            {filteredTemplates.length > 0 ? (
-              <div className="divide-y divide-gray-100">
-                {filteredTemplates.map(template => (
-                  <button
-                    key={template.id}
-                    type="button"
-                    onClick={() => handleSelectTemplate(template)}
-                    className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors hover:bg-gray-50 ${
-                      selectedTemplateId === template.id ? 'bg-gray-50 ring-1 ring-inset ring-gray-300' : ''
-                    }`}
-                  >
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-medium text-gray-800">{template.title}</span>
-                      <span className="mt-0.5 block text-xs text-gray-400">{template.id} · {template.stage}</span>
-                    </span>
-                    <span className="shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">
-                      {TEMPLATE_KIND_LABEL[template.kind]}
-                    </span>
-                  </button>
-                ))}
+
+          {templateSelectOpen && (
+            <div className="mt-3 overflow-hidden rounded-xl border border-gray-200 bg-white">
+              <div className="relative border-b border-gray-100 p-2">
+                <Search className="absolute left-5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-gray-300" />
+                <input
+                  autoFocus
+                  value={templateQuery}
+                  onChange={event => setTemplateQuery(event.target.value)}
+                  placeholder="템플릿명 검색"
+                  className="h-9 w-full rounded-lg bg-gray-50 pl-8 pr-3 text-sm outline-none transition-colors focus:bg-white focus:ring-1 focus:ring-gray-300"
+                />
               </div>
-            ) : (
-              <div className="px-3 py-6 text-center text-xs text-gray-400">검색 결과가 없습니다.</div>
-            )}
-          </div>
+              <div className="max-h-56 overflow-y-auto py-1">
+                {filteredTemplates.length > 0 ? (
+                  filteredTemplates.map(template => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      onClick={() => handleSelectTemplate(template)}
+                      className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors hover:bg-gray-50 ${
+                        selectedTemplateId === template.id ? 'bg-gray-50' : ''
+                      }`}
+                    >
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-medium text-gray-800">{template.title}</span>
+                        <span className="mt-0.5 block text-xs text-gray-400">{template.id} · {template.stage}</span>
+                      </span>
+                      <span className="shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">
+                        {TEMPLATE_KIND_LABEL[template.kind]}
+                      </span>
+                    </button>
+                  ))
+                ) : (
+                  <div className="px-3 py-6 text-center text-xs text-gray-400">검색 결과가 없습니다.</div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -384,17 +455,19 @@ export function TicketDetailPage() {
   const [autoPrintBarcode, setAutoPrintBarcode] = useState(false)
   const ticket = getTicketsWithExtras().find(t => t.ticketNo === ticketNo)
   const autoPrintRequested = (location.state as { autoPrintBarcodeOnce?: boolean } | null)?.autoPrintBarcodeOnce === true
+  const onlineAutoPrintRequested = ticket ? isOnlineAutoCreatedTicket(ticket) : false
+  const shouldAutoPrintBarcode = autoPrintRequested || onlineAutoPrintRequested
 
   useEffect(() => {
-    if (!ticketNo || !autoPrintRequested) return
+    if (!ticketNo || !shouldAutoPrintBarcode) return
     const key = `barcode_printed_${ticketNo}`
     if (!localStorage.getItem(key)) {
       localStorage.setItem(key, '1')
       setAutoPrintBarcode(true)
       setShowBarcodeModal(true)
     }
-    navigate(location.pathname, { replace: true, state: null })
-  }, [autoPrintRequested, location.pathname, navigate, ticketNo])
+    if (autoPrintRequested) navigate(location.pathname, { replace: true, state: null })
+  }, [autoPrintRequested, location.pathname, navigate, shouldAutoPrintBarcode, ticketNo])
 
   if (!ticket) {
     return (
@@ -578,14 +651,18 @@ export function TicketDetailPage() {
                 <div className="space-y-4">
 
                   {/* 접수 정보 카드 */}
-	                  <SectionCard title="접수 정보">
-	                    <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
-	                      <Field label="접수일시" value={`${ticket.receivedAt} (KST)`} />
-	                      <Field label="접수처" value={ticket.receptionPlace} />
-	                      <Field label="접수처 유형" value="-" />
-	                      <Field label="B2C 여부" value={soInfo.b2cYn} />
+                  <SectionCard title="접수 정보">
+                    <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+                      <Field label="접수일시" value={`${ticket.receivedAt} (KST)`} />
+                      <Field label="접수처" value={ticket.receptionPlace} />
+                      <Field label="접수처 유형" value="-" />
+                      <Field label="B2C 여부" value={soInfo.b2cYn} />
                       <Field label="재수리 여부" value={ticket.reRepairYn} />
-                      <Field label="기존 티켓번호" value={ticket.originalTicketNo} />
+                      <TicketLinkField
+                        label="기존 티켓번호"
+                        ticketNo={ticket.originalTicketNo}
+                        onClick={originalTicketNo => navigate(`/${langCode}/tickets/${originalTicketNo}`)}
+                      />
                       <Field label="긴급 수리 여부" value="-" />
                       <Field label="보증서 동봉" value="-" />
                       <Field label="구매 증빙 여부" value="-" />

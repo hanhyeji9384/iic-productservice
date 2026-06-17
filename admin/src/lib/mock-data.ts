@@ -102,6 +102,8 @@ export const TICKETS: Ticket[] = [
     email: 'monster563@gentlemonster.com',
     receptionTitle: 'PS 온라인 접수',
     receptionTags: ['RETURN_COMPONENTS', 'MODIFIED'],
+    originalTicketNo: '2606053LQY8VMBRSPKN',
+    reRepairYn: 'Y',
     productName: 'HYPEOB-01',
     repairDepartment: '본사',
     repairDetail: '부품 교체',

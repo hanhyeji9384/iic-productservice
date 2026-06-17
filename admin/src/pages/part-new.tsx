@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronDown, Search, X } from 'lucide-react'
 import { useParts } from '@/lib/parts-context'
+import { generatePartCode } from '@/lib/part-code'
 import { useProducts } from '@/lib/products-context'
 import { inputCls } from '@/lib/utils'
 import type { Part, Product } from '@/lib/types'
@@ -207,14 +208,10 @@ export function PartNewPage() {
   const isEdit = !!id
   const existing = isEdit ? parts.find(part => part.id === id) : null
 
-  const nextPartCode = useMemo(() => {
-    const nums = parts
-      .map(part => part.partCode.match(/^PT-(\d+)$/)?.[1])
-      .filter(Boolean)
-      .map(num => parseInt(num!, 10))
-    const max = nums.length > 0 ? Math.max(...nums) : 0
-    return `PT-${String(max + 1).padStart(5, '0')}`
-  }, [parts])
+  const nextPartCode = useMemo(
+    () => generatePartCode(parts.map(part => part.partCode)),
+    [parts]
+  )
 
   const [form, setForm] = useState<Form>(init)
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({})

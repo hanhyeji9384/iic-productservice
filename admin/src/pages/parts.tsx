@@ -19,6 +19,7 @@ import { Pagination } from '@/components/pagination'
 import { SummaryCell } from '@/components/summary-cell'
 import { downloadCsv } from '@/lib/csv'
 import { BRANCHES } from '@/lib/mock-data'
+import { generatePartCode } from '@/lib/part-code'
 import { useParts } from '@/lib/parts-context'
 import { useProducts } from '@/lib/products-context'
 import type { Part, PartChangeLog } from '@/lib/types'
@@ -110,12 +111,57 @@ function parseBulkRegisterCsv(text: string) {
   return { rows, errorCount }
 }
 
+function parseBulkUpdateCsv(text: string) {
+  const lines = text
+    .replace(/^\ufeff/, '')
+    .split(/\r?\n/)
+    .filter(line => line.trim())
+  const [headerLine, ...bodyLines] = lines
+  if (!headerLine) return { rows: [], errorCount: 0 }
+
+  const headers = parseCsvLine(headerLine).map(normalizeHeader)
+  const idx = (aliases: string[]) => headers.findIndex(h => aliases.includes(h))
+
+  const partCodeIdx = idx(['부속품id', '부속품아이디', 'partcode'])
+  const specIdx = idx(['규격', 'specification'])
+  const colorIdx = idx(['컬러', 'color'])
+  const locationIdx = idx(['보관위치', '부속품보관위치', 'storagelocation', 'location'])
+
+  if (partCodeIdx < 0) return { rows: [], errorCount: 0 }
+
+  let errorCount = 0
+  const rows: Array<{
+    partCode: string
+    specification?: string
+    color?: string
+    storageLocation?: string
+  }> = []
+
+  bodyLines.forEach(line => {
+    const cells = parseCsvLine(line)
+    const partCode = cells[partCodeIdx]?.trim() ?? ''
+    if (!partCode) {
+      errorCount += 1
+      return
+    }
+    rows.push({
+      partCode,
+      specification: specIdx >= 0 ? (cells[specIdx]?.trim() ?? '') : undefined,
+      color: colorIdx >= 0 ? (cells[colorIdx]?.trim() ?? '') : undefined,
+      storageLocation: locationIdx >= 0 ? (cells[locationIdx]?.trim() ?? '') : undefined,
+    })
+  })
+
+  return { rows, errorCount }
+}
+
 export function PartsPage() {
   const navigate = useNavigate()
   const { langCode } = useParams()
   const pfx = `/${langCode}`
   const bulkRegisterInputRef = useRef<HTMLInputElement>(null)
-  const { parts, partChangeLogs, addParts, deletePart } = useParts()
+  const bulkUpdateInputRef = useRef<HTMLInputElement>(null)
+  const { parts, partChangeLogs, addParts, updatePartManagementFields, deletePart } = useParts()
   const { products } = useProducts()
 
   const productMap = useMemo(() => new Map(products.map(product => [product.productCode, product])), [products])
@@ -139,6 +185,7 @@ export function PartsPage() {
   const [sortDir, setSortDir] = useState<'asc' | 'desc' | null>(null)
   const [uploadResult, setUploadResult] = useState('')
   const [bulkRegisterOpen, setBulkRegisterOpen] = useState(false)
+  const [bulkUpdateOpen, setBulkUpdateOpen] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [historyPage, setHistoryPage] = useState(1)
 
@@ -256,6 +303,8 @@ export function PartsPage() {
     setPage(1)
     setSelected(new Set())
     setActiveBranch(defaultBranchCode)
+    setBulkRegisterOpen(false)
+    setBulkUpdateOpen(false)
   }
 
   function handleBranchChange(branchCode: string) {
@@ -291,6 +340,45 @@ export function PartsPage() {
     )
   }
 
+  function handleBulkUpdateTemplateDownload() {
+    downloadCsv(
+      `parts_bulk_update_template_${new Date().toISOString().slice(0, 10)}.csv`,
+      ['제품코드', '제품명', '부속품ID', '부속품명', '규격', '컬러', '부속품보관위치'],
+      sorted.map(part => {
+        const product = productMap.get(part.productCode)
+        return [
+          part.productCode,
+          product?.name ?? '',
+          part.partCode,
+          part.name,
+          part.specification,
+          part.color,
+          part.storageLocation,
+        ]
+      })
+    )
+  }
+
+  async function handleBulkUpdateUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const { rows, errorCount } = parseBulkUpdateCsv(await file.text())
+    event.target.value = ''
+    if (rows.length === 0) {
+      setUploadResult(errorCount > 0 ? `오류 ${errorCount}건 — 부속품 ID가 비어있습니다.` : '변경 항목을 찾지 못했습니다.')
+      return
+    }
+
+    const changedCount = updatePartManagementFields(rows)
+    setBulkUpdateOpen(false)
+    setSelected(new Set())
+    setUploadResult(
+      errorCount > 0
+        ? `${changedCount}건 변경 완료, ${errorCount}건 오류(부속품 ID 누락)`
+        : `${changedCount}건 변경 완료`
+    )
+  }
+
   async function handleBulkRegisterUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
@@ -303,18 +391,24 @@ export function PartsPage() {
     const now = new Date()
     const pad = (n: number) => String(n).padStart(2, '0')
     const nowStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
-    const base = `${String(now.getTime()).slice(-6)}`
-    const newParts: Part[] = rows.map((row, i) => ({
-      id:              `part-bulk-${base}-${i}`,
-      productCode:     row.productCode,
-      partCode:        row.partCode || `PT-${base}${String(i + 1).padStart(2, '0')}`,
-      name:            row.name,
-      specification:   row.specification,
-      color:           row.color,
-      storageLocation: row.storageLocation,
-      registeredBy:    'monster563',
-      registeredAt:    nowStr,
-    }))
+    const base = String(now.getTime())
+    const existingPartCodes = new Set(parts.map(part => part.partCode))
+    const generatedPartCodes = new Set<string>()
+    const newParts: Part[] = rows.map((row, i) => {
+      const partCode = row.partCode || generatePartCode(existingPartCodes, generatedPartCodes)
+      generatedPartCodes.add(partCode)
+      return {
+        id:              `part-bulk-${base}-${i}`,
+        productCode:     row.productCode,
+        partCode,
+        name:            row.name,
+        specification:   row.specification,
+        color:           row.color,
+        storageLocation: row.storageLocation,
+        registeredBy:    'monster563',
+        registeredAt:    nowStr,
+      }
+    })
     addParts(newParts)
     setBulkRegisterOpen(false)
     const msg = errorCount > 0
@@ -410,12 +504,70 @@ export function PartsPage() {
               <Download className="w-4 h-4" />
               Excel 다운로드
             </button>
-            <input ref={bulkRegisterInputRef} type="file" accept=".csv,text/csv" onChange={handleBulkRegisterUpload} className="hidden" />
+                <input ref={bulkRegisterInputRef} type="file" accept=".csv,text/csv" onChange={handleBulkRegisterUpload} className="hidden" />
+                <input ref={bulkUpdateInputRef} type="file" accept=".csv,text/csv" onChange={handleBulkUpdateUpload} className="hidden" />
+
+            {/* 일괄 변경 */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  setBulkUpdateOpen(prev => !prev)
+                  setBulkRegisterOpen(false)
+                }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors text-sm font-medium ${
+                  bulkUpdateOpen ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <Upload className="w-4 h-4" />
+                일괄 변경
+              </button>
+              {bulkUpdateOpen && (
+                <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-2xl border border-gray-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
+                  <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-4 py-4">
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900">부속품 일괄 변경</p>
+                      <p className="mt-0.5 text-xs text-gray-400">목록 데이터 포함, 규격·컬러·보관위치만 변경</p>
+                    </div>
+                    <button onClick={() => setBulkUpdateOpen(false)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="space-y-2 p-3">
+                    <button
+                      onClick={handleBulkUpdateTemplateDownload}
+                      className="group flex w-full items-center gap-3 rounded-xl border border-gray-200 px-3.5 py-3 text-left hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                    >
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-600 group-hover:bg-white">
+                        <FileDown className="w-4 h-4" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold text-gray-900">변경 양식 다운로드</span>
+                        <span className="mt-0.5 block text-xs text-gray-400">현재 검색 결과 목록 포함</span>
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => bulkUpdateInputRef.current?.click()}
+                      className="group flex w-full items-center gap-3 rounded-xl bg-gray-950 px-3.5 py-3 text-left text-white hover:bg-gray-800 transition-colors"
+                    >
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white">
+                        <Upload className="w-4 h-4" />
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-sm font-semibold">파일 선택</span>
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* 일괄 등록 */}
             <div className="relative">
               <button
-                onClick={() => setBulkRegisterOpen(prev => !prev)}
+                onClick={() => {
+                  setBulkRegisterOpen(prev => !prev)
+                  setBulkUpdateOpen(false)
+                }}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-colors text-sm font-medium ${
                   bulkRegisterOpen ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
@@ -480,6 +632,7 @@ export function PartsPage() {
                 setActiveTab(key)
                 setSelected(new Set())
                 setBulkRegisterOpen(false)
+                setBulkUpdateOpen(false)
               }}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === key ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-gray-700'

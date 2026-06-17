@@ -7,6 +7,7 @@ import { MembersPage } from '@/pages/members'
 import { MemberDetailPage } from '@/pages/member-detail'
 import { MemberNewPage } from '@/pages/member-new'
 import { RolesPage } from '@/pages/roles'
+import { RolesTbdPage } from '@/pages/roles-tbd'
 import { PlaceholderPage } from '@/pages/placeholder'
 import { ProductsPage } from '@/pages/products'
 import { ProductNewPage } from '@/pages/product-new'
@@ -64,7 +65,8 @@ export default function App() {
           <Route path="members" element={<MembersPage />} />
           <Route path="members/new" element={<MemberNewPage />} />
           <Route path="members/:id" element={<MemberDetailPage />} />
-          <Route path="roles" element={<RolesPage />} />
+          <Route path="roles" element={<RolesTbdPage />} />
+          <Route path="roles/to-be" element={<RolesPage />} />
 
           {/* 시스템 관리 */}
           <Route path="settings/reception-slots" element={<ReceptionSlotsPage />} />

@@ -88,6 +88,7 @@ type CustomerTicketFilterKey =
   | 'ticketNo'
   | 'status'
   | 'productCode'
+  | 'productName'
   | 'purchaseDate'
   | 'purchasePlace'
   | 'receivedAt'
@@ -102,6 +103,7 @@ const INIT_TICKET_FILTERS: CustomerTicketFilters = {
   ticketNo: '',
   status: 'all',
   productCode: '',
+  productName: '',
   purchaseDate: '',
   purchasePlace: '',
   receivedAt: '',
@@ -114,6 +116,7 @@ const CUSTOMER_TICKET_FILTERABLE_COLS = new Set<CustomerTicketFilterKey>([
   'ticketNo',
   'status',
   'productCode',
+  'productName',
   'purchaseDate',
   'purchasePlace',
   'receivedAt',
@@ -126,6 +129,7 @@ const CUSTOMER_TICKET_COLUMNS: { key: CustomerTicketFilterKey; label: string; so
   { key: 'ticketNo',      label: 'Ticket No.', sort: 'ticketNo' },
   { key: 'status',        label: '상태',        sort: 'status' },
   { key: 'productCode',   label: '제품코드',    sort: 'productCode' },
+  { key: 'productName',   label: '제품명',      sort: 'productName' },
   { key: 'purchaseDate',  label: '구매일',      sort: 'purchaseDate' },
   { key: 'purchasePlace', label: '구매처',      sort: 'purchasePlace' },
   { key: 'receivedAt',    label: '접수일시',    sort: 'receivedAt' },
@@ -201,6 +205,8 @@ function getCustomerTicketSortValue(ticket: Ticket, key: CustomerTicketSortKey) 
       return STATUS_LABELS[ticket.status]
     case 'productCode':
       return getProductCode(ticket)
+    case 'productName':
+      return ticket.productName
     case 'purchaseDate':
       return getPurchaseDate(ticket)
     case 'purchasePlace':
@@ -289,6 +295,7 @@ export function CustomerDetailPage() {
     }
     if (!includesQuery(t.ticketNo, appliedTicketFilters.ticketNo)) return false
     if (!includesQuery(getProductCode(t), appliedTicketFilters.productCode)) return false
+    if (!includesQuery(t.productName, appliedTicketFilters.productName)) return false
     if (!includesQuery(getPurchaseDate(t), appliedTicketFilters.purchaseDate)) return false
     if (!includesQuery(getPurchasePlace(t), appliedTicketFilters.purchasePlace)) return false
     if (!includesQuery(t.receivedAt.slice(0, 10), appliedTicketFilters.receivedAt)) return false
@@ -566,6 +573,8 @@ export function CustomerDetailPage() {
         )
       case 'productCode':
         return renderTicketTextFilter('productCode', '제품코드')
+      case 'productName':
+        return renderTicketTextFilter('productName', '제품명')
       case 'purchaseDate':
         return renderTicketDateFilter('purchaseDate')
       case 'purchasePlace':
@@ -878,7 +887,7 @@ export function CustomerDetailPage() {
           ) : (
             <>
               <div className="overflow-x-auto">
-                <table className="min-w-[1320px] w-full">
+                <table className="min-w-[1440px] w-full">
                   <thead>
                     <tr className="border-b border-gray-100">
                       {CUSTOMER_TICKET_COLUMNS.map(column => {
@@ -937,6 +946,7 @@ export function CustomerDetailPage() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-xs font-mono text-gray-700 whitespace-nowrap">{getProductCode(t)}</td>
+                        <td className="px-4 py-3 text-xs font-semibold text-gray-800 whitespace-nowrap">{t.productName}</td>
                         <td className="px-4 py-3 text-xs text-gray-500 font-mono whitespace-nowrap">{getPurchaseDate(t) || '-'}</td>
                         <td className="px-4 py-3 text-xs text-gray-700 whitespace-nowrap">{getPurchasePlace(t) || '-'}</td>
                         <td className="px-4 py-3 text-xs text-gray-500 font-mono whitespace-nowrap">{dateTimeWithTimezone(t.receivedAt)}</td>

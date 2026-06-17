@@ -182,6 +182,8 @@ export type Product = {
   threePlQuantity?: number     // 3PL 보유 수량
   hasDecoration?: boolean      // 장식보유여부
   isRestorationRepair?: boolean // 복원수리 여부
+  netWeight?: string           // 제품 순중량 값
+  netWeightUnit?: string       // 제품 순중량 단위
   dataSource: 'SAP' | 'PS'     // 데이터 출처
   registeredBy: string | null  // 등록자 (PS 출처일 때만)
   registeredAt: string | null  // 등록일시 (PS 출처일 때만)

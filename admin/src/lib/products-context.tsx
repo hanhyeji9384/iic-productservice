@@ -19,6 +19,8 @@ type StockPatch = Partial<Pick<Product,
   | 'hasDecoration'
   | 'salesStatus'
   | 'isRestorationRepair'
+  | 'netWeight'
+  | 'netWeightUnit'
 >>
 
 type ProductManagementUpdate = {
@@ -38,6 +40,8 @@ type ProductManagementUpdate = {
   psQuantity?: number
   threePlQuantity?: number
   isRestorationRepair?: boolean
+  netWeight?: string
+  netWeightUnit?: string
 }
 
 type ProductsContextValue = {
@@ -109,6 +113,8 @@ function buildProductManagementDiff(current: Product, updated: Product) {
   if (num(current.psQuantity, current.quantity) !== num(updated.psQuantity, updated.quantity)) diffs.push(`PS수량: ${num(current.psQuantity, current.quantity)} → ${num(updated.psQuantity, updated.quantity)}`)
   if (num(current.threePlQuantity) !== num(updated.threePlQuantity)) diffs.push(`3PL수량: ${num(current.threePlQuantity)} → ${num(updated.threePlQuantity)}`)
   if (isRestorationRepairProduct(current) !== isRestorationRepairProduct(updated)) diffs.push(`복원 가능 여부: ${yn(isRestorationRepairProduct(current))} → ${yn(isRestorationRepairProduct(updated))}`)
+  if ((current.netWeight ?? '') !== (updated.netWeight ?? '')) diffs.push(`Net weight: ${current.netWeight || '-'} → ${updated.netWeight || '-'}`)
+  if ((current.netWeightUnit ?? '') !== (updated.netWeightUnit ?? '')) diffs.push(`Unit: ${current.netWeightUnit || '-'} → ${updated.netWeightUnit || '-'}`)
   return diffs.join(' / ') || '변경 없음'
 }
 
@@ -178,6 +184,8 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       }
       if (typeof update.threePlQuantity === 'number') patch.threePlQuantity = update.threePlQuantity
       if (typeof update.isRestorationRepair === 'boolean') patch.isRestorationRepair = update.isRestorationRepair
+      if (typeof update.netWeight === 'string') patch.netWeight = update.netWeight
+      if (typeof update.netWeightUnit === 'string') patch.netWeightUnit = update.netWeightUnit
       if (Object.keys(patch).length === 0) return
 
       const updated = { ...current, ...patch }

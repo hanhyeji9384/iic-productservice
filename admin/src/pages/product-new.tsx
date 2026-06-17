@@ -20,6 +20,7 @@ const SUB_CATEGORIES: Record<string, string[]> = {
 
 const FACTORIES = ['WZ-A1', 'WZ-B2', 'SZ-C3', 'SH-D4']
 const SALES_STATUSES: SalesStatus[] = ['사용중', '종료 예정', '판매 종료 (P)', '판매 종료 (C)']
+const WEIGHT_UNITS = ['kg', 'g']
 
 type Form = {
   productCode: string
@@ -39,6 +40,8 @@ type Form = {
   hasDecoration: boolean
   salesStatus: SalesStatus
   isRestorationRepair: boolean
+  netWeight: string
+  netWeightUnit: string
 }
 
 const init: Form = {
@@ -50,6 +53,15 @@ const init: Form = {
   quantity: '', threePlQuantity: '0', hasDecoration: false,
   salesStatus: '사용중',
   isRestorationRepair: false,
+  netWeight: '',
+  netWeightUnit: 'kg',
+}
+
+function splitNetWeight(raw?: string) {
+  const value = raw?.trim() ?? ''
+  const matched = value.match(/^([\d.]+)\s*([a-zA-Z]+)$/)
+  if (!matched) return { value, unit: '' }
+  return { value: matched[1], unit: matched[2] }
 }
 
 function FieldLabel({ text, required }: { text: string; required?: boolean }) {
@@ -106,6 +118,7 @@ export function ProductNewPage() {
 
   useEffect(() => {
     if (isEdit && existing) {
+      const parsedNetWeight = splitNetWeight(existing.netWeight)
       setForm({
         productCode: existing.productCode,
         barcode: existing.barcode,
@@ -124,6 +137,8 @@ export function ProductNewPage() {
         hasDecoration: existing.hasDecoration ?? false,
         salesStatus: existing.salesStatus,
         isRestorationRepair: existing.isRestorationRepair ?? false,
+        netWeight: parsedNetWeight.value,
+        netWeightUnit: existing.netWeightUnit || parsedNetWeight.unit || 'kg',
       })
     } else {
       setForm(prev => ({ ...prev, productCode: nextPsCode, barcode: nextPsCode }))
@@ -179,6 +194,8 @@ export function ProductNewPage() {
       threePlQuantity,
       hasDecoration: form.hasDecoration,
       isRestorationRepair: form.isRestorationRepair,
+      netWeight: form.netWeight.trim(),
+      netWeightUnit: form.netWeightUnit,
       dataSource: 'PS' as const,
       registeredBy: isEdit ? existing!.registeredBy : 'monster001',
       registeredAt: isEdit ? existing!.registeredAt : new Date().toISOString().slice(0, 19),
@@ -367,6 +384,21 @@ export function ProductNewPage() {
               <span className="text-sm text-gray-700">{label}</span>
             </label>
           ))}
+        </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <FieldLabel text="Net weight" />
+            <input
+              type="text"
+              placeholder="예: 0.04"
+              value={form.netWeight}
+              onChange={e => set('netWeight')(e.target.value)}
+              className={`${inputCls} w-full`}
+            />
+          </div>
+          <SelectField label="Unit" value={form.netWeightUnit} onChange={set('netWeightUnit')}>
+            {WEIGHT_UNITS.map(unit => <option key={unit} value={unit}>{unit}</option>)}
+          </SelectField>
         </div>
       </section>
 
