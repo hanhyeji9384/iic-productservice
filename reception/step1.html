@@ -8,7 +8,193 @@
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/lang-modal.js"></script>
-  <script src="../js/products.js"></script>
+  <script src="../js/products.js?v=parts-retention-20260617"></script>
+  <style>
+    .embedded-service-guide {
+      padding: 64px 0;
+      border-top: 1px solid var(--gray-200);
+      background: #fff;
+    }
+
+    .embedded-service-guide-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    .product-line-pill {
+      display: inline-flex;
+      align-items: center;
+      height: 26px;
+      padding: 0 10px;
+      border: 1px solid #111;
+      margin-bottom: 18px;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .selected-product {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 0;
+      border-top: 1px solid var(--gray-200);
+      border-bottom: 1px solid var(--gray-200);
+      margin-bottom: 40px;
+    }
+
+    .selected-product-label {
+      font-size: 11px;
+      color: var(--gray-400);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .selected-product-name {
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    .selected-product-meta {
+      font-size: 12px;
+      color: var(--gray-500);
+      line-height: 1.7;
+      text-align: right;
+    }
+
+    .guide-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      border: 1px solid var(--gray-200);
+      margin-bottom: 40px;
+      background: var(--gray-200);
+    }
+
+    .guide-step {
+      min-height: 170px;
+      padding: 22px;
+      background: #fff;
+    }
+
+    .guide-step-num {
+      margin-bottom: 16px;
+      font-size: 10px;
+      color: var(--gray-400);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .guide-step-title {
+      margin-bottom: 12px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .guide-step-copy {
+      font-size: 12px;
+      color: #555;
+      line-height: 1.8;
+      white-space: pre-line;
+    }
+
+    .terms-panel {
+      padding: 24px;
+      border: 1px solid #111;
+      margin-bottom: 24px;
+    }
+
+    .terms-title {
+      margin-bottom: 24px;
+      font-size: 17px;
+      font-weight: 500;
+    }
+
+    .terms-section {
+      margin-top: 24px;
+    }
+
+    .terms-section:first-of-type {
+      margin-top: 0;
+    }
+
+    .terms-section-title {
+      margin-bottom: 10px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .terms-copy {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.9;
+      white-space: pre-line;
+    }
+
+    .terms-toggle {
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid var(--gray-200);
+    }
+
+    .terms-toggle summary {
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: underline;
+    }
+
+    .terms-toggle-body {
+      padding-top: 18px;
+      font-size: 12px;
+      color: #555;
+      line-height: 1.85;
+      white-space: pre-line;
+    }
+
+    .agreement-list {
+      display: grid;
+      gap: 10px;
+      margin: 20px 0 32px;
+    }
+
+    .agreement-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .agreement-check input {
+      width: 16px;
+      height: 16px;
+      margin-top: 2px;
+      accent-color: #111;
+      flex-shrink: 0;
+    }
+
+    .agreement-check span {
+      font-size: 13px;
+      line-height: 1.7;
+      color: #333;
+    }
+
+    @media (max-width: 900px) {
+      .guide-steps {
+        grid-template-columns: 1fr;
+      }
+
+      .selected-product {
+        flex-direction: column;
+      }
+
+      .selected-product-meta {
+        text-align: left;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -66,14 +252,18 @@
       <div style="display:flex;gap:16px;align-items:flex-start;">
         <div class="illustration" style="width:64px;height:64px;flex-shrink:0;font-size:10px;">IMG</div>
         <div style="flex:1;">
-          <p id="lpc-name" style="font-size:14px;font-weight:500;margin-bottom:10px;"></p>
+          <p id="lpc-name" style="font-size:14px;font-weight:500;margin-bottom:10px;">
+            <span id="lpc-name-text"></span>
+            <span id="lpc-protection-badge" style="display:none;align-items:center;height:20px;margin-left:8px;padding:0 8px;border:1px solid #1428a0;border-radius:999px;color:#1428a0;font-size:10px;font-weight:500;letter-spacing:0.02em;vertical-align:1px;">Protection Plan</span>
+          </p>
           <div style="display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:12px;color:#666;">
             <span style="color:#999;">주문번호</span><span id="lpc-order" style="font-family:monospace;letter-spacing:0.03em;"></span>
             <span style="color:#999;">시리얼 넘버</span><span id="lpc-serial" style="font-family:monospace;letter-spacing:0.03em;"></span>
             <span style="color:#999;">구매처</span><span id="lpc-store"></span>
             <span style="color:#999;">구매일</span><span id="lpc-date"></span>
             <span style="color:#999;">품질 보증</span><span id="lpc-qw"></span>
-            <span style="color:#999;">서비스 보증</span><span id="lpc-sw" style="font-weight:500;color:#111;"></span>
+            <span id="lpc-secondary-label" style="color:#999;">서비스 보증</span><span id="lpc-sw" style="font-weight:500;color:#111;"></span>
+            <span id="lpc-protection-label" style="display:none;color:#999;">Protection Plan 가입일</span><span id="lpc-protection-date" style="display:none;font-weight:500;color:#111;"></span>
           </div>
         </div>
       </div>
@@ -132,9 +322,9 @@
       </div>
     </div>
 
-    <div class="btn-wrap" style="margin-top:48px;">
-      <a href="start.html" class="btn btn-secondary" id="txt-btn-prev">이전</a>
-      <a href="step2-service-type.html" class="btn btn-primary" id="txt-btn-next">다음</a>
+    <div class="btn-wrap">
+      <a href="../index.html" class="btn btn-secondary" id="txt-btn-prev">이전</a>
+      <a href="step1-service-guide.html" class="btn btn-primary" id="txt-btn-next">다음</a>
     </div>
 
   </div>
@@ -225,13 +415,72 @@ const STRINGS = {
   }
 };
 
+var STEP1_GUIDE = {
+  organic: {
+    label: 'Organic',
+    title: 'Organic 프로덕트 서비스',
+    desc: '전문가의 섬세한 손길로, 고객님의 소중한 제품을 오래도록 아름답게.<br>수리부터 케어까지, 지금 젠틀몬스터 프리미엄 프로덕트 서비스를 만나보세요.',
+    steps: [
+      ['1단계 · 수리 접수', '온라인으로 원하는 수리 또는 케어 서비스를 접수해 주세요.\n접수를 완료하면 스토어 방문과 픽업 서비스 중 편한 방법을 선택할 수 있어요.\n제품 본체만 안전하게 포장해 준비해주세요.'],
+      ['2단계 · 점검 및 서비스 안내', '제품이 도착하면 프로덕트 서비스팀이 세심하게 점검합니다.\n필요한 서비스 내용을 확인해 안내해 드립니다.'],
+      ['3단계 · 결제 및 서비스 진행', '안내받은 서비스 내용과 예상 출고 일정을 확인해 주세요.\n서비스 비용을 결제하면 서비스가 시작됩니다.'],
+      ['4단계 · 서비스 완료 및 배송', '서비스가 끝나면 제품을 안전하게 포장해 보내드립니다.']
+    ],
+    terms: [
+      ['수리 기간 안내', '유상 수리 : 결제 후 평일 기준 7일 이내 처리·발송\n무상 수리 : 선택한 희망 출고일에 맞춰 진행 (상황에 따라 1~3일 변동될 수 있습니다)'],
+      ['제품을 보내실 때', '케이스·보증 카드는 분실 위험이 있으니 동봉하지 말아 주세요.\n› 동봉된 경우, 분실 방지를 위해 함께 반송될 수 있습니다.\n별도 제작 렌즈는 빼고 보내주세요. 수리 중 손상될 수 있으며, 동봉된 렌즈의 파손에 대해서는 보상이 제공되지 않습니다.'],
+      ['제품 보관 및 폐기 안내', '프로덕트 서비스팀은 제품 판정일로부터 30일간 보관합니다.\n30일 이내 결제 확인 또는 회신이 없으면, 제품은 반송되거나 관련 법령에 따라 폐기될 수 있습니다.\n› 폐기 후에는 보상·반환이 불가합니다.']
+    ],
+    fullTerms: '제1조 [목적]\n본 약관은 젠틀몬스터 제품의 수리 서비스(이하 “서비스”) 이용과 관련하여, 고객과 젠틀몬스터(이하 “회사”) 간의 권리, 의무 및 기타 필요한 사항을 규정함을 목적으로 합니다.\n\n제2조 [보증 기준]\n회사는 젠틀몬스터 정품 제품에 한하여 아래 기준으로 보증 서비스를 제공합니다.\n수리 보증 기간: 최초 구매일로부터 36개월\n품질 보증 기간: 최초 구매일로부터 24개월\n품질 보증 기간 내 제조상 결함으로 인한 제품 이상은 무상 수리를 제공합니다.\n\n보증 적용 여부는 프로덕트 서비스팀의 실물 검수 과정을 통해 판정됩니다.\n공식 구매 증빙(보증 카드, 구매 영수증 등)이 확인되지 않은 제품은 보증 및 서비스 제공이 제한됩니다.\n외부에서 제작된 렌즈, 사설 코패드, 케이스 등은 보증 및 서비스 대상에 포함되지 않습니다.\n\n제3조 [수리 서비스 이용 및 절차]\n고객은 수리 접수 시 회사가 지정한 절차에 따라 제품을 발송해야 합니다.\n케이스 및 보증 카드는 분실 위험이 있으므로 동봉하지 않습니다.\n외부 제작 렌즈는 수리 중 손상될 우려가 있어 미삽입 상태로 발송해야 합니다.\n렌즈 파손에 대해서는 보상이 제공되지 않습니다.\n제품은 도착일 기준으로 순차적으로 점검 및 수리가 진행됩니다.\n유상 수리의 경우, 고객의 결제 완료 이후 수리가 시작됩니다.\n서비스 진행 내용(판정, 비용, 출고 예정일 등)은 이메일·카카오톡·My Account를 통해 안내됩니다.\n\n제4조 [수리 기간 및 비용]\n수리 기간은 서비스 유형 및 협력업체 여부에 따라 상이하며, 아래 기준을 원칙으로 합니다.\n본사 수리: 입고일로부터 약 10–15일 내외\n협력업체 수리: 입고일로부터 약 25–30일 내외\n\n유상 수리의 경우, 비용은 제품의 상태에 따라 산정됩니다.\n수리비 결제 지연 또는 고객 응답 지연으로 인한 지체에 대해서는 회사가 책임지지 않습니다.\n\n제5조 [제품 보관 및 처리]\n회사는 서비스 판정일 기준 30일간 제품을 무상 보관합니다.\n보관 기간 내 결제 확인이 이루어지지 않거나 고객 회신이 없을 경우, 제품은 반송되거나 관련 법령에 따라 적절한 방식으로 폐기될 수 있습니다.\n제품 폐기 이후에는 어떠한 형태의 보상이나 반환이 불가합니다.\n\n제6조 [기타]\n본 약관에서 정하지 않은 사항은 「전자상거래 등에서의 소비자보호에 관한 법률」 및 관련 규정을 따릅니다.',
+    checks: [{ id: 'terms', text: '수리 서비스 약관 전체 내용에 동의합니다. (필수)' }]
+  },
+  ie: {
+    label: 'IE',
+    title: 'IE 프로덕트 서비스',
+    desc: '전문가의 섬세한 손길로, 소중한 JINJU의 기능과 아름다움을 지켜드립니다.<br>지금 바로 프리미엄 프로덕트 서비스를 경험해 보세요.',
+    steps: [
+      ['1단계 · 수리 접수', '온라인으로 원하는 서비스를 접수해 주세요.\n접수를 완료하면 포장 키트를 보내드립니다.\n키트 수령 후 제품을 안전하게 포장해 발송해 주세요.'],
+      ['2단계 · 점검 및 서비스 안내', '제품이 도착하면 프로덕트 서비스팀이 세심하게 점검합니다.\n필요한 서비스 내용을 확인해 안내드립니다.'],
+      ['3단계 · 결제 및 서비스 진행', '안내받은 서비스 내용과 예상 출고 일정을 확인해 주세요.\n서비스 비용을 결제하면 서비스가 시작됩니다.'],
+      ['4단계 · 서비스 완료 및 배송', '서비스가 끝나면 제품을 안전하게 포장해 보내드립니다.']
+    ],
+    terms: [
+      ['수리 기간 안내', '유상 수리 : 결제 후 영업일 기준 7일 이내 처리·발송\n무상 수리 : 진행 내용에 따라 소요 기간이 달라질 수 있습니다.'],
+      ['데이터 안내', '페어링을 해제하면 기기에 저장된 데이터가 초기화됩니다.\n개인정보와 설정값을 미리 백업하신 후 제품을 발송해 주세요.'],
+      ['제품을 보내실 때', '제품 본체 또는 충전 케이스만 보내주세요.\n안경닦이 등 부속품은 분실 우려가 있어 함께 보내지 말아 주세요.'],
+      ['제품 보관 및 폐기 안내', '프로덕트 서비스팀은 제품 판정일로부터 30일간 보관합니다.\n30일 이내 결제 확인 또는 회신이 없으면, 제품은 반송되거나 관련 법령에 따라 폐기될 수 있습니다.\n› 폐기 후에는 보상·반환이 불가합니다.']
+    ],
+    fullTerms: '',
+    checks: [
+      { id: 'data', text: '위 내용을 확인했으며, 데이터 초기화에 동의합니다. (필수)' },
+      { id: 'terms', text: '수리 서비스 약관 전체 내용에 동의합니다. (필수)' }
+    ]
+  }
+};
+
+var currentGuideLine = 'organic';
+
 function setText(id, html) {
   const el = document.getElementById(id);
   if (el) el.innerHTML = html;
 }
 
+function applyDataLang(lang) {
+  document.querySelectorAll('[data-' + lang + ']').forEach(function(el) {
+    el.innerHTML = el.getAttribute('data-' + lang);
+  });
+}
+
 function isAiProductName(name) {
-  return String(name || '').indexOf('스마트') >= 0 || /AI EYEWEAR|AI SMART EYEWEAR/i.test(String(name || ''));
+  return String(name || '').indexOf('스마트') >= 0 || /AI EYEWEAR|IE EYEWEAR|AI SMART EYEWEAR|SMART EYEWEAR/i.test(String(name || ''));
+}
+
+function getProductLineFromProduct(productOrName) {
+  if (typeof psGetProductLine === 'function') return psGetProductLine(productOrName);
+  if (productOrName && typeof productOrName === 'object') {
+    return productOrName.productLine || (productOrName.isAi ? 'ie' : 'organic');
+  }
+  return isAiProductName(productOrName) ? 'ie' : 'organic';
 }
 
 function isManualAiInput() {
@@ -262,6 +511,7 @@ function setLang(lang) {
   try { localStorage.setItem('ps-lang', lang); } catch(e) {}
   ['ko','en'].forEach(function(l) { var el = document.getElementById('footer-lang-' + l); if (el) { el.style.fontWeight = l === lang ? '500' : '400'; el.style.color = l === lang ? '#111' : ''; } });
   const s = STRINGS[lang];
+  applyDataLang(lang);
   ['ko','en'].forEach(l => {
     const b = document.getElementById('pb-lang-' + l);
     if (!b) return;
@@ -307,6 +557,176 @@ function parsePurchaseDateStr(str) {
   return '';
 }
 
+function setLockedProductName(name) {
+  var wrap = document.getElementById('lpc-name');
+  var nameEl = document.getElementById('lpc-name-text');
+  var productName = name || '';
+  if (nameEl) nameEl.textContent = productName;
+  if (wrap) wrap.setAttribute('data-product-name', productName);
+}
+
+function getLockedProductName() {
+  var wrap = document.getElementById('lpc-name');
+  var nameEl = document.getElementById('lpc-name-text');
+  return (wrap && wrap.getAttribute('data-product-name')) || (nameEl && nameEl.textContent) || '';
+}
+
+function setLockedProtectionPlan(product) {
+  var labelEl = document.getElementById('lpc-protection-label');
+  var dateEl = document.getElementById('lpc-protection-date');
+  var badgeEl = document.getElementById('lpc-protection-badge');
+  var lockedCard = document.getElementById('locked-product-card');
+  if (!labelEl || !dateEl || !lockedCard) return;
+
+  var joinedAt = typeof psProtectionPlanJoinedAt === 'function'
+    ? psProtectionPlanJoinedAt(product)
+    : parsePurchaseDateStr(product.protectionPlanJoinedAt || product.protectionPlanDate || '');
+  var visible = !!joinedAt;
+  labelEl.style.display = visible ? '' : 'none';
+  dateEl.style.display = visible ? '' : 'none';
+  if (badgeEl) badgeEl.style.display = visible ? 'inline-flex' : 'none';
+  dateEl.textContent = visible && typeof psFormatDate === 'function' ? psFormatDate(joinedAt) : '';
+  lockedCard.setAttribute('data-protection-plan', visible ? 'true' : 'false');
+  lockedCard.setAttribute('data-protection-plan-joined-at', joinedAt || '');
+}
+
+function updateLockedProductSecondaryWarranty(country) {
+  var lockedCard = document.getElementById('locked-product-card');
+  if (!lockedCard || lockedCard.style.display === 'none') return;
+
+  var productLine = lockedCard.getAttribute('data-product-line') || '';
+  var labelEl = document.getElementById('lpc-secondary-label');
+  var valueEl = document.getElementById('lpc-sw');
+  if (!labelEl || !valueEl) return;
+
+  var serialNumber = lockedCard.getAttribute('data-serial-number') || (document.getElementById('lpc-serial') || {}).textContent || '';
+  var purchaseDate = lockedCard.getAttribute('data-purchase-date') || parsePurchaseDateStr((document.getElementById('lpc-date') || {}).textContent || '');
+  labelEl.textContent = productLine === 'ie' ? '부품 보유 기간' : '서비스 보증';
+  valueEl.innerHTML = productLine === 'ie'
+    ? (typeof psPartsRetentionPeriod === 'function' ? psPartsRetentionPeriod(serialNumber, purchaseDate, country) : '')
+    : (typeof psServiceWarranty === 'function' ? psServiceWarranty(purchaseDate) : valueEl.innerHTML);
+}
+
+window.setCountry = function(country) {
+  updateLockedProductSecondaryWarranty(country);
+  var previousSelectedIdx = selectedProductIdx;
+  psRenderProductList('product-history-list');
+  if (previousSelectedIdx !== null && previousSelectedIdx !== undefined) {
+    selectHistoryProduct(previousSelectedIdx);
+  }
+};
+
+function getCurrentProductForGuide() {
+  var lockedCard = document.getElementById('locked-product-card');
+  if (lockedCard && lockedCard.style.display !== 'none') {
+    var rawDate = (document.getElementById('lpc-date') || {}).textContent || '';
+    return {
+      name: getLockedProductName(),
+      serialNumber: lockedCard.getAttribute('data-serial-number') || (document.getElementById('lpc-serial') || {}).textContent || '',
+      purchaseDate: parsePurchaseDateStr(rawDate),
+      purchaseStore: (document.getElementById('lpc-store') || {}).textContent || '',
+      productSubCategory: lockedCard.getAttribute('data-sub-category') || '',
+      productLine: lockedCard.getAttribute('data-product-line') || '',
+      isAi: lockedCard.getAttribute('data-ai') === 'true',
+      protectionPlan: lockedCard.getAttribute('data-protection-plan') === 'true',
+      protectionPlanJoinedAt: lockedCard.getAttribute('data-protection-plan-joined-at') || ''
+    };
+  }
+
+  if (selectedProductIdx !== null && selectedProductIdx >= 0 && selectedProductIdx < PS_PRODUCTS.length) {
+    var product = PS_PRODUCTS[selectedProductIdx];
+    return {
+      name: product.name || '',
+      serialNumber: product.serialNumber || '',
+      purchaseDate: product.purchaseDate || '',
+      purchaseStore: product.store || '',
+      productSubCategory: typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(product) : (product.subCategory || ''),
+      productLine: getProductLineFromProduct(product),
+      isAi: getProductLineFromProduct(product) === 'ie',
+      protectionPlan: !!product.protectionPlan,
+      protectionPlanJoinedAt: product.protectionPlanJoinedAt || ''
+    };
+  }
+
+  var manualName = (document.getElementById('product-search') || {}).value || '';
+  var manualDate = (document.getElementById('manual-date') || {}).value || '';
+  return {
+    name: manualName || '제품 선택 필요',
+    serialNumber: normalizeSerialNumber((document.getElementById('ps-serial-number') || {}).value || ''),
+    purchaseDate: manualDate,
+    purchaseStore: (document.getElementById('store-search') || {}).value || '',
+    productSubCategory: typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(manualName) : '',
+    productLine: getProductLineFromProduct(manualName),
+    isAi: getProductLineFromProduct(manualName) === 'ie',
+    protectionPlan: false,
+    protectionPlanJoinedAt: ''
+  };
+}
+
+function renderStep1ServiceGuide() {
+  var product = getCurrentProductForGuide();
+  currentGuideLine = product.productLine || (product.isAi ? 'ie' : 'organic');
+  var data = STEP1_GUIDE[currentGuideLine] || STEP1_GUIDE.organic;
+
+  setText('product-line-pill', data.label);
+  setText('guide-title', data.title);
+  setText('guide-desc', data.desc);
+  setText('selected-product-name', product.name || '제품 선택 필요');
+  setText('selected-product-meta', [
+    product.serialNumber ? 'S/N ' + product.serialNumber : '',
+    product.purchaseDate ? '구매일 ' + product.purchaseDate : '',
+    product.purchaseStore || ''
+  ].filter(Boolean).join('<br>'));
+
+  var steps = document.getElementById('guide-steps');
+  if (steps) {
+    steps.innerHTML = data.steps.map(function(step, index) {
+      return '<div class="guide-step">'
+        + '<p class="guide-step-num">STEP ' + String(index + 1).padStart(2, '0') + '</p>'
+        + '<p class="guide-step-title">' + step[0] + '</p>'
+        + '<p class="guide-step-copy">' + step[1] + '</p>'
+        + '</div>';
+    }).join('');
+  }
+
+  var termsHtml = data.terms.map(function(section) {
+    return '<div class="terms-section">'
+      + '<p class="terms-section-title">' + section[0] + '</p>'
+      + '<p class="terms-copy">' + section[1] + '</p>'
+      + '</div>';
+  }).join('');
+  if (currentGuideLine === 'organic') {
+    termsHtml += '<details class="terms-toggle"><summary>수리 서비스 약관 보기</summary><div class="terms-toggle-body">' + data.fullTerms + '</div></details>';
+  } else {
+    termsHtml += '<details class="terms-toggle"><summary>수리 서비스 약관 보기 (PDF)</summary><div class="terms-toggle-body">IE 수리 서비스 약관 PDF는 추후 연결 예정입니다.</div></details>';
+  }
+  setText('terms-body', termsHtml);
+
+  var agreementList = document.getElementById('agreement-list');
+  if (agreementList) {
+    agreementList.innerHTML = data.checks.map(function(check) {
+      return '<label class="agreement-check">'
+        + '<input type="checkbox" id="agree-' + check.id + '" onchange="updateStep1NextState()">'
+        + '<span>' + check.text + '</span>'
+        + '</label>';
+    }).join('');
+  }
+  updateStep1NextState();
+}
+
+function isStep1ServiceGuideReady() {
+  var data = STEP1_GUIDE[currentGuideLine] || STEP1_GUIDE.organic;
+  return data.checks.every(function(check) {
+    var el = document.getElementById('agree-' + check.id);
+    return el && el.checked;
+  });
+}
+
+function updateStep1NextState() {
+  var error = document.getElementById('agreement-error');
+  if (error) error.style.display = 'none';
+}
+
 // ─── 구매 이력 카드 선택 ───
 var selectedProductIdx = 0;
 
@@ -329,11 +749,12 @@ function selectHistoryProduct(idx) {
   var prodErr = document.getElementById('product-selection-error');
   if (prodErr) prodErr.style.display = 'none';
 
-  // AI 제품 선택 시 다음 버튼을 AI 접수 페이지로 연결
+  // IE 제품 선택 시 다음 안내 화면에서 IE 약관/서비스 안내로 분기
   var nextBtn = document.getElementById('txt-btn-next');
   if (nextBtn) {
-    nextBtn.href = 'step2-service-type.html';
+    nextBtn.href = 'step1-service-guide.html';
   }
+  renderStep1ServiceGuide();
 }
 
 function toggleManualInput() {
@@ -354,7 +775,8 @@ function toggleManualInput() {
     selectedProductIdx = null;
     updateSerialFieldMode(false);
     var nextBtn = document.getElementById('txt-btn-next');
-    if (nextBtn) { nextBtn.href = 'step2-service-type.html'; nextBtn.classList.remove('disabled'); }
+    if (nextBtn) { nextBtn.href = 'step1-service-guide.html'; nextBtn.classList.remove('disabled'); }
+    renderStep1ServiceGuide();
   }
 }
 
@@ -402,7 +824,8 @@ function selectProduct(name) {
   if (snField) snField.style.display = 'block';
   updateSerialFieldMode(isAi);
   var nextBtn = document.getElementById('txt-btn-next');
-  if (nextBtn) nextBtn.href = 'step2-service-type.html';
+  if (nextBtn) nextBtn.href = 'step1-service-guide.html';
+  renderStep1ServiceGuide();
 }
 
 const GM_STORES = [
@@ -476,19 +899,27 @@ document.addEventListener('click', function(e) {
 function setLockedProductCard(product) {
   var lockedCard = document.getElementById('locked-product-card');
   if (!lockedCard) return;
-  document.getElementById('lpc-name').textContent = product.name || '';
+  var serialNumber = product.serialNumber || product.serialNo || product.serial || product.sn || '';
+  var productLine = getProductLineFromProduct(product);
+  var purchaseDate = product.purchaseDate || parsePurchaseDateStr(product.date || '');
+  setLockedProductName(product.name || '');
   document.getElementById('lpc-order').textContent = product.order || '';
-  document.getElementById('lpc-serial').textContent = product.serialNumber || product.serialNo || product.serial || product.sn || '';
+  document.getElementById('lpc-serial').textContent = serialNumber;
   document.getElementById('lpc-store').textContent = product.store || '';
   document.getElementById('lpc-date').textContent = product.date || '';
   document.getElementById('lpc-qw').textContent = product.qw || '';
-  document.getElementById('lpc-sw').textContent = product.sw || '';
+  document.getElementById('lpc-secondary-label').textContent = productLine === 'ie' ? '부품 보유 기간' : '서비스 보증';
+  document.getElementById('lpc-sw').innerHTML = productLine === 'ie'
+    ? (typeof psPartsRetentionPeriod === 'function' ? psPartsRetentionPeriod(serialNumber, purchaseDate || product.date) : (product.partsRetentionPeriod || product.sw || ''))
+    : (product.sw || (typeof psServiceWarranty === 'function' ? psServiceWarranty(purchaseDate) : ''));
+  setLockedProtectionPlan(product);
   lockedCard.style.display = 'block';
   lockedCard.style.borderLeft = product.isAi ? '3px solid #1428a0' : '3px solid #111';
   lockedCard.setAttribute('data-ai', product.isAi ? 'true' : 'false');
+  lockedCard.setAttribute('data-product-line', productLine);
   lockedCard.setAttribute('data-sub-category', product.productSubCategory || product.subCategory || (typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(product.name) : ''));
-  lockedCard.setAttribute('data-serial-number', product.serialNumber || product.serialNo || product.serial || product.sn || '');
-  lockedCard.setAttribute('data-purchase-date', product.purchaseDate || product.date || '');
+  lockedCard.setAttribute('data-serial-number', serialNumber);
+  lockedCard.setAttribute('data-purchase-date', purchaseDate || product.date || '');
 }
 
 function applyScenario(scenario) {
@@ -506,6 +937,7 @@ function applyScenario(scenario) {
     if (prevBtn) prevBtn.href = '../my-service/detail.html';
     var nextBtn = document.getElementById('txt-btn-next');
     if (nextBtn) nextBtn.href = 'step2-service-type.html?mode=edit';
+    renderStep1ServiceGuide();
   }
 }
 
@@ -569,10 +1001,10 @@ window.addEventListener('load', function() {
         }
       }
 
-      var name = '', purchaseDate = '', productSubCategory = '', isAi = false, orderNo = '', purchaseStore = '', serialNumber = '';
+      var name = '', purchaseDate = '', productSubCategory = '', productLine = 'organic', isAi = false, orderNo = '', purchaseStore = '', serialNumber = '', protectionPlanJoinedAt = '';
       var lockedCard = document.getElementById('locked-product-card');
       if (lockedCard && lockedCard.style.display !== 'none') {
-        name = (document.getElementById('lpc-name') || {}).textContent || '';
+        name = getLockedProductName();
         orderNo = (document.getElementById('lpc-order') || {}).textContent || '';
         purchaseStore = (document.getElementById('lpc-store') || {}).textContent || '';
         serialNumber = lockedCard.getAttribute('data-serial-number') || (document.getElementById('lpc-serial') || {}).textContent || '';
@@ -580,9 +1012,12 @@ window.addEventListener('load', function() {
         purchaseDate = parsePurchaseDateStr(rawDate);
         productSubCategory = lockedCard.getAttribute('data-sub-category') || (typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(name) : '');
         isAi = lockedCard.getAttribute('data-ai') === 'true';
+        productLine = lockedCard.getAttribute('data-product-line') || (isAi ? 'ie' : 'organic');
+        protectionPlanJoinedAt = lockedCard.getAttribute('data-protection-plan-joined-at') || '';
       } else if (selectedProductIdx !== null && selectedProductIdx >= 0 && selectedProductIdx < PS_PRODUCTS.length) {
         var pd = PS_PRODUCTS[selectedProductIdx];
-        name = pd.name; orderNo = pd.order || ''; purchaseStore = pd.store || ''; serialNumber = pd.serialNumber || ''; purchaseDate = pd.purchaseDate; productSubCategory = typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(pd) : (pd.subCategory || ''); isAi = pd.isAi;
+        name = pd.name; orderNo = pd.order || ''; purchaseStore = pd.store || ''; serialNumber = pd.serialNumber || ''; purchaseDate = pd.purchaseDate; productSubCategory = typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(pd) : (pd.subCategory || ''); productLine = getProductLineFromProduct(pd); isAi = productLine === 'ie';
+        protectionPlanJoinedAt = typeof psProtectionPlanJoinedAt === 'function' ? psProtectionPlanJoinedAt(pd) : '';
       } else {
         name = (document.getElementById('product-search') || {}).value || '';
         purchaseStore = (document.getElementById('store-search') || {}).value || '';
@@ -590,7 +1025,8 @@ window.addEventListener('load', function() {
         var dateEl = document.querySelector('#manual-input-section input[type="date"]');
         purchaseDate = dateEl ? dateEl.value : '';
         productSubCategory = typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(name) : '';
-        isAi = isAiProductName(name);
+        productLine = getProductLineFromProduct(name);
+        isAi = productLine === 'ie';
       }
       var modeParam = new URLSearchParams(window.location.search).get('mode');
       var isEditMode = modeParam === 'edit';
@@ -598,13 +1034,13 @@ window.addEventListener('load', function() {
       if (isEditMode) {
         var existState = {};
         try { existState = JSON.parse(localStorage.getItem('ps-state') || '{}'); } catch(ex) {}
-        existState.productName = name; existState.orderNo = orderNo; existState.purchaseStore = purchaseStore; existState.purchaseDate = purchaseDate; existState.serialNumber = serialNumber; existState.productSubCategory = productSubCategory; existState.isAi = isAi; existState.aiProduct = isAi;
+        existState.productName = name; existState.orderNo = orderNo; existState.purchaseStore = purchaseStore; existState.purchaseDate = purchaseDate; existState.serialNumber = serialNumber; existState.productSubCategory = productSubCategory; existState.productLine = productLine; existState.isAi = isAi; existState.aiProduct = isAi; existState.protectionPlanJoinedAt = protectionPlanJoinedAt;
         try { localStorage.setItem('ps-state', JSON.stringify(existState)); } catch(ex) {}
         e.preventDefault();
         window.location.href = 'step2-service-type.html?mode=edit';
       } else {
         var nextState = {
-          productName: name, orderNo: orderNo, purchaseStore: purchaseStore, purchaseDate: purchaseDate, serialNumber: serialNumber, productSubCategory: productSubCategory, isAi: isAi, aiProduct: isAi,
+          productName: name, orderNo: orderNo, purchaseStore: purchaseStore, purchaseDate: purchaseDate, serialNumber: serialNumber, productSubCategory: productSubCategory, productLine: productLine, isAi: isAi, aiProduct: isAi, protectionPlanJoinedAt: protectionPlanJoinedAt,
           serialNumberRequired: !(lockedCard && lockedCard.style.display !== 'none') && (selectedProductIdx === null || selectedProductIdx === undefined),
           serviceType: null, urgentRepair: false, dispatchDate: null, fittingOption: 'basic',
           aiIssueFunc: false, aiIssueProd: false
@@ -618,12 +1054,15 @@ window.addEventListener('load', function() {
             });
           } catch(ex) {}
         }
+        nextState.serviceGuideAgreed = false;
+        nextState.termsAgreeYn = 'N';
+        nextState.ieDataResetConsent = false;
         try { localStorage.setItem('ps-state', JSON.stringify(nextState)); } catch(ex) {}
         e.preventDefault();
         var nextQuery = [];
         if (isReapplyMode) nextQuery.push('mode=reapply');
-        if (isAi) nextQuery.push('ai=true');
-        window.location.href = 'step2-service-type.html' + (nextQuery.length ? '?' + nextQuery.join('&') : '');
+        if (productLine === 'ie') nextQuery.push('ai=true');
+        window.location.href = 'step1-service-guide.html' + (nextQuery.length ? '?' + nextQuery.join('&') : '');
       }
     });
   }
@@ -642,13 +1081,20 @@ window.addEventListener('load', function() {
   if (fromPurchased) {
     var p = {};
     try { p = JSON.parse(fromPurchased); } catch(e) {}
-    document.getElementById('lpc-name').textContent = p.name || '';
+    setLockedProductName(p.name || '');
     document.getElementById('lpc-order').textContent = p.order || '';
     document.getElementById('lpc-serial').textContent = p.serialNumber || p.serialNo || p.serial || p.sn || '';
     document.getElementById('lpc-store').textContent = p.store || '';
     document.getElementById('lpc-date').textContent = p.date || '';
     document.getElementById('lpc-qw').textContent = p.qw || '';
-    document.getElementById('lpc-sw').textContent = p.sw || '';
+    var purchasedSerial = p.serialNumber || p.serialNo || p.serial || p.sn || '';
+    var purchasedLine = getProductLineFromProduct(p);
+    var purchasedDate = p.purchaseDate || parsePurchaseDateStr(p.date || '');
+    document.getElementById('lpc-secondary-label').textContent = purchasedLine === 'ie' ? '부품 보유 기간' : '서비스 보증';
+    document.getElementById('lpc-sw').innerHTML = purchasedLine === 'ie'
+      ? (typeof psPartsRetentionPeriod === 'function' ? psPartsRetentionPeriod(purchasedSerial, purchasedDate || p.date) : (p.partsRetentionPeriod || p.sw || ''))
+      : (p.sw || (typeof psServiceWarranty === 'function' ? psServiceWarranty(purchasedDate) : ''));
+    setLockedProtectionPlan(p);
 
     document.getElementById('locked-product-card').style.display = 'block';
     document.getElementById('product-history-list').style.display = 'none';
@@ -658,7 +1104,7 @@ window.addEventListener('load', function() {
     // AI 제품이면 AI 플로우로, 아니면 일반 수리 플로우로
     var nextBtn = document.getElementById('txt-btn-next');
     if (nextBtn) {
-      nextBtn.href = isReapplyMode ? 'step2-service-type.html?mode=reapply' : 'step2-service-type.html';
+      nextBtn.href = isReapplyMode ? 'step1-service-guide.html?mode=reapply' : 'step1-service-guide.html';
     }
     if (isReapplyMode) {
       var prevBtn = document.getElementById('txt-btn-prev');
@@ -670,10 +1116,13 @@ window.addEventListener('load', function() {
     if (lockedCardEl) {
       lockedCardEl.style.borderLeft = p.isAi ? '3px solid #1428a0' : '3px solid #111';
       lockedCardEl.setAttribute('data-ai', p.isAi ? 'true' : 'false');
+      lockedCardEl.setAttribute('data-product-line', getProductLineFromProduct(p));
       lockedCardEl.setAttribute('data-sub-category', p.productSubCategory || p.subCategory || (typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(p.name) : ''));
       lockedCardEl.setAttribute('data-serial-number', p.serialNumber || p.serialNo || p.serial || p.sn || '');
-      lockedCardEl.setAttribute('data-purchase-date', p.purchaseDate || p.date || '');
+      lockedCardEl.setAttribute('data-purchase-date', purchasedDate || p.date || '');
+      lockedCardEl.setAttribute('data-protection-plan', p.protectionPlan ? 'true' : lockedCardEl.getAttribute('data-protection-plan'));
     }
+    renderStep1ServiceGuide();
 
     try { localStorage.removeItem('ps-from-purchased'); } catch(e) {}
   }

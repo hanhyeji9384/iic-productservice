@@ -47,9 +47,9 @@
     <h1 class="page-title" id="txt-title">서비스 유형 선택</h1>
     <p class="page-desc" id="txt-desc">원하시는 서비스 유형을 선택해주세요.</p>
 
-    <!-- AI 이상 유형 선택 (AI 제품 진입 시에만 노출) -->
+    <!-- IE 이상 유형 선택 (IE 제품 진입 시에만 노출) -->
     <div id="ai-issue-section" style="display:none;margin-bottom:32px;">
-      <p class="form-label" id="txt-ai-issue-label">이상 유형</p>
+      <p class="form-label" id="txt-ai-issue-label">IE 이상 유형</p>
       <p style="font-size:12px;color:#777;margin-bottom:12px;" id="txt-ai-issue-desc">해당되는 이상 유형을 모두 선택해 주세요. (중복 선택 가능)</p>
       <div style="display:flex;gap:8px;">
         <button type="button" class="issue-toggle-btn" id="btn-ai-func" onclick="toggleAiIssue('func')" style="flex:1;">기능 이상</button>
@@ -122,6 +122,8 @@ const STRINGS = {
     eyebrow: '수리 서비스 접수',
     title: '서비스 유형 선택',
     desc: '원하시는 서비스 유형을 선택해주세요.',
+    aiIssueLabel: 'IE 이상 유형',
+    aiIssueDesc: '해당되는 이상 유형을 모두 선택해 주세요. (중복 선택 가능)',
     tcTitle: '토탈 케어',
     tcDesc: '클리닝 · 폴리싱 · 피팅 — 제품 전체를 처음처럼 케어해 드립니다.',
     rpTitle: '제품 수리',
@@ -135,6 +137,8 @@ const STRINGS = {
     eyebrow: 'Repair Service Request',
     title: 'Select Service Type',
     desc: 'Please select the type of service you need.',
+    aiIssueLabel: 'IE Issue Type',
+    aiIssueDesc: 'Select all issue types that apply. Multiple selections are allowed.',
     tcTitle: 'Total Care',
     tcDesc: 'Cleaning · Polishing · Fitting — Complete care to restore your product.',
     rpTitle: 'Product Repair',
@@ -166,6 +170,8 @@ function setLang(lang) {
   setText('txt-eyebrow', s.eyebrow);
   setText('txt-title', s.title);
   setText('txt-desc', s.desc);
+  setText('txt-ai-issue-label', s.aiIssueLabel);
+  setText('txt-ai-issue-desc', s.aiIssueDesc);
   setText('txt-tc-title', s.tcTitle); setText('txt-tc-desc', s.tcDesc);
   setText('txt-rp-title', s.rpTitle); setText('txt-rp-desc', s.rpDesc);
   setText('txt-cs-title', s.csTitle); setText('txt-cs-desc', s.csDesc);
@@ -235,7 +241,7 @@ function applySelectedServiceType(type, mode) {
   if (prev) prev.href = currentFlowMode ? 'step1.html?mode=' + encodeURIComponent(currentFlowMode) : 'step1.html';
 }
 
-// ─── AI 이상 유형 ───
+// ─── IE 이상 유형 ───
 var aiMode = 'off';
 var aiFuncActive = false;
 var aiProdActive = false;
@@ -314,7 +320,7 @@ window.addEventListener('load', function() {
   var country; try { country = localStorage.getItem('ps-country'); } catch(e) {}
   setLang(country === 'us' ? 'en' : (saved || 'ko'));
 
-  // AI 모드 판단: URL 파라미터 우선, 없으면 ps-state.isAi
+  // IE 모드 판단: URL 파라미터 우선, 없으면 ps-state.productLine/isAi
   var urlParams = new URLSearchParams(window.location.search);
   var state = {};
   if (urlParams.get('ai') === 'func') {
@@ -324,7 +330,7 @@ window.addEventListener('load', function() {
   } else {
     try {
       state = JSON.parse(localStorage.getItem('ps-state') || '{}');
-      if (state.isAi) setAiMode('ai');
+      if (state.productLine === 'ie' || state.isAi) setAiMode('ai');
     } catch(e) {}
   }
 
