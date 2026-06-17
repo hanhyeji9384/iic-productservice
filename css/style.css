@@ -830,6 +830,12 @@ html, body {
   border-color: var(--gray-300);
 }
 
+.ticket-status.cancelled {
+  color: #b42318;
+  border-color: #d92d20;
+  background: #fff5f5;
+}
+
 /* ─── STATUS TRACKER ─── */
 .status-track {
   display: flex;

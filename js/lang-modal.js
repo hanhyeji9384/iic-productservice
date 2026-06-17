@@ -3,13 +3,15 @@
   var COUNTRY_MAP = {
     kr: { currency: 'krw', lang: 'ko' },
     us: { currency: 'usd', lang: 'en' },
-    ca: { currency: 'cad', lang: 'en' }
+    ca: { currency: 'cad', lang: 'en' },
+    sg: { currency: 'sgd', lang: 'ko' }
   };
 
   var COUNTRY_LABEL = {
     kr: 'South Korea',
     us: 'United States',
-    ca: 'Canada'
+    ca: 'Canada',
+    sg: 'Singapore'
   };
 
   function getSavedLang() {
@@ -46,6 +48,7 @@
     '<option value="kr">Korea, South</option>' +
     '<option value="us">United States</option>' +
     '<option value="ca">Canada</option>' +
+    '<option value="sg">Singapore</option>' +
     '</select>' +
     '<span style="pointer-events:none;color:#333;font-size:13px;margin-left:8px;">&#x2228;</span>' +
     '</div></div>' +
@@ -60,6 +63,7 @@
     '<option value="krw">Won</option>' +
     '<option value="usd">Dollar</option>' +
     '<option value="cad">Canadian Dollar</option>' +
+    '<option value="sgd">Singapore Dollar</option>' +
     '</select>' +
     '<span style="pointer-events:none;color:#333;font-size:13px;margin-left:8px;">&#x2228;</span>' +
     '</div></div>' +

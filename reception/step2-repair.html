@@ -25,6 +25,72 @@
     .check-item-status { display:none; align-items:center; justify-content:center; min-height:24px; margin-left:auto; padding:2px 10px; border-radius:999px; font-size:11px; font-weight:500; white-space:nowrap; }
     .check-item-status.is-visible { display:inline-flex; }
     .check-item-status.status-unavailable { background:#fff3f3; color:#d09a9a; }
+    .check-item-status.status-restoration { background:#f5f5f5; color:#555; }
+    .ai-repair-flow { display:none; }
+    .ai-section { margin-bottom:32px; }
+    .ai-section-head { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:14px; }
+    .ai-section-title { font-size:13px; font-weight:500; color:#111; }
+    .ai-section-helper { font-size:12px; color:#777; line-height:1.6; }
+    .ai-option-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px; }
+    .ai-choice { min-height:76px; border:1px solid var(--gray-200); background:#fff; padding:18px 20px; font-family:var(--font); font-size:14px; font-weight:500; color:#111; text-align:left; cursor:pointer; transition:border-color .15s, background .15s, color .15s; }
+    .ai-choice:hover { border-color:#111; }
+    .ai-choice.selected { border-color:#111; background:#111; color:#fff; }
+    .ai-illustration-grid { display:grid; grid-template-columns:1fr; gap:20px; }
+    .ai-illustration-panel { border:1px solid var(--gray-200); padding:30px 44px; background:#fff; }
+    .ai-illustration-panel[hidden] { display:none; }
+    .ai-illustration-title { font-size:13px; font-weight:500; margin-bottom:16px; }
+    .ai-device-sketch { min-height:360px; border:1px solid var(--gray-100); background:#fafafa; display:flex; align-items:center; justify-content:center; margin-bottom:14px; padding:28px; }
+    .ai-device-sketch svg { width:min(640px, 100%); height:auto; }
+    .ai-svg-part { cursor:pointer; }
+    .ai-svg-tap { fill:transparent; stroke:transparent; pointer-events:all; }
+    .ai-svg-hit { fill:#f1f1f1; stroke:#bbb; stroke-width:1.5; transition:fill .15s, stroke .15s; }
+    .ai-svg-line { fill:none; stroke:#aaa; stroke-width:2; stroke-linecap:round; transition:stroke .15s, stroke-width .15s; }
+    .ai-svg-dot { fill:#e5e5e5; stroke:#aaa; stroke-width:1.5; transition:fill .15s, stroke .15s; }
+    .ai-svg-label { fill:#999; font-size:8px; letter-spacing:.04em; pointer-events:none; transition:fill .15s; }
+    .ai-svg-part:hover .ai-svg-hit { fill:#ddd; stroke:#777; }
+    .ai-svg-part:hover .ai-svg-line { stroke:#777; }
+    .ai-svg-part:hover .ai-svg-dot { fill:#ddd; stroke:#777; }
+    .ai-svg-part:hover .ai-svg-label { fill:#555; }
+    .ai-svg-part.selected .ai-svg-hit { fill:#111; stroke:#111; }
+    .ai-svg-part.selected .ai-svg-line { stroke:#111; stroke-width:4; }
+    .ai-svg-part.selected .ai-svg-dot { fill:#111; stroke:#111; }
+    .ai-svg-part.selected .ai-svg-label { fill:#111; font-weight:500; }
+    .ai-svg-part.selected .ai-svg-label.is-invert { fill:#fff; }
+    .ai-parts-summary { display:flex; flex-wrap:wrap; gap:6px; align-items:center; min-height:28px; padding-top:4px; }
+    .ai-parts-summary span { font-size:11px; padding:3px 10px; background:#111; color:#fff; letter-spacing:.02em; }
+    .ai-parts-summary .is-empty { background:transparent; color:#bbb; padding:0; }
+    .ai-chip { border:1px solid var(--gray-200); background:#fff; min-height:40px; padding:0 12px; font-family:var(--font); font-size:12px; color:#555; cursor:pointer; text-align:left; }
+    .ai-chip:hover { border-color:#111; color:#111; }
+    .ai-chip.selected { border-color:#111; background:#111; color:#fff; }
+    .ai-issue-group { border:1px solid var(--gray-200); padding:20px; margin-bottom:12px; }
+    .ai-issue-title { font-size:13px; font-weight:500; margin-bottom:12px; }
+    .ai-chip-row { display:flex; flex-wrap:wrap; gap:8px; }
+    .ai-diagnosis-box { border:1px solid #111; padding:22px 24px; margin-bottom:18px; }
+    .ai-diagnosis-box p { font-size:13px; color:#555; line-height:1.85; }
+    .ai-diagnosis-link { display:inline-block; margin-top:14px; font-size:12px; color:#111; text-decoration:underline; }
+    .ai-segment { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; max-width:360px; }
+    .ai-software-guide { display:none; border:1px solid #111; padding:24px; margin:16px 0 12px; background:#fff; }
+    .ai-software-guide.is-visible { display:block; }
+    .ai-software-title { font-size:14px; font-weight:500; margin-bottom:8px; }
+    .ai-software-desc { font-size:13px; color:#555; line-height:1.8; margin-bottom:18px; }
+    .ai-guide-steps { display:grid; gap:12px; margin-bottom:18px; }
+    .ai-guide-step { border-top:1px solid var(--gray-100); padding-top:12px; }
+    .ai-guide-step:first-child { border-top:0; padding-top:0; }
+    .ai-guide-step-title { font-size:13px; font-weight:500; margin-bottom:6px; }
+    .ai-guide-step p { font-size:12px; color:#555; line-height:1.8; }
+    .ai-guide-check { display:flex; align-items:flex-start; gap:10px; font-size:13px; color:#111; margin:18px 0 12px; cursor:pointer; }
+    .ai-guide-check input { width:18px; height:18px; margin-top:1px; accent-color:#111; }
+    .ai-software-actions { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px; max-width:520px; }
+    .ai-software-actions .ai-choice:disabled { color:#bbb; border-color:var(--gray-100); background:#f6f6f6; cursor:not-allowed; }
+    .ai-software-result { display:none; margin-top:12px; padding:14px 16px; background:#f7f7f7; font-size:12px; color:#555; line-height:1.7; }
+    .ai-software-result.is-visible { display:block; }
+    .ai-error { display:none; font-size:11px; color:#c00; margin-top:8px; }
+    @media (max-width:720px) {
+      .ai-option-grid { grid-template-columns:1fr; }
+      .ai-illustration-panel { padding:24px; }
+      .ai-device-sketch { min-height:260px; padding:18px; }
+      .ai-software-actions { grid-template-columns:1fr; }
+    }
   </style>
 
 </head>
@@ -65,10 +131,161 @@
 
     <p class="page-eyebrow" id="page-eyebrow">서비스 유형 — 제품 수리</p>
     <h1 class="page-title" id="page-title">제품 수리</h1>
-    <p class="page-desc" id="page-desc">어떤 문제가 있으신가요? 해당되는 문제를 선택해주세요.</p>
+    <p class="page-desc" id="page-desc">어떤 문제가 있으신가요?<br>해당하는 문제를 선택해 주세요.</p>
 
+    <div id="ai-repair-flow" class="ai-repair-flow">
+      <section class="ai-section">
+        <div class="ai-section-head">
+          <p class="ai-section-title">수리할 제품을 선택해 주세요.</p>
+        </div>
+        <div class="ai-option-grid" id="ai-target-options">
+          <button type="button" class="ai-choice" data-ai-target="main" onclick="selectAiTarget('main')">본품</button>
+          <button type="button" class="ai-choice" data-ai-target="case" onclick="selectAiTarget('case')">충전 케이스</button>
+          <button type="button" class="ai-choice" data-ai-target="both" onclick="selectAiTarget('both')">본품 + 충전 케이스</button>
+        </div>
+        <p class="ai-error" id="ai-target-error">수리할 제품을 선택해 주세요.</p>
+      </section>
+
+      <section class="ai-section">
+        <div class="ai-section-head">
+          <div>
+            <p class="ai-section-title">문제가 있는 부위를 선택해 주세요. <span style="font-weight:400;color:#777;">(복수 선택 가능)</span></p>
+            <p class="ai-section-helper">부위를 탭하여 선택하세요.</p>
+          </div>
+        </div>
+        <div class="ai-illustration-grid">
+          <div class="ai-illustration-panel" id="ai-main-parts-panel" hidden>
+            <p class="ai-illustration-title">본품</p>
+            <div class="ai-device-sketch" aria-hidden="true">
+              <svg viewBox="0 0 280 150" xmlns="http://www.w3.org/2000/svg">
+                <g class="ai-svg-part" data-ai-part="main:front" onclick="toggleAiPart('main:front')">
+                  <rect class="ai-svg-hit" x="50" y="42" width="72" height="48" rx="11"/>
+                  <rect class="ai-svg-hit" x="158" y="42" width="72" height="48" rx="11"/>
+                  <text class="ai-svg-label" x="140" y="126" text-anchor="middle">프론트</text>
+                </g>
+                <g class="ai-svg-part" data-ai-part="main:temple-left" onclick="toggleAiPart('main:temple-left')">
+                  <path class="ai-svg-line" d="M50 62 L12 48"/>
+                  <text class="ai-svg-label" x="26" y="38" text-anchor="middle">템플(좌)</text>
+                </g>
+                <g class="ai-svg-part" data-ai-part="main:temple-right" onclick="toggleAiPart('main:temple-right')">
+                  <path class="ai-svg-line" d="M230 62 L268 48"/>
+                  <text class="ai-svg-label" x="252" y="38" text-anchor="middle">템플(우)</text>
+                </g>
+                <g class="ai-svg-part" data-ai-part="main:lens-left" onclick="toggleAiPart('main:lens-left')">
+                  <rect class="ai-svg-hit" x="58" y="50" width="56" height="32" rx="8"/>
+                  <text class="ai-svg-label is-invert" x="86" y="69" text-anchor="middle">렌즈(좌)</text>
+                </g>
+                <g class="ai-svg-part" data-ai-part="main:lens-right" onclick="toggleAiPart('main:lens-right')">
+                  <rect class="ai-svg-hit" x="166" y="50" width="56" height="32" rx="8"/>
+                  <text class="ai-svg-label is-invert" x="194" y="69" text-anchor="middle">렌즈(우)</text>
+                </g>
+                <g class="ai-svg-part" data-ai-part="main:bridge-port" onclick="toggleAiPart('main:bridge-port')">
+                  <path class="ai-svg-line" d="M122 66 Q140 56 158 66"/>
+                  <circle class="ai-svg-dot" cx="140" cy="68" r="4"/>
+                  <text class="ai-svg-label" x="140" y="22" text-anchor="middle">브릿지(충전 단자)</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+          <div class="ai-illustration-panel" id="ai-case-parts-panel" hidden>
+            <p class="ai-illustration-title">충전 케이스</p>
+            <div class="ai-device-sketch" aria-hidden="true">
+              <svg viewBox="0 0 280 150" xmlns="http://www.w3.org/2000/svg">
+                <g class="ai-svg-part" data-ai-part="case:body" onclick="toggleAiPart('case:body')">
+                  <rect class="ai-svg-hit" x="48" y="42" width="184" height="70" rx="20"/>
+                  <text class="ai-svg-label" x="140" y="132" text-anchor="middle">케이스 본체</text>
+                </g>
+                <g class="ai-svg-part" data-ai-part="case:hinge" onclick="toggleAiPart('case:hinge')">
+                  <rect class="ai-svg-tap" x="72" y="18" width="136" height="34" rx="17"/>
+                  <path class="ai-svg-line" d="M76 42 Q140 22 204 42"/>
+                  <text class="ai-svg-label" x="140" y="20" text-anchor="middle">힌지</text>
+                </g>
+                <g class="ai-svg-part" data-ai-part="case:button" onclick="toggleAiPart('case:button')">
+                  <circle class="ai-svg-dot" cx="140" cy="84" r="7"/>
+                  <text class="ai-svg-label" x="170" y="88">버튼</text>
+                </g>
+                <g class="ai-svg-part" data-ai-part="case:port" onclick="toggleAiPart('case:port')">
+                  <rect class="ai-svg-tap" x="104" y="98" width="72" height="38" rx="12"/>
+                  <path class="ai-svg-line" d="M122 112 H158"/>
+                  <text class="ai-svg-label" x="140" y="126" text-anchor="middle">충전 단자</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div class="ai-parts-summary" id="ai-parts-summary"><span class="is-empty">선택된 부위 없음</span></div>
+        <p class="ai-error" id="ai-parts-error">문제가 있는 부위를 하나 이상 선택해 주세요.</p>
+      </section>
+
+      <section class="ai-section">
+        <p class="ai-section-title" style="margin-bottom:14px;">어떤 문제인가요? <span style="font-weight:400;color:#777;">(복수 선택 가능)</span></p>
+        <div class="ai-issue-group" id="ai-main-function-issues">
+          <p class="ai-issue-title">기능 문제</p>
+          <div class="ai-chip-row" id="ai-function-issue-chips"></div>
+        </div>
+        <div class="ai-issue-group">
+          <p class="ai-issue-title">외관 손상</p>
+          <div class="ai-chip-row">
+            <button type="button" class="ai-chip" data-ai-issue="appearance:scratch" onclick="toggleAiIssue('appearance:scratch')">스크래치</button>
+            <button type="button" class="ai-chip" data-ai-issue="appearance:damage" onclick="toggleAiIssue('appearance:damage')">파손·변형</button>
+            <button type="button" class="ai-chip" data-ai-issue="appearance:water" onclick="toggleAiIssue('appearance:water')">침수 흔적</button>
+            <button type="button" class="ai-chip" data-ai-issue="appearance:etc" onclick="toggleAiIssue('appearance:etc')">기타 외관 이상</button>
+          </div>
+        </div>
+        <div class="ai-software-guide" id="ai-software-guide">
+          <p class="ai-software-title">접수 전 먼저 확인해 주세요</p>
+          <p class="ai-software-desc">기능 문제는 간단한 방법으로 해결될 수 있어요.<br>아래 순서대로 시도해 보세요.</p>
+          <div class="ai-guide-steps">
+            <div class="ai-guide-step">
+              <p class="ai-guide-step-title">1. 전원 재시동</p>
+              <p>JINJU 전원을 껐다가 다시 켜주세요.</p>
+            </div>
+            <div class="ai-guide-step">
+              <p class="ai-guide-step-title">2. 소프트웨어 업데이트 및 재연결</p>
+              <p>① Companion 앱의 설정에서 소프트웨어를 최신 버전으로 업데이트해 주세요.</p>
+              <p>② 그래도 지속되면, 설정에서 페어링을 해제했다가 다시 연결해 보세요.</p>
+              <p>› 페어링 해제 전 데이터를 반드시 백업해 주세요.</p>
+            </div>
+            <div class="ai-guide-step">
+              <p class="ai-guide-step-title">3. 원격 지원 받기</p>
+              <p>상담원과 연결하여 원격으로 점검받아 보세요.</p>
+              <a href="#" class="ai-diagnosis-link" onclick="return false;">원격 지원 연결하기 →</a>
+            </div>
+          </div>
+          <label class="ai-guide-check">
+            <input type="checkbox" id="ai-software-guide-check" onchange="setAiSoftwareGuideChecked(this.checked)">
+            <span>위 방법을 모두 시도했습니다.</span>
+          </label>
+          <div class="ai-software-actions">
+            <button type="button" class="ai-choice" data-ai-software-result="continue" onclick="selectAiSoftwareResult('continue')" disabled>문제가 지속됩니다</button>
+            <button type="button" class="ai-choice" data-ai-software-result="resolved" onclick="selectAiSoftwareResult('resolved')" disabled>해결됐습니다</button>
+          </div>
+          <div class="ai-software-result" id="ai-software-resolved-note">문제가 해결된 경우 수리 접수가 필요하지 않습니다.</div>
+          <p class="ai-error" id="ai-software-guide-error">기능 문제 접수를 위해 사전 안내 확인 후 진행 여부를 선택해 주세요.</p>
+        </div>
+        <p class="ai-error" id="ai-issues-error">문제 현상을 하나 이상 선택해 주세요.</p>
+      </section>
+
+      <section class="ai-section">
+        <div class="ai-diagnosis-box">
+          <p>ⓘ 삼성 멤버스 앱에서 자가 진단을 미리 진행하시면<br>더 정확한 점검이 가능합니다.</p>
+          <p style="margin-top:14px;font-weight:500;color:#111;">자가 진단 방법</p>
+          <p>삼성 멤버스 앱 → 디바이스 진단 → JINJU 선택</p>
+          <a href="#" class="ai-diagnosis-link" onclick="return false;">삼성 멤버스 앱 바로가기 →</a>
+        </div>
+        <p class="ai-section-title" style="margin-bottom:14px;">자가 진단 이력이 있으신가요?</p>
+        <div class="ai-segment">
+          <button type="button" class="ai-choice" data-ai-diagnosis="yes" onclick="selectAiDiagnosis('yes')">있음</button>
+          <button type="button" class="ai-choice" data-ai-diagnosis="no" onclick="selectAiDiagnosis('no')">없음</button>
+        </div>
+        <p style="font-size:12px;color:#777;line-height:1.7;margin-top:12px;">이력이 있으신 경우, 다음 단계에서 결과 사진을 첨부해 주세요.</p>
+        <p class="ai-error" id="ai-diagnosis-error">자가 진단 이력 여부를 선택해 주세요.</p>
+      </section>
+    </div>
+
+    <div id="organic-repair-flow">
     <!-- PART ILLUSTRATION -->
-    <p class="section-label" id="lbl-parts">수리 부위 선택 <span style="color:#000">*</span></p>
+    <p class="section-label" id="lbl-parts">문제 부위 <span style="color:#000">*</span></p>
     <div class="glasses-wrap">
       <svg viewBox="0 0 380 135" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
         <g class="gpart" id="gp-front" onclick="togglePart('gp-front')">
@@ -97,7 +314,7 @@
           <text class="gp-label" id="gp-rt-lbl" x="346" y="38" text-anchor="middle">우템플</text>
         </g>
       </svg>
-      <p id="parts-hint" style="font-size:11px;color:#999;text-align:center;margin-top:4px;">탭하여 선택 · 복수 선택 가능</p>
+      <p id="parts-hint" style="font-size:12px;color:#777;text-align:center;margin-top:4px;line-height:1.8;">서비스를 요청하실 부위를 선택해 주세요. (복수 선택 가능)<br>› 부위를 탭하여 선택하세요.</p>
       <div id="parts-summary" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px;padding:10px 0 2px;border-top:1px solid var(--gray-100);">
         <span style="font-size:12px;color:#bbb;">선택된 부위 없음</span>
       </div>
@@ -106,12 +323,13 @@
 
     <!-- ISSUE TYPE -->
     <p class="section-label" id="lbl-issue">문제 현상 <span style="color:#000">*</span></p>
+    <p id="issue-hint" style="font-size:13px;color:#555;margin-bottom:16px;">해당하는 문제를 선택해 주세요. (단일 선택)</p>
     <div class="option-cards" style="margin-bottom:0;">
       <label id="check-damage" class="check-item" onclick="showResult('damage')">
         <input type="radio" name="issue" value="damage">
         <div class="check-item-body">
-          <p class="check-item-title" id="damage-title">파손 & 변형</p>
-          <p class="check-item-desc" id="damage-desc">프레임 파손, 경첩 변형/변색, 렌즈 스크래치/균열</p>
+          <p class="check-item-title" id="damage-title">파손/손상</p>
+          <p class="check-item-desc" id="damage-desc">프레임 파손, 경첩 변형·변색, 렌즈 스크래치·균열</p>
         </div>
         <span class="check-item-status" id="damage-status"></span>
       </label>
@@ -119,7 +337,7 @@
         <input type="radio" name="issue" value="decoration">
         <div class="check-item-body">
           <p class="check-item-title" id="deco-title">장식 문제</p>
-          <p class="check-item-desc" id="deco-desc">장식 탈락, 장식 파손, 장식 변색</p>
+          <p class="check-item-desc" id="deco-desc">장식 탈락·파손·변색</p>
         </div>
         <span class="check-item-status" id="decoration-status"></span>
       </label>
@@ -127,7 +345,7 @@
         <input type="radio" name="issue" value="accessory">
         <div class="check-item-body">
           <p class="check-item-title" id="acc-title">부속품 문제</p>
-          <p class="check-item-desc" id="acc-desc">코패드, 나사 등 소모품 부품 손상/분실</p>
+          <p class="check-item-desc" id="acc-desc">코받침·나사 등 소모성 부품 손상·분실</p>
         </div>
         <span class="check-item-status" id="accessory-status"></span>
       </label>
@@ -139,7 +357,7 @@
     <!-- DYNAMIC RESULT AREA -->
     <div id="result-area" style="display:none; margin-top:24px;">
 
-      <!-- 파손 & 변형: 3년 이하 -->
+      <!-- 파손/손상: 3년 이하 -->
       <div id="result-damage-normal" style="display:none;">
         <div class="notice-box">
           <strong>수리 안내</strong>
@@ -155,18 +373,16 @@
       <!-- 장식 문제 3년 이하: 토탈케어 유도 -->
       <div id="result-decoration-normal" style="display:none;">
         <div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
-          <strong style="color:#888;">토탈 케어 추천</strong>
-          <p style="margin-bottom:16px;">선택하신 장식 문제만 신속하게 수리해드립니다.<br>제품 전체의 케어를 희망하시면 토탈 케어를 추천드립니다.<br>클리닝·폴리싱·피팅까지 한 번에 케어해 드립니다.</p>
-          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈 케어로 변경</a>
+          <p style="margin-bottom:16px;">선택하신 부위만 빠르게 서비스해 드립니다.<br>제품 전체를 케어하고 싶으시다면, 토탈 케어로 클리닝 · 폴리싱 · 피팅까지 한 번에 받아보세요.</p>
+          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈케어로 변경하기</a>
         </div>
       </div>
 
       <!-- 부속품 문제 3년 이하: 토탈케어 유도 -->
       <div id="result-accessory-normal" style="display:none;">
         <div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
-          <strong style="color:#888;">토탈 케어 추천</strong>
-          <p style="margin-bottom:16px;">선택하신 부속품만 교체해드립니다.<br>제품 전체의 케어를 희망하시면 토탈 케어를 추천드립니다.<br>클리닝·폴리싱·피팅까지 한 번에 케어해 드립니다.</p>
-          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈 케어로 변경</a>
+          <p style="margin-bottom:16px;">선택하신 부위만 빠르게 서비스해 드립니다.<br>제품 전체를 케어하고 싶으시다면, 토탈 케어로 클리닝 · 폴리싱 · 피팅까지 한 번에 받아보세요.</p>
+          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈케어로 변경하기</a>
         </div>
       </div>
 
@@ -174,27 +390,36 @@
       <div id="result-damage-restoration" style="display:none;">
         <div style="border:1px solid #e0e0e0;padding:20px;margin-bottom:16px;">
           <p id="resto-question" style="font-size:13px;font-weight:500;margin-bottom:8px;">복원 수리를 의뢰하시겠습니까?</p>
-          <p id="resto-desc" style="font-size:12px;color:#555;margin-bottom:16px;line-height:1.7;">부품 교체가 어려운 경우, 용접/도금 방식으로 원형에 가깝게 복원하는 수리입니다.</p>
+          <p id="resto-desc" style="font-size:12px;color:#555;margin-bottom:16px;line-height:1.8;">프레임을 용접·도금 방식으로 원형에 가깝게 되살리는 수리입니다.<br>메탈 소재에만 가능하며, 손상 상태에 따라 복원 범위가 달라질 수 있습니다.<br>실물 확인 후 진행 가능 여부를 안내드립니다.<br><br>예상 비용 : 3만 원<br>예상 소요 기간 : 입고일로부터 약 15영업일</p>
           <div style="display:flex;gap:8px;">
             <button onclick="setRestoAvail(true)" id="resto-y" style="flex:1;padding:10px;font-size:12px;border:1px solid #ccc;background:#fff;cursor:pointer;font-family:var(--font);">의뢰하기</button>
-            <button onclick="setRestoAvail(false)" id="resto-n" style="flex:1;padding:10px;font-size:12px;border:1px solid #ccc;background:#fff;cursor:pointer;font-family:var(--font);">아니오 — 수리 불가</button>
+            <button onclick="setRestoAvail(false)" id="resto-n" style="flex:1;padding:10px;font-size:12px;border:1px solid #ccc;background:#fff;cursor:pointer;font-family:var(--font);">아니오</button>
           </div>
         </div>
 
         <!-- Y 선택 시: 복원 수리 상세 + 파손 면책 -->
         <div id="restoration-detail" style="display:none;">
           <div class="notice-box">
-            <strong>복원 수리 안내</strong>
+            <strong>복원 수리</strong>
             <p style="margin-top:8px;color:#555;line-height:2;">
-              - 메탈 소재에만 적용 가능하며, 실물 확인 후 수리 가능 여부가 결정됩니다.<br>
-              - 예상 비용: 3만원<br>
-              - 예상 소요 기간: 입고일로부터 약 15 영업일
+              프레임을 용접·도금 방식으로 원형에 가깝게 되살리는 수리입니다.<br>
+              예상 비용 : 30,000원<br>
+              예상 소요 기간 : 입고일로부터 약 15영업일
             </p>
           </div>
           <div id="disclaimer-box" style="border:1px solid #000;padding:20px;margin-bottom:24px;">
-            <p class="section-label" id="resto-disclaimer-label" style="margin-top:0;">파손 면책 동의 <span style="color:#000">*</span></p>
-            <p id="resto-disclaimer-desc" style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">보증 기간이 만료된 제품입니다. 오래 사용한 제품은 소재가 굳거나 약해져 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
-            <label class="inline-check"><input type="checkbox" id="chk-resto" onchange="checkBtnState()"><span id="resto-disclaimer-check">내용을 확인했으며, 손상 가능성을 이해하고 수리를 신청합니다.</span></label>
+            <p class="section-label" id="resto-disclaimer-label" style="margin-top:0;">서비스 신청 전 확인해 주세요 <span style="color:#000">*</span></p>
+            <p id="resto-disclaimer-desc" style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">보증 기간이 만료된 제품입니다.<br>오래 사용한 제품은 소재가 굳거나 약해져, 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
+            <label class="inline-check"><input type="checkbox" id="chk-resto" onchange="checkBtnState()"><span id="resto-disclaimer-check">내용을 확인했으며, 손상 가능성을 이해하고 서비스를 신청합니다.</span></label>
+          </div>
+          <div id="restoration-summary" class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
+            <strong style="color:#111;">서비스 정보 요약</strong>
+            <div style="display:grid;grid-template-columns:auto 1fr;gap:8px 16px;margin-top:12px;font-size:13px;">
+              <span style="color:#888;">선택 부위</span><span id="summary-parts">선택된 부위</span>
+              <span style="color:#888;">선택 현상</span><span id="summary-issue">파손/손상</span>
+              <span style="color:#888;">예상 진행 내용</span><span>복원 서비스</span>
+              <span style="color:#888;">예상 비용</span><span>30,000원</span>
+            </div>
           </div>
         </div>
 
@@ -209,35 +434,49 @@
 
       <!-- 수리 불가 (파손 7년+, 장식 3년~ 부품 미보유) -->
       <div id="result-unavailable" style="display:none;">
-        <div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
-          <p style="font-size:14px;font-weight:500;margin-bottom:12px;">수리가 어렵습니다</p>
-          <p style="font-size:13px;color:#555;line-height:1.8;">프로덕트 서비스 보증기간이 경과한 제품은 파손/변형 수리 진행이 어렵습니다.</p>
+        <div style="border:1px solid #e0e0e0;padding:24px;">
+          <p style="font-size:14px;font-weight:500;margin-bottom:12px;">해당 수리는 진행이 어렵습니다.</p>
+          <p style="font-size:13px;color:#555;line-height:1.8;margin-bottom:16px;">서비스 보증 기간이 경과한 제품은 교체 부품 및 장식 부품 제공이 어렵습니다.</p>
+          <p style="font-size:13px;color:#555;line-height:1.8;margin-bottom:10px;">다만, 아래 서비스는 계속 이용하실 수 있어요.</p>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;color:#555;line-height:1.7;">
+            <span style="font-weight:500;color:#111;">토탈 케어</span><span>클리닝 · 폴리싱 · 피팅 등 전체 케어</span>
+            <span style="font-weight:500;color:#111;">부속품 교체</span><span>코받침 · 나사 등 소모성 부품 교체</span>
+          </div>
         </div>
       </div>
 
       <!-- 장식 문제 3년~: 어드민 장식 보유 여부 기준으로 결과 노출 -->
       <div id="result-decoration-3yr" style="display:none;">
         <div id="deco-disclaimer" style="border:1px solid #000;padding:20px;margin-bottom:24px;">
-          <p class="section-label" style="margin-top:0;">파손 면책 동의 <span style="color:#000">*</span></p>
-          <p style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">보증 기간이 만료된 제품입니다. 오래 사용한 제품은 소재가 굳거나 약해져 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
-          <label class="inline-check"><input type="checkbox" id="chk-deco" onchange="checkBtnState()"><span>내용을 확인했으며, 손상 가능성을 이해하고 수리를 신청합니다.</span></label>
+          <p class="section-label" style="margin-top:0;">서비스 신청 전 확인해 주세요 <span style="color:#000">*</span></p>
+          <p style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">보증 기간이 만료된 제품입니다.<br>오래 사용한 제품은 소재가 굳거나 약해져, 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
+          <label class="inline-check"><input type="checkbox" id="chk-deco" onchange="checkBtnState()"><span>내용을 확인했으며, 손상 가능성을 이해하고 서비스를 신청합니다.</span></label>
+        </div>
+        <div id="deco-total-care-box" class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
+          <p style="margin-bottom:16px;">선택하신 부위만 빠르게 서비스해 드립니다.<br>제품 전체를 케어하고 싶으시다면, 토탈 케어로 클리닝 · 폴리싱 · 피팅까지 한 번에 받아보세요.</p>
+          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈케어로 변경하기</a>
         </div>
       </div>
 
       <!-- 부속품 문제 3년~: 파손 면책 + 토탈케어 유도 -->
       <div id="result-accessory-3yr" style="display:none;">
         <div id="acc-disclaimer-box" style="border:1px solid #000;padding:20px;margin-bottom:16px;">
-          <p class="section-label" id="acc-disclaimer-label" style="margin-top:0;">파손 면책 동의 <span style="color:#000">*</span></p>
-          <p id="acc-disclaimer-desc" style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">보증 기간이 만료된 제품입니다. 오래 사용한 제품은 소재가 굳거나 약해져 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
-          <label class="inline-check"><input type="checkbox" id="chk-acc" onchange="checkBtnState()"><span id="acc-disclaimer-check">내용을 확인했으며, 손상 가능성을 이해하고 수리를 신청합니다.</span></label>
+          <p class="section-label" id="acc-disclaimer-label" style="margin-top:0;">서비스 신청 전 확인해 주세요 <span style="color:#000">*</span></p>
+          <p id="acc-disclaimer-desc" style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">보증 기간이 만료된 제품입니다.<br>오래 사용한 제품은 소재가 굳거나 약해져, 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
+          <label class="inline-check"><input type="checkbox" id="chk-acc" onchange="checkBtnState()"><span id="acc-disclaimer-check">내용을 확인했으며, 손상 가능성을 이해하고 서비스를 신청합니다.</span></label>
         </div>
         <div id="acc-total-care-box" class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
-          <strong style="color:#888;">토탈 케어 추천</strong>
-          <p style="margin-bottom:16px;">선택하신 부속품만 교체해드립니다.<br>제품 전체의 케어를 희망하시면 토탈 케어를 추천드립니다.<br>클리닝·폴리싱·피팅까지 한 번에 케어해 드립니다.</p>
-          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈 케어로 변경</a>
+          <p style="margin-bottom:16px;">선택하신 부위만 빠르게 서비스해 드립니다.<br>제품 전체를 케어하고 싶으시다면, 토탈 케어로 클리닝 · 폴리싱 · 피팅까지 한 번에 받아보세요.</p>
+          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈케어로 변경하기</a>
         </div>
       </div>
 
+    </div>
+    </div>
+
+    <div class="form-group" id="common-service-request-group" style="margin-top:24px;">
+      <label class="form-label" id="service-request-label">서비스 요청 사항</label>
+      <textarea id="service-request-textarea" class="form-input" rows="4" placeholder="불편하신 점이나 요청 사항을 적어 주세요.&#10;› 구체적으로 작성해 주시면 더 정확한 점검이 가능해요." style="resize:vertical;border:1px solid #e0e0e0;padding:12px;font-family:inherit;font-size:14px;width:100%;outline:none;"></textarea>
     </div>
 
     <div class="btn-wrap" style="margin-top:32px;">
@@ -281,33 +520,37 @@ var STRINGS = {
     stepLabels: ['기본 정보','서비스 유형','서비스 상세','사진·렌즈','배송 정보','안내 확인'],
     pageEyebrow: '서비스 유형 — 제품 수리',
     pageTitle: '제품 수리',
-    pageDesc: '어떤 문제가 있으신가요? 해당되는 문제를 선택해주세요.',
-    lblParts: '수리 부위 선택 <span style="color:#000">*</span>',
+    pageDesc: '어떤 문제가 있으신가요?<br>해당하는 문제를 선택해 주세요.',
+    lblParts: '문제 부위 <span style="color:#000">*</span>',
     svgLabels: { 'gp-front-lbl':'프론트','gp-ll-lbl':'좌렌즈','gp-rl-lbl':'우렌즈','gp-br-lbl':'브릿지','gp-lt-lbl':'좌템플','gp-rt-lbl':'우템플' },
-    partsHint: '탭하여 선택 · 복수 선택 가능',
+    partsHint: '서비스를 요청하실 부위를 선택해 주세요. (복수 선택 가능)<br>› 부위를 탭하여 선택하세요.',
     lblIssue: '문제 현상 <span style="color:#000">*</span>',
-    damageTitle: '파손 & 변형',
-    damageDesc: '프레임 파손, 경첩 변형/변색, 렌즈 스크래치/균열',
+    issueHint: '해당하는 문제를 선택해 주세요. (단일 선택)',
+    damageTitle: '파손/손상',
+    damageDesc: '프레임 파손, 경첩 변형·변색, 렌즈 스크래치·균열',
     decoTitle: '장식 문제',
-    decoDesc: '장식 탈락, 장식 파손, 장식 변색',
+    decoDesc: '장식 탈락·파손·변색',
     accTitle: '부속품 문제',
-    accDesc: '코패드, 나사 등 소모품 부품 손상/분실',
+    accDesc: '코받침·나사 등 소모성 부품 손상·분실',
     btnChangeIssue: '수리 내용 변경하기',
     partsError: '수리 부위를 하나 이상 선택해 주세요.',
     issueError: '문제 현상을 선택해 주세요.',
+    serviceRequestLabel: '서비스 요청 사항',
+    serviceRequestPlaceholder: '불편하신 점이나 요청 사항을 적어 주세요.\n› 구체적으로 작성해 주시면 더 정확한 점검이 가능해요.',
     btnPrev: '이전',
     btnNext: '다음 — 사진·렌즈',
     restoQuestion: '복원 수리를 의뢰하시겠습니까?',
-    restoDesc: '부품 교체가 어려운 경우, 용접/도금 방식으로 원형에 가깝게 복원하는 수리입니다.',
+    restoDesc: '프레임을 용접·도금 방식으로 원형에 가깝게 되살리는 수리입니다.<br>메탈 소재에만 가능하며, 손상 상태에 따라 복원 범위가 달라질 수 있습니다.<br>실물 확인 후 진행 가능 여부를 안내드립니다.<br><br>예상 비용 : 3만 원<br>예상 소요 기간 : 입고일로부터 약 15영업일',
     restoY: '의뢰하기',
-    restoN: '아니오 — 수리 불가',
+    restoN: '아니오',
     decoScenarioAvailable: '장식 보유',
     decoScenarioUnavailable: '장식 미보유',
     decoScenarioNote: '3년 초과 장식 문제 선택 시 어드민의 장식 부품 보유 여부 판단값을 검수합니다.',
-    statusUnavailable: '수리 불가',
-    restoDisclaimerLabel: '파손 면책 동의 <span style="color:#000">*</span>',
-    restoDisclaimerDesc: '보증 기간이 만료된 제품입니다. 오래 사용한 제품은 소재가 굳거나 약해져 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.',
-    restoDisclaimerCheck: '내용을 확인했으며, 손상 가능성을 이해하고 수리를 신청합니다.',
+    statusUnavailable: '서비스 불가',
+    statusRestoration: '복원 수리',
+    restoDisclaimerLabel: '서비스 신청 전 확인해 주세요 <span style="color:#000">*</span>',
+    restoDisclaimerDesc: '보증 기간이 만료된 제품입니다.<br>오래 사용한 제품은 소재가 굳거나 약해져, 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.',
+    restoDisclaimerCheck: '내용을 확인했으며, 손상 가능성을 이해하고 서비스를 신청합니다.',
     partsSummaryEmpty: '<span style="font-size:12px;color:#bbb;">선택된 부위 없음</span>',
     resultDamageNormal: `<div class="notice-box">
           <strong>수리 안내</strong>
@@ -319,37 +562,37 @@ var STRINGS = {
         </div>
 `,
     resultDecorationNormal: `<div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
-          <strong style="color:#888;">토탈 케어 추천</strong>
-          <p style="margin-bottom:16px;">선택하신 장식 문제만 신속하게 수리해드립니다.<br>제품 전체의 케어를 희망하시면 토탈 케어를 추천드립니다.<br>클리닝·폴리싱·피팅까지 한 번에 케어해 드립니다.</p>
-          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈 케어로 변경</a>
+          <p style="margin-bottom:16px;">선택하신 부위만 빠르게 서비스해 드립니다.<br>제품 전체를 케어하고 싶으시다면, 토탈 케어로 클리닝 · 폴리싱 · 피팅까지 한 번에 받아보세요.</p>
+          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈케어로 변경하기</a>
         </div>`,
     resultAccessoryNormal: `<div class="notice-box" style="border-left:none;background:#fff;border:1px solid #e0e0e0;color:#555;">
-          <strong style="color:#888;">토탈 케어 추천</strong>
-          <p style="margin-bottom:16px;">선택하신 부속품만 교체해드립니다.<br>제품 전체의 케어를 희망하시면 토탈 케어를 추천드립니다.<br>클리닝·폴리싱·피팅까지 한 번에 케어해 드립니다.</p>
-          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈 케어로 변경</a>
+          <p style="margin-bottom:16px;">선택하신 부위만 빠르게 서비스해 드립니다.<br>제품 전체를 케어하고 싶으시다면, 토탈 케어로 클리닝 · 폴리싱 · 피팅까지 한 번에 받아보세요.</p>
+          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈케어로 변경하기</a>
         </div>`,
-    restorationDetail: `<div class="notice-box">
-            <strong>복원 수리 안내</strong>
+    restorationDetail: `<strong>복원 수리</strong>
             <p style="margin-top:8px;color:#555;line-height:2;">
-              - 메탈 소재에만 적용 가능하며, 실물 확인 후 수리 가능 여부가 결정됩니다.<br>
-              - 예상 비용: 3만원<br>
-              - 예상 소요 기간: 입고일로부터 약 15 영업일
-            </p>
-          </div>`,
+              프레임을 용접·도금 방식으로 원형에 가깝게 되살리는 수리입니다.<br>
+              예상 비용 : 30,000원<br>
+              예상 소요 기간 : 입고일로부터 약 15영업일
+            </p>`,
     restorationUnavailable: `<div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
             <p style="font-size:14px;font-weight:500;margin-bottom:12px;">수리가 어렵습니다</p>
             <p style="font-size:13px;color:#555;line-height:1.8;">복원 수리를 원하지 않으시면 수리를 진행하기 어렵습니다.</p>
           </div>`,
     resultUnavailable: `<div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
-          <p style="font-size:14px;font-weight:500;margin-bottom:12px;">수리가 어렵습니다</p>
-          <p style="font-size:13px;color:#555;line-height:1.8;">프로덕트 서비스 보증기간이 경과한 제품은 교체 및 장식 부품 제공이 어려워 수리를 진행하기 어렵습니다.</p>
+          <p style="font-size:14px;font-weight:500;margin-bottom:12px;">해당 수리는 진행이 어렵습니다.</p>
+          <p style="font-size:13px;color:#555;line-height:1.8;margin-bottom:16px;">서비스 보증 기간이 경과한 제품은 교체 부품 및 장식 부품 제공이 어렵습니다.</p>
+          <p style="font-size:13px;color:#555;line-height:1.8;margin-bottom:10px;">다만, 아래 서비스는 계속 이용하실 수 있어요.</p>
+          <div style="display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13px;color:#555;line-height:1.7;text-align:left;">
+            <span style="font-weight:500;color:#111;">토탈 케어</span><span>클리닝 · 폴리싱 · 피팅 등 전체 케어</span>
+            <span style="font-weight:500;color:#111;">부속품 교체</span><span>코받침 · 나사 등 소모성 부품 교체</span>
+          </div>
         </div>`,
-    decoDisclaimer: `<p class="section-label" style="margin-top:0;">파손 면책 동의 <span style="color:#000">*</span></p>
-          <p style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">보증 기간이 만료된 제품입니다. 오래 사용한 제품은 소재가 굳거나 약해져 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
-          <label class="inline-check"><input type="checkbox" id="chk-deco" onchange="checkBtnState()"><span>내용을 확인했으며, 손상 가능성을 이해하고 수리를 신청합니다.</span></label>`,
-    accTotalCare: `<strong style="color:#888;">토탈 케어 추천</strong>
-          <p style="margin-bottom:16px;">선택하신 부속품만 교체해드립니다.<br>제품 전체의 케어를 희망하시면 토탈 케어를 추천드립니다.<br>클리닝·폴리싱·피팅까지 한 번에 케어해 드립니다.</p>
-          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈 케어로 변경</a>`
+    decoDisclaimer: `<p class="section-label" style="margin-top:0;">서비스 신청 전 확인해 주세요 <span style="color:#000">*</span></p>
+          <p style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">보증 기간이 만료된 제품입니다.<br>오래 사용한 제품은 소재가 굳거나 약해져, 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
+          <label class="inline-check"><input type="checkbox" id="chk-deco" onchange="checkBtnState()"><span>내용을 확인했으며, 손상 가능성을 이해하고 서비스를 신청합니다.</span></label>`,
+    totalCareNudge: `<p style="margin-bottom:16px;">선택하신 부위만 빠르게 서비스해 드립니다.<br>제품 전체를 케어하고 싶으시다면, 토탈 케어로 클리닝 · 폴리싱 · 피팅까지 한 번에 받아보세요.</p>
+          <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">토탈케어로 변경하기</a>`
   },
   en: {
     stepLabels: ['Basic Info','Service Type','Service Details','Photos & Lens','Shipping','Review'],
@@ -360,6 +603,7 @@ var STRINGS = {
     svgLabels: { 'gp-front-lbl':'Front','gp-ll-lbl':'L Lens','gp-rl-lbl':'R Lens','gp-br-lbl':'Bridge','gp-lt-lbl':'L Temple','gp-rt-lbl':'R Temple' },
     partsHint: 'Tap to select · Multiple selection',
     lblIssue: 'Issue Type <span style="color:#000">*</span>',
+    issueHint: 'Please select the matching issue. (Single selection)',
     damageTitle: 'Damage & Deformation',
     damageDesc: 'Frame damage, hinge deformation/discolouration, lens scratches/cracks',
     decoTitle: 'Decoration Issue',
@@ -369,6 +613,8 @@ var STRINGS = {
     btnChangeIssue: 'CHANGE REPAIR DETAILS',
     partsError: 'Please select at least one part.',
     issueError: 'Please select an issue type.',
+    serviceRequestLabel: 'Service Request Details',
+    serviceRequestPlaceholder: 'Please describe any discomfort or requests.\n› The more specific you are, the more accurately we can inspect your product.',
     btnPrev: 'BACK',
     btnNext: 'NEXT — PHOTOS & LENS',
     restoQuestion: 'Would you like to request restoration repair?',
@@ -379,6 +625,7 @@ var STRINGS = {
     decoScenarioUnavailable: 'Decoration Unavailable',
     decoScenarioNote: 'For decoration issues over 3 years, review the admin part-availability judgment.',
     statusUnavailable: 'Not Repairable',
+    statusRestoration: 'Restoration Repair',
     restoDisclaimerLabel: 'Damage Waiver <span style="color:#000">*</span>',
     restoDisclaimerDesc: 'The warranty period for this product has expired. Aged products may develop micro-cracks or damage during disassembly/assembly.',
     restoDisclaimerCheck: 'I have read and understood the above, and agree to proceed with the repair.',
@@ -402,21 +649,19 @@ var STRINGS = {
           <p style="margin-bottom:16px;">We'll replace the selected components promptly.<br>For full product care, we recommend Total Care.<br>Cleaning, polishing, and fitting — all in one service.</p>
           <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">Switch to Total Care</a>
         </div>`,
-    restorationDetail: `<div class="notice-box">
-            <strong>Restoration Repair Guide</strong>
+    restorationDetail: `<strong>Restoration Repair Guide</strong>
             <p style="margin-top:8px;color:#555;line-height:2;">
               - Applicable to metal frames only. Repairability is confirmed after physical inspection.<br>
               - Estimated cost: KRW 30,000<br>
               - Estimated turnaround: approx. 15 business days from receipt
-            </p>
-          </div>`,
+            </p>`,
     restorationUnavailable: `<div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
             <p style="font-size:14px;font-weight:500;margin-bottom:12px;">Repair Not Available</p>
             <p style="font-size:13px;color:#555;line-height:1.8;">If you do not wish to proceed with restoration repair, we are unable to carry out the repair.</p>
           </div>`,
     resultUnavailable: `<div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
           <p style="font-size:14px;font-weight:500;margin-bottom:12px;">Repair Not Available</p>
-          <p style="font-size:13px;color:#555;line-height:1.8;">Products over 7 years old are not eligible for damage or deformation repair.</p>
+          <p style="font-size:13px;color:#555;line-height:1.8;">This repair cannot be processed because the product is past the service warranty period.<br>Please select another service item, or use consultant support if you need additional help.</p>
         </div>`,
     decoDisclaimer: `<p class="section-label" style="margin-top:0;">Damage Waiver <span style="color:#000">*</span></p>
           <p style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.8;">The warranty period for this product has expired. Aged products may develop micro-cracks or damage during disassembly/assembly.</p>
@@ -426,6 +671,335 @@ var STRINGS = {
           <a href="step2-total-care.html" class="btn btn-secondary" style="font-size:12px;display:inline-block;">Switch to Total Care</a>`
   }
 };
+
+var aiRepairTarget = '';
+var aiRepairParts = [];
+var aiRepairIssues = [];
+var aiDiagnosisHistory = '';
+var aiSoftwareGuideChecked = false;
+var aiSoftwareResult = '';
+var aiRepairMode = false;
+
+var AI_FUNCTION_ISSUES = {
+  main: [
+    ['function:main:power', '충전·전원'],
+    ['function:main:connection', '연결'],
+    ['function:main:sound', '사운드'],
+    ['function:main:battery', '배터리'],
+    ['function:main:camera', '카메라'],
+    ['function:main:button', '버튼'],
+    ['function:main:led', 'LED'],
+    ['function:main:wearing', '착용 인식']
+  ],
+  case: [
+    ['function:case:power', '충전·전원'],
+    ['function:case:battery', '배터리'],
+    ['function:case:button', '버튼']
+  ]
+};
+
+var AI_PART_LABELS = {
+  'main:lens-left': '렌즈(좌)',
+  'main:lens-right': '렌즈(우)',
+  'main:front': '프론트',
+  'main:temple-left': '템플(좌)',
+  'main:temple-right': '템플(우)',
+  'main:bridge-port': '브릿지(충전 단자)',
+  'case:body': '케이스 본체',
+  'case:button': '버튼',
+  'case:port': '충전 단자',
+  'case:hinge': '힌지'
+};
+
+var AI_ISSUE_LABELS = {
+  'function:main:power': '본품 · 충전·전원',
+  'function:main:connection': '본품 · 연결',
+  'function:main:sound': '본품 · 사운드',
+  'function:main:battery': '본품 · 배터리',
+  'function:main:camera': '본품 · 카메라',
+  'function:main:button': '본품 · 버튼',
+  'function:main:led': '본품 · LED',
+  'function:main:wearing': '본품 · 착용 인식',
+  'function:case:power': '충전 케이스 · 충전·전원',
+  'function:case:battery': '충전 케이스 · 배터리',
+  'function:case:button': '충전 케이스 · 버튼',
+  'appearance:scratch': '스크래치',
+  'appearance:damage': '파손·변형',
+  'appearance:water': '침수 흔적',
+  'appearance:etc': '기타 외관 이상'
+};
+
+function arrayToggle(list, value) {
+  var next = list.slice();
+  var idx = next.indexOf(value);
+  if (idx >= 0) next.splice(idx, 1);
+  else next.push(value);
+  return next;
+}
+
+function getAiTargetScopes() {
+  if (aiRepairTarget === 'both') return ['main', 'case'];
+  return aiRepairTarget ? [aiRepairTarget] : [];
+}
+
+function hasAiFunctionIssue() {
+  return aiRepairIssues.some(function(issue) { return issue.indexOf('function:') === 0; });
+}
+
+function isAiSoftwareGuideReady() {
+  return !hasAiFunctionIssue() || (aiSoftwareGuideChecked && aiSoftwareResult === 'continue');
+}
+
+function renderAiFunctionIssues() {
+  var container = document.getElementById('ai-function-issue-chips');
+  if (!container) return;
+  var scopes = getAiTargetScopes();
+  if (!scopes.length) {
+    container.innerHTML = '<span style="font-size:12px;color:#999;">수리할 제품을 먼저 선택해 주세요.</span>';
+    return;
+  }
+
+  var html = '';
+  scopes.forEach(function(scope) {
+    html += '<div style="width:100%;font-size:11px;color:#999;margin:4px 0 0;">' + (scope === 'main' ? '본품' : '충전 케이스') + '</div>';
+    AI_FUNCTION_ISSUES[scope].forEach(function(item) {
+      var key = item[0];
+      var label = item[1];
+      var selected = aiRepairIssues.indexOf(key) >= 0 ? ' selected' : '';
+      html += '<button type="button" class="ai-chip' + selected + '" data-ai-issue="' + key + '" onclick="toggleAiIssue(\'' + key + '\')">' + label + '</button>';
+    });
+  });
+  container.innerHTML = html;
+}
+
+function refreshAiSoftwareGuide() {
+  var hasFunction = hasAiFunctionIssue();
+  if (!hasFunction) {
+    aiSoftwareGuideChecked = false;
+    aiSoftwareResult = '';
+  }
+
+  var guide = document.getElementById('ai-software-guide');
+  var check = document.getElementById('ai-software-guide-check');
+  var note = document.getElementById('ai-software-resolved-note');
+  var error = document.getElementById('ai-software-guide-error');
+
+  if (guide) guide.classList.toggle('is-visible', hasFunction);
+  if (check) check.checked = !!aiSoftwareGuideChecked;
+  if (!aiSoftwareGuideChecked) aiSoftwareResult = '';
+
+  document.querySelectorAll('[data-ai-software-result]').forEach(function(button) {
+    button.disabled = !hasFunction || !aiSoftwareGuideChecked;
+    button.classList.toggle('selected', button.getAttribute('data-ai-software-result') === aiSoftwareResult);
+  });
+
+  if (note) note.classList.toggle('is-visible', hasFunction && aiSoftwareResult === 'resolved');
+  if (error && (!hasFunction || (aiSoftwareGuideChecked && aiSoftwareResult))) error.style.display = 'none';
+}
+
+function refreshAiRepairUi() {
+  document.querySelectorAll('[data-ai-target]').forEach(function(button) {
+    button.classList.toggle('selected', button.getAttribute('data-ai-target') === aiRepairTarget);
+  });
+
+  var showMain = aiRepairTarget === 'main' || aiRepairTarget === 'both';
+  var showCase = aiRepairTarget === 'case' || aiRepairTarget === 'both';
+  var mainPanel = document.getElementById('ai-main-parts-panel');
+  var casePanel = document.getElementById('ai-case-parts-panel');
+  if (mainPanel) mainPanel.hidden = !showMain;
+  if (casePanel) casePanel.hidden = !showCase;
+
+  document.querySelectorAll('[data-ai-part]').forEach(function(button) {
+    button.classList.toggle('selected', aiRepairParts.indexOf(button.getAttribute('data-ai-part')) >= 0);
+  });
+
+  var summary = document.getElementById('ai-parts-summary');
+  if (summary) {
+    summary.innerHTML = aiRepairParts.length
+      ? aiRepairParts.map(function(part) { return '<span>' + (AI_PART_LABELS[part] || part) + '</span>'; }).join('')
+      : '<span class="is-empty">선택된 부위 없음</span>';
+  }
+
+  renderAiFunctionIssues();
+  document.querySelectorAll('[data-ai-issue]').forEach(function(button) {
+    button.classList.toggle('selected', aiRepairIssues.indexOf(button.getAttribute('data-ai-issue')) >= 0);
+  });
+
+  refreshAiSoftwareGuide();
+
+  document.querySelectorAll('[data-ai-diagnosis]').forEach(function(button) {
+    button.classList.toggle('selected', button.getAttribute('data-ai-diagnosis') === aiDiagnosisHistory);
+  });
+
+  updateAiRepairNextState();
+}
+
+function selectAiTarget(target) {
+  aiRepairTarget = target;
+  var scopes = getAiTargetScopes();
+  aiRepairParts = aiRepairParts.filter(function(part) {
+    return scopes.indexOf(part.split(':')[0]) >= 0;
+  });
+  aiRepairIssues = aiRepairIssues.filter(function(issue) {
+    if (issue.indexOf('function:') !== 0) return true;
+    return scopes.indexOf(issue.split(':')[1]) >= 0;
+  });
+  var err = document.getElementById('ai-target-error');
+  if (err) err.style.display = 'none';
+  refreshAiRepairUi();
+}
+
+function toggleAiPart(part) {
+  aiRepairParts = arrayToggle(aiRepairParts, part);
+  var err = document.getElementById('ai-parts-error');
+  if (err && aiRepairParts.length) err.style.display = 'none';
+  refreshAiRepairUi();
+}
+
+function toggleAiIssue(issue) {
+  aiRepairIssues = arrayToggle(aiRepairIssues, issue);
+  var err = document.getElementById('ai-issues-error');
+  if (err && aiRepairIssues.length) err.style.display = 'none';
+  refreshAiRepairUi();
+}
+
+function setAiSoftwareGuideChecked(checked) {
+  aiSoftwareGuideChecked = !!checked;
+  if (!aiSoftwareGuideChecked) aiSoftwareResult = '';
+  var err = document.getElementById('ai-software-guide-error');
+  if (err) err.style.display = 'none';
+  refreshAiRepairUi();
+}
+
+function selectAiSoftwareResult(value) {
+  if (!aiSoftwareGuideChecked) return;
+  aiSoftwareResult = value;
+  var err = document.getElementById('ai-software-guide-error');
+  if (err) err.style.display = 'none';
+  refreshAiRepairUi();
+}
+
+function selectAiDiagnosis(value) {
+  aiDiagnosisHistory = value;
+  var err = document.getElementById('ai-diagnosis-error');
+  if (err) err.style.display = 'none';
+  refreshAiRepairUi();
+}
+
+function isAiRepairState(state, params) {
+  return params.get('ai') === 'true' || state.productLine === 'ie' || state.isAi || state.aiProduct;
+}
+
+function updateAiRepairNextState() {
+  if (!aiRepairMode) return;
+  var btn = document.getElementById('btn-next');
+  if (!btn) return;
+  var ok = !!aiRepairTarget && aiRepairParts.length > 0 && aiRepairIssues.length > 0 && isAiSoftwareGuideReady() && !!aiDiagnosisHistory;
+  btn.style.opacity = ok ? '' : '0.4';
+  btn.style.pointerEvents = ok ? '' : 'none';
+}
+
+function getAiPsSymptomFields() {
+  var hasFunction = aiRepairIssues.some(function(issue) { return issue.indexOf('function:') === 0; });
+  var hasAppearance = aiRepairIssues.some(function(issue) { return issue.indexOf('appearance:') === 0; });
+  var fields = [];
+  if (hasFunction) fields.push('기능 이상');
+  if (hasAppearance) fields.push('제품 파손·변형');
+  return fields;
+}
+
+function validateAiRepairFlow() {
+  var valid = true;
+  var targetErr = document.getElementById('ai-target-error');
+  var partsErr = document.getElementById('ai-parts-error');
+  var issuesErr = document.getElementById('ai-issues-error');
+  var softwareErr = document.getElementById('ai-software-guide-error');
+  var diagnosisErr = document.getElementById('ai-diagnosis-error');
+  if (targetErr) targetErr.style.display = aiRepairTarget ? 'none' : 'block';
+  if (partsErr) partsErr.style.display = aiRepairParts.length ? 'none' : 'block';
+  if (issuesErr) issuesErr.style.display = aiRepairIssues.length ? 'none' : 'block';
+  if (softwareErr) {
+    var showSoftwareErr = hasAiFunctionIssue() && !isAiSoftwareGuideReady();
+    softwareErr.textContent = aiSoftwareResult === 'resolved'
+      ? '문제가 해결된 경우 수리 접수를 진행하지 않아도 됩니다.'
+      : '기능 문제 접수를 위해 사전 안내 확인 후 진행 여부를 선택해 주세요.';
+    softwareErr.style.display = showSoftwareErr ? 'block' : 'none';
+  }
+  if (diagnosisErr) diagnosisErr.style.display = aiDiagnosisHistory ? 'none' : 'block';
+  valid = !!aiRepairTarget && aiRepairParts.length > 0 && aiRepairIssues.length > 0 && isAiSoftwareGuideReady() && !!aiDiagnosisHistory;
+  if (!valid) {
+    var firstErr = document.querySelector('#ai-target-error[style*="block"], #ai-parts-error[style*="block"], #ai-issues-error[style*="block"], #ai-software-guide-error[style*="block"], #ai-diagnosis-error[style*="block"]');
+    if (firstErr) firstErr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  return valid;
+}
+
+function saveAiRepairState() {
+  var psFields = getAiPsSymptomFields();
+  try {
+    var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
+    state.serviceType = 'repair';
+    state.productLine = 'ie';
+    state.isAi = true;
+    state.aiProduct = true;
+    state.aiRepairTarget = aiRepairTarget;
+    state.aiRepairParts = aiRepairParts.slice();
+    state.aiRepairPartLabels = aiRepairParts.map(function(part) { return AI_PART_LABELS[part] || part; });
+    state.aiRepairIssues = aiRepairIssues.slice();
+    state.aiRepairIssueLabels = aiRepairIssues.map(function(issue) { return AI_ISSUE_LABELS[issue] || issue; });
+    state.aiSoftwareGuideChecked = aiSoftwareGuideChecked;
+    state.aiSoftwareResult = aiSoftwareResult;
+    state.aiDiagnosisHistory = aiDiagnosisHistory;
+    state.aiDiagnosisPhotoRequired = aiDiagnosisHistory === 'yes';
+    state.psPageSymptomFields = psFields;
+    state.repairDetail = psFields.join(', ');
+    var requestTextarea = document.getElementById('service-request-textarea');
+    state.serviceRequest = requestTextarea ? requestTextarea.value.trim() : '';
+    localStorage.setItem('ps-state', JSON.stringify(state));
+  } catch(e) {}
+}
+
+function initAiRepairFlow(state) {
+  aiRepairMode = true;
+  var organic = document.getElementById('organic-repair-flow');
+  var ai = document.getElementById('ai-repair-flow');
+  var scenario = document.getElementById('decoration-scenario-control');
+  if (organic) organic.style.display = 'none';
+  if (ai) ai.style.display = 'block';
+  if (scenario) scenario.style.display = 'none';
+
+  var setText = function(id, value) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+  setText('page-eyebrow', '서비스 유형 — 제품 수리');
+  setText('page-title', '제품 수리');
+  setText('page-desc', '수리할 제품과 문제가 있는 부위를 선택해 주세요.');
+
+  aiRepairTarget = state.aiRepairTarget || '';
+  aiRepairParts = Array.isArray(state.aiRepairParts) ? state.aiRepairParts.slice() : [];
+  aiRepairIssues = Array.isArray(state.aiRepairIssues) ? state.aiRepairIssues.slice() : [];
+  aiSoftwareGuideChecked = !!state.aiSoftwareGuideChecked;
+  aiSoftwareResult = state.aiSoftwareResult || '';
+  aiDiagnosisHistory = state.aiDiagnosisHistory || '';
+
+  var prev = document.getElementById('btn-prev');
+  if (prev) prev.href = 'step2-service-type.html?ai=true';
+
+  var btnNext = document.getElementById('btn-next');
+  if (btnNext) {
+    btnNext.textContent = '다음 — 사진·렌즈';
+    btnNext.addEventListener('click', function(e) {
+      if (!validateAiRepairFlow()) {
+        e.preventDefault();
+        return;
+      }
+      saveAiRepairState();
+    });
+  }
+
+  refreshAiRepairUi();
+}
 
 function togglePart(id) {
   document.getElementById(id).classList.toggle('sel');
@@ -448,6 +1022,41 @@ function updatePartsSummary() {
       `<span style="font-size:11px;padding:3px 10px;background:#111;color:#fff;letter-spacing:0.04em;">${nameMap[id]}</span>`
     ).join('');
   }
+  updateRepairSummary();
+}
+
+function selectedPartSummaryText() {
+  var selected = Object.keys(PART_NAMES).filter(function(id) {
+    var el = document.getElementById(id);
+    return el && el.classList.contains('sel');
+  });
+  if (!selected.length) return currentLang === 'en' ? 'No parts selected' : '선택된 부위 없음';
+  var nameMap = currentLang === 'en' ? PART_NAMES_EN : PART_NAMES;
+  return selected.map(function(id) { return nameMap[id]; }).join(', ');
+}
+
+function selectedIssueSummaryText() {
+  var checked = document.querySelector('input[name="issue"]:checked');
+  if (!checked) return currentLang === 'en' ? 'Not selected' : '선택된 현상 없음';
+  if (currentLang === 'en') {
+    return checked.value === 'damage' ? 'Damage' : checked.value === 'decoration' ? 'Decoration Issue' : 'Component Issue';
+  }
+  return checked.value === 'damage' ? '파손/손상' : checked.value === 'decoration' ? '장식 문제' : '부속품 문제';
+}
+
+function issueSummaryText(issueType) {
+  if (!issueType) return selectedIssueSummaryText();
+  if (currentLang === 'en') {
+    return issueType === 'damage' ? 'Damage' : issueType === 'decoration' ? 'Decoration Issue' : 'Component Issue';
+  }
+  return issueType === 'damage' ? '파손/손상' : issueType === 'decoration' ? '장식 문제' : '부속품 문제';
+}
+
+function updateRepairSummary(issueType) {
+  var parts = document.getElementById('summary-parts');
+  var issue = document.getElementById('summary-issue');
+  if (parts) parts.textContent = selectedPartSummaryText();
+  if (issue) issue.textContent = issueSummaryText(issueType);
 }
 
 function checkBtnState() {
@@ -527,13 +1136,13 @@ function updateIssueAvailability() {
 
   if (yearMode === 'normal') return;
 
-  if (yearMode !== 'restoration') {
-    setIssueDisabled('damage', true);
+  if (yearMode === 'restoration') {
+    setIssueStatus('damage', s.statusRestoration, 'restoration');
+  } else {
     setIssueStatus('damage', s.statusUnavailable, 'unavailable');
   }
 
-  if (decoAvail !== true) {
-    setIssueDisabled('decoration', true);
+  if (yearMode === 'unavailable' || decoAvail !== true) {
     setIssueStatus('decoration', s.statusUnavailable, 'unavailable');
   }
 }
@@ -585,6 +1194,7 @@ function setYearMode(mode) {
 }
 
 function showResult(issueType) {
+  updateRepairSummary(issueType);
   var card = document.getElementById('check-' + issueType);
   if (card && card.classList.contains('is-disabled')) {
     hideResultArea();
@@ -615,9 +1225,8 @@ function showResult(issueType) {
   } else if (issueType === 'decoration') {
     if (!over3) {
       document.getElementById('result-decoration-normal').style.display = 'block';
-    } else if (decoAvail !== true) {
-      hideResultArea();
-      return;
+    } else if (yearMode === 'unavailable' || decoAvail !== true) {
+      document.getElementById('result-unavailable').style.display = 'block';
     } else {
       document.getElementById('result-decoration-3yr').style.display = 'block';
     }
@@ -634,6 +1243,7 @@ function showResult(issueType) {
 
 function setRestoAvail(avail) {
   restoAvail = avail;
+  updateRepairSummary();
   const y = document.getElementById('resto-y'), n = document.getElementById('resto-n');
   y.style.background = avail ? '#111' : '#fff'; y.style.color = avail ? '#fff' : '#333'; y.style.borderColor = avail ? '#111' : '#ccc';
   n.style.background = avail ? '#fff' : '#111'; n.style.color = avail ? '#333' : '#fff'; n.style.borderColor = avail ? '#ccc' : '#111';
@@ -676,7 +1286,7 @@ function updateNextBtn(issueType) {
     return;
   }
   const isEnd = (issueType === 'damage' && (yearMode === 'unavailable' || yearMode === 'restoration-nonmetal' || (yearMode === 'restoration' && restoAvail !== true)))
-             || (issueType === 'decoration' && yearMode !== 'normal' && decoAvail !== true);
+             || (issueType === 'decoration' && yearMode !== 'normal' && (yearMode === 'unavailable' || decoAvail !== true));
   document.getElementById('btn-next').style.display = isEnd ? 'none' : '';
 }
 
@@ -700,10 +1310,11 @@ function setLang(lang) {
 
   setText('page-eyebrow', s.pageEyebrow);
   setText('page-title', s.pageTitle);
-  setText('page-desc', s.pageDesc);
+  setHTML('page-desc', s.pageDesc);
   setHTML('lbl-parts', s.lblParts);
-  setText('parts-hint', s.partsHint);
+  setHTML('parts-hint', s.partsHint);
   setHTML('lbl-issue', s.lblIssue);
+  setText('issue-hint', s.issueHint || '');
 
   // SVG part labels
   Object.keys(s.svgLabels).forEach(function(id) {
@@ -723,13 +1334,16 @@ function setLang(lang) {
   setText('btn-change-issue', s.btnChangeIssue);
   setText('parts-error', s.partsError);
   setText('issue-error', s.issueError);
+  setText('service-request-label', s.serviceRequestLabel);
+  var serviceRequestTextarea = document.getElementById('service-request-textarea');
+  if (serviceRequestTextarea) serviceRequestTextarea.setAttribute('placeholder', s.serviceRequestPlaceholder);
   setText('btn-prev', s.btnPrev);
   var btnNext = document.getElementById('btn-next');
   if (btnNext) btnNext.textContent = s.btnNext;
 
   // Restoration section (per-element, preserves visibility state)
   setText('resto-question', s.restoQuestion);
-  setText('resto-desc', s.restoDesc);
+  setHTML('resto-desc', s.restoDesc);
   setText('resto-y', s.restoY);
   setText('resto-n', s.restoN);
   var decoAvailable = document.querySelector('[data-deco-scenario="available"]');
@@ -739,7 +1353,7 @@ function setLang(lang) {
   setText('deco-scenario-note', s.decoScenarioNote);
   updateIssueAvailability();
   setHTML('resto-disclaimer-label', s.restoDisclaimerLabel);
-  setText('resto-disclaimer-desc', s.restoDisclaimerDesc);
+  setHTML('resto-disclaimer-desc', s.restoDisclaimerDesc);
   setText('resto-disclaimer-check', s.restoDisclaimerCheck);
 
   // Result container boxes (safe: hidden on page load, shown only after user interaction)
@@ -751,9 +1365,7 @@ function setLang(lang) {
   var rdEl = document.getElementById('restoration-detail');
   if (rdEl) {
     var rdNotice = rdEl.querySelector('.notice-box');
-    if (rdNotice) rdNotice.innerHTML = lang === 'en'
-      ? '<strong>Restoration Repair Guide</strong><p style="margin-top:8px;color:#555;line-height:2;">- Applicable to metal frames only. Repairability is confirmed after physical inspection.<br>- Estimated cost: KRW 30,000<br>- Estimated turnaround: approx. 15 business days from receipt</p>'
-      : '<strong>복원 수리 안내</strong><p style="margin-top:8px;color:#555;line-height:2;">- 메탈 소재에만 적용 가능하며, 실물 확인 후 수리 가능 여부가 결정됩니다.<br>- 예상 비용: 3만원<br>- 예상 소요 기간: 입고일로부터 약 15 영업일</p>';
+    if (rdNotice) rdNotice.innerHTML = s.restorationDetail;
   }
 
   setHTML('restoration-unavailable', s.restorationUnavailable);
@@ -762,12 +1374,13 @@ function setLang(lang) {
   // deco-disclaimer: replace inner content but re-add checkbox (id needed by setDecoScenario)
   var decoDisclaimerEl = document.getElementById('deco-disclaimer');
   if (decoDisclaimerEl) decoDisclaimerEl.innerHTML = s.decoDisclaimer;
+  setHTML('deco-total-care-box', s.totalCareNudge || s.accTotalCare);
 
   // result-accessory-3yr: translate disclaimer text and total-care box (preserves checkbox state)
   setHTML('acc-disclaimer-label', s.restoDisclaimerLabel);
-  setText('acc-disclaimer-desc', s.restoDisclaimerDesc);
+  setHTML('acc-disclaimer-desc', s.restoDisclaimerDesc);
   setText('acc-disclaimer-check', s.restoDisclaimerCheck);
-  setHTML('acc-total-care-box', s.accTotalCare);
+  setHTML('acc-total-care-box', s.totalCareNudge || s.accTotalCare);
 
   // Update parts-summary empty text if currently empty
   var psum = document.getElementById('parts-summary');
@@ -796,6 +1409,10 @@ window.setDecoScenario = setDecoScenario;
 window.setYearMode = setYearMode;
 window.setLang = setLang;
 window.showAllIssues = showAllIssues;
+window.selectAiTarget = selectAiTarget;
+window.toggleAiPart = toggleAiPart;
+window.toggleAiIssue = toggleAiIssue;
+window.selectAiDiagnosis = selectAiDiagnosis;
 
 let repairPageInitialized = false;
 function initRepairPage() {
@@ -805,9 +1422,16 @@ function initRepairPage() {
   var country; try { country = localStorage.getItem('ps-country'); } catch(e) {}
   setLang(country === 'us' ? 'en' : (saved || 'ko'));
 
+  var urlParams = new URLSearchParams(window.location.search);
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem('ps-state') || '{}'); } catch(e) {}
+  if (isAiRepairState(state, urlParams)) {
+    initAiRepairFlow(state);
+    return;
+  }
+
   // ps-state의 구매일/소분류 기반 자동 연식 판단
   try {
-    var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
     productSubCategory = getRepairSubCategory(state);
     var params = new URLSearchParams(window.location.search);
     var decoParam = params.get('deco') || state.decorationPartAvailability || state.decoAvailability || '';
@@ -859,16 +1483,17 @@ function initRepairPage() {
         state.repairDetail = checkedIssue.value;
         state.repairYearMode = yearMode;
         state.productSubCategory = productSubCategory || state.productSubCategory || '';
+        var requestTextarea = document.getElementById('service-request-textarea');
+        state.serviceRequest = requestTextarea ? requestTextarea.value.trim() : '';
         localStorage.setItem('ps-state', JSON.stringify(state));
       } catch(e2) {}
     });
   }
 
-  var urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('mode') === 'edit') {
     // 수리 부위: 프론트 선택
     togglePart('gp-front');
-    // 문제 현상: 파손&변형만 선택 표시
+    // 문제 현상: 파손/손상만 선택 표시
     var radio = document.querySelector('input[name="issue"][value="damage"]');
     if (radio) radio.checked = true;
     showResult('damage');

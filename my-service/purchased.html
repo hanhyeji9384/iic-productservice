@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>구매한 제품 — GENTLE MONSTER</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
@@ -140,7 +143,7 @@
     .warranty-item {
       display: contents;
     }
-    .warranty-label { color: #999; }
+    .warranty-label { color: #999; white-space: nowrap; }
     .warranty-value { color: #666; }
     .warranty-status {
       margin-left: 4px;
@@ -268,7 +271,7 @@
       </div>
     </div>
 
-    <!-- 배송 완료 (2026-05-12) — 스마트 아이웨어 / Protection Plan 가입 -->
+    <!-- 배송 완료 (2026-05-12) — 스마트 아이웨어 -->
     <div class="purchase-card">
       <div class="purchase-card-img">PRODUCT IMAGE</div>
       <div class="purchase-card-info">
@@ -278,18 +281,18 @@
         <p class="purchase-card-name">스마트 브리즈비 03 (BK)<span class="purchase-card-badge">Protection Plan</span></p>
         <p class="purchase-card-price">₩529,000</p>
         <div class="purchase-card-warranty">
-          <span class="warranty-item"><span class="warranty-label">품질 보증</span><span class="warranty-value">~2028. 05. 12 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
-          <span class="warranty-item"><span class="warranty-label">부품 보유 기간</span><span class="warranty-value">~2030. 05 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
-          <span class="warranty-item"><span class="warranty-label">Protection Plan 가입일</span><span class="warranty-value">2026. 05. 12</span></span>
+          <span class="warranty-item"><span class="warranty-label">일련번호 :</span><span class="warranty-value" id="serial-2605120PLNQWERTYUIO">R4AC9003K87</span></span>
+          <span class="warranty-item"><span class="warranty-label">품질 보증 기간 :</span><span class="warranty-value">2028년 5월 12일까지</span></span>
+          <span class="warranty-item"><span class="warranty-label">부품 보유 기간 :</span><span class="warranty-value">2030년 5월 31일까지</span></span>
         </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
-          <a href="../reception/step1.html?v=parts-retention-20260617" onclick="try{localStorage.setItem('ps-from-purchased',JSON.stringify({name:'스마트 브리즈비 03 (BK)',order:'#2605120PLNQWERTYUIO',serialNumber:'R4AC9003K87',date:'2026. 05. 12',store:'젠틀몬스터 온라인',qw:'~2028. 05. 12 (유효)',partsRetentionPeriod:'~2030. 05 (유효)',protectionPlan:true,protectionPlanJoinedAt:'2026-05-12',productSubCategory:'AI EYEWEAR',isAi:true}));}catch(e){}" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
+          <a href="/reception/step1.html?order=2605120PLNQWERTYUIO" onclick="event.preventDefault();try{localStorage.removeItem('ps-state');localStorage.setItem('ps-from-purchased',JSON.stringify({name:'스마트 브리즈비 03 (BK)',order:'#2605120PLNQWERTYUIO',serialNumber:'R4AC9003K87',date:'2026. 05. 12',store:'젠틀몬스터 온라인',qw:'2028년 5월 12일까지',partsRetentionPeriod:'2030년 5월 31일까지',protectionPlan:true,productSubCategory:'AI EYEWEAR',isAi:true}));}catch(e){}window.location.href='/reception/step1.html?order=2605120PLNQWERTYUIO';" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
         </div>
       </div>
     </div>
 
-    <!-- 배송 완료 (2026-02-03) — 스마트 아이웨어 / 부품 보유 기간 유효 -->
+    <!-- 배송 완료 (2026-02-03) — 스마트 아이웨어 -->
     <div class="purchase-card">
       <div class="purchase-card-img">PRODUCT IMAGE</div>
       <div class="purchase-card-info">
@@ -299,12 +302,12 @@
         <p class="purchase-card-name">스마트 브리즈비 02 (GR)</p>
         <p class="purchase-card-price">₩499,000</p>
         <div class="purchase-card-warranty">
-          <span class="warranty-item"><span class="warranty-label">품질 보증</span><span class="warranty-value">~2028. 02. 03 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
-          <span class="warranty-item"><span class="warranty-label">부품 보유 기간</span><span class="warranty-value">~2030. 02 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
+          <span class="warranty-item"><span class="warranty-label">품질 보증 기간 :</span><span class="warranty-value">2028년 2월 3일까지</span></span>
+          <span class="warranty-item"><span class="warranty-label">부품 보유 기간 :</span><span class="warranty-value">2030년 2월 28일까지</span></span>
         </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
-          <a href="../reception/step1.html?v=parts-retention-20260617" onclick="try{localStorage.setItem('ps-from-purchased',JSON.stringify({name:'스마트 브리즈비 02 (GR)',order:'#2602030AJKXLQPBMNVZ',serialNumber:'R4AC9002K86',date:'2026. 02. 03',store:'젠틀몬스터 온라인',qw:'~2028. 02. 03 (유효)',partsRetentionPeriod:'~2030. 02 (유효)',productSubCategory:'AI EYEWEAR',isAi:true}));}catch(e){}" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
+          <a href="/reception/step1.html?order=2602030AJKXLQPBMNVZ" onclick="event.preventDefault();try{localStorage.removeItem('ps-state');localStorage.setItem('ps-from-purchased',JSON.stringify({name:'스마트 브리즈비 02 (GR)',order:'#2602030AJKXLQPBMNVZ',serialNumber:'R4AC9002K86',date:'2026. 02. 03',store:'젠틀몬스터 온라인',qw:'2028년 2월 3일까지',partsRetentionPeriod:'2030년 2월 28일까지',productSubCategory:'AI EYEWEAR',isAi:true}));}catch(e){}window.location.href='/reception/step1.html?order=2602030AJKXLQPBMNVZ';" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
         </div>
       </div>
     </div>
@@ -319,17 +322,17 @@
         <p class="purchase-card-name">TOFINO 01 (BK)</p>
         <p class="purchase-card-price">₩249,000</p>
         <div class="purchase-card-warranty">
-          <span class="warranty-item"><span class="warranty-label">품질 보증</span><span class="warranty-value">~2027. 07. 18 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
-          <span class="warranty-item"><span class="warranty-label">서비스 보증</span><span class="warranty-value">~2028. 07. 18 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
+          <span class="warranty-item"><span class="warranty-label">품질 보증 기간 :</span><span class="warranty-value">2027년 7월 18일까지</span></span>
+          <span class="warranty-item"><span class="warranty-label">프로덕트 서비스 보증 기간 :</span><span class="warranty-value">2028년 7월 18일까지</span></span>
         </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
-          <a href="../reception/step1.html?v=parts-retention-20260617" onclick="try{localStorage.setItem('ps-from-purchased',JSON.stringify({name:'TOFINO 01 (BK)',order:'#2507180TFBKJKLMNOP',serialNumber:'TO010725-00002184',date:'2025. 07. 18',store:'젠틀몬스터 온라인',qw:'~2027. 07. 18 (유효)',sw:'~2028. 07. 18 (유효)',productSubCategory:'SUNGLASS METAL'}));}catch(e){}" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
+          <a href="/reception/step1.html?order=2507180TFBKJKLMNOP" onclick="event.preventDefault();try{localStorage.removeItem('ps-state');localStorage.setItem('ps-from-purchased',JSON.stringify({name:'TOFINO 01 (BK)',order:'#2507180TFBKJKLMNOP',serialNumber:'TO010725-00002184',date:'2025. 07. 18',store:'젠틀몬스터 온라인',qw:'2027년 7월 18일까지',sw:'2028년 7월 18일까지',productSubCategory:'SUNGLASS METAL'}));}catch(e){}window.location.href='/reception/step1.html?order=2507180TFBKJKLMNOP';" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
         </div>
       </div>
     </div>
 
-    <!-- 배송 완료 (2025-08-18) — 스마트 아이웨어 / 부품 보유 기간 유효 -->
+    <!-- 배송 완료 (2025-08-18) — 스마트 아이웨어 -->
     <div class="purchase-card">
       <div class="purchase-card-img">PRODUCT IMAGE</div>
       <div class="purchase-card-info">
@@ -339,12 +342,12 @@
         <p class="purchase-card-name">스마트 브리즈비 01 (BL)</p>
         <p class="purchase-card-price">₩479,000</p>
         <div class="purchase-card-warranty">
-          <span class="warranty-item"><span class="warranty-label">품질 보증</span><span class="warranty-value">~2027. 08. 18 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
-          <span class="warranty-item"><span class="warranty-label">부품 보유 기간</span><span class="warranty-value">~2029. 08 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
+          <span class="warranty-item"><span class="warranty-label">품질 보증 기간 :</span><span class="warranty-value">2027년 8월 18일까지</span></span>
+          <span class="warranty-item"><span class="warranty-label">부품 보유 기간 :</span><span class="warranty-value">2029년 8월 31일까지</span></span>
         </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
-          <a href="../reception/step1.html?v=parts-retention-20260617" onclick="try{localStorage.setItem('ps-from-purchased',JSON.stringify({name:'스마트 브리즈비 01 (BL)',order:'#2508180MNSVGSJKKGZQ',serialNumber:'R4AC9001K85',date:'2025. 08. 18',store:'젠틀몬스터 온라인',qw:'~2027. 08. 18 (유효)',partsRetentionPeriod:'~2029. 08 (유효)',productSubCategory:'AI EYEWEAR',isAi:true}));}catch(e){}" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
+          <a href="/reception/step1.html?order=2508180MNSVGSJKKGZQ" onclick="event.preventDefault();try{localStorage.removeItem('ps-state');localStorage.setItem('ps-from-purchased',JSON.stringify({name:'스마트 브리즈비 01 (BL)',order:'#2508180MNSVGSJKKGZQ',serialNumber:'R4AC9001K85',date:'2025. 08. 18',store:'젠틀몬스터 온라인',qw:'2027년 8월 18일까지',partsRetentionPeriod:'2029년 8월 31일까지',productSubCategory:'AI EYEWEAR',isAi:true}));}catch(e){}window.location.href='/reception/step1.html?order=2508180MNSVGSJKKGZQ';" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
         </div>
       </div>
     </div>
@@ -359,12 +362,12 @@
         <p class="purchase-card-name">FRIDA 02 <span style="font-size:11px;color:var(--gray-400);font-weight:400;">(FRIDA 03 교체)</span></p>
         <p class="purchase-card-price">₩289,000</p>
         <div class="purchase-card-warranty">
-          <span class="warranty-item"><span class="warranty-label">품질 보증</span><span class="warranty-value">~2026. 11. 20 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
-          <span class="warranty-item"><span class="warranty-label">서비스 보증</span><span class="warranty-value">~2027. 11. 20 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
+          <span class="warranty-item"><span class="warranty-label">품질 보증 기간 :</span><span class="warranty-value">2026년 11월 20일까지</span></span>
+          <span class="warranty-item"><span class="warranty-label">프로덕트 서비스 보증 기간 :</span><span class="warranty-value">2027년 11월 20일까지</span></span>
         </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
-          <a href="../reception/step1.html?v=parts-retention-20260617" onclick="try{localStorage.setItem('ps-from-purchased',JSON.stringify({name:'FRIDA 03',order:'#2411200PQRSTUVWXYZ',serialNumber:'FR030924-00006418',date:'2024. 11. 20',store:'온라인',qw:'~2026. 11. 20 (유효)',sw:'~2027. 11. 20 (유효)',productSubCategory:'SUNGLASS ACETATE'}));}catch(e){}" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
+          <a href="/reception/step1.html?order=2411200PQRSTUVWXYZ" onclick="event.preventDefault();try{localStorage.removeItem('ps-state');localStorage.setItem('ps-from-purchased',JSON.stringify({name:'FRIDA 03',order:'#2411200PQRSTUVWXYZ',serialNumber:'FR030924-00006418',date:'2024. 11. 20',store:'온라인',qw:'2026년 11월 20일까지',sw:'2027년 11월 20일까지',productSubCategory:'SUNGLASS ACETATE'}));}catch(e){}window.location.href='/reception/step1.html?order=2411200PQRSTUVWXYZ';" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
         </div>
       </div>
     </div>
@@ -379,12 +382,12 @@
         <p class="purchase-card-name">MONDO 03 (GY)</p>
         <p class="purchase-card-price">₩269,000</p>
         <div class="purchase-card-warranty">
-          <span class="warranty-item"><span class="warranty-label">품질 보증</span><span class="warranty-value">~2025. 08. 10 <span class="warranty-status warranty-status--expired">(만료)</span></span></span>
-          <span class="warranty-item"><span class="warranty-label">서비스 보증</span><span class="warranty-value">~2026. 08. 10 <span class="warranty-status warranty-status--active">(유효)</span></span></span>
+          <span class="warranty-item"><span class="warranty-label">품질 보증 기간 :</span><span class="warranty-value">2025년 8월 10일까지</span></span>
+          <span class="warranty-item"><span class="warranty-label">프로덕트 서비스 보증 기간 :</span><span class="warranty-value">2026년 8월 10일까지</span></span>
         </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
-          <a href="../reception/step1.html?v=parts-retention-20260617" onclick="try{localStorage.setItem('ps-from-purchased',JSON.stringify({name:'MONDO 03 (GY)',order:'#2308100MGYBKQRSTUV',serialNumber:'MO030823-00003275',date:'2023. 08. 10',store:'젠틀몬스터 온라인',qw:'~2025. 08. 10 (만료)',sw:'~2026. 08. 10 (유효)',productSubCategory:'SUNGLASS ACETATE'}));}catch(e){}" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
+          <a href="/reception/step1.html?order=2308100MGYBKQRSTUV" onclick="event.preventDefault();try{localStorage.removeItem('ps-state');localStorage.setItem('ps-from-purchased',JSON.stringify({name:'MONDO 03 (GY)',order:'#2308100MGYBKQRSTUV',serialNumber:'MO030823-00003275',date:'2023. 08. 10',store:'젠틀몬스터 온라인',qw:'2025년 8월 10일까지',sw:'2026년 8월 10일까지',productSubCategory:'SUNGLASS ACETATE'}));}catch(e){}window.location.href='/reception/step1.html?order=2308100MGYBKQRSTUV';" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
         </div>
       </div>
     </div>
@@ -399,12 +402,12 @@
         <p class="purchase-card-name">JENNIE 01 (BK)</p>
         <p class="purchase-card-price">₩319,000</p>
         <div class="purchase-card-warranty">
-          <span class="warranty-item"><span class="warranty-label">품질 보증</span><span class="warranty-value">~2024. 03. 15 <span class="warranty-status warranty-status--expired">(만료)</span></span></span>
-          <span class="warranty-item"><span class="warranty-label">서비스 보증</span><span class="warranty-value">~2025. 03. 15 <span class="warranty-status warranty-status--expired">(만료)</span></span></span>
+          <span class="warranty-item"><span class="warranty-label">품질 보증 기간 :</span><span class="warranty-value">2024년 3월 15일까지</span></span>
+          <span class="warranty-item"><span class="warranty-label">프로덕트 서비스 보증 기간 :</span><span class="warranty-value">2025년 3월 15일까지</span></span>
         </div>
         <div class="purchase-card-actions">
           <a href="#" class="btn-card">세부 정보 보기</a>
-          <a href="../reception/step1.html?v=parts-retention-20260617" onclick="try{localStorage.setItem('ps-from-purchased',JSON.stringify({name:'JENNIE 01 (BK)',order:'오프라인 등록',serialNumber:'JE010322-00001942',date:'2022. 03. 15',store:'젠틀몬스터 가로수길',qw:'~2024. 03. 15 (만료)',sw:'~2025. 03. 15 (만료)',productSubCategory:'SUNGLASS ACETATE'}));}catch(e){}" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
+          <a href="/reception/step1.html?order=%EC%98%A4%ED%94%84%EB%9D%BC%EC%9D%B8%20%EB%93%B1%EB%A1%9D" onclick="event.preventDefault();try{localStorage.removeItem('ps-state');localStorage.setItem('ps-from-purchased',JSON.stringify({name:'JENNIE 01 (BK)',order:'오프라인 등록',serialNumber:'JE010322-00001942',date:'2022. 03. 15',store:'젠틀몬스터 가로수길',qw:'2024년 3월 15일까지',sw:'2025년 3월 15일까지',productSubCategory:'SUNGLASS ACETATE'}));}catch(e){}window.location.href='/reception/step1.html?order=%EC%98%A4%ED%94%84%EB%9D%BC%EC%9D%B8%20%EB%93%B1%EB%A1%9D';" class="btn-card btn-card--repair">수리 서비스 접수하기 →</a>
         </div>
       </div>
     </div>
@@ -434,6 +437,96 @@
   </div>
 </footer>
 <script>
+var repairEntryByOrder = {
+  '2605120PLNQWERTYUIO': {name:'스마트 브리즈비 03 (BK)',order:'#2605120PLNQWERTYUIO',serialNumber:'R4AC9003K87',date:'2026. 05. 12',store:'젠틀몬스터 온라인',qw:'2028년 5월 12일까지',partsRetentionPeriod:'2030년 5월 31일까지',protectionPlan:true,productSubCategory:'AI EYEWEAR',isAi:true},
+  '2602030AJKXLQPBMNVZ': {name:'스마트 브리즈비 02 (GR)',order:'#2602030AJKXLQPBMNVZ',serialNumber:'R4AC9002K86',date:'2026. 02. 03',store:'젠틀몬스터 온라인',qw:'2028년 2월 3일까지',partsRetentionPeriod:'2030년 2월 28일까지',productSubCategory:'AI EYEWEAR',isAi:true},
+  '2507180TFBKJKLMNOP': {name:'TOFINO 01 (BK)',order:'#2507180TFBKJKLMNOP',serialNumber:'TO010725-00002184',date:'2025. 07. 18',store:'젠틀몬스터 온라인',qw:'2027년 7월 18일까지',sw:'2028년 7월 18일까지',productSubCategory:'SUNGLASS METAL'},
+  '2508180MNSVGSJKKGZQ': {name:'스마트 브리즈비 01 (BL)',order:'#2508180MNSVGSJKKGZQ',serialNumber:'R4AC9001K85',date:'2025. 08. 18',store:'젠틀몬스터 온라인',qw:'2027년 8월 18일까지',partsRetentionPeriod:'2029년 8월 31일까지',productSubCategory:'AI EYEWEAR',isAi:true},
+  '2411200PQRSTUVWXYZ': {name:'FRIDA 03',order:'#2411200PQRSTUVWXYZ',serialNumber:'FR030924-00006418',date:'2024. 11. 20',store:'온라인',qw:'2026년 11월 20일까지',sw:'2027년 11월 20일까지',productSubCategory:'SUNGLASS ACETATE'},
+  '2308100MGYBKQRSTUV': {name:'MONDO 03 (GY)',order:'#2308100MGYBKQRSTUV',serialNumber:'MO030823-00003275',date:'2023. 08. 10',store:'젠틀몬스터 온라인',qw:'2025년 8월 10일까지',sw:'2026년 8월 10일까지',productSubCategory:'SUNGLASS ACETATE'},
+  '오프라인 등록': {name:'JENNIE 01 (BK)',order:'오프라인 등록',serialNumber:'JE010322-00001942',date:'2022. 03. 15',store:'젠틀몬스터 가로수길',qw:'2024년 3월 15일까지',sw:'2025년 3월 15일까지',productSubCategory:'SUNGLASS ACETATE'}
+};
+
+function repairTargetForOrder(order) {
+  return '/reception/step1.html?order=' + encodeURIComponent(order);
+}
+
+function normalizeRepairOrder(order) {
+  try { order = decodeURIComponent(order || ''); } catch(e) {}
+  return String(order || '').replace(/^#/, '').trim();
+}
+
+function readJson(key, fallback) {
+  try {
+    var raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch(e) {
+    return fallback;
+  }
+}
+
+function applyReplacementSerialUpdates() {
+  var replacements = readJson('ps-replacement-serials', {});
+  Object.keys(replacements).forEach(function(order) {
+    var info = replacements[order] || {};
+    var serial = info.afterSerial || '';
+    if (!serial) return;
+    if (repairEntryByOrder[order]) {
+      repairEntryByOrder[order].serialNumber = serial;
+      if (info.protectionPlanTransferred) repairEntryByOrder[order].protectionPlan = true;
+    }
+    var serialEl = document.getElementById('serial-' + order);
+    if (serialEl) serialEl.textContent = serial;
+  });
+}
+
+function repairOrderFromHref(href) {
+  try {
+    return normalizeRepairOrder(new URL(href || '', window.location.origin).searchParams.get('order'));
+  } catch(e) {
+    return '';
+  }
+}
+
+function syncRepairLinks() {
+  document.querySelectorAll('.btn-card--repair').forEach(function(link) {
+    var order = repairOrderFromHref(link.getAttribute('href')) || normalizeRepairOrder(link.getAttribute('data-repair-order'));
+    if (!repairEntryByOrder[order]) return;
+    link.setAttribute('href', repairTargetForOrder(order));
+    link.setAttribute('data-repair-order', order);
+    link.onclick = null;
+    link.removeAttribute('onclick');
+  });
+}
+
+function goRepairReception(order) {
+  var entry = repairEntryByOrder[order];
+  if (!entry) return;
+  try {
+    localStorage.removeItem('ps-state');
+    localStorage.setItem('ps-from-purchased', JSON.stringify(entry));
+  } catch(e) {}
+  window.location.href = repairTargetForOrder(order);
+}
+
+document.addEventListener('click', function(event) {
+  var link = event.target.closest('.btn-card--repair');
+  if (!link) return;
+  var order = normalizeRepairOrder(link.getAttribute('data-repair-order')) || repairOrderFromHref(link.getAttribute('href'));
+  if (!repairEntryByOrder[order]) return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  goRepairReception(order);
+}, true);
+
+syncRepairLinks();
+applyReplacementSerialUpdates();
+document.addEventListener('DOMContentLoaded', syncRepairLinks);
+document.addEventListener('DOMContentLoaded', applyReplacementSerialUpdates);
+window.addEventListener('load', syncRepairLinks);
+window.addEventListener('load', applyReplacementSerialUpdates);
+window.addEventListener('pageshow', applyReplacementSerialUpdates);
+
 function setLang(lang) {
   try { localStorage.setItem('ps-lang', lang); } catch(e) {}
   ['ko','en'].forEach(function(l) {

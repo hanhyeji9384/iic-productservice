@@ -66,28 +66,22 @@
       <label id="send-pickup-opt" class="check-item" onclick="selectSend(this,'pickup')">
         <input type="radio" name="send" value="pickup">
         <div>
-          <p id="title-pickup" class="check-item-title">자택 픽업</p>
-          <p id="desc-pickup" class="check-item-desc">택배 기사가 직접 방문하여 제품을 수거합니다.<br>
-            <span style="font-size:11px;color:#999;">접수일 +3영업일 이내 수거</span>
-          </p>
+          <p id="title-pickup" class="check-item-title">무료 택배 픽업</p>
+          <p id="desc-pickup" class="check-item-desc">접수 완료 후 영업일 3일 이내 방문합니다.</p>
         </div>
       </label>
       <label id="send-self-opt" class="check-item" style="display:none;" onclick="selectSend(this,'self')">
         <input type="radio" name="send" value="self">
         <div>
           <p id="title-self" class="check-item-title">직접 발송</p>
-          <p id="desc-self" class="check-item-desc">원하시는 택배사를 이용해 직접 보내주셔도 됩니다.<br>
-            <span style="font-size:11px;color:#999;">발송 주소와 방법은 이메일로 안내드립니다</span>
-          </p>
+          <p id="desc-self" class="check-item-desc">원하시는 운송사로 직접 보내주세요.<br>발송 주소와 방법은 이메일로 안내드립니다.</p>
         </div>
       </label>
       <label id="send-store-opt" class="check-item" onclick="selectSend(this,'store')">
         <input type="radio" name="send" value="store">
         <div>
-          <p id="title-dropoff" class="check-item-title">매장 Drop Off</p>
-          <p id="desc-dropoff" class="check-item-desc">가까운 젠틀몬스터 직영매장에 직접 방문하여 제품을 맡겨주세요.<br>
-            <span style="font-size:11px;color:#999;">접수 후 5영업일 이내 방문 권장</span>
-          </p>
+          <p id="title-dropoff" class="check-item-title">스토어 방문</p>
+          <p id="desc-dropoff" class="check-item-desc">접수 후 5일 이내에 선택하신 매장으로 제품을 맡겨 주세요.</p>
         </div>
       </label>
     </div>
@@ -119,14 +113,14 @@
         <button onclick="alert('[새 주소 추가]')" style="width:100%;padding:18px;font-size:13px;font-family:var(--font);color:var(--gray-800);background:var(--white);border:1px solid var(--gray-200);cursor:pointer;margin-top:8px;letter-spacing:0.02em;">새로운 주소 추가하기</button>
       </div>
       <div class="notice-box" id="pickup-notice-box" style="margin-top:0;">
-        <p>· 접수 완료 후 영업일 3일 이내 방문 수거해 드립니다.</p>
-        <p>· 수거 전 기사님께서 미리 연락드립니다.</p>
+        <p>접수 완료 후 영업일 3일 이내 방문합니다.</p>
+        <p>방문 전 기사님이 미리 연락드리며, 기한 내 픽업되지 않으면 접수가 자동 취소됩니다.</p>
       </div>
       <div id="lens-pickup-disclaimer" style="display:none;border:1px solid #000;padding:20px;margin-top:16px;">
         <p id="lens-disclaimer-title" style="font-size:14px;font-weight:500;margin-bottom:16px;">꼭 확인해 주세요.</p>
-        <p id="lens-disclaimer-p1" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:10px;">별도로 제작한 렌즈(도수·블루라이트 등)가 장착된 경우, 안전한 수리를 위해 렌즈 분리가 반드시 필요합니다.</p>
-        <p id="lens-disclaimer-p2" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:10px;">별도 제작렌즈가 삽입된 상태로 접수될 경우, 수리가 지연되거나 반송되며, 수리·운송 과정에서 렌즈가 손상되거나 분실되어도 보상하지 않습니다.</p>
-        <p id="lens-disclaimer-p3" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:14px;">따라서 별도로 제작된 렌즈는 꼭 분리하시고 제품만 보내주세요.</p>
+        <p id="lens-disclaimer-p1" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:10px;">별도로 제작한 렌즈(도수·블루라이트 등)가 장착된 경우,<br>안전한 진행을 위해 렌즈 분리가 반드시 필요합니다.</p>
+        <p id="lens-disclaimer-p2" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:10px;">렌즈가 삽입된 상태로 접수되면 진행이 지연되거나 렌즈만 반송될 수 있으며,<br>작업·운송 과정에서 렌즈가 손상·분실되어도 보상이 어렵습니다.</p>
+        <p id="lens-disclaimer-p3" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:14px;">별도 제작 렌즈는 분리하시고, 제품 본체만 보내주세요.</p>
         <a href="#" id="lens-disclaimer-link" style="font-size:12px;color:#555;text-decoration:underline;display:inline-block;margin-bottom:20px;">면책동의 원문 확인하기 →</a>
         <label class="inline-check">
           <input type="checkbox" id="chk-lens-pickup" onchange="saveShippingState();checkShippingNextBtn()">
@@ -139,10 +133,10 @@
     <div id="send-store-section" style="display:none;margin-bottom:32px;">
       <div id="lens-store-service" style="display:none;border:1px solid #e0e0e0;padding:24px;margin-bottom:24px;background:#fafafa;">
         <p id="lens-store-title" style="font-size:14px;font-weight:500;margin-bottom:16px;">렌즈 분리 서비스 이용하기</p>
-        <p id="lens-store-p1" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:8px;">고객님이 별도로 제작하신 렌즈(도수·블루라이트 등)가 삽입된 경우, 수리 전에 렌즈 분리가 반드시 필요합니다.</p>
-        <p id="lens-store-p2" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:8px;">공식 안경원에서 전문 안경사님이 안전하게 렌즈를 분리해드리니, 수리 접수 후 방문하여 진행해주세요.</p>
-        <p id="lens-store-p3" style="font-size:12px;color:#888;line-height:1.8;margin-bottom:14px;">※ 젠틀몬스터 제품의 기존 렌즈는 분리 없이 바로 수리 접수가 가능합니다.</p>
-        <p id="lens-store-p4" style="font-size:13px;color:#555;line-height:1.8;">아래에서 이용 가능한 공식 안경원을 선택해 주세요.</p>
+        <p id="lens-store-p1" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:8px;">별도로 제작하신 렌즈(도수·블루라이트 등)가 삽입된 경우, 서비스 전 렌즈 분리가 필요합니다.<br>가까운 공식 안경원을 방문하시면 전문 안경사가 안전하게 분리해 드려요.<br>서비스 접수 후, 가까운 안경원에 방문해 진행해 주세요.</p>
+        <p id="lens-store-p2" style="font-size:12px;color:#888;line-height:1.8;margin-bottom:14px;">› 젠틀몬스터 제품의 기존 렌즈는 분리 없이 바로 접수하실 수 있어요.</p>
+        <p id="lens-store-p3" style="font-size:13px;color:#555;line-height:1.8;">아래 [ 스토어 찾기 ] 에서 이용 가능한 공식 안경원을 확인해 주세요.</p>
+        <p id="lens-store-p4" style="display:none;"></p>
       </div>
       <p id="lbl-dropoff-store" class="section-label" style="margin-top:0;">Drop Off 매장 선택 <span style="color:#000">*</span></p>
       <div id="drop-store-picker">
@@ -184,20 +178,19 @@
         <button id="btn-change-drop" onclick="changeDropStore()" style="font-size:12px;padding:8px 16px;border:1px solid var(--gray-300);background:var(--white);font-family:var(--font);cursor:pointer;">변경하기</button>
       </div>
       <div class="notice-box" id="store-notice-box" style="margin-top:16px;">
-        <p>· 접수 후 5일 이내에 선택하신 매장에 제품을 맡겨주세요.</p>
-        <p>· 기한 내 미방문 시 접수가 자동으로 취소됩니다.</p>
+        <p>접수 후 5일 이내에 선택하신 매장으로 제품을 맡겨 주세요.</p>
+        <p>기한 내 방문하지 않으면 접수가 자동 취소됩니다.</p>
       </div>
     </div>
 
     <!-- 직접 발송 안내 (US 기타) -->
     <div id="self-ship-section" style="display:none;margin-bottom:32px;">
       <div class="notice-box" id="self-notice-box">
-        <p>· You may send the product using your preferred carrier.</p>
-        <p>· Ship to: 2211 E. Howell Ave. Anaheim, CA 92806 — include your ticket number and name inside the package.</p>
-        <p>· Detailed shipping instructions will also be sent to your email.</p>
-        <p>· If the product is not received within 14 days of submission, your service request will be automatically cancelled.</p>
+        <p>원하시는 운송사로 직접 보내주세요.</p>
+        <p>발송 주소와 방법은 이메일로 안내드립니다.</p>
       </div>
     </div>
+
     </div><!-- /send-method-wrap -->
 
     <!-- TOTAL CARE SCHEDULE -->
@@ -205,16 +198,16 @@
       <p id="schedule-title" class="shipping-schedule-title">서비스 일정</p>
       <p id="schedule-desc" class="shipping-schedule-desc">토탈 케어 접수 시 긴급 수리 여부와 출고 희망일을 선택해 주세요.</p>
 
-      <p id="lbl-urgent" class="section-label">긴급 수리 <span style="font-size:10px;color:#999;text-transform:none;letter-spacing:0;">(선택)</span></p>
+      <p id="lbl-urgent" class="section-label">긴급 서비스 <span style="font-size:10px;color:#999;text-transform:none;letter-spacing:0;">(선택)</span></p>
       <label class="check-item" id="urgent-check-item" style="margin-bottom:8px;">
         <input type="checkbox" id="urgent-check" onchange="toggleTotalCareUrgent()" style="accent-color:var(--black);width:16px;height:16px;margin-top:2px;flex-shrink:0;cursor:pointer;">
         <div>
-          <p id="title-urgent" class="check-item-title">긴급 수리 신청</p>
-          <p id="desc-urgent" class="check-item-desc">입고 후 5 영업일 이내 출고 · 추가 비용 50,000원</p>
+          <p id="title-urgent" class="check-item-title">입고 후 5영업일 이내 출고  ▢  +n만원</p>
+          <p id="desc-urgent" class="check-item-desc"></p>
         </div>
       </label>
       <div id="urgent-cal-note" style="display:none;padding:12px 14px;background:var(--gray-50);border:1px solid var(--gray-200);font-size:12px;color:var(--gray-600);margin-bottom:8px;line-height:1.7;">
-        <span id="txt-urgent-note">입고일 기준 +5 영업일 이내 출고로 자동 설정됩니다. 출고 희망일을 별도로 지정하실 수 없습니다.</span>
+        <span id="txt-urgent-note">입고 후 5영업일 이내 출고  ▢  +n만원</span>
       </div>
 
       <p id="lbl-dispatch" class="section-label" style="margin-top:32px;"><span id="lbl-dispatch-text">출고 희망일</span> <span id="dispatch-req" class="required-mark">*</span><span id="dispatch-opt" style="font-size:10px;color:#999;text-transform:none;letter-spacing:0;display:none;">(선택)</span></p>
@@ -232,8 +225,8 @@
       </div>
       <p id="dispatch-error" style="display:none;font-size:11px;color:#c00;margin-top:4px;">출고 희망일을 선택해 주세요.</p>
       <p id="txt-dispatch-hint" style="font-size:11px;color:#999;margin-top:8px;line-height:1.7;">
-        선택 가능 범위: 접수일 기준 15영업일 이후 ~ 20영업일 이내 (토·일 제외)<br>
-        선택하신 날짜는 수리 완료 후 희망 출고일로, 수리 내용에 따라 변동될 수 있습니다.
+        선택하신 날짜는 희망일로, 진행 내용에 따라 실제 출고일은 달라질 수 있습니다.<br>
+        정확한 출고일은 알림톡 또는 이메일로 안내드릴게요.
       </p>
     </div>
 
@@ -408,6 +401,22 @@
       </div>
     </div>
 
+    <div id="ie-pairing-notice" style="display:none;border:1px solid #111;padding:24px;margin-top:32px;margin-bottom:24px;">
+      <p id="ie-pairing-title" style="font-size:14px;font-weight:500;margin-bottom:16px;">발송 전 반드시 확인해 주세요.</p>
+      <label class="inline-check" style="align-items:flex-start;margin-bottom:12px;">
+        <input type="checkbox" id="chk-ie-backup" onchange="checkShippingNextBtn()">
+        <span id="ie-backup-check">개인정보 및 데이터를 백업했습니다.</span>
+      </label>
+      <label class="inline-check" style="align-items:flex-start;margin-bottom:16px;">
+        <input type="checkbox" id="chk-ie-unpair" onchange="checkShippingNextBtn()">
+        <span>
+          <span id="ie-unpair-check" style="display:block;">페어링을 해제했습니다.</span>
+          <span id="ie-unpair-desc" style="display:block;margin-top:4px;font-size:12px;color:var(--gray-500);line-height:1.7;">페어링 해제 시 기기에 저장된 데이터가 모두 초기화됩니다.</span>
+        </span>
+      </label>
+      <p id="ie-pairing-guide" style="font-size:12px;color:var(--gray-500);line-height:1.8;">위 항목을 모두 확인하신 후 다음 단계로 진행해 주세요.</p>
+    </div>
+
     <div class="btn-wrap" style="margin-top:40px;">
       <a id="btn-prev" href="step3-details.html" class="btn btn-secondary">이전</a>
       <a id="btn-next" href="step4-estimate.html" class="btn btn-primary" style="opacity:0.4;pointer-events:none;" onclick="saveShippingState()">다음 — 안내 확인</a>
@@ -445,9 +454,9 @@ const STRINGS = {
     title: '배송 정보',
     lblSend: '발송 방법', lblRecv: '수령 방법', lblAddr: '수령 주소',
     lblDropoffStore: 'Drop Off 매장 선택', lblRecvStore: '수령 매장 선택',
-    titlePickup: '자택 픽업', descPickup: '운송사가 방문하여 수거해 드립니다.',
-    titleDropoff: '매장 Drop Off', descDropoff: '가까운 매장에 직접 방문하여 제품을 맡겨주세요.',
-    titleSelf: '직접 발송', descSelf: '원하시는 운송사를 이용해 직접 보내주셔도 됩니다. 발송 주소와 방법은 이메일로 안내드립니다.',
+    titlePickup: '무료 택배 픽업', descPickup: '접수 완료 후 영업일 3일 이내 방문합니다.',
+    titleDropoff: '스토어 방문', descDropoff: '접수 후 5일 이내에 선택하신 매장으로 제품을 맡겨 주세요.',
+    titleSelf: '직접 발송', descSelf: '원하시는 운송사로 직접 보내주세요.<br>발송 주소와 방법은 이메일로 안내드립니다.',
     titleHomeDelivery: '자택 배송', descHomeDelivery: '수리 완료 후 자택으로 배송해 드립니다.',
     titleStorePickup: '매장 픽업', descStorePickup: '수리 완료 후 선택한 매장에서 수령합니다.',
     btnLocDrop: '현재 위치', btnLocRecv: '현재 위치',
@@ -467,34 +476,34 @@ const STRINGS = {
     searchPlaceholder: '매장명 또는 지역 검색',
     scheduleTitle: '서비스 일정',
     scheduleDesc: '토탈 케어 접수 시 긴급 수리 여부와 출고 희망일을 선택해 주세요.',
-    lblUrgent: '긴급 수리',
-    titleUrgent: '긴급 수리 신청',
-    descUrgent: '입고 후 5 영업일 이내 출고 · 추가 비용 50,000원',
-    txtUrgentNote: '입고일 기준 +5 영업일 이내 출고로 자동 설정됩니다. 출고 희망일을 별도로 지정하실 수 없습니다.',
+    lblUrgent: '긴급 서비스',
+    titleUrgent: '입고 후 5영업일 이내 출고  ▢  +n만원',
+    descUrgent: '',
+    txtUrgentNote: '입고 후 5영업일 이내 출고  ▢  +n만원',
     lblDispatch: '출고 희망일',
     lblDispatchSelected: '출고 희망일',
-    txtDispatchHint: '선택 가능 범위: 접수일 기준 15영업일 이후 ~ 20영업일 이내 (토·일 제외)<br>선택하신 날짜는 수리 완료 후 희망 출고일로, 수리 내용에 따라 변동될 수 있습니다.',
+    txtDispatchHint: '선택하신 날짜는 희망일로, 진행 내용에 따라 실제 출고일은 달라질 수 있습니다.<br>정확한 출고일은 알림톡 또는 이메일로 안내드릴게요.',
     dispatchError: '출고 희망일을 선택해 주세요.',
     lensSendLabel: '발송 방법',
-    lensPickupTitle: '자택 픽업',
-    lensPickupDesc: '운송사가 방문하여 수거해 드립니다.',
-    lensDropoffTitle: '매장 Drop Off',
-    lensDropoffDesc: '가까운 매장에 직접 방문하여 제품을 맡겨주세요.',
+    lensPickupTitle: '무료 택배 픽업',
+    lensPickupDesc: '접수 완료 후 영업일 3일 이내 방문합니다.',
+    lensDropoffTitle: '스토어 방문',
+    lensDropoffDesc: '접수 후 5일 이내에 선택하신 매장으로 제품을 맡겨 주세요.',
     lensDropoffStoreLabel: 'Drop Off 매장 선택',
     lensPickupAddrLabel: '회수 주소',
-    lensPickupNotice: '<p>· 접수 완료 후 영업일 3일 이내 방문 수거해 드립니다.</p><p>· 별도 제작 렌즈가 삽입된 상태로 발송되는 경우 아래 면책 동의가 필요합니다.</p>',
-    lensStoreNotice: '<p>· 선택하신 심플리페어 매장에서 렌즈 분리 후 제품을 맡겨주세요.</p><p>· 접수 후 5일 이내 방문을 권장합니다.</p>',
+    lensPickupNotice: '<p>접수 완료 후 영업일 3일 이내 방문합니다.</p><p>방문 전 기사님이 미리 연락드리며, 기한 내 픽업되지 않으면 접수가 자동 취소됩니다.</p>',
+    lensStoreNotice: '<p>접수 후 5일 이내에 선택하신 매장으로 제품을 맡겨 주세요.</p><p>기한 내 방문하지 않으면 접수가 자동 취소됩니다.</p>',
     lensDisclaimerTitle: '꼭 확인해 주세요.',
-    lensDisclaimerP1: '별도로 제작한 렌즈(도수·블루라이트 등)가 장착된 경우, 안전한 수리를 위해 렌즈 분리가 반드시 필요합니다.',
-    lensDisclaimerP2: '별도 제작렌즈가 삽입된 상태로 접수될 경우, 수리가 지연되거나 반송되며, 수리·운송 과정에서 렌즈가 손상되거나 분실되어도 보상하지 않습니다.',
-    lensDisclaimerP3: '따라서 별도로 제작된 렌즈는 꼭 분리하시고 제품만 보내주세요.',
+    lensDisclaimerP1: '별도로 제작한 렌즈(도수·블루라이트 등)가 장착된 경우,<br>안전한 진행을 위해 렌즈 분리가 반드시 필요합니다.',
+    lensDisclaimerP2: '렌즈가 삽입된 상태로 접수되면 진행이 지연되거나 렌즈만 반송될 수 있으며,<br>작업·운송 과정에서 렌즈가 손상·분실되어도 보상이 어렵습니다.',
+    lensDisclaimerP3: '별도 제작 렌즈는 분리하시고, 제품 본체만 보내주세요.',
     lensDisclaimerLink: '면책동의 원문 확인하기 →',
     lensDisclaimerCheck: '내용을 확인했으며, 렌즈를 분리하여 제품만 발송합니다.',
     lensStoreTitle: '렌즈 분리 서비스 이용하기',
-    lensStoreP1: '고객님이 별도로 제작하신 렌즈(도수·블루라이트 등)가 삽입된 경우, 수리 전에 렌즈 분리가 반드시 필요합니다.',
-    lensStoreP2: '공식 안경원에서 전문 안경사님이 안전하게 렌즈를 분리해드리니, 수리 접수 후 방문하여 진행해주세요.',
-    lensStoreP3: '※ 젠틀몬스터 제품의 기존 렌즈는 분리 없이 바로 수리 접수가 가능합니다.',
-    lensStoreP4: '아래에서 이용 가능한 공식 안경원을 선택해 주세요.',
+    lensStoreP1: '별도로 제작하신 렌즈(도수·블루라이트 등)가 삽입된 경우, 서비스 전 렌즈 분리가 필요합니다.<br>가까운 공식 안경원을 방문하시면 전문 안경사가 안전하게 분리해 드려요.<br>서비스 접수 후, 가까운 안경원에 방문해 진행해 주세요.',
+    lensStoreP2: '› 젠틀몬스터 제품의 기존 렌즈는 분리 없이 바로 접수하실 수 있어요.',
+    lensStoreP3: '아래 [ 스토어 찾기 ] 에서 이용 가능한 공식 안경원을 확인해 주세요.',
+    lensStoreP4: '',
   },
   en: {
     title: 'Shipping Information',
@@ -523,12 +532,12 @@ const STRINGS = {
     scheduleTitle: 'Service Schedule',
     scheduleDesc: 'For Total Care requests, select urgent service or a preferred dispatch date.',
     lblUrgent: 'Urgent Service',
-    titleUrgent: 'Request Urgent Service',
-    descUrgent: 'Dispatched within 5 business days of receipt · ₩50,000 surcharge',
-    txtUrgentNote: 'Dispatch will be set automatically within 5 business days of receipt. You cannot select a preferred dispatch date.',
+    titleUrgent: 'Dispatched within 5 business days of receipt  □  +n KRW',
+    descUrgent: '',
+    txtUrgentNote: 'Dispatched within 5 business days of receipt  □  +n KRW',
     lblDispatch: 'Preferred Dispatch Date',
     lblDispatchSelected: 'Preferred Dispatch Date',
-    txtDispatchHint: 'Available range: 15–20 business days from submission (excl. weekends)<br>The selected date is your preferred dispatch date and may vary depending on the repair.',
+    txtDispatchHint: 'The selected date is a preferred date, and the actual dispatch date may change depending on the service details.<br>We will notify you of the exact dispatch date by AlimTalk or email.',
     dispatchError: 'Please select a preferred dispatch date.',
     lensSendLabel: 'Shipping Method',
     lensPickupTitle: 'Home Pick Up',
@@ -540,20 +549,26 @@ const STRINGS = {
     lensPickupNotice: '<p>· A courier will visit for pickup within 3 business days after submission.</p><p>· If custom lenses remain inserted, the disclaimer agreement below is required.</p>',
     lensStoreNotice: '<p>· Please visit the selected Simpli Repair store for lens removal and drop off.</p><p>· We recommend visiting within 5 days of submission.</p>',
     lensDisclaimerTitle: 'Please read carefully.',
-    lensDisclaimerP1: 'If custom lenses (prescription, blue light filter, etc.) are installed, lens removal is required before repair.',
-    lensDisclaimerP2: 'If submitted with custom lenses installed, repairs may be delayed or the product returned. No compensation will be provided for lens damage or loss during repair or shipping.',
-    lensDisclaimerP3: 'Please remove any custom lenses and send only the frame.',
+    lensDisclaimerP1: 'If custom lenses (prescription, blue light filter, etc.) are installed,<br>lens removal is required for safe processing.',
+    lensDisclaimerP2: 'If submitted with lenses installed, processing may be delayed or only the lenses may be returned.<br>Compensation is difficult if lenses are damaged or lost during service or shipping.',
+    lensDisclaimerP3: 'Please remove custom lenses and send only the product frame.',
     lensDisclaimerLink: 'View full disclaimer →',
     lensDisclaimerCheck: 'I have read the above and will remove the lens before shipping.',
     lensStoreTitle: 'Lens Removal Service',
-    lensStoreP1: 'If you have custom lenses (prescription, blue light filter, etc.) installed, lens removal is required before repair.',
-    lensStoreP2: 'A professional optician at an official partner store will safely remove your lenses. Please visit after submitting your repair request.',
-    lensStoreP3: '※ Original Gentle Monster lenses do not need to be removed before submitting for repair.',
-    lensStoreP4: 'Select an available official partner store below.',
+    lensStoreP1: 'If custom lenses (prescription, blue light filter, etc.) are inserted, lens removal is required before service.<br>Visit a nearby official optical store and a professional optician will safely remove them.<br>After submitting your service request, please visit a nearby optical store to proceed.',
+    lensStoreP2: '› Original Gentle Monster lenses can be submitted without removal.',
+    lensStoreP3: 'Check available official optical stores under [ Find a Store ].',
+    lensStoreP4: '',
   },
 };
 
 let currentLang = 'ko';
+
+var KR_PICKUP_NOTICE = '<p>접수 완료 후 영업일 3일 이내 방문합니다.</p><p>방문 전 기사님이 미리 연락드리며, 기한 내 픽업되지 않으면 접수가 자동 취소됩니다.</p>';
+var KR_STORE_NOTICE = '<p>접수 후 5일 이내에 선택하신 매장으로 제품을 맡겨 주세요.</p><p>기한 내 방문하지 않으면 접수가 자동 취소됩니다.</p>';
+var INT_STORE_NOTICE = '<p>접수 후 5일 이내에 선택하신 매장으로 제품을 맡겨 주세요.</p><p>› 기한 내 방문하지 않으면 접수가 자동 취소됩니다.</p>';
+var INT_DHL_NOTICE = '<p>DHL이 픽업 일정과 배송 서류를 이메일로 보내드립니다. (스팸함도 확인해 주세요)</p><p>DHL 기사 방문 시, 제품과 배송 서류를 함께 전달해 주세요.</p><p>제품이 도착하면 서비스 비용·운송비 결제 링크를 이메일로 보내드립니다.</p>';
+var INT_SELF_NOTICE = '<p>원하시는 운송사로 직접 보내주세요.</p><p>발송 주소와 방법은 이메일로 안내드립니다.</p>';
 
 function setText(id, text) {
   const el = document.getElementById(id);
@@ -582,15 +597,15 @@ function setLang(lang) {
   setText('lbl-dropoff-store', st.lblDropoffStore);
   setText('lbl-recv-store', st.lblRecvStore);
   setText('title-pickup', st.titlePickup);
-  setText('desc-pickup', st.descPickup);
+  setHtml('desc-pickup', st.descPickup);
   setText('title-dropoff', st.titleDropoff);
-  setText('desc-dropoff', st.descDropoff);
+  setHtml('desc-dropoff', st.descDropoff);
   setText('title-self', st.titleSelf);
-  setText('desc-self', st.descSelf);
+  setHtml('desc-self', st.descSelf);
   setText('title-home-delivery', st.titleHomeDelivery);
-  setText('desc-home-delivery', st.descHomeDelivery);
+  setHtml('desc-home-delivery', st.descHomeDelivery);
   setText('title-store-pickup', st.titleStorePickup);
-  setText('desc-store-pickup', st.descStorePickup);
+  setHtml('desc-store-pickup', st.descStorePickup);
   setText('title-intl', st.titleIntl);
   setText('desc-intl', st.descIntl);
   setText('btn-loc-drop', st.btnLocDrop);
@@ -646,10 +661,13 @@ function setLang(lang) {
   setText('dispatch-error', st.dispatchError);
   if (scheduleCalViewYear != null) renderScheduleCalendar();
   if (typeof lensOnlyMode !== 'undefined' && lensOnlyMode) setLensServiceCopy();
+  if (typeof lensScenario !== 'undefined' && lensScenario === 'intl') setInternationalShippingCopy();
+  if (typeof ieShippingMode !== 'undefined' && ieShippingMode) setIeShippingCopy();
 }
 
 // ─── 발송/수령 방법 ───
 var lensScenario = 'basic';
+var ieShippingMode = false;
 var currentSend = null;
 var currentReceive = null;
 var currentDropStore = null;
@@ -677,7 +695,7 @@ function isDomesticTotalCareSchedule() {
   var state = getShippingState();
   var country = 'kr';
   try { country = localStorage.getItem('ps-country') || 'kr'; } catch(e) {}
-  return state.serviceType === 'total-care' && country !== 'us' && country !== 'ca';
+  return state.serviceType === 'total-care' && country !== 'us' && country !== 'ca' && country !== 'sg';
 }
 
 function addScheduleBizDays(date, n) {
@@ -870,16 +888,16 @@ function setLensServiceCopy() {
   setHtml('pickup-notice-box', st.lensPickupNotice);
   setHtml('store-notice-box', st.lensStoreNotice);
   setText('lens-disclaimer-title', st.lensDisclaimerTitle);
-  setText('lens-disclaimer-p1', st.lensDisclaimerP1);
-  setText('lens-disclaimer-p2', st.lensDisclaimerP2);
-  setText('lens-disclaimer-p3', st.lensDisclaimerP3);
+  setHtml('lens-disclaimer-p1', st.lensDisclaimerP1);
+  setHtml('lens-disclaimer-p2', st.lensDisclaimerP2);
+  setHtml('lens-disclaimer-p3', st.lensDisclaimerP3);
   setText('lens-disclaimer-link', st.lensDisclaimerLink);
   setText('lens-disclaimer-check', st.lensDisclaimerCheck);
   setText('lens-store-title', st.lensStoreTitle);
-  setText('lens-store-p1', st.lensStoreP1);
-  setText('lens-store-p2', st.lensStoreP2);
-  setText('lens-store-p3', st.lensStoreP3);
-  setText('lens-store-p4', st.lensStoreP4);
+  setHtml('lens-store-p1', st.lensStoreP1);
+  setHtml('lens-store-p2', st.lensStoreP2);
+  setHtml('lens-store-p3', st.lensStoreP3);
+  setHtml('lens-store-p4', st.lensStoreP4);
 }
 
 function updateLensMethodPanels() {
@@ -899,14 +917,20 @@ function checkShippingNextBtn() {
   );
   var lensDisclaimer = document.getElementById('chk-lens-pickup');
   var lensDisclaimerOk = !lensOnlyMode || currentSend !== 'pickup' || (lensDisclaimer && lensDisclaimer.checked);
+  var ieBackupCheck = document.getElementById('chk-ie-backup');
+  var ieUnpairCheck = document.getElementById('chk-ie-unpair');
+  var iePairingOk = !ieShippingMode || (
+    ieBackupCheck && ieBackupCheck.checked &&
+    ieUnpairCheck && ieUnpairCheck.checked
+  );
   var scheduleOk = isTotalCareScheduleReady();
   var recvOk = currentReceive !== null && (
     currentReceive !== 'store' || currentRecvStore !== null
   );
   var btn = document.getElementById('btn-next');
   if (!btn) return;
-  btn.style.opacity = (sendOk && lensDisclaimerOk && scheduleOk && recvOk) ? '' : '0.4';
-  btn.style.pointerEvents = (sendOk && lensDisclaimerOk && scheduleOk && recvOk) ? '' : 'none';
+  btn.style.opacity = (sendOk && lensDisclaimerOk && iePairingOk && scheduleOk && recvOk) ? '' : '0.4';
+  btn.style.pointerEvents = (sendOk && lensDisclaimerOk && iePairingOk && scheduleOk && recvOk) ? '' : 'none';
 }
 
 function saveShippingState() {
@@ -967,11 +991,16 @@ function resetShippingOptions() {
   });
   document.querySelectorAll('.check-group .check-item').forEach(function(el) { el.classList.remove('selected'); });
   document.querySelectorAll('input[name="send"], input[name="receive"]').forEach(function(r) { r.checked = false; });
-  ['pickup-section','send-store-section','self-ship-section','address-section','store-section','lens-pickup-disclaimer','lens-store-service'].forEach(function(id) {
+  ['pickup-section','send-store-section','self-ship-section','address-section','store-section','lens-pickup-disclaimer','lens-store-service','ie-pairing-notice'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.style.display = 'none';
   });
   var lensDisclaimer = document.getElementById('chk-lens-pickup');
   if (lensDisclaimer) lensDisclaimer.checked = false;
+  var ieBackupCheck = document.getElementById('chk-ie-backup');
+  if (ieBackupCheck) ieBackupCheck.checked = false;
+  var ieUnpairCheck = document.getElementById('chk-ie-unpair');
+  if (ieUnpairCheck) ieUnpairCheck.checked = false;
+  ieShippingMode = false;
   currentSend = null;
   currentReceive = null;
   currentDropStore = null;
@@ -1025,17 +1054,96 @@ function applyKrMode() {
   var titleEl = document.getElementById('title-pickup');
   var descEl = document.getElementById('desc-pickup');
   if (titleEl) titleEl.textContent = STRINGS.ko.titlePickup;
-  if (descEl) descEl.textContent = STRINGS.ko.descPickup;
+  if (descEl) descEl.innerHTML = STRINGS.ko.descPickup;
   var nb = document.getElementById('pickup-notice-box');
-  if (nb) nb.innerHTML = '<p>· 접수 완료 후 영업일 3일 이내 방문 수거해 드립니다.</p><p>· 수거 전 기사님께서 미리 연락드립니다.</p>';
+  if (nb) nb.innerHTML = KR_PICKUP_NOTICE;
   var pickupAddrLabel = document.getElementById('lbl-pickup-addr');
   if (pickupAddrLabel) pickupAddrLabel.innerHTML = '회수 주소 <span style="color:#000">*</span>';
   var sn = document.getElementById('store-notice-box');
-  if (sn) sn.innerHTML = '<p>· 접수 후 5일 이내에 선택하신 매장에 제품을 맡겨주세요.</p><p>· 기한 내 미방문 시 접수가 자동으로 취소됩니다.</p>';
+  if (sn) sn.innerHTML = KR_STORE_NOTICE;
   refreshDropPins(null);
   refreshRecvPins(null);
   chooseOption('send-pickup-opt', 'pickup', selectSend);
   chooseOption('recv-home-opt', 'home', selectReceive);
+}
+
+function setInternationalShippingCopy() {
+  setText('title-dropoff', '스토어 방문');
+  setHtml('desc-dropoff', '접수 후 5일 이내에 선택하신 매장으로 제품을 맡겨 주세요.');
+  setText('title-pickup', '택배 픽업 신청 — 내년 개발 항목');
+  setHtml('desc-pickup', '운송사 : DHL · 예상 운송비 : USD 50');
+  setText('title-self', '직접 발송');
+  setHtml('desc-self', '원하시는 운송사로 직접 보내주세요.<br>발송 주소와 방법은 이메일로 안내드립니다.');
+  setHtml('lbl-dropoff-store', '방문 스토어 선택 <span style="color:#000">*</span>');
+
+  var pickupAddrLabel = document.getElementById('lbl-pickup-addr');
+  if (pickupAddrLabel) pickupAddrLabel.innerHTML = '픽업 주소 <span style="color:#000">*</span>';
+  setHtml('pickup-notice-box', INT_DHL_NOTICE);
+  setHtml('store-notice-box', INT_STORE_NOTICE);
+  setHtml('self-notice-box', INT_SELF_NOTICE);
+}
+
+function applyInternationalMode() {
+  lensScenario = 'intl';
+  resetShippingOptions();
+  lensOnlyMode = false;
+  setFranchisePinsVisible(false);
+  setLang('ko');
+
+  document.getElementById('send-pickup-opt').style.display = '';
+  document.getElementById('send-self-opt').style.display = '';
+  document.getElementById('send-store-opt').style.display = '';
+
+  setInternationalShippingCopy();
+
+  refreshDropPins(null);
+  refreshRecvPins(null);
+  chooseOption('send-store-opt', 'store', selectSend);
+  chooseOption('recv-home-opt', 'home', selectReceive);
+}
+
+function isIeProductState(state) {
+  state = state || {};
+  return state.productLine === 'ie' || state.isAi || state.aiProduct;
+}
+
+function setIeShippingCopy() {
+  setText('title-dropoff', '매장 방문');
+  setHtml('desc-dropoff', '접수 후 5일 이내에 선택하신 매장으로 제품을 맡겨 주세요.');
+  setText('title-pickup', '자택 발송');
+  setHtml('desc-pickup', '접수 완료 후 포장 키트를 보내드립니다.<br>키트 수령 후 제품을 안전하게 포장해 발송해 주세요.');
+  setHtml('lbl-dropoff-store', '방문 매장 선택 <span style="color:#000">*</span>');
+
+  var pickupAddrLabel = document.getElementById('lbl-pickup-addr');
+  if (pickupAddrLabel) pickupAddrLabel.innerHTML = '포장 키트 배송 주소 <span style="color:#000">*</span>';
+  setHtml('pickup-notice-box', '<p>접수 완료 후 포장 키트를 보내드립니다.</p><p>키트 수령 후 제품을 안전하게 포장해 발송해 주세요.</p>');
+  setHtml('store-notice-box', '<p>접수 후 5일 이내에 선택하신 매장으로 제품을 맡겨 주세요.</p><p>› 기한 내 방문하지 않으면 접수가 자동 취소됩니다.</p>');
+  setText('ie-pairing-title', '발송 전 반드시 확인해 주세요.');
+  setText('ie-backup-check', '개인정보 및 데이터를 백업했습니다.');
+  setText('ie-unpair-check', '페어링을 해제했습니다.');
+  setText('ie-unpair-desc', '페어링 해제 시 기기에 저장된 데이터가 모두 초기화됩니다.');
+  setText('ie-pairing-guide', '위 항목을 모두 확인하신 후 다음 단계로 진행해 주세요.');
+}
+
+function applyIeShippingMode() {
+  lensScenario = 'ie';
+  resetShippingOptions();
+  ieShippingMode = true;
+  lensOnlyMode = false;
+  setLang('ko');
+  document.getElementById('send-pickup-opt').style.display = '';
+  document.getElementById('send-store-opt').style.display = '';
+  document.getElementById('send-self-opt').style.display = 'none';
+  var selfSec = document.getElementById('self-ship-section');
+  if (selfSec) selfSec.style.display = 'none';
+  setIeShippingCopy();
+  var notice = document.getElementById('ie-pairing-notice');
+  if (notice) notice.style.display = 'block';
+  refreshDropPins(null);
+  refreshRecvPins(null);
+  chooseOption('send-store-opt', 'store', selectSend);
+  chooseOption('recv-home-opt', 'home', selectReceive);
+  checkShippingNextBtn();
 }
 
 function setFedexPrepaidLabelCopy() {
@@ -1107,7 +1215,8 @@ function applyCAMode() {
 }
 
 function applyIntMode(isInt) {
-  if (isInt) applyUsDefectMode();
+  if (isInt) applyInternationalMode();
+  else applyKrMode();
 }
 
 function selectPickupAddr(idx) {
@@ -1146,6 +1255,12 @@ const US_STORES = [
   { type:'FS', name:'젠틀몬스터 산호세 밸리페어', status:'영업 종료 — 오늘 오전 10:00에 오픈', statusColor:'#999', addr:'Floor 1, Westfield Valley Fair, 2855 Stevens Creek Blvd, Suite 1651, Santa Clara, CA 95050, United States', dist:'9090.1km', tags:['피팅 서비스','RX 서비스'], region:'Santa Clara', mapX:'14%', mapY:'42%' },
 ];
 
+const SG_STORES = [
+  { type:'FS', name:'젠틀몬스터 싱가포르 ION Orchard', status:'영업 중', statusColor:'#2aa050', addr:'Singapore, ION Orchard', dist:'3.2km', tags:['피팅 서비스','수리 접수'], region:'Singapore', mapX:'47%', mapY:'38%' },
+  { type:'FS', name:'젠틀몬스터 싱가포르 Marina Bay Sands', status:'영업 중', statusColor:'#2aa050', addr:'Singapore, Marina Bay Sands', dist:'5.4km', tags:['피팅 서비스','수리 접수'], region:'Singapore', mapX:'58%', mapY:'55%' },
+  { type:'FS', name:'젠틀몬스터 싱가포르 Jewel Changi', status:'영업 종료 — 오늘 오전 10:00에 오픈', statusColor:'#999', addr:'Singapore, Jewel Changi Airport', dist:'18.7km', tags:['피팅 서비스','수리 접수'], region:'Singapore', mapX:'76%', mapY:'48%' },
+];
+
 const FRANCHISE_STORES = DROP_STORES.filter(function(store) { return store.type === 'SIS'; });
 const ALL_STORES = DROP_STORES;
 
@@ -1160,11 +1275,12 @@ function isUsStoreScenario() {
 }
 
 function getStoreDataset() {
+  if (lensScenario === 'intl') return SG_STORES;
   return isUsStoreScenario() ? US_STORES : DROP_STORES;
 }
 
 function isFsOnlyStoreScenario() {
-  return lensScenario === 'us-defect' || lensScenario === 'ca';
+  return lensScenario === 'us-defect' || lensScenario === 'ca' || lensScenario === 'intl';
 }
 
 function isVisibleCommonStore(store) {
@@ -1457,8 +1573,13 @@ document.addEventListener('click', function(e) {
 window.setCountry = function(country) {
   var state = {};
   try { state = JSON.parse(localStorage.getItem('ps-state') || '{}'); } catch(e) {}
-  if (state.serviceType === 'accessory') {
-    applyAccessoryMode(country === 'us' || country === 'ca');
+  var isAccessoryInternational = country === 'us' || country === 'ca' || country === 'sg';
+  if (isIeProductState(state)) {
+    applyIeShippingMode();
+  } else if (state.serviceType === 'accessory') {
+    applyAccessoryMode(isAccessoryInternational);
+  } else if (country === 'sg') {
+    applyInternationalMode();
   } else if (country === 'us') {
     if (state.serviceType === 'repair') applyUsDefectMode(); else applyUsOtherMode();
   } else if (country === 'ca') {
@@ -1557,8 +1678,14 @@ window.addEventListener('load', function() {
     state = mergeReapplyShippingState(state);
     var country = localStorage.getItem('ps-country') || 'kr';
 
-    if (state.serviceType === 'accessory') {
-      applyAccessoryMode(country === 'us' || country === 'ca');
+    var isAccessoryInternational = country === 'us' || country === 'ca' || country === 'sg';
+
+    if (isIeProductState(state)) {
+      applyIeShippingMode();
+    } else if (state.serviceType === 'accessory') {
+      applyAccessoryMode(isAccessoryInternational);
+    } else if (country === 'sg') {
+      applyInternationalMode();
     } else if (country === 'us') {
       if (state.serviceType === 'repair') {
         applyUsDefectMode();

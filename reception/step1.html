@@ -1031,6 +1031,7 @@ function setLockedProductCard(product) {
   lockedCard.style.display = 'block';
   lockedCard.style.borderLeft = product.isAi ? '3px solid #1428a0' : '3px solid #111';
   lockedCard.setAttribute('data-ai', product.isAi ? 'true' : 'false');
+  lockedCard.setAttribute('data-protection-plan', product.protectionPlan ? 'true' : 'false');
   lockedCard.setAttribute('data-product-line', productLine);
   lockedCard.setAttribute('data-sub-category', product.productSubCategory || product.subCategory || (typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(product.name) : ''));
   lockedCard.setAttribute('data-serial-number', serialNumber);
@@ -1116,7 +1117,7 @@ window.addEventListener('load', function() {
         }
       }
 
-      var name = '', purchaseDate = '', productSubCategory = '', productLine = 'organic', isAi = false, orderNo = '', purchaseStore = '', serialNumber = '';
+      var name = '', purchaseDate = '', productSubCategory = '', productLine = 'organic', isAi = false, protectionPlan = false, orderNo = '', purchaseStore = '', serialNumber = '';
       var lockedCard = document.getElementById('locked-product-card');
       if (lockedCard && lockedCard.style.display !== 'none') {
         name = getLockedProductName();
@@ -1128,9 +1129,10 @@ window.addEventListener('load', function() {
         productSubCategory = lockedCard.getAttribute('data-sub-category') || (typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(name) : '');
         isAi = lockedCard.getAttribute('data-ai') === 'true';
         productLine = lockedCard.getAttribute('data-product-line') || (isAi ? 'ie' : 'organic');
+        protectionPlan = lockedCard.getAttribute('data-protection-plan') === 'true';
       } else if (selectedProductIdx !== null && selectedProductIdx >= 0 && selectedProductIdx < currentProductList.length) {
         var pd = currentProductList[selectedProductIdx];
-        name = pd.name; orderNo = pd.order || ''; purchaseStore = pd.store || ''; serialNumber = pd.serialNumber || ''; purchaseDate = pd.purchaseDate; productSubCategory = typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(pd) : (pd.subCategory || ''); productLine = getProductLineFromProduct(pd); isAi = productLine === 'ie';
+        name = pd.name; orderNo = pd.order || ''; purchaseStore = pd.store || ''; serialNumber = pd.serialNumber || ''; purchaseDate = pd.purchaseDate; productSubCategory = typeof psGetProductSubCategory === 'function' ? psGetProductSubCategory(pd) : (pd.subCategory || ''); productLine = getProductLineFromProduct(pd); isAi = productLine === 'ie'; protectionPlan = !!pd.protectionPlan;
       } else {
         name = (document.getElementById('product-search') || {}).value || '';
         purchaseStore = getManualPurchaseStore();
@@ -1147,13 +1149,13 @@ window.addEventListener('load', function() {
       if (isEditMode) {
         var existState = {};
         try { existState = JSON.parse(localStorage.getItem('ps-state') || '{}'); } catch(ex) {}
-        existState.productName = name; existState.orderNo = orderNo; existState.purchaseStore = purchaseStore; existState.purchaseDate = purchaseDate; existState.serialNumber = serialNumber; existState.productSubCategory = productSubCategory; existState.productLine = productLine; existState.isAi = isAi; existState.aiProduct = isAi;
+        existState.productName = name; existState.orderNo = orderNo; existState.purchaseStore = purchaseStore; existState.purchaseDate = purchaseDate; existState.serialNumber = serialNumber; existState.productSubCategory = productSubCategory; existState.productLine = productLine; existState.isAi = isAi; existState.aiProduct = isAi; existState.protectionPlan = protectionPlan;
         try { localStorage.setItem('ps-state', JSON.stringify(existState)); } catch(ex) {}
         e.preventDefault();
         window.location.href = 'step2-service-type.html?mode=edit';
       } else {
         var nextState = {
-          productName: name, orderNo: orderNo, purchaseStore: purchaseStore, purchaseDate: purchaseDate, serialNumber: serialNumber, productSubCategory: productSubCategory, productLine: productLine, isAi: isAi, aiProduct: isAi,
+          productName: name, orderNo: orderNo, purchaseStore: purchaseStore, purchaseDate: purchaseDate, serialNumber: serialNumber, productSubCategory: productSubCategory, productLine: productLine, isAi: isAi, aiProduct: isAi, protectionPlan: protectionPlan,
           serialNumberRequired: !(lockedCard && lockedCard.style.display !== 'none') && (selectedProductIdx === null || selectedProductIdx === undefined),
           serviceType: null, urgentRepair: false, dispatchDate: null, fittingOption: 'basic',
           aiIssueFunc: false, aiIssueProd: false

@@ -40,68 +40,136 @@
     <p id="pg-desc" class="page-desc">접수 정보와 예상 수리 안내를 확인해 주세요.</p>
 
     <!-- 접수 요약 -->
-    <p id="lbl-reception" class="section-label">접수 정보</p>
+    <p id="lbl-reception" class="section-label">접수 요약</p>
     <div class="summary-card">
+      <p id="summary-info-title" style="font-size:13px;font-weight:500;margin-bottom:16px;">접수 정보</p>
+      <div class="summary-row">
+        <span id="key-ticket" class="summary-key">티켓 번호</span>
+        <span id="val-ticket" class="summary-val">555555</span>
+      </div>
       <div class="summary-row">
         <span id="key-product" class="summary-key">제품</span>
-        <span id="val-product" class="summary-val">MUSTANG 01</span>
+        <span id="val-product" class="summary-val">ALIO-01</span>
       </div>
       <div class="summary-row">
-        <span id="key-svc-type" class="summary-key">서비스 유형</span>
-        <span id="sc-type" class="summary-val">토탈 케어</span>
+        <span id="key-lens" class="summary-key">렌즈 유형</span>
+        <span id="val-lens" class="summary-val">미삽입</span>
       </div>
-      <div id="sc-detail-row" class="summary-row" style="display:none;">
-        <span id="key-svc-detail" class="summary-key">서비스 상세</span>
-        <span id="sc-detail" class="summary-val"></span>
+      <div class="summary-row">
+        <span id="key-issue" class="summary-key">문제 증상</span>
+        <span id="val-issue" class="summary-val">[선택한 증상]</span>
       </div>
-      <div id="sc-urgent-row" class="summary-row" style="display:none;">
-        <span id="key-urgent-opt" class="summary-key">추가 옵션</span>
-        <span id="val-urgent" class="summary-val" style="color:#c8491a;">긴급 서비스</span>
-      </div>
-      <div id="sc-shipping-rows">
-        <div id="sc-send-row" class="summary-row" style="padding-top:12px;">
-          <span id="key-send" class="summary-key">발송 방법</span>
-          <span id="val-send" class="summary-val">자택 픽업</span>
-        </div>
-        <div class="summary-row" data-receive-row>
-          <span id="key-recv" class="summary-key">수령 방법</span>
-          <span id="val-recv" class="summary-val">자택 배송</span>
-        </div>
-        <div class="summary-row" data-receive-row>
-          <span id="key-addr" class="summary-key">수령 주소</span>
-          <span id="val-addr" class="summary-val">서울 성동구 왕십리로 83-21</span>
-        </div>
+      <div class="summary-row">
+        <span id="key-dispatch" class="summary-key">예상 출고일</span>
+        <span id="val-dispatch" class="summary-val">2026.01.02</span>
       </div>
     </div>
 
     <div id="est-section">
       <!-- 예상 수리 안내 -->
-      <p id="lbl-est" class="section-label">예상 수리 안내</p>
+      <p id="lbl-est" class="section-label">진행 내용</p>
       <div class="summary-card">
         <div class="summary-row">
-          <span id="key-est-method" class="summary-key">예상 수리 방식</span>
-          <span id="est-method" class="summary-val">클리닝 & 폴리싱 & 피팅</span>
+          <span id="key-est-method" class="summary-key">진행 내용</span>
+          <span id="est-method" class="summary-val">토탈 케어 : 클리닝·폴리싱·피팅</span>
         </div>
         <div class="summary-row" style="align-items:flex-start;">
           <span id="key-est-cost" class="summary-key" style="padding-top:2px;">예상 비용</span>
           <div>
-            <span id="est-cost" class="summary-val" style="font-size:16px;">무상</span>
+            <span id="est-cost" class="summary-val" style="font-size:16px;">₩49,800</span>
             <div id="est-urgent-fee" style="display:none;margin-top:4px;">
-              <span id="val-urgent-fee" style="font-size:12px;color:#c8491a;">+ 긴급 서비스 50,000원</span>
+              <span id="val-urgent-fee" style="font-size:12px;color:#c8491a;">+ 긴급 서비스 +n만원</span>
             </div>
           </div>
         </div>
-        <div class="summary-row">
-          <span id="key-est-leadtime" class="summary-key">예상 리드타임</span>
-          <span id="est-leadtime" class="summary-val">입고 후 10~15 영업일</span>
-        </div>
-      </div>
-
-      <div class="notice-box">
-        <p id="notice-main">실제 수리 내용과 비용은 제품 입고 후 프로덕트 서비스팀의 정밀 점검을 통해 최종 결정됩니다.</p>
-        <p id="notice-paid" style="margin-top:4px;">유상 수리의 경우 결제 완료 후 수리가 시작됩니다.</p>
+        <p id="notice-main" style="font-size:12px;color:var(--gray-500);line-height:1.8;margin-top:16px;">› 실물 확인 후 최종 진행 내용이 결정되며, 비용과 소요 기간은 달라질 수 있습니다.</p>
       </div>
     </div>
+
+    <div id="ie-est-section" style="display:none;">
+      <p class="section-label">수리 정보 요약</p>
+      <div class="summary-card">
+        <div class="summary-row">
+          <span class="summary-key">수리 대상</span>
+          <span id="ie-repair-target" class="summary-val">본품</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-key">예상 수리 방식</span>
+          <span id="ie-repair-method" class="summary-val">하드웨어 문제 확인 시 제품 교체</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-key">예상 리드타임</span>
+          <span id="ie-repair-leadtime" class="summary-val">입고 후 7~10 영업일</span>
+        </div>
+        <div id="ie-single-cost-row" class="summary-row">
+          <span class="summary-key">예상 수리 비용</span>
+          <span id="ie-repair-cost" class="summary-val">150,000원</span>
+        </div>
+        <div id="ie-multi-cost-rows" style="display:none;border-top:1px solid var(--gray-100);margin-top:12px;padding-top:12px;">
+          <div class="summary-row">
+            <span class="summary-key">본품 비용</span>
+            <span id="ie-main-cost" class="summary-val">150,000원</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-key">충전 케이스 비용</span>
+            <span id="ie-case-cost" class="summary-val">점검 결과에 따라 안내</span>
+          </div>
+          <div class="summary-row" style="border-top:1px solid var(--gray-100);margin-top:8px;padding-top:12px;">
+            <span class="summary-key">합산 비용</span>
+            <span id="ie-total-cost" class="summary-val">점검 결과에 따라 안내</span>
+          </div>
+        </div>
+        <div id="ie-protection-plan" style="display:none;border-top:1px solid var(--gray-100);margin-top:16px;padding-top:16px;">
+          <p style="font-size:13px;font-weight:500;margin-bottom:12px;">✦ Protection Plan 적용</p>
+          <div class="summary-row">
+            <span class="summary-key">원래 수리 비용</span>
+            <span id="ie-plan-original-cost" class="summary-val">150,000원</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-key">플랜 적용 할인</span>
+            <span id="ie-plan-discount" class="summary-val">-150,000원</span>
+          </div>
+          <div class="summary-row">
+            <span class="summary-key">실제 청구 비용</span>
+            <span id="ie-plan-final-cost" class="summary-val">0원 (전액 커버)</span>
+          </div>
+        </div>
+        <p style="font-size:12px;color:var(--gray-500);line-height:1.8;margin-top:16px;">› 실물 확인 후 최종 수리 방식이 결정되며, 비용과 소요 기간은 달라질 수 있습니다.</p>
+        <p id="ie-plan-notice" style="display:none;font-size:12px;color:var(--gray-500);line-height:1.8;margin-top:4px;">› Protection Plan 적용 여부는 실물 점검 후 최종 확정됩니다.</p>
+      </div>
+    </div>
+
+    <div class="notice-box" id="pickup-guide" style="display:none;margin-bottom:16px;">
+      <strong>수거·방문 안내 (택배 픽업 선택 시)</strong>
+      <p>접수일 기준 3일 이내, CJ대한통운 기사님이 방문해 제품을 수거합니다.</p>
+      <p>› 픽업 안내 알림을 꼭 확인해 주세요. 수거가 진행되지 않으면 접수가 자동 취소됩니다.</p>
+    </div>
+
+    <div class="notice-box" id="store-guide" style="display:none;margin-bottom:16px;">
+      <strong>수거·방문 안내 (스토어 방문 선택 시)</strong>
+      <p>접수일로부터 5일 이내에 선택하신 스토어로 제품을 맡겨 주세요.</p>
+      <p>› 기한 내 방문하지 않으면 접수가 자동 취소됩니다.</p>
+    </div>
+
+    <div class="notice-box" id="ie-kit-guide" style="display:none;margin-bottom:16px;">
+      <strong>포장 키트 발송 안내</strong>
+      <p>등록하신 주소로 포장 키트를 발송해 드립니다.</p>
+      <p>키트 수령 후 제품을 안전하게 포장하여 발송해 주세요.</p>
+      <p id="ie-kit-notification">포장 키트 발송이 완료되면 카카오톡과 이메일로 안내드립니다.</p>
+      <div style="border-top:1px solid var(--gray-100);margin-top:16px;padding-top:16px;">
+        <strong>발송 전 반드시 확인해 주세요.</strong>
+        <p>페어링을 해제하면 기기 내 데이터가 모두 초기화됩니다.</p>
+        <p>개인정보와 설정값을 미리 백업하신 후 발송해 주세요.</p>
+      </div>
+    </div>
+
+    <div class="notice-box" id="ie-pairing-reminder" style="display:none;margin-bottom:16px;">
+      <strong>발송 전 반드시 확인해 주세요.</strong>
+      <p>페어링을 해제하면 기기 내 데이터가 모두 초기화됩니다.</p>
+      <p>개인정보와 설정값을 미리 백업하신 후 발송해 주세요.</p>
+    </div>
+
+    <p id="common-guide" style="font-size:12px;color:var(--gray-500);line-height:1.8;">상세 안내는 카카오톡 또는 이메일을 확인해 주세요.</p>
 
     <div id="agreement-section" style="border-top:1px solid var(--gray-100);padding-top:28px;margin-top:32px;">
       <p id="lbl-agreement" class="section-label" style="margin-top:0;">동의 및 안내</p>
@@ -182,23 +250,29 @@ var STRINGS = {
     eyebrow: '수리 서비스 접수',
     title: '수리 안내 확인',
     desc: '접수 정보와 예상 수리 안내를 확인해 주세요.',
-    lblReception: '접수 정보',
+    lblReception: '접수 요약',
+    summaryInfoTitle: '접수 정보',
+    keyTicket: '티켓 번호',
     keyProduct: '제품',
+    keyLens: '렌즈 유형',
+    keyIssue: '문제 증상',
+    keyDispatch: '예상 출고일',
     keySvcType: '서비스 유형',
     keySvcDetail: '서비스 상세',
     keyUrgentOpt: '추가 옵션',
     valUrgent: '긴급 서비스',
-    urgentFeeLabel: '+ 긴급 서비스 50,000원',
+    urgentFeeLabel: '+ 긴급 서비스 +n만원',
     keySend: '발송 방법',
     keyRecv: '수령 방법',
     keyAddr: '수령 주소',
     keyPickupStoreAddr: '수령 매장 주소',
-    lblEst: '예상 수리 안내',
-    keyEstMethod: '예상 수리 방식',
+    lblEst: '진행 내용',
+    keyEstMethod: '진행 내용',
     keyEstCost: '예상 비용',
     keyEstLeadtime: '예상 리드타임',
-    noticeMain: '실제 수리 내용과 비용은 제품 입고 후 프로덕트 서비스팀의 정밀 점검을 통해 최종 결정됩니다.',
+    noticeMain: '› 실물 확인 후 최종 진행 내용이 결정되며, 비용과 소요 기간은 달라질 수 있습니다.',
     noticePaid: '유상 수리의 경우 결제 완료 후 수리가 시작됩니다.',
+    commonGuide: '상세 안내는 카카오톡 또는 이메일을 확인해 주세요.',
     lblAgreement: '동의 및 안내',
     marketingConsentLabel: '[선택] 마케팅 정보 수신 및 활용에 동의합니다.',
     btnPrev: '이전',
@@ -208,8 +282,13 @@ var STRINGS = {
     eyebrow: 'Repair Service',
     title: 'Service Confirmation',
     desc: 'Please review your service details and estimated repair information.',
-    lblReception: 'Service Details',
+    lblReception: 'Request Summary',
+    summaryInfoTitle: 'Request Details',
+    keyTicket: 'Ticket No.',
     keyProduct: 'Product',
+    keyLens: 'Lens Type',
+    keyIssue: 'Issue',
+    keyDispatch: 'Estimated Dispatch Date',
     keySvcType: 'Service Type',
     keySvcDetail: 'Detail',
     keyUrgentOpt: 'Add-on',
@@ -219,12 +298,13 @@ var STRINGS = {
     keyRecv: 'Return',
     keyAddr: 'Address',
     keyPickupStoreAddr: 'Pickup Store Address',
-    lblEst: 'Estimated Service',
-    keyEstMethod: 'Est. Method',
-    keyEstCost: 'Est. Cost',
+    lblEst: 'Service Details',
+    keyEstMethod: 'Service Details',
+    keyEstCost: 'Estimated Cost',
     keyEstLeadtime: 'Est. Lead Time',
-    noticeMain: 'Actual repair details and costs will be finalized after inspection by the Product Service team.',
+    noticeMain: '› Final service details will be determined after product inspection. Cost and lead time may change.',
     noticePaid: 'For paid repairs, service will begin after payment is completed.',
+    commonGuide: 'Please check KakaoTalk or email for detailed guidance.',
     lblAgreement: 'Consent',
     marketingConsentLabel: '[Optional] I agree to receive and use marketing information.',
     btnPrev: 'Back',
@@ -327,6 +407,217 @@ function getSavedState() {
   catch (e) { return {}; }
 }
 
+function formatDotDate(value) {
+  if (!value) return '2026.01.02';
+  var d = new Date(value);
+  if (isNaN(d.getTime())) return String(value).replace(/-/g, '.');
+  var y = d.getFullYear();
+  var m = String(d.getMonth() + 1).padStart(2, '0');
+  var day = String(d.getDate()).padStart(2, '0');
+  return y + '.' + m + '.' + day;
+}
+
+function getLensLabel(state) {
+  var type = (state && state.lensType) || 'none';
+  if (type === 'original') return currentLang === 'en' ? 'Original product lenses' : '제품 기존 렌즈';
+  if (type === 'custom') return currentLang === 'en' ? 'Custom lenses (prescription, blue light, etc.)' : '별도로 제작한 렌즈 (도수·블루라이트 등)';
+  return currentLang === 'en' ? 'Not inserted' : '미삽입';
+}
+
+function getIssueLabel(state) {
+  state = state || {};
+  if (state.aiRepairIssueLabels && state.aiRepairIssueLabels.length) return state.aiRepairIssueLabels.join(', ');
+  if (state.serviceType === 'total-care') return '토탈 케어';
+  if (state.serviceType === 'accessory') return '부속품 문제';
+  if (state.serviceType === 'repair') {
+    if (state.repairDetail === 'damage') return '제품 파손·변형';
+    if (state.repairDetail === 'decoration') return '장식 문제';
+    if (state.repairDetail === 'accessory') return '부속품 문제';
+  }
+  if (state.serviceType === 'consulting') {
+    if (state.consultDetail === 'diagnosis') return '제품 결함·이상';
+    if (state.consultDetail === 'accessory') return '부속품 문제';
+    return '상담/기타';
+  }
+  return '[선택한 증상]';
+}
+
+function getProcessText(key, state) {
+  state = state || {};
+  if (key === 'total' || key === 'total-urgent' || state.serviceType === 'total-care') return '토탈 케어 : 클리닝·폴리싱·피팅';
+  if (key === 'repair-break3') return '제품 파손·변형 : 부품 교체 (3년 이내)';
+  if (key === 'repair-break7') return '제품 파손·변형 : 복원 수리 (3~7년)';
+  if (key === 'repair-deco') return '장식 문제 : 장식 수리';
+  if (key === 'repair-acc' || key === 'consult-acc' || state.serviceType === 'accessory') return '부속품 문제 : 부속품 교체';
+  if (state.serviceType === 'consulting') {
+    if (state.consultDetail === 'diagnosis') return '제품 결함·이상 : 정밀 점검 후 안내';
+    if (state.consultDetail === 'accessory') return '부속품 문제 : 부속품 교체';
+    return '상담/기타 : 요청 사항 확인 후 안내';
+  }
+  if (key === 'consult') return '제품 결함·이상 : 정밀 점검 후 안내';
+  return '상담/기타 : 요청 사항 확인 후 안내';
+}
+
+function getEstimatedCost(state) {
+  state = state || {};
+  return state.estimatedCost || state.estimateCost || '₩49,800';
+}
+
+function isIeProductState(state) {
+  state = state || {};
+  var subCategory = String(state.productSubCategory || state.subCategory || '').toUpperCase();
+  var productName = String(state.productName || '');
+  return state.productLine === 'ie' || state.isAi === true || state.aiProduct === true || subCategory.indexOf('AI EYEWEAR') >= 0 || productName.indexOf('스마트') >= 0;
+}
+
+function hasProtectionPlan(state) {
+  state = state || {};
+  return state.protectionPlan === true || state.protectionPlan === 'true' || state.protectionPlanYn === 'Y' || state.hasProtectionPlan === true || state.protectionPlanActive === true;
+}
+
+function hasAiRepairIssue(state, prefix) {
+  state = state || {};
+  if (Array.isArray(state.aiRepairIssues)) {
+    var fromList = state.aiRepairIssues.some(function(issue) { return String(issue).indexOf(prefix) === 0; });
+    if (fromList) return true;
+  }
+  if (prefix === 'function:') return !!state.aiIssueFunc;
+  if (prefix === 'appearance:') return !!state.aiIssueProd;
+  return false;
+}
+
+function getIeRepairTargets(state) {
+  state = state || {};
+  if (state.aiRepairTarget === 'both') return ['main', 'case'];
+  if (state.aiRepairTarget === 'case') return ['case'];
+  return ['main'];
+}
+
+function getIeRepairTargetLabel(targets) {
+  if (targets.length > 1) return '본품 + 충전 케이스';
+  if (targets[0] === 'case') return '충전 케이스';
+  return '본품';
+}
+
+function parseWonAmount(value) {
+  var n = Number(String(value || '').replace(/[^\d.-]/g, ''));
+  return isNaN(n) ? null : n;
+}
+
+function formatWonAmount(value) {
+  var n = Number(value);
+  if (isNaN(n)) return String(value || '');
+  return n.toLocaleString('ko-KR') + '원';
+}
+
+function getIeTotalCost(mainCost, caseCost) {
+  var main = parseWonAmount(mainCost);
+  var caseAmount = parseWonAmount(caseCost);
+  if (main === null || caseAmount === null) return '점검 결과에 따라 안내';
+  return formatWonAmount(main + caseAmount);
+}
+
+function getIeRepairSummaryInfo(state) {
+  state = state || {};
+  var targets = getIeRepairTargets(state);
+  var hasFunction = hasAiRepairIssue(state, 'function:');
+  var hasAppearance = hasAiRepairIssue(state, 'appearance:');
+  var withinQualityWarranty = getElapsedYears(state.purchaseDate) <= 2;
+  var mainCost = state.ieMainRepairCost || state.aiMainRepairCost || '150,000원';
+  var caseCost = state.ieCaseRepairCost || state.aiCaseRepairCost || '점검 결과에 따라 안내';
+  var method = state.ieRepairMethod || '하드웨어 문제 확인 시 제품 교체';
+  var leadtime = state.ieRepairLeadtime || '입고 후 7~10 영업일';
+
+  if (hasFunction && !hasAppearance) {
+    method = '진단 후 안내';
+    mainCost = '점검 결과에 따라 안내';
+    caseCost = '점검 결과에 따라 안내';
+  } else if (hasAppearance && withinQualityWarranty && !hasProtectionPlan(state)) {
+    mainCost = '점검 결과에 따라 안내';
+  }
+
+  return {
+    targets: targets,
+    targetLabel: getIeRepairTargetLabel(targets),
+    method: method,
+    leadtime: leadtime,
+    mainCost: mainCost,
+    caseCost: caseCost,
+    totalCost: getIeTotalCost(mainCost, caseCost)
+  };
+}
+
+function renderIeRepairSummary(state) {
+  state = state || {};
+  var showIe = isIeProductState(state);
+  var ieSection = document.getElementById('ie-est-section');
+  var estSection = document.getElementById('est-section');
+  if (ieSection) ieSection.style.display = showIe ? '' : 'none';
+  if (estSection) estSection.style.display = showIe ? 'none' : '';
+  if (!showIe || !ieSection) return false;
+
+  var info = getIeRepairSummaryInfo(state);
+  setText('ie-repair-target', info.targetLabel);
+  setText('ie-repair-method', info.method);
+  setText('ie-repair-leadtime', info.leadtime);
+
+  var isMultiTarget = info.targets.length > 1;
+  var singleCostRow = document.getElementById('ie-single-cost-row');
+  var multiCostRows = document.getElementById('ie-multi-cost-rows');
+  if (singleCostRow) singleCostRow.style.display = isMultiTarget ? 'none' : '';
+  if (multiCostRows) multiCostRows.style.display = isMultiTarget ? '' : 'none';
+  setText('ie-repair-cost', info.targets[0] === 'case' ? info.caseCost : info.mainCost);
+  setText('ie-main-cost', info.mainCost);
+  setText('ie-case-cost', info.caseCost);
+  setText('ie-total-cost', info.totalCost);
+
+  var planApplied = hasProtectionPlan(state);
+  var planBlock = document.getElementById('ie-protection-plan');
+  var planNotice = document.getElementById('ie-plan-notice');
+  if (planBlock) planBlock.style.display = planApplied ? '' : 'none';
+  if (planNotice) planNotice.style.display = planApplied ? '' : 'none';
+  if (planApplied) {
+    var originalCost = state.ieProtectionOriginalCost || state.protectionOriginalCost || '150,000원';
+    var originalAmount = parseWonAmount(originalCost);
+    var discount = originalAmount === null ? '-150,000원' : '-' + formatWonAmount(originalAmount);
+    setText('ie-plan-original-cost', originalCost);
+    setText('ie-plan-discount', state.ieProtectionDiscount || state.protectionDiscount || discount);
+    setText('ie-plan-final-cost', state.ieProtectionFinalCost || state.protectionFinalCost || '0원 (전액 커버)');
+  }
+  return true;
+}
+
+function renderReceptionSummary(state) {
+  state = state || {};
+  setText('val-ticket', state.ticketId || state.ticketNo || state.ticketNumber || '555555');
+  setText('val-product', state.productName || 'ALIO-01');
+  setText('val-lens', getLensLabel(state));
+  setText('val-issue', getIssueLabel(state));
+  setText('val-dispatch', formatDotDate(state.dispatchDate || state.estimatedDispatchDate));
+  setText('est-cost', getEstimatedCost(state));
+  renderIeRepairSummary(state);
+  renderShippingGuide(state);
+}
+
+function renderShippingGuide(state) {
+  state = state || {};
+  var sendKey = state.sendMethod || sendMethod || 'pickup';
+  var isIe = isIeProductState(state);
+  var pickupGuide = document.getElementById('pickup-guide');
+  var storeGuide = document.getElementById('store-guide');
+  var ieKitGuide = document.getElementById('ie-kit-guide');
+  var iePairingReminder = document.getElementById('ie-pairing-reminder');
+  var ieKitNotification = document.getElementById('ie-kit-notification');
+  if (pickupGuide) pickupGuide.style.display = (!isIe && sendKey === 'pickup') ? '' : 'none';
+  if (storeGuide) storeGuide.style.display = sendKey === 'store' ? '' : 'none';
+  if (ieKitGuide) ieKitGuide.style.display = (isIe && sendKey === 'pickup') ? '' : 'none';
+  if (iePairingReminder) iePairingReminder.style.display = (isIe && sendKey !== 'pickup' && sendKey !== 'accessory') ? '' : 'none';
+  if (ieKitNotification) {
+    var channel = currentCountry === 'kr' ? '카카오톡과 이메일' : '이메일';
+    ieKitNotification.textContent = '포장 키트 발송이 완료되면 ' + channel + '로 안내드립니다.';
+  }
+}
+
 function getLabel(map, key) {
   var item = map[key] || map.pickup || map.home;
   return item[currentLang] || item.ko || '';
@@ -368,7 +659,12 @@ function applyStrings(state) {
   setText('pg-title', st.title);
   setText('pg-desc', st.desc);
   setText('lbl-reception', st.lblReception);
+  setText('summary-info-title', st.summaryInfoTitle);
+  setText('key-ticket', st.keyTicket);
   setText('key-product', st.keyProduct);
+  setText('key-lens', st.keyLens);
+  setText('key-issue', st.keyIssue);
+  setText('key-dispatch', st.keyDispatch);
   setText('key-svc-type', st.keySvcType);
   setText('key-svc-detail', st.keySvcDetail);
   setText('key-urgent-opt', st.keyUrgentOpt);
@@ -382,11 +678,13 @@ function applyStrings(state) {
   setText('key-est-leadtime', st.keyEstLeadtime);
   setText('notice-main', st.noticeMain);
   setText('notice-paid', st.noticePaid);
+  setText('common-guide', st.commonGuide);
   setText('lbl-agreement', st.lblAgreement);
   setText('marketing-consent-label', st.marketingConsentLabel);
   setText('btn-prev', st.btnPrev);
   setText('btn-complete', st.btnComplete);
   updateSendReceiveLabels(state);
+  renderReceptionSummary(state);
 }
 
 function saveMarketingConsent() {
@@ -459,21 +757,23 @@ function setScenario(key) {
   });
 
   var estSection = document.getElementById('est-section');
-  if (estSection) estSection.style.display = (s.hideEst || s.hideShipping) ? 'none' : '';
+  if (estSection) estSection.style.display = '';
 
-  if (!s.hideEst && !s.hideShipping) {
-    setText('est-method', loc.method);
+  {
+    var state = getSavedState();
+    setText('est-method', getProcessText(key, state));
     var costEl = document.getElementById('est-cost');
     if (costEl) {
-      costEl.textContent = s.costRatio !== undefined ? fmt(Math.round(PRODUCT_RETAIL_PRICE * s.costRatio)) : loc.cost;
-      costEl.style.color = s.costPaid ? '#c8491a' : (s.costPaid === null ? '#888' : '#111');
+      costEl.textContent = getEstimatedCost(state);
+      costEl.style.color = '#111';
     }
     setText('est-leadtime', loc.leadtime);
     var urgentFee = document.getElementById('est-urgent-fee');
-    if (urgentFee) urgentFee.style.display = s.urgent ? 'block' : 'none';
+    if (urgentFee) urgentFee.style.display = 'none';
     var paidNotice = document.getElementById('notice-paid');
-    if (paidNotice) paidNotice.style.display = s.costPaid ? '' : 'none';
-    setText('notice-main', loc.notice || STRINGS[currentLang].noticeMain);
+    if (paidNotice) paidNotice.style.display = 'none';
+    setText('notice-main', STRINGS[currentLang].noticeMain);
+    renderReceptionSummary(state);
   }
 
   var btnComplete = document.getElementById('btn-complete');

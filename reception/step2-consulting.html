@@ -65,6 +65,158 @@
       padding-top: 24px;
     }
 
+    .ai-consult-flow {
+      display: none;
+    }
+
+    .ai-consult-grid {
+      display: grid;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .ai-consult-card {
+      border: 1px solid #e0e0e0;
+      background: #fff;
+      padding: 24px;
+      font-family: var(--font);
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 0.16s, background 0.16s;
+    }
+
+    .ai-consult-card:hover,
+    .ai-consult-card.selected {
+      border-color: #111;
+      background: #fafafa;
+    }
+
+    .ai-consult-card-title {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: #111;
+    }
+
+    .ai-consult-card-desc {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.8;
+    }
+
+    .ai-consult-panel {
+      display: none;
+      border: 1px solid #e0e0e0;
+      padding: 26px;
+      margin-bottom: 20px;
+    }
+
+    .ai-consult-panel.is-visible {
+      display: block;
+    }
+
+    .ai-diagnosis-methods {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .ai-diagnosis-box {
+      border: 1px solid #e0e0e0;
+      padding: 20px;
+      min-height: 190px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .ai-diagnosis-box-title {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 10px;
+    }
+
+    .ai-diagnosis-box p {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.8;
+    }
+
+    .ai-text-link {
+      display: inline-block;
+      margin-top: 16px;
+      color: #111;
+      font-size: 12px;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .ai-flow-end-note {
+      display: none;
+      margin-top: 16px;
+      padding: 16px 18px;
+      background: #f7f7f7;
+      border: 1px solid #e0e0e0;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.8;
+    }
+
+    .ai-flow-end-note.is-visible {
+      display: block;
+    }
+
+    .ai-safety-modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: rgba(0,0,0,0.45);
+      z-index: 300;
+    }
+
+    .ai-safety-modal.is-visible {
+      display: flex;
+    }
+
+    .ai-safety-dialog {
+      width: min(620px, 100%);
+      max-height: calc(100vh - 48px);
+      overflow-y: auto;
+      background: #fff;
+      padding: 34px;
+      border: 1px solid #111;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.22);
+    }
+
+    .ai-safety-title {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 18px;
+    }
+
+    .ai-safety-list {
+      margin: 14px 0 20px;
+      padding-left: 18px;
+    }
+
+    .ai-safety-list li {
+      font-size: 13px;
+      color: #555;
+      line-height: 1.85;
+      margin-bottom: 8px;
+    }
+
+    .ai-safety-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 24px;
+    }
+
     .consult-panel-title {
       font-size: 13px;
       font-weight: 500;
@@ -194,11 +346,19 @@
 
     @media (max-width: 640px) {
       .consult-channel-grid,
-      .consult-field-grid {
+      .consult-field-grid,
+      .ai-diagnosis-methods,
+      .ai-safety-actions {
         grid-template-columns: 1fr;
       }
 
       .consult-box {
+        padding: 22px;
+      }
+
+      .ai-consult-card,
+      .ai-consult-panel,
+      .ai-safety-dialog {
         padding: 22px;
       }
     }
@@ -241,19 +401,19 @@
 
     <p class="page-eyebrow" id="page-eyebrow">서비스 유형 — 상담/기타</p>
     <h1 class="page-title" id="page-title">상담 & 기타</h1>
-    <p class="page-desc" id="page-desc">무엇을 도와드릴까요? 문의 유형을 선택해 주세요.</p>
+    <p class="page-desc" id="page-desc">무엇을 도와드릴까요?<br>문의 유형을 선택해 주세요.</p>
 
     <!-- TYPE SELECTION -->
     <p class="section-label" id="lbl-type">문의 유형 <span style="color:#000">*</span></p>
-    <div class="option-cards" style="margin-bottom:32px;">
+    <div class="option-cards" id="regular-consult-type-cards" style="margin-bottom:32px;">
       <label id="card-defect" class="check-item" onclick="showType('defect')">
         <input type="radio" name="type" value="defect">
         <div style="flex:1;">
-          <p class="check-item-title" id="defect-title">제품 결함 & 이상 문의</p>
-          <p class="check-item-desc" id="defect-desc">구매일로부터 2년 이내 제품에 한해 제조 결함 여부를 확인해 드립니다.</p>
+          <p class="check-item-title" id="defect-title">제품 결함·이상 문의</p>
+          <p class="check-item-desc" id="defect-desc">구매일로부터 2년 이내 제품은 결함 여부를 확인해 드립니다.</p>
           <div id="expired-inline" style="display:none;margin-top:10px;padding:10px 12px;background:#f5f5f5;font-size:12px;color:#555;line-height:1.7;">
-            <span id="expired-inline-text">품질 보증 기간(2년)이 만료된 제품은 결함 문의를 접수하기 어렵습니다.<br>
-            다른 메뉴를 선택하시거나 상담원 연결을 이용해 주세요.</span>
+            <span id="expired-inline-text">품질 보증 기간(2년)이 만료된 제품은 제품 결함 문의 접수가 어렵습니다.<br>
+            다른 메뉴를 선택하시거나, 자세한 상담이 필요하시면 상담원 연결을 이용해 주세요.</span>
           </div>
         </div>
       </label>
@@ -261,16 +421,66 @@
         <input type="radio" name="type" value="accessory">
         <div>
           <p class="check-item-title" id="acc-type-title">부속품 요청</p>
-          <p class="check-item-desc" id="acc-type-desc">코패드, 나사 등 소모성 부품을 무상으로 보내드립니다.</p>
+          <p class="check-item-desc" id="acc-type-desc">코받침·나사 등 소모성 부품을 무료로 보내드립니다.</p>
         </div>
       </label>
       <label id="check-consult" class="check-item" onclick="showType('consult')">
         <input type="radio" name="type" value="consult">
         <div>
           <p class="check-item-title" id="consult-type-title">상담원 연결</p>
-          <p class="check-item-desc" id="consult-type-desc">전문 상담원이 도움을 드립니다.</p>
+          <p class="check-item-desc" id="consult-type-desc">GEN과 먼저 대화한 뒤 필요한 경우 전문 상담원으로 연결해 드립니다.</p>
         </div>
       </label>
+    </div>
+
+    <div id="ai-consult-flow" class="ai-consult-flow">
+      <div class="ai-consult-grid">
+        <button type="button" class="ai-consult-card" data-ai-consult-type="diagnosis" onclick="selectAiConsultType('diagnosis')">
+          <p class="ai-consult-card-title">진단 희망</p>
+          <p class="ai-consult-card-desc">기능 점검을 받아보고 싶으시다면 삼성 멤버스 앱 자가 진단 또는 가까운 스토어 방문 진단을 이용하실 수 있어요.</p>
+        </button>
+        <button type="button" class="ai-consult-card" data-ai-consult-type="agent" onclick="selectAiConsultType('agent')">
+          <p class="ai-consult-card-title">상담원 연결</p>
+          <p class="ai-consult-card-desc">젠틀몬스터 AI 상담 서비스 GEN과 먼저 대화해 보세요. 필요한 경우 전문 상담원으로 연결해 드립니다.</p>
+        </button>
+        <button type="button" class="ai-consult-card" data-ai-consult-type="safety" onclick="selectAiConsultType('safety')">
+          <p class="ai-consult-card-title">안전 문제 리포트</p>
+          <p class="ai-consult-card-desc">제품 발열, 팽창, 연기 등 안전 문제가 의심되는 경우 즉시 안전 조치를 확인한 뒤 접수해 주세요.</p>
+        </button>
+      </div>
+
+      <div class="ai-consult-panel" id="ai-panel-diagnosis">
+        <p class="consult-title">진단 희망</p>
+        <p class="consult-desc">기능 점검을 받아보고 싶으시다면 아래 두 가지 방법을 이용하실 수 있어요.</p>
+        <div class="ai-diagnosis-methods">
+          <div class="ai-diagnosis-box">
+            <div>
+              <p class="ai-diagnosis-box-title">① 삼성 멤버스 앱 자가 진단</p>
+              <p>앱에서 직접 기기 상태를 점검해 볼 수 있어요.<br>자가 진단 후에도 문제가 지속되면 접수를 진행해 주세요.</p>
+            </div>
+            <a href="#" class="ai-text-link" onclick="saveAiDiagnosisMethod('samsung-members');return false;">삼성 멤버스 앱 바로가기 →</a>
+          </div>
+          <div class="ai-diagnosis-box">
+            <div>
+              <p class="ai-diagnosis-box-title">② 가까운 스토어 방문 진단</p>
+              <p>진단 가능한 스토어를 안내해 드립니다.<br>스토어 선택 후 온라인 접수 흐름은 종료됩니다.</p>
+            </div>
+            <a href="../store.html" class="ai-text-link" onclick="saveAiDiagnosisMethod('store');">스토어 찾기 →</a>
+          </div>
+        </div>
+        <div class="ai-flow-end-note" id="ai-diagnosis-note">자가 진단 후에도 문제가 지속되면 제품 수리를 접수해 주세요.</div>
+      </div>
+
+      <div class="ai-consult-panel" id="ai-panel-agent">
+        <p class="consult-title">상담원과 연결해 드릴게요.</p>
+        <p class="consult-desc">어떤 문제인지 잘 모르시거나 선택이 어려우시면,<br>젠틀몬스터 AI 상담 서비스 GEN과 먼저 대화해 보세요.<br>필요한 경우 전문 상담원으로 연결해 드립니다.</p>
+        <div class="ai-flow-end-note is-visible">› 상담 전 제품명과 구매 증빙(보증 카드·구매 내역 등)을 준비해 두시면 더 빠르게 안내받으실 수 있어요.</div>
+      </div>
+
+      <div class="ai-consult-panel" id="ai-panel-safety">
+        <p class="consult-title">안전 문제 리포트</p>
+        <p class="consult-desc">안전 문제 리포트는 담당자에게 긴급 플래그와 함께 전달됩니다. 접수 전 안전 조치 안내를 반드시 확인해 주세요.</p>
+      </div>
     </div>
 
     <button type="button" id="btn-change-type" onclick="showAllTypes()" style="display:none;margin-top:16px;width:100%;padding:14px;background:#fff;border:1px solid #111;font-family:var(--font);font-size:12px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;"><span id="btn-change-type-label">문의 유형 변경하기</span></button>
@@ -278,9 +488,9 @@
     <!-- DEFECT FORM -->
     <div id="form-defect" style="display:none;">
       <div class="info-box">
-        <p id="defect-info-text">구매일로부터 2년 이내 제품은 제조 결함 여부를 확인해 드립니다.<br>수리 내용과 비용은 제품 입고 후 정밀 점검을 통해 별도로 안내드립니다.</p>
+        <p id="defect-info-text"><strong style="display:block;color:#111;margin-bottom:8px;">제품에 이상이 있으신가요?</strong>구매일로부터 2년 이내 제품은 결함 여부를 확인해 드립니다.<br>확인 결과와 서비스 비용은 제품 입고 후 정밀 점검을 거쳐 별도로 안내드립니다.</p>
       </div>
-      <p class="section-label" id="lbl-defect-parts">문제 부위 선택 <span style="color:#000">*</span></p>
+      <p class="section-label" id="lbl-defect-parts">문제 부위 <span style="color:#000">*</span></p>
       <div class="glasses-wrap">
         <svg viewBox="0 0 380 135" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;">
           <g class="gpart" id="gp-front" onclick="togglePart('gp-front')">
@@ -309,46 +519,42 @@
             <text class="gp-label" id="gp-rt-lbl" x="346" y="38" text-anchor="middle">우템플</text>
           </g>
         </svg>
-        <p id="parts-hint" style="font-size:11px;color:#999;text-align:center;margin-top:4px;">탭하여 선택 · 복수 선택 가능</p>
+        <p id="parts-hint" style="font-size:12px;color:#777;text-align:center;margin-top:4px;line-height:1.8;">이상이 있는 부위를 선택해 주세요.<br>프론트 · 브릿지 · 좌/우 렌즈 · 좌/우 템플</p>
         <div id="parts-summary-c" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px;padding:10px 0 2px;border-top:1px solid var(--gray-100);">
           <span style="font-size:12px;color:#bbb;">선택된 부위 없음</span>
         </div>
-      </div>
-      <div class="form-group" style="margin-top:16px;">
-        <label class="form-label" id="defect-request-label">서비스 요청 사항</label>
-        <textarea id="defect-request-textarea" class="form-input" rows="4" placeholder="불편하신 점을 자세히 적어 주세요. 구체적으로 작성해주시면 더 정확한 점검이 가능합니다." style="resize:vertical;border:1px solid #e0e0e0;padding:12px;font-family:inherit;font-size:14px;width:100%;outline:none;"></textarea>
       </div>
     </div>
 
     <!-- 2년 초과 비활성화 안내 -->
     <div id="form-defect-expired" style="display:none;">
       <div style="border:1px solid #e0e0e0;padding:24px;text-align:center;">
-        <p id="expired-title" style="font-size:14px;font-weight:500;margin-bottom:12px;">결함 문의 접수가 어렵습니다</p>
-        <p id="expired-body" style="font-size:13px;color:#555;line-height:1.8;">품질 보증 기간(2년)이 만료된 제품은 제품 결함 문의를 접수하기 어렵습니다.<br>다른 메뉴를 선택하시거나, 자세한 상담이 필요하시다면 상담원 연결을 진행해주세요.</p>
+        <p id="expired-title" style="font-size:14px;font-weight:500;margin-bottom:12px;">제품 결함·이상 문의 접수가 어렵습니다</p>
+        <p id="expired-body" style="font-size:13px;color:#555;line-height:1.8;">품질 보증 기간(2년)이 만료된 제품은 제품 결함 문의 접수가 어렵습니다.<br>다른 메뉴를 선택하시거나, 자세한 상담이 필요하시면 상담원 연결을 이용해 주세요.</p>
       </div>
     </div>
 
     <!-- ACCESSORY FORM -->
     <div id="form-accessory" style="display:none;">
       <div class="info-box">
-        <p id="acc-info-text">필요한 부속품을 알려 주세요. 코패드, 나사 등 소모성 부품을 무상으로 보내드립니다.</p>
+        <p id="acc-info-text"><strong style="display:block;color:#111;margin-bottom:8px;">필요한 부속품을 알려 주세요</strong>코받침·나사 등 소모성 부품을 무료로 보내드립니다.</p>
       </div>
       <div class="form-group">
-        <label class="form-label" id="acc-parts-label">부속품 선택 <span class="required-mark">*</span></label>
-        <p id="acc-parts-hint" style="font-size:12px;color:var(--gray-400);margin-bottom:12px;">원하시는 부속품을 선택해 주세요. (복수 선택 가능)</p>
+        <label class="form-label" id="acc-parts-label">부속품 선택 <span style="font-size:12px;color:var(--gray-400);font-weight:400;">(복수 선택 가능)</span></label>
+        <p id="acc-parts-hint" style="font-size:12px;color:var(--gray-400);margin-bottom:12px;">원하시는 부속품을 선택해 주세요.</p>
         <div style="display:flex;flex-direction:column;gap:0;border:1px solid #e0e0e0;">
 
-          <!-- 코패드 -->
+          <!-- 코받침 -->
           <div style="padding:14px 16px;border-bottom:1px solid #e0e0e0;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
-              <label class="inline-check"><input type="checkbox" onchange="toggleQty('qty-copad', this)"><span id="acc-copad-name">코패드 및 코패드 나사</span></label>
-              <button id="acc-copad-img-btn" onclick="toggleImg('img-copad')" style="font-size:11px;color:#888;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;font-family:var(--font);">부속품 모양을 확인하세요.</button>
+              <label class="inline-check"><input type="checkbox" onchange="toggleQty('qty-copad', this)"><span id="acc-copad-name">코받침 및 코받침 나사</span></label>
+              <button id="acc-copad-img-btn" onclick="toggleImg('img-copad')" style="font-size:11px;color:#888;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;font-family:var(--font);">› 이미지로 모양을 확인하세요</button>
             </div>
-            <div id="img-copad" style="display:none;margin-top:10px;background:#f5f5f5;height:80px;align-items:center;justify-content:center;font-size:11px;color:#bbb;border:1px solid #eee;">코패드 & 나사 이미지</div>
+            <div id="img-copad" style="display:none;margin-top:10px;background:#f5f5f5;height:80px;align-items:center;justify-content:center;font-size:11px;color:#bbb;border:1px solid #eee;">코받침 & 나사 이미지</div>
             <div id="qty-copad" style="display:none;margin-top:10px;display:none;align-items:center;gap:10px;">
-              <span id="acc-qty-copad-label" style="font-size:12px;color:#555;white-space:nowrap;">수량 <span style="color:#000;">*</span></span>
+              <span id="acc-qty-copad-label" style="font-size:12px;color:#555;white-space:nowrap;">수량 선택 <span style="color:#000;">*</span></span>
               <select class="form-select" style="flex:1;margin:0;" onchange="checkAccessoryNextBtn()">
-                <option value="" id="acc-qty-placeholder-copad">선택</option>
+                <option value="" id="acc-qty-placeholder-copad">수량을 선택해 주세요.</option>
                 <option value="1" id="acc-qty-1-copad">1쌍</option>
                 <option value="2" id="acc-qty-2-copad">2쌍</option>
                 <option value="3" id="acc-qty-3-copad">3쌍</option>
@@ -360,13 +566,13 @@
           <div style="padding:14px 16px;border-bottom:1px solid #e0e0e0;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <label class="inline-check"><input type="checkbox" onchange="toggleQty('qty-hinge', this)"><span id="acc-hinge-name">경첩 나사</span></label>
-              <button id="acc-hinge-img-btn" onclick="toggleImg('img-hinge')" style="font-size:11px;color:#888;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;font-family:var(--font);">부속품 모양을 확인하세요.</button>
+              <button id="acc-hinge-img-btn" onclick="toggleImg('img-hinge')" style="font-size:11px;color:#888;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;font-family:var(--font);">› 이미지로 모양을 확인하세요</button>
             </div>
             <div id="img-hinge" style="display:none;margin-top:10px;background:#f5f5f5;height:80px;align-items:center;justify-content:center;font-size:11px;color:#bbb;border:1px solid #eee;">경첩 나사 이미지</div>
             <div id="qty-hinge" style="display:none;margin-top:10px;align-items:center;gap:10px;">
-              <span id="acc-qty-hinge-label" style="font-size:12px;color:#555;white-space:nowrap;">수량 <span style="color:#000;">*</span></span>
+              <span id="acc-qty-hinge-label" style="font-size:12px;color:#555;white-space:nowrap;">수량 선택 <span style="color:#000;">*</span></span>
               <select class="form-select" style="flex:1;margin:0;" onchange="checkAccessoryNextBtn()">
-                <option value="" id="acc-qty-placeholder-hinge">선택</option>
+                <option value="" id="acc-qty-placeholder-hinge">수량을 선택해 주세요.</option>
                 <option value="1" id="acc-qty-1-hinge">1쌍</option>
                 <option value="2" id="acc-qty-2-hinge">2쌍</option>
                 <option value="3" id="acc-qty-3-hinge">3쌍</option>
@@ -378,13 +584,13 @@
           <div style="padding:14px 16px;">
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <label class="inline-check"><input type="checkbox" onchange="toggleQty('qty-ring', this)"><span id="acc-ring-name">고리 나사</span></label>
-              <button id="acc-ring-img-btn" onclick="toggleImg('img-ring')" style="font-size:11px;color:#888;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;font-family:var(--font);">부속품 모양을 확인하세요.</button>
+              <button id="acc-ring-img-btn" onclick="toggleImg('img-ring')" style="font-size:11px;color:#888;border:none;background:none;cursor:pointer;padding:0;text-decoration:underline;font-family:var(--font);">› 이미지로 모양을 확인하세요</button>
             </div>
             <div id="img-ring" style="display:none;margin-top:10px;background:#f5f5f5;height:80px;align-items:center;justify-content:center;font-size:11px;color:#bbb;border:1px solid #eee;">고리 나사 이미지</div>
             <div id="qty-ring" style="display:none;margin-top:10px;align-items:center;gap:10px;">
-              <span id="acc-qty-ring-label" style="font-size:12px;color:#555;white-space:nowrap;">수량 <span style="color:#000;">*</span></span>
+              <span id="acc-qty-ring-label" style="font-size:12px;color:#555;white-space:nowrap;">수량 선택 <span style="color:#000;">*</span></span>
               <select class="form-select" style="flex:1;margin:0;" onchange="checkAccessoryNextBtn()">
-                <option value="" id="acc-qty-placeholder-ring">선택</option>
+                <option value="" id="acc-qty-placeholder-ring">수량을 선택해 주세요.</option>
                 <option value="1" id="acc-qty-1-ring">1쌍</option>
                 <option value="2" id="acc-qty-2-ring">2쌍</option>
                 <option value="3" id="acc-qty-3-ring">3쌍</option>
@@ -394,20 +600,16 @@
 
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label" id="acc-request-label">서비스 요청 사항</label>
-        <textarea id="acc-request-textarea" class="form-input" rows="3" placeholder="추가 요청사항이 있으시면 적어주세요." style="resize:vertical;border:1px solid #e0e0e0;padding:12px;font-family:inherit;font-size:14px;width:100%;outline:none;"></textarea>
-      </div>
       <div class="notice-box">
-        <p id="acc-notice-text">자가 수리 중 발생한 제품 손상에 대해서는 보증 서비스 적용이 어려울 수 있습니다.</p>
+        <p id="acc-notice-text">› 직접 교체하실 경우 참고해 주세요.<br>교체 과정에서 생긴 제품 손상은 보증 서비스 적용이 어려울 수 있습니다.</p>
       </div>
     </div>
 
     <!-- CONSULT -->
     <div id="form-consult" style="display:none;">
       <div class="consult-box">
-        <p class="consult-title" id="consult-box-title">상담원 연결</p>
-        <p class="consult-desc" id="consult-box-desc">문의하실 채널을 선택해 주세요. 전문 상담원이 도움을 드립니다.</p>
+        <p class="consult-title" id="consult-box-title">상담원과 연결해 드릴게요.</p>
+        <p class="consult-desc" id="consult-box-desc">어떤 문제인지 잘 모르시거나 선택이 어려우시면,<br>젠틀몬스터 AI 상담 서비스 GEN과 먼저 대화해 보세요.<br>필요한 경우 전문 상담원으로 연결해 드립니다.<br><br>› 상담 전 제품명과 구매 증빙(보증 카드·구매 내역 등)을 준비해 두시면 더 빠르게 안내받으실 수 있어요.</p>
 
         <div class="consult-channel-grid">
           <label class="consult-channel-card selected" id="consult-card-call" onclick="selectConsultChannel('call')">
@@ -425,7 +627,7 @@
           <label class="consult-channel-card" id="consult-card-chat" onclick="selectConsultChannel('chat')">
             <input type="radio" name="consult-channel" value="chat">
             <div>
-              <p class="consult-channel-title" id="ch-chat-title">AI Agent</p>
+              <p class="consult-channel-title" id="ch-chat-title">GEN</p>
             </div>
           </label>
         </div>
@@ -434,7 +636,7 @@
           <p class="consult-panel-title" id="call-panel-title">전화 상담</p>
           <p id="call-panel-desc" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:18px;">운영 시간: 평일 10:00 - 18:00<br>제품 상태와 접수 상황을 빠르게 확인하실 수 있습니다.</p>
           <div id="call-closed-notice" style="display:none;padding:14px 16px;background:#f8f8f8;border:1px solid #e0e0e0;margin-bottom:16px;">
-            <p style="font-size:13px;color:#555;">현재 운영 시간이 아닙니다.<br>운영 시간: 평일 10:00 - 18:00 · 이메일 또는 AI Agent를 이용해 주세요.</p>
+            <p style="font-size:13px;color:#555;">현재 운영 시간이 아닙니다.<br>운영 시간: 평일 10:00 - 18:00 · 이메일 또는 GEN을 이용해 주세요.</p>
           </div>
           <a href="tel:16002126" class="btn btn-primary" style="display:inline-flex;min-width:180px;">1600-2126</a>
         </div>
@@ -492,15 +694,20 @@
             <span id="email-consent-text">고객 서비스에 연락하기 위해 입력한 데이터를 국외로 전송하는 데 동의합니다.</span>
           </label>
 
-          <button type="button" class="btn btn-primary" id="consult-email-submit" onclick="alert('이메일 문의가 접수되었습니다.')" style="width:100%;opacity:0.45;pointer-events:none;"><span id="email-submit-label">제출하기</span></button>
+          <button type="button" class="btn btn-primary" id="consult-email-submit" onclick="saveCommonServiceRequest();alert('이메일 문의가 접수되었습니다.')" style="width:100%;opacity:0.45;pointer-events:none;"><span id="email-submit-label">제출하기</span></button>
         </div>
 
         <div class="consult-panel" id="consult-panel-chat" style="display:none;">
-          <p class="consult-panel-title" id="chat-panel-title">AI Agent</p>
-          <p id="chat-panel-desc" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:18px;">AI 에이전트와 실시간으로 상담하실 수 있습니다. 이메일 및 AI Agent는 24시간 운영합니다.</p>
-          <button id="chat-start-btn" type="button" class="btn btn-primary" onclick="openLiveChat()" style="min-width:180px;">AI Agent 연결</button>
+          <p class="consult-panel-title" id="chat-panel-title">GEN</p>
+          <p id="chat-panel-desc" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:18px;">젠틀몬스터 AI 상담 서비스 GEN과 먼저 대화해 보세요.<br>필요한 경우 전문 상담원으로 연결해 드립니다.</p>
+          <button id="chat-start-btn" type="button" class="btn btn-primary" onclick="openLiveChat()" style="min-width:180px;">GEN과 대화하기</button>
         </div>
       </div>
+    </div>
+
+    <div class="form-group" id="common-service-request-group" style="display:none;margin-top:24px;">
+      <label class="form-label" id="service-request-label">서비스 요청 사항</label>
+      <textarea id="service-request-textarea" class="form-input" rows="4" placeholder="불편하신 점이나 요청 사항을 적어 주세요.&#10;› 구체적으로 작성해 주시면 더 정확한 점검이 가능해요." style="resize:vertical;border:1px solid #e0e0e0;padding:12px;font-family:inherit;font-size:14px;width:100%;outline:none;"></textarea>
     </div>
 
     <div class="btn-wrap" style="margin-top:32px;">
@@ -514,7 +721,7 @@
 <div class="live-chat-widget" id="live-chat-widget">
   <div class="live-chat-header">
     <div>
-      <p id="livechat-header-title" style="font-size:14px;font-weight:500;">GENTLE MONSTER AI Agent</p>
+      <p id="livechat-header-title" style="font-size:14px;font-weight:500;">GENTLE MONSTER GEN</p>
       <p id="livechat-header-status" style="font-size:11px;color:#777;">24시간 운영 · 즉시 응답</p>
     </div>
     <button type="button" onclick="closeLiveChat()" style="border:none;background:none;font-size:18px;cursor:pointer;padding:4px;">×</button>
@@ -525,6 +732,25 @@
   <div class="live-chat-input">
     <input type="text" id="live-chat-input" placeholder="메시지를 입력해 주세요" onkeydown="if(event.key === 'Enter') sendLiveChatMessage()">
     <button id="livechat-send-btn" type="button" onclick="sendLiveChatMessage()">전송</button>
+  </div>
+</div>
+
+<div class="ai-safety-modal" id="ai-safety-modal" role="dialog" aria-modal="true" aria-labelledby="ai-safety-title">
+  <div class="ai-safety-dialog">
+    <p class="ai-safety-title" id="ai-safety-title">안전을 위해 먼저 확인해 주세요.</p>
+    <p class="consult-desc">아래 조치를 즉시 취해 주세요.</p>
+    <ol class="ai-safety-list">
+      <li>충전 중이라면 즉시 충전기를 분리해 주세요.</li>
+      <li>제품을 맨손으로 만지지 마세요.<br>특히 제품이 뜨겁거나 부풀어 오른 경우 주의하세요.</li>
+      <li>제품을 불에서 멀리, 통풍이 잘 되는 곳에 두세요.</li>
+      <li>가방이나 밀폐된 공간에 보관하지 마세요.</li>
+      <li>연기가 나거나 화재가 발생한 경우 즉시 119에 신고해 주세요.</li>
+    </ol>
+    <a href="#" class="ai-text-link" onclick="return false;">JINJU 안전 안내 및 자주 묻는 질문 →</a>
+    <div class="ai-safety-actions">
+      <button type="button" class="btn btn-primary" onclick="continueAiSafetyReport()">확인했습니다. 접수 계속하기</button>
+      <button type="button" class="btn btn-secondary" onclick="connectAiSafetyCenter()">고객센터 연결하기</button>
+    </div>
   </div>
 </div>
 
@@ -567,54 +793,54 @@ const PART_NAMES    = {'gp-lt':'좌템플','gp-front':'프론트','gp-br':'브�
 const PART_NAMES_EN = {'gp-lt':'L Temple','gp-front':'Front','gp-br':'Bridge','gp-ll':'L Lens','gp-rl':'R Lens','gp-rt':'R Temple'};
 
 var currentLang = 'ko';
+var aiConsultingMode = false;
+var aiConsultType = '';
 
 var STRINGS = {
   ko: {
     stepLabels: ['기본 정보','서비스 유형','서비스 상세','사진·렌즈','배송 정보','안내 확인'],
     pageEyebrow: '서비스 유형 — 상담/기타',
     pageTitle: '상담 & 기타',
-    pageDesc: '무엇을 도와드릴까요? 문의 유형을 선택해 주세요.',
+    pageDesc: '무엇을 도와드릴까요?<br>문의 유형을 선택해 주세요.',
     lblType: '문의 유형 <span style="color:#000">*</span>',
-    defectTitle: '제품 결함 & 이상 문의',
-    defectDesc: '구매일로부터 2년 이내 제품에 한해 제조 결함 여부를 확인해 드립니다.',
-    expiredInlineText: '품질 보증 기간(2년)이 만료된 제품은 결함 문의를 접수하기 어렵습니다.<br>다른 메뉴를 선택하시거나 상담원 연결을 이용해 주세요.',
+    defectTitle: '제품 결함·이상 문의',
+    defectDesc: '구매일로부터 2년 이내 제품은 결함 여부를 확인해 드립니다.',
+    expiredInlineText: '품질 보증 기간(2년)이 만료된 제품은 제품 결함 문의 접수가 어렵습니다.<br>다른 메뉴를 선택하시거나, 자세한 상담이 필요하시면 상담원 연결을 이용해 주세요.',
     accTypeTitle: '부속품 요청',
-    accTypeDesc: '코패드, 나사 등 소모성 부품을 무상으로 보내드립니다.',
+    accTypeDesc: '코받침·나사 등 소모성 부품을 무료로 보내드립니다.',
     consultTypeTitle: '상담원 연결',
-    consultTypeDesc: '전문 상담원이 도움을 드립니다.',
+    consultTypeDesc: 'GEN과 먼저 대화한 뒤 필요한 경우 전문 상담원으로 연결해 드립니다.',
     btnChangeTypeLabel: '문의 유형 변경하기',
     btnPrev: '이전',
     btnNextDefect: '다음 — 사진·렌즈',
     btnNextAcc: '다음 — 배송 정보',
-    defectInfoText: '구매일로부터 2년 이내 제품은 제조 결함 여부를 확인해 드립니다.<br>수리 내용과 비용은 제품 입고 후 정밀 점검을 통해 별도로 안내드립니다.',
-    lblDefectParts: '문제 부위 선택 <span style="color:#000">*</span>',
-    partsHint: '탭하여 선택 · 복수 선택 가능',
+    defectInfoText: '<strong style="display:block;color:#111;margin-bottom:8px;">제품에 이상이 있으신가요?</strong>구매일로부터 2년 이내 제품은 결함 여부를 확인해 드립니다.<br>확인 결과와 서비스 비용은 제품 입고 후 정밀 점검을 거쳐 별도로 안내드립니다.',
+    lblDefectParts: '문제 부위 <span style="color:#000">*</span>',
+    partsHint: '이상이 있는 부위를 선택해 주세요.<br>프론트 · 브릿지 · 좌/우 렌즈 · 좌/우 템플',
     svgLabels: { 'gp-front-lbl':'프론트','gp-ll-lbl':'좌렌즈','gp-rl-lbl':'우렌즈','gp-br-lbl':'브릿지','gp-lt-lbl':'좌템플','gp-rt-lbl':'우템플' },
     partsSummaryEmpty: '<span style="font-size:12px;color:#bbb;">선택된 부위 없음</span>',
-    defectRequestLabel: '서비스 요청 사항',
-    defectRequestPlaceholder: '불편하신 점을 자세히 적어 주세요. 구체적으로 작성해주시면 더 정확한 점검이 가능합니다.',
-    expiredTitle: '결함 문의 접수가 어렵습니다',
-    expiredBody: '품질 보증 기간(2년)이 만료된 제품은 제품 결함 문의를 접수하기 어렵습니다.<br>다른 메뉴를 선택하시거나, 자세한 상담이 필요하시다면 상담원 연결을 진행해주세요.',
-    accInfoText: '필요한 부속품을 알려 주세요. 코패드, 나사 등 소모성 부품을 무상으로 보내드립니다.',
-    accPartsLabel: '부속품 선택 <span class="required-mark">*</span>',
-    accPartsHint: '원하시는 부속품을 선택해 주세요. (복수 선택 가능)',
-    accCopadName: '코패드 및 코패드 나사',
+    expiredTitle: '제품 결함·이상 문의 접수가 어렵습니다',
+    expiredBody: '품질 보증 기간(2년)이 만료된 제품은 제품 결함 문의 접수가 어렵습니다.<br>다른 메뉴를 선택하시거나, 자세한 상담이 필요하시면 상담원 연결을 이용해 주세요.',
+    accInfoText: '<strong style="display:block;color:#111;margin-bottom:8px;">필요한 부속품을 알려 주세요</strong>코받침·나사 등 소모성 부품을 무료로 보내드립니다.',
+    accPartsLabel: '부속품 선택 <span style="font-size:12px;color:var(--gray-400);font-weight:400;">(복수 선택 가능)</span>',
+    accPartsHint: '원하시는 부속품을 선택해 주세요.',
+    accCopadName: '코받침 및 코받침 나사',
     accHingeName: '경첩 나사',
     accRingName: '고리 나사',
-    accImgBtn: '부속품 모양을 확인하세요.',
-    accQtyLabel: '수량 <span style="color:#000;">*</span>',
-    accQtyPlaceholder: '선택',
+    accImgBtn: '› 이미지로 모양을 확인하세요',
+    accQtyLabel: '수량 선택 <span style="color:#000;">*</span>',
+    accQtyPlaceholder: '수량을 선택해 주세요.',
     accQty1: '1쌍',
     accQty2: '2쌍',
     accQty3: '3쌍',
-    accRequestLabel: '서비스 요청 사항',
-    accRequestPlaceholder: '추가 요청사항이 있으시면 적어주세요.',
-    accNoticeText: '자가 수리 중 발생한 제품 손상에 대해서는 보증 서비스 적용이 어려울 수 있습니다.',
-    consultBoxTitle: '상담원 연결',
-    consultBoxDesc: '문의하실 채널을 선택해 주세요. 전문 상담원이 도움을 드립니다.',
+    accNoticeText: '› 직접 교체하실 경우 참고해 주세요.<br>교체 과정에서 생긴 제품 손상은 보증 서비스 적용이 어려울 수 있습니다.',
+    serviceRequestLabel: '서비스 요청 사항',
+    serviceRequestPlaceholder: '불편하신 점이나 요청 사항을 적어 주세요.\n› 구체적으로 작성해 주시면 더 정확한 점검이 가능해요.',
+    consultBoxTitle: '상담원과 연결해 드릴게요.',
+    consultBoxDesc: '어떤 문제인지 잘 모르시거나 선택이 어려우시면,<br>젠틀몬스터 AI 상담 서비스 GEN과 먼저 대화해 보세요.<br>필요한 경우 전문 상담원으로 연결해 드립니다.<br><br>› 상담 전 제품명과 구매 증빙(보증 카드·구매 내역 등)을 준비해 두시면 더 빠르게 안내받으실 수 있어요.',
     chCallTitle: '콜',
     chEmailTitle: '이메일',
-    chChatTitle: 'AI Agent',
+    chChatTitle: 'GEN',
     callPanelTitle: '전화 상담',
     callPanelDesc: '운영 시간: 평일 10:00 - 18:00<br>제품 상태와 접수 상황을 빠르게 확인하실 수 있습니다.',
     emailPanelTitle: '이메일 문의하기',
@@ -633,12 +859,12 @@ var STRINGS = {
     emailUploadBtn: '이미지 업로드하기',
     emailConsentText: '고객 서비스에 연락하기 위해 입력한 데이터를 국외로 전송하는 데 동의합니다.',
     emailSubmitLabel: '제출하기',
-    chatPanelTitle: 'AI Agent',
-    chatPanelDesc: 'AI 에이전트와 실시간으로 상담하실 수 있습니다. 이메일 및 AI Agent는 24시간 운영합니다.',
-    chatStartBtn: 'AI Agent 연결',
-    livechatHeaderTitle: 'GENTLE MONSTER AI Agent',
+    chatPanelTitle: 'GEN',
+    chatPanelDesc: '젠틀몬스터 AI 상담 서비스 GEN과 먼저 대화해 보세요.<br>필요한 경우 전문 상담원으로 연결해 드립니다.',
+    chatStartBtn: 'GEN과 대화하기',
+    livechatHeaderTitle: 'GENTLE MONSTER GEN',
     livechatHeaderStatus: '24시간 운영 · 즉시 응답',
-    livechatGreeting: '안녕하세요. 젠틀몬스터 프로덕트 서비스입니다. 어떤 도움이 필요하신가요?',
+    livechatGreeting: '안녕하세요. 젠틀몬스터 AI 상담 서비스 GEN입니다. 무엇을 도와드릴까요?',
     livechatInputPlaceholder: '메시지를 입력해 주세요',
     livechatSendBtn: '전송',
   },
@@ -646,48 +872,46 @@ var STRINGS = {
     stepLabels: ['Basic Info','Service Type','Service Details','Photos & Lens','Shipping','Review'],
     pageEyebrow: 'Service Type — Other',
     pageTitle: 'Inquiries & Other',
-    pageDesc: 'How can we help? Please select an inquiry type.',
+    pageDesc: 'How can we help?<br>Please select an inquiry type.',
     lblType: 'Inquiry Type <span style="color:#000">*</span>',
-    defectTitle: 'Product Defect Inquiry',
-    defectDesc: 'We verify manufacturing defects for products purchased within the last 2 years.',
-    expiredInlineText: 'The quality warranty period (2 years) has expired. We are unable to accept defect inquiries for this product.<br>Please select another option or connect with a consultant.',
+    defectTitle: 'Product Defect / Issue Inquiry',
+    defectDesc: 'For products purchased within 2 years, we can review whether a defect is present.',
+    expiredInlineText: 'The quality warranty period (2 years) has expired. Product defect inquiries are not available for this product.<br>Please select another menu, or connect with a consultant if you need further help.',
     accTypeTitle: 'Component Request',
     accTypeDesc: 'Nose pads, screws, and other consumable parts are provided free of charge.',
     consultTypeTitle: 'Connect with Consultant',
-    consultTypeDesc: 'Our specialists are here to help.',
+    consultTypeDesc: 'Start with GEN first, and we will connect you with a specialist if needed.',
     btnChangeTypeLabel: 'CHANGE INQUIRY TYPE',
     btnPrev: 'BACK',
     btnNextDefect: 'NEXT — PHOTOS & LENS',
     btnNextAcc: 'NEXT — SHIPPING',
-    defectInfoText: 'We verify manufacturing defects for products purchased within the last 2 years.<br>Repair details and costs will be provided after a detailed inspection upon receipt.',
-    lblDefectParts: 'Select Part <span style="color:#000">*</span>',
-    partsHint: 'Tap to select · Multiple selection',
+    defectInfoText: '<strong style="display:block;color:#111;margin-bottom:8px;">Is there an issue with your product?</strong>For products purchased within 2 years, we can review whether a defect is present.<br>The results and service cost will be provided separately after a detailed inspection upon receipt.',
+    lblDefectParts: 'Problem Area <span style="color:#000">*</span>',
+    partsHint: 'Select the area with the issue.<br>Front · Bridge · Left/Right Lens · Left/Right Temple',
     svgLabels: { 'gp-front-lbl':'Front','gp-ll-lbl':'L Lens','gp-rl-lbl':'R Lens','gp-br-lbl':'Bridge','gp-lt-lbl':'L Temple','gp-rt-lbl':'R Temple' },
     partsSummaryEmpty: '<span style="font-size:12px;color:#bbb;">No parts selected</span>',
-    defectRequestLabel: 'Service Request Details',
-    defectRequestPlaceholder: 'Please describe the issue in detail. The more specific, the more accurate our assessment.',
     expiredTitle: 'Defect Inquiry Unavailable',
-    expiredBody: 'The quality warranty period (2 years) has expired. We are unable to accept product defect inquiries for this product.<br>Please select another option, or connect with a consultant for further assistance.',
-    accInfoText: 'Let us know what you need. Nose pads, screws, and other consumable parts are provided free of charge.',
-    accPartsLabel: 'Select Components <span class="required-mark">*</span>',
-    accPartsHint: 'Select the components you need. (Multiple selection available)',
+    expiredBody: 'The quality warranty period (2 years) has expired. Product defect inquiries are not available for this product.<br>Please select another menu, or connect with a consultant if you need further help.',
+    accInfoText: '<strong style="display:block;color:#111;margin-bottom:8px;">Let us know which components you need</strong>Nose pads, screws, and other consumable components are provided free of charge.',
+    accPartsLabel: 'Select Components <span style="font-size:12px;color:var(--gray-400);font-weight:400;">(Multiple selection available)</span>',
+    accPartsHint: 'Select the components you need.',
     accCopadName: 'Nose Pad & Nose Pad Screws',
     accHingeName: 'Hinge Screw',
     accRingName: 'Ring Screw',
-    accImgBtn: 'View component image',
-    accQtyLabel: 'Qty <span style="color:#000;">*</span>',
-    accQtyPlaceholder: 'Select',
+    accImgBtn: '› View image for shape',
+    accQtyLabel: 'Select Quantity <span style="color:#000;">*</span>',
+    accQtyPlaceholder: 'Select a quantity.',
     accQty1: '1 pair',
     accQty2: '2 pairs',
     accQty3: '3 pairs',
-    accRequestLabel: 'Additional Request',
-    accRequestPlaceholder: 'Any additional requests?',
-    accNoticeText: 'Warranty service may not apply to product damage caused by self-repair.',
-    consultBoxTitle: 'Connect with Consultant',
-    consultBoxDesc: 'Choose your preferred contact channel. Our specialists are here to help.',
+    accNoticeText: '› Please note this if you replace the component yourself.<br>Warranty service may not apply to product damage caused during replacement.',
+    serviceRequestLabel: 'Service Request Details',
+    serviceRequestPlaceholder: 'Please describe any discomfort or requests.\n› The more specific you are, the more accurately we can inspect your product.',
+    consultBoxTitle: 'We will connect you with a consultant.',
+    consultBoxDesc: 'If you are unsure what the issue is or which option to choose,<br>start by chatting with GEN, Gentle Monster AI consultation service.<br>If needed, we will connect you with a specialist.<br><br>› Preparing your product name and proof of purchase, such as warranty card or purchase history, will help us guide you faster.',
     chCallTitle: 'Call',
     chEmailTitle: 'Email',
-    chChatTitle: 'AI Agent',
+    chChatTitle: 'GEN',
     callPanelTitle: 'Phone Consultation',
     callPanelDesc: 'Operating hours: Mon–Fri 10:00–18:00<br>Get a quick update on your product status and service progress.',
     emailPanelTitle: 'Email Inquiry',
@@ -706,12 +930,12 @@ var STRINGS = {
     emailUploadBtn: 'Upload Image',
     emailConsentText: 'I agree to the transfer of my data outside my country for the purpose of contacting customer service.',
     emailSubmitLabel: 'SUBMIT',
-    chatPanelTitle: 'AI Agent',
-    chatPanelDesc: 'Connect with our AI agent for real-time support. Email and AI Agent are available 24/7.',
-    chatStartBtn: 'CONNECT WITH AI AGENT',
-    livechatHeaderTitle: 'GENTLE MONSTER AI Agent',
+    chatPanelTitle: 'GEN',
+    chatPanelDesc: 'Start by chatting with GEN, Gentle Monster AI consultation service.<br>If needed, we will connect you with a specialist.',
+    chatStartBtn: 'CHAT WITH GEN',
+    livechatHeaderTitle: 'GENTLE MONSTER GEN',
     livechatHeaderStatus: '24/7 · Instant Response',
-    livechatGreeting: 'Hello. Welcome to GENTLE MONSTER Product Service. How can we help you?',
+    livechatGreeting: 'Hello. This is GEN, Gentle Monster AI consultation service. How can we help you?',
     livechatInputPlaceholder: 'Type a message',
     livechatSendBtn: 'SEND',
   }
@@ -739,7 +963,150 @@ function checkDefectNextBtn() {
   btn.style.pointerEvents = anySelected ? '' : 'none';
 }
 
+function isAiConsultingState(state, params) {
+  return params.get('ai') === 'true' || state.productLine === 'ie' || state.isAi || state.aiProduct;
+}
+
+function saveAiConsultState(extra) {
+  try {
+    var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
+    state.productLine = 'ie';
+    state.isAi = true;
+    state.aiProduct = true;
+    state.serviceType = 'consulting';
+    state.consultDetail = aiConsultType || state.consultDetail || '';
+    Object.keys(extra || {}).forEach(function(key) {
+      state[key] = extra[key];
+    });
+    localStorage.setItem('ps-state', JSON.stringify(state));
+  } catch(e) {}
+}
+
+function updateAiConsultNextState() {
+  if (!aiConsultingMode) return;
+  var nextBtn = document.getElementById('btn-next');
+  if (!nextBtn) return;
+  nextBtn.style.display = 'none';
+  nextBtn.style.opacity = '0.4';
+  nextBtn.style.pointerEvents = 'none';
+}
+
+function selectAiConsultType(type) {
+  if (!aiConsultingMode) return;
+  aiConsultType = type;
+  document.querySelectorAll('[data-ai-consult-type]').forEach(function(card) {
+    card.classList.toggle('selected', card.getAttribute('data-ai-consult-type') === type);
+  });
+  ['diagnosis','agent','safety'].forEach(function(key) {
+    var panel = document.getElementById('ai-panel-' + key);
+    if (panel) panel.classList.toggle('is-visible', key === type);
+  });
+
+  if (type === 'diagnosis') {
+    saveAiConsultState({ consultDetail: 'diagnosis', aiDiagnosisRequest: true, safetyIssueReport: false, urgentFlag: false, urgentNotificationRequired: false, aiConsultFlowEnded: false });
+  } else if (type === 'agent') {
+    saveAiConsultState({ consultDetail: 'agent', aiAgentConnectRequested: true, safetyIssueReport: false, urgentFlag: false, urgentNotificationRequired: false, aiConsultFlowEnded: true });
+  } else if (type === 'safety') {
+    saveAiConsultState({ consultDetail: 'safety-report', safetyIssueReport: true, urgentFlag: true });
+    openAiSafetyModal();
+  }
+  updateAiConsultNextState();
+}
+
+function saveAiDiagnosisMethod(method) {
+  aiConsultType = 'diagnosis';
+  var flowEnded = method === 'store';
+  saveAiConsultState({
+    consultDetail: 'diagnosis',
+    aiDiagnosisRequest: true,
+    aiDiagnosisMethod: method,
+    aiConsultFlowEnded: flowEnded
+  });
+  var note = document.getElementById('ai-diagnosis-note');
+  if (note) {
+    note.textContent = method === 'store'
+      ? '스토어 방문 진단을 선택했습니다. 스토어 안내 후 온라인 접수 흐름은 종료됩니다.'
+      : '자가 진단 후에도 문제가 지속되면 제품 수리를 접수해 주세요.';
+    note.classList.add('is-visible');
+  }
+}
+
+function openAiSafetyModal() {
+  var modal = document.getElementById('ai-safety-modal');
+  if (modal) modal.classList.add('is-visible');
+}
+
+function closeAiSafetyModal() {
+  var modal = document.getElementById('ai-safety-modal');
+  if (modal) modal.classList.remove('is-visible');
+}
+
+function continueAiSafetyReport() {
+  aiConsultType = 'safety';
+  saveAiConsultState({
+    consultDetail: 'safety-report',
+    safetyIssueReport: true,
+    urgentFlag: true,
+    urgentNotificationRequired: true,
+    aiSafetyGuideConfirmed: true,
+    aiConsultFlowEnded: false
+  });
+  window.location.href = 'step2-repair.html?ai=true';
+}
+
+function connectAiSafetyCenter() {
+  closeAiSafetyModal();
+  selectAiConsultType('agent');
+  saveAiConsultState({
+    consultDetail: 'agent',
+    safetyIssueReport: false,
+    urgentFlag: false,
+    urgentNotificationRequired: false,
+    aiSafetyGuideConfirmed: false,
+    aiConsultFlowEnded: true
+  });
+}
+
+function initAiConsultingFlow(state, params) {
+  aiConsultingMode = true;
+  var regularCards = document.getElementById('regular-consult-type-cards');
+  var aiFlow = document.getElementById('ai-consult-flow');
+  var label = document.getElementById('lbl-type');
+  var changeBtn = document.getElementById('btn-change-type');
+  ['form-defect','form-defect-expired','form-accessory','form-consult'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
+  var commonRequest = document.getElementById('common-service-request-group');
+  if (commonRequest) commonRequest.style.display = 'none';
+  if (regularCards) regularCards.style.display = 'none';
+  if (label) label.style.display = 'none';
+  if (changeBtn) changeBtn.style.display = 'none';
+  if (aiFlow) aiFlow.style.display = 'block';
+
+  var setText = function(id, value) {
+    var el = document.getElementById(id);
+    if (el) el.textContent = value;
+  };
+  var setHTML = function(id, value) {
+    var el = document.getElementById(id);
+    if (el) el.innerHTML = value;
+  };
+  setText('page-eyebrow', '서비스 유형 — 상담·기타');
+  setText('page-title', '상담·기타');
+  setHTML('page-desc', '무엇을 도와드릴까요?<br>문의 유형을 선택해 주세요.');
+
+  var prev = document.getElementById('btn-prev');
+  if (prev) prev.href = 'step2-service-type.html?ai=true';
+  updateAiConsultNextState();
+
+  if (params.get('contactOnly') === 'true') selectAiConsultType('agent');
+  else if (state.consultDetail === 'safety-report' || state.safetyIssueReport) selectAiConsultType('safety');
+  else if (state.consultDetail === 'diagnosis' || state.aiDiagnosisRequest) selectAiConsultType('diagnosis');
+}
+
 function showType(type) {
+  if (aiConsultingMode) return;
   // ps-state에 상담 유형 저장
   try {
     var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
@@ -751,6 +1118,8 @@ function showType(type) {
   ['form-defect','form-defect-expired','form-accessory','form-consult'].forEach(id => {
     document.getElementById(id).style.display = 'none';
   });
+  var commonRequest = document.getElementById('common-service-request-group');
+  if (commonRequest) commonRequest.style.display = (type === 'defect' || type === 'accessory' || type === 'consult') ? 'block' : 'none';
   const isExpired = type === 'defect-expired';
   const card = document.getElementById('card-defect');
   const radio = card.querySelector('input[type="radio"]');
@@ -765,6 +1134,7 @@ function showType(type) {
     radio.disabled = false;
   }
   if (type === 'defect') document.getElementById('form-defect').style.display = 'block';
+  else if (type === 'defect-expired') document.getElementById('form-defect-expired').style.display = 'block';
   else if (type === 'accessory') document.getElementById('form-accessory').style.display = 'block';
   else if (type === 'consult') {
     document.getElementById('form-consult').style.display = 'block';
@@ -775,10 +1145,9 @@ function showType(type) {
   var sN = STRINGS[currentLang] || STRINGS.ko;
   const nextMap = {
     defect:   { href: 'step3-details.html',  label: sN.btnNextDefect },
-    'defect-expired': { href: 'step3-details.html', label: sN.btnNextDefect },
     accessory: { href: 'step3-shipping.html', label: sN.btnNextAcc },
   };
-  nextBtn.style.display = type === 'consult' ? 'none' : '';
+  nextBtn.style.display = (type === 'consult' || type === 'defect-expired') ? 'none' : '';
   if (type !== 'consult' && nextMap[type]) {
     nextBtn.href = nextMap[type].href;
     nextBtn.textContent = nextMap[type].label;
@@ -812,6 +1181,15 @@ function checkAccessoryNextBtn() {
   });
   btn.style.opacity = allQtySelected ? '' : '0.4';
   btn.style.pointerEvents = allQtySelected ? '' : 'none';
+}
+
+function saveCommonServiceRequest() {
+  try {
+    var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
+    var textarea = document.getElementById('service-request-textarea');
+    state.serviceRequest = textarea ? textarea.value.trim() : '';
+    localStorage.setItem('ps-state', JSON.stringify(state));
+  } catch(e) {}
 }
 
 var _callAvailable = true;
@@ -899,7 +1277,7 @@ function setLang(lang) {
   // Page header
   setText('page-eyebrow', s.pageEyebrow);
   setText('page-title', s.pageTitle);
-  setText('page-desc', s.pageDesc);
+  setHTML('page-desc', s.pageDesc);
   setHTML('lbl-type', s.lblType);
 
   // Type cards
@@ -929,10 +1307,7 @@ function setLang(lang) {
   // Defect form
   setHTML('defect-info-text', s.defectInfoText);
   setHTML('lbl-defect-parts', s.lblDefectParts);
-  setText('parts-hint', s.partsHint);
-  setText('defect-request-label', s.defectRequestLabel);
-  setAttr('defect-request-textarea', 'placeholder', s.defectRequestPlaceholder);
-
+  setHTML('parts-hint', s.partsHint);
   // SVG labels
   Object.keys(s.svgLabels).forEach(function(id) {
     var el = document.getElementById(id);
@@ -953,7 +1328,7 @@ function setLang(lang) {
   setHTML('expired-body', s.expiredBody);
 
   // Accessory form
-  setText('acc-info-text', s.accInfoText);
+  setHTML('acc-info-text', s.accInfoText);
   setHTML('acc-parts-label', s.accPartsLabel);
   setText('acc-parts-hint', s.accPartsHint);
   setText('acc-copad-name', s.accCopadName);
@@ -965,13 +1340,13 @@ function setLang(lang) {
   ['acc-qty-1-copad','acc-qty-1-hinge','acc-qty-1-ring'].forEach(function(id) { setText(id, s.accQty1); });
   ['acc-qty-2-copad','acc-qty-2-hinge','acc-qty-2-ring'].forEach(function(id) { setText(id, s.accQty2); });
   ['acc-qty-3-copad','acc-qty-3-hinge','acc-qty-3-ring'].forEach(function(id) { setText(id, s.accQty3); });
-  setText('acc-request-label', s.accRequestLabel);
-  setAttr('acc-request-textarea', 'placeholder', s.accRequestPlaceholder);
-  setText('acc-notice-text', s.accNoticeText);
+  setHTML('acc-notice-text', s.accNoticeText);
+  setText('service-request-label', s.serviceRequestLabel);
+  setAttr('service-request-textarea', 'placeholder', s.serviceRequestPlaceholder);
 
   // Consult form
   setText('consult-box-title', s.consultBoxTitle);
-  setText('consult-box-desc', s.consultBoxDesc);
+  setHTML('consult-box-desc', s.consultBoxDesc);
   setText('ch-call-title', s.chCallTitle);
   setText('ch-email-title', s.chEmailTitle);
   setText('ch-chat-title', s.chChatTitle);
@@ -994,7 +1369,7 @@ function setLang(lang) {
   setText('email-consent-text', s.emailConsentText);
   setText('email-submit-label', s.emailSubmitLabel);
   setText('chat-panel-title', s.chatPanelTitle);
-  setText('chat-panel-desc', s.chatPanelDesc);
+  setHTML('chat-panel-desc', s.chatPanelDesc);
   setText('chat-start-btn', s.chatStartBtn);
 
   // Live chat widget
@@ -1017,13 +1392,21 @@ function showAllTypes() {
 }
 
 window.addEventListener('load', function() {
+  var nextButton = document.getElementById('btn-next');
+  if (nextButton) nextButton.addEventListener('click', saveCommonServiceRequest);
   var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
   var country; try { country = localStorage.getItem('ps-country'); } catch(e) {}
   setLang(country === 'us' ? 'en' : (saved || 'ko'));
+  var urlParams = new URLSearchParams(window.location.search);
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem('ps-state') || '{}'); } catch(e) {}
+  if (isAiConsultingState(state, urlParams)) {
+    initAiConsultingFlow(state, urlParams);
+    return;
+  }
 
   // ps-state.purchaseDate 기반 자동 2년 체크
   try {
-    var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
     var pd = state.purchaseDate;
     if (pd) {
       var years = (new Date() - new Date(pd)) / (1000 * 60 * 60 * 24 * 365.25);
@@ -1031,7 +1414,6 @@ window.addEventListener('load', function() {
     }
   } catch(e) {}
 
-  var urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('mode') === 'edit') {
     // 부속품 요청만 표시
     document.getElementById('card-defect').style.display = 'none';

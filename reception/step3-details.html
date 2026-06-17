@@ -41,8 +41,7 @@
 
     <!-- IMAGE ATTACHMENT -->
     <div id="image-section">
-      <p class="section-label" id="txt-img-label">제품 사진 첨부 <span style="color:#000">*</span></p>
-      <p id="txt-img-desc" style="font-size:13px;color:#555;margin-bottom:16px;">파손·수리 부위가 잘 보이도록 촬영해 주세요. 여러 장 첨부 가능합니다.</p>
+      <p class="section-label" id="txt-img-label">제품 상태 사진을 첨부해 주세요. (필수 1장 이상)</p>
 
       <input type="file" id="img-input" accept="image/*" multiple style="display:none;" onchange="handleFiles(this.files)">
 
@@ -51,9 +50,10 @@
         ondragleave="this.style.borderColor='';"
         ondrop="event.preventDefault();this.style.borderColor='';handleFiles(event.dataTransfer.files);">
         <div class="form-upload-icon">↑</div>
-        <p class="form-upload-text" id="txt-upload-main">파일을 선택하거나 여기에 끌어다 놓으세요</p>
+        <p class="form-upload-text" id="txt-upload-main">사진 첨부하기</p>
         <p class="form-upload-sub" id="txt-upload-sub">JPG, PNG 지원 · 최대 10MB · 최대 5장</p>
       </div>
+      <p id="txt-img-desc" style="font-size:13px;color:#555;margin-bottom:16px;">› 문제 부위가 잘 보이도록 여러 각도에서 촬영해 주세요.</p>
 
       <div id="file-list" style="display:none;margin-bottom:8px;">
         <div id="file-items" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px;"></div>
@@ -63,30 +63,50 @@
       <div class="divider"></div>
     </div>
 
+    <div id="diagnosis-section" style="display:none;">
+      <p class="section-label" id="txt-diagnosis-label">자가 진단 결과 사진 (선택)</p>
+      <p id="txt-diagnosis-desc" style="font-size:13px;color:#555;margin-bottom:8px;">삼성 멤버스 자가 진단 결과 화면을 첨부해 주세요.</p>
+      <p id="txt-diagnosis-helper" style="font-size:13px;color:#555;margin-bottom:16px;">› 진단 결과가 없으면 건너뛰어도 됩니다.</p>
+
+      <input type="file" id="diagnosis-input" accept="image/*" style="display:none;" onchange="handleDiagnosisFiles(this.files)">
+
+      <div class="form-upload" id="diagnosis-upload-zone" onclick="document.getElementById('diagnosis-input').click()" style="margin-bottom:12px;"
+        ondragover="event.preventDefault();this.style.borderColor='#000';"
+        ondragleave="this.style.borderColor='';"
+        ondrop="event.preventDefault();this.style.borderColor='';handleDiagnosisFiles(event.dataTransfer.files);">
+        <div class="form-upload-icon">↑</div>
+        <p class="form-upload-text" id="txt-diagnosis-upload-main">사진 첨부하기</p>
+        <p class="form-upload-sub">JPG, PNG 지원 · 최대 10MB</p>
+      </div>
+
+      <div id="diagnosis-file" style="display:none;margin-bottom:8px;"></div>
+      <div class="divider"></div>
+    </div>
+
     <div id="lens-pkg-section">
     <!-- LENS INFO -->
-    <p class="section-label" id="txt-lens-label">렌즈 정보 <span style="color:#000">*</span></p>
-    <p id="txt-lens-desc" style="font-size:13px;color:#555;margin-bottom:16px;">현재 제품에 삽입된 렌즈 상태를 선택해 주세요.</p>
+    <p class="section-label" id="txt-lens-label">렌즈 유형 <span style="color:#000">*</span></p>
+    <p id="txt-lens-desc" style="font-size:13px;color:#555;margin-bottom:16px;">제품에 삽입된 렌즈를 선택해 주세요.</p>
     <div class="check-group" style="margin-bottom:0;">
       <label class="check-item selected" onclick="selectLens(this,'none')">
         <input type="radio" name="lens" value="none" checked>
         <div>
           <p class="check-item-title" id="txt-lens-none-title">미삽입</p>
-          <p class="check-item-desc" id="txt-lens-none-desc">렌즈가 없는 상태로 발송합니다.</p>
-        </div>
-      </label>
-      <label class="check-item" onclick="selectLens(this,'custom')">
-        <input type="radio" name="lens" value="custom">
-        <div>
-          <p class="check-item-title" id="txt-lens-custom-title">별도 제작 렌즈 삽입</p>
-          <p class="check-item-desc" id="txt-lens-custom-desc">도수, 블루라이트 차단 등 별도로 제작된 렌즈</p>
+          <p class="check-item-desc" id="txt-lens-none-desc" style="display:none;"></p>
         </div>
       </label>
       <label class="check-item" onclick="selectLens(this,'original')">
         <input type="radio" name="lens" value="original">
         <div>
           <p class="check-item-title" id="txt-lens-orig-title">제품 기존 렌즈</p>
-          <p class="check-item-desc" id="txt-lens-orig-desc">젠틀몬스터 정품 렌즈가 삽입된 상태</p>
+          <p class="check-item-desc" id="txt-lens-orig-desc" style="display:none;"></p>
+        </div>
+      </label>
+      <label class="check-item" onclick="selectLens(this,'custom')">
+        <input type="radio" name="lens" value="custom">
+        <div>
+          <p class="check-item-title" id="txt-lens-custom-title">별도로 제작한 렌즈 (도수·블루라이트 등)</p>
+          <p class="check-item-desc" id="txt-lens-custom-desc" style="display:none;"></p>
         </div>
       </label>
     </div>
@@ -98,11 +118,12 @@
     <!-- PACKAGE DISCLAIMER -->
     <p class="section-label" id="txt-pkg-label">패키지 동봉 금지 확인 <span style="color:#000">*</span></p>
     <div style="border:1px solid #e0e0e0;padding:16px 20px;margin-bottom:40px;">
-      <p id="txt-pkg-desc" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:12px;">제품 본체만 보내주세요. 보증카드, 케이스 등 부속품은 분실 우려가 있으니 함께 보내지 마세요.</p>
+      <p id="txt-pkg-desc" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:12px;">제품 본체만 보내주세요.<br><br>보증 카드·케이스 등은 분실 우려가 있어, 함께 보내지 말아 주세요.</p>
       <label class="inline-check">
         <input type="checkbox" id="chk-pkg" onchange="savePkgLensState();checkNextBtn()">
         <span id="txt-pkg-chk">확인했습니다.</span>
       </label>
+    </div>
     </div><!-- /#lens-pkg-section -->
 
     <div class="btn-wrap">
@@ -145,18 +166,22 @@ const STRINGS = {
     eyebrow: '수리 서비스 접수',
     title: '사진 첨부 & 렌즈 정보',
     desc: '제품 상태 사진을 첨부하고 렌즈 상태를 확인해 주세요.',
-    imgLabel: '제품 사진 첨부 <span style="color:#000">*</span>',
-    imgDesc: '파손·수리 부위가 잘 보이도록 촬영해 주세요. 여러 장 첨부 가능합니다.',
-    uploadMain: '파일을 선택하거나 여기에 끌어다 놓으세요',
+    imgLabel: '제품 상태 사진을 첨부해 주세요. (필수 1장 이상)',
+    imgDesc: '› 문제 부위가 잘 보이도록 여러 각도에서 촬영해 주세요.',
+    uploadMain: '사진 첨부하기',
     uploadSub: 'JPG, PNG 지원 · 최대 10MB · 최대 5장',
     addMore: '+ 사진 추가하기',
-    lensLabel: '렌즈 정보 <span style="color:#000">*</span>',
-    lensDesc: '현재 제품에 삽입된 렌즈 상태를 선택해 주세요.',
-    lensNoneTitle: '미삽입', lensNoneDesc: '렌즈가 없는 상태로 발송합니다.',
-    lensCustomTitle: '별도 제작 렌즈 삽입', lensCustomDesc: '도수, 블루라이트 차단 등 별도로 제작된 렌즈',
-    lensOrigTitle: '제품 기존 렌즈', lensOrigDesc: '젠틀몬스터 정품 렌즈가 삽입된 상태',
+    diagnosisLabel: '자가 진단 결과 사진 (선택)',
+    diagnosisDesc: '삼성 멤버스 자가 진단 결과 화면을 첨부해 주세요.',
+    diagnosisHelper: '› 진단 결과가 없으면 건너뛰어도 됩니다.',
+    diagnosisUploadMain: '사진 첨부하기',
+    lensLabel: '렌즈 유형 <span style="color:#000">*</span>',
+    lensDesc: '제품에 삽입된 렌즈를 선택해 주세요.',
+    lensNoneTitle: '미삽입', lensNoneDesc: '',
+    lensCustomTitle: '별도로 제작한 렌즈 (도수·블루라이트 등)', lensCustomDesc: '',
+    lensOrigTitle: '제품 기존 렌즈', lensOrigDesc: '',
     pkgLabel: '패키지 동봉 금지 확인 <span style="color:#000">*</span>',
-    pkgDesc: '제품 본체만 보내주세요. 보증카드, 케이스 등 부속품은 분실 우려가 있으니 함께 보내지 마세요.',
+    pkgDesc: '제품 본체만 보내주세요.<br><br>보증 카드·케이스 등은 분실 우려가 있어, 함께 보내지 말아 주세요.',
     pkgChk: '확인했습니다.',
     btnPrev: '이전',
     btnNext: '다음 — 배송 정보',
@@ -171,13 +196,17 @@ const STRINGS = {
     uploadMain: 'Select a file or drag and drop here',
     uploadSub: 'JPG, PNG supported · Max 10MB · Up to 5 photos',
     addMore: '+ Add more photos',
-    lensLabel: 'Lens Information <span style="color:#000">*</span>',
-    lensDesc: 'Please select the current lens status of your product.',
-    lensNoneTitle: 'No Lens', lensNoneDesc: 'Sending without any lens.',
-    lensCustomTitle: 'Custom Lens', lensCustomDesc: 'Prescription, blue light filter, or other custom-made lenses',
-    lensOrigTitle: 'Original Lens', lensOrigDesc: 'Fitted with original Gentle Monster lenses',
+    diagnosisLabel: 'Self-diagnosis Result Photo (Optional)',
+    diagnosisDesc: 'Please attach a screenshot of the Samsung Members self-diagnosis result.',
+    diagnosisHelper: '› You can skip this if you do not have a diagnosis result.',
+    diagnosisUploadMain: 'Attach Photo',
+    lensLabel: 'Lens Type <span style="color:#000">*</span>',
+    lensDesc: 'Please select the lens inserted in your product.',
+    lensNoneTitle: 'No Lens', lensNoneDesc: '',
+    lensCustomTitle: 'Custom Lens (prescription, blue light filter, etc.)', lensCustomDesc: '',
+    lensOrigTitle: 'Original Product Lens', lensOrigDesc: '',
     pkgLabel: 'Package Exclusion Confirmation <span style="color:#000">*</span>',
-    pkgDesc: 'Please send only the product frame. Do not include warranty cards, cases, or accessories as they may be lost.',
+    pkgDesc: 'Please send only the product frame.<br><br>Warranty cards, cases, and other accessories may be lost, so please do not include them.',
     pkgChk: 'I understand.',
     btnPrev: 'Previous',
     btnNext: 'Next — Shipping',
@@ -213,6 +242,10 @@ function setLang(lang) {
   setText('txt-upload-main', s.uploadMain);
   setText('txt-upload-sub', s.uploadSub);
   setText('add-more-btn', s.addMore);
+  setText('txt-diagnosis-label', s.diagnosisLabel);
+  setText('txt-diagnosis-desc', s.diagnosisDesc);
+  setText('txt-diagnosis-helper', s.diagnosisHelper);
+  setText('txt-diagnosis-upload-main', s.diagnosisUploadMain);
   setText('txt-lens-label', s.lensLabel);
   setText('txt-lens-desc', s.lensDesc);
   setText('txt-lens-none-title', s.lensNoneTitle);
@@ -234,6 +267,8 @@ function setLang(lang) {
 // ─── 이미지 첨부 ───
 const MAX_FILES = 5;
 let attachedFiles = [];
+let diagnosisPhotoRequired = false;
+let diagnosisPhotoAttached = false;
 
 function handleFiles(fileList) {
   const remaining = MAX_FILES - attachedFiles.length;
@@ -287,12 +322,60 @@ function updateFileUI() {
   checkNextBtn();
 }
 
+function handleDiagnosisFiles(fileList) {
+  var file = fileList && fileList[0];
+  if (!file) return;
+  diagnosisPhotoAttached = true;
+  var fileBox = document.getElementById('diagnosis-file');
+  if (fileBox) {
+    fileBox.style.display = 'block';
+    fileBox.innerHTML = '<div style="border:1px solid #e0e0e0;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;gap:12px;">' +
+      '<span style="font-size:12px;color:#555;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + file.name + '</span>' +
+      '<button type="button" onclick="removeDiagnosisFile()" style="border:none;background:transparent;font-size:12px;color:#999;cursor:pointer;">삭제</button>' +
+      '</div>';
+  }
+  var zone = document.getElementById('diagnosis-upload-zone');
+  if (zone) zone.style.display = 'none';
+  try {
+    var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
+    state.aiDiagnosisPhotoAttached = true;
+    localStorage.setItem('ps-state', JSON.stringify(state));
+  } catch(e) {}
+  checkNextBtn();
+}
+
+function removeDiagnosisFile() {
+  diagnosisPhotoAttached = false;
+  var input = document.getElementById('diagnosis-input');
+  if (input) input.value = '';
+  var fileBox = document.getElementById('diagnosis-file');
+  if (fileBox) {
+    fileBox.style.display = 'none';
+    fileBox.innerHTML = '';
+  }
+  var zone = document.getElementById('diagnosis-upload-zone');
+  if (zone) zone.style.display = 'block';
+  try {
+    var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
+    state.aiDiagnosisPhotoAttached = false;
+    localStorage.setItem('ps-state', JSON.stringify(state));
+  } catch(e) {}
+  checkNextBtn();
+}
+
 function savePkgLensState() {
   try {
     var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
     state.chkPkg  = document.getElementById('chk-pkg').checked;
     localStorage.setItem('ps-state', JSON.stringify(state));
   } catch(e) {}
+}
+
+function isIeState(state) {
+  state = state || {};
+  var subCategory = String(state.productSubCategory || state.subCategory || '').toUpperCase();
+  var productName = String(state.productName || '');
+  return state.productLine === 'ie' || state.isAi === true || state.aiProduct === true || subCategory.indexOf('AI EYEWEAR') >= 0 || productName.indexOf('스마트') >= 0;
 }
 
 function renderMockFile(id, name) {
@@ -373,8 +456,9 @@ function checkNextBtn() {
   const btn = document.getElementById('btn-next');
   const imgSection = document.getElementById('image-section');
   const photoOk = !imgSection || imgSection.style.display === 'none' || attachedFiles.length > 0;
+  const diagnosisOk = true;
   const pkgOk = document.getElementById('chk-pkg').checked;
-  const ok = photoOk && pkgOk;
+  const ok = photoOk && diagnosisOk && pkgOk;
   btn.style.opacity = ok ? '' : '0.4';
   btn.style.pointerEvents = ok ? '' : 'none';
 }
@@ -389,6 +473,11 @@ window.addEventListener('load', function() {
   // 이전 입력 상태 복원
   try {
     var state = JSON.parse(localStorage.getItem('ps-state') || '{}');
+
+    diagnosisPhotoRequired = false;
+    var diagnosisSection = document.getElementById('diagnosis-section');
+    var params = new URLSearchParams(window.location.search);
+    if (diagnosisSection) diagnosisSection.style.display = (isIeState(state) || params.get('ai') === 'true') ? 'block' : 'none';
 
     // 렌즈 유형 복원
     if (state.lensType && state.lensType !== 'none') {

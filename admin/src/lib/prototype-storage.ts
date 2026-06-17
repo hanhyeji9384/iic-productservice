@@ -3,6 +3,7 @@ import type { Customer, CustomerAddress, Ticket } from './types'
 
 const CUSTOMER_OVERRIDES_KEY = 'ps-admin-customer-overrides'
 const EXTRA_TICKETS_KEY = 'ps-admin-extra-tickets'
+const CUSTOMER_CANCELLED_TICKETS_KEY = 'ps-customer-cancelled-tickets'
 
 type CustomerOverride = Partial<Omit<Customer, 'id'>>
 
@@ -111,10 +112,22 @@ export function getExtraTickets() {
 export function getTicketsWithExtras(): Ticket[] {
   const extras = getExtraTickets()
   const extraNos = new Set(extras.map(ticket => ticket.ticketNo))
-  return [
+  const cancelledTickets = readJson<Record<string, unknown>>(CUSTOMER_CANCELLED_TICKETS_KEY, {})
+  const merged = [
     ...extras,
     ...TICKETS.filter(ticket => !extraNos.has(ticket.ticketNo)),
   ]
+
+  return merged.map(ticket => cancelledTickets[ticket.ticketNo]
+    ? {
+        ...ticket,
+        status: 'CANCELED' as const,
+        paymentCompleted: 'C' as const,
+        paymentDate: null,
+        repairDetail: ticket.repairDetail || '수리취소',
+      }
+    : ticket
+  )
 }
 
 export function addPrototypeTicket(ticket: Ticket) {

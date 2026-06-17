@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>수리 서비스 내역 — GENTLE MONSTER</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
@@ -60,7 +63,7 @@
           <p class="ticket-id" style="font-family:monospace;letter-spacing:0.06em;">2605010GMPSCNCLD</p>
           <p class="ticket-date">2026. 05. 01 접수</p>
         </div>
-        <span class="ticket-status">수리 완료</span>
+        <span class="ticket-status cancelled">취소</span>
       </a>
 
       <a href="detail.html?scenario=cancelled-ended" class="ticket-item">
@@ -168,7 +171,7 @@
           <p class="ticket-id" style="font-family:monospace;letter-spacing:0.06em;">2512150ABSVWLQXPKN</p>
           <p class="ticket-date">2025. 12. 15 접수</p>
         </div>
-        <span class="ticket-status delivered">매장도착</span>
+        <span class="ticket-status delivered">배송 완료</span>
       </a>
 
       <a href="detail.html?scenario=done" class="ticket-item">
@@ -180,10 +183,19 @@
         <span class="ticket-status done">서비스 종료</span>
       </a>
 
+      <a href="detail.html?scenario=replacement-complete" class="ticket-item">
+        <div>
+          <p class="ticket-product">스마트 브리즈비 03 (BK)</p>
+          <p class="ticket-id" style="font-family:monospace;letter-spacing:0.06em;">PS455500</p>
+          <p class="ticket-date">2025. 12. 02 제품 교체 완료</p>
+        </div>
+        <span class="ticket-status done">서비스 종료</span>
+      </a>
+
     </div>
 
     <div style="margin-top:48px;text-align:center;">
-      <a href="../reception/start.html" class="btn btn-secondary" style="width:auto;padding:14px 40px;">새 수리 접수하기</a>
+      <a href="../reception/step1.html" class="btn btn-secondary" style="width:auto;padding:14px 40px;">새 수리 접수하기</a>
     </div>
 
   </div>
@@ -222,6 +234,32 @@ window.addEventListener('load', function() {
   var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
   setLang(saved || 'ko');
 });
+
+function readJson(key, fallback) {
+  try {
+    var raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch(e) {
+    return fallback;
+  }
+}
+
+function applyCancelledTicketStatuses() {
+  var cancelledTickets = readJson('ps-customer-cancelled-tickets', {});
+  document.querySelectorAll('.ticket-item').forEach(function(item) {
+    var ticketIdEl = item.querySelector('.ticket-id');
+    var statusEl = item.querySelector('.ticket-status');
+    if (!ticketIdEl || !statusEl) return;
+    var ticketNo = ticketIdEl.textContent.trim();
+    if (!cancelledTickets[ticketNo]) return;
+    statusEl.textContent = '취소';
+    statusEl.classList.remove('done', 'delivered');
+    statusEl.classList.add('cancelled');
+  });
+}
+
+window.addEventListener('load', applyCancelledTicketStatuses);
+window.addEventListener('pageshow', applyCancelledTicketStatuses);
 </script>
 </body>
 </html>

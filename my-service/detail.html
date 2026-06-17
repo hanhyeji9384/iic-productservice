@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>수리 서비스 상세 — GENTLE MONSTER</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
@@ -43,44 +46,48 @@
 
     <!-- HEADER -->
     <div style="margin-bottom:8px;">
-      <p id="val-ticket-header" style="font-family:monospace;letter-spacing:0.06em;font-size:11px;color:#999;margin-bottom:4px;">2605060GMPSVKJTXQN</p>
-      <h1 class="page-title" style="margin-bottom:0;">MUSTANG 01</h1>
+      <p id="val-ticket-header" style="font-family:monospace;letter-spacing:0.06em;font-size:11px;color:#999;margin-bottom:4px;">PS455500</p>
+      <h1 class="page-title" id="val-product-title" style="margin-bottom:0;">Gelati 01</h1>
     </div>
     <p id="txt-status-msg" style="font-size:13px;color:#666;margin-bottom:24px;"></p>
 
     <!-- STATUS TRACKER -->
     <div id="status-track" class="status-track" style="margin-bottom:40px;"></div>
 
-    <!-- 접수 정보 -->
-    <p class="section-label" id="lbl-reception" style="margin-top:0;">접수 정보</p>
+    <!-- 제품 정보 -->
+    <p class="section-label" id="lbl-reception" style="margin-top:0;">제품 정보</p>
     <div class="detail-section">
-      <div class="detail-row"><span class="detail-key" id="key-ticket">티켓 번호</span><span id="val-ticket" class="detail-val" style="font-family:monospace;letter-spacing:0.06em;">2605060GMPSVKJTXQN</span></div>
+      <div class="detail-row"><span class="detail-key" id="key-ticket">티켓 번호</span><span id="val-ticket" class="detail-val" style="font-family:monospace;letter-spacing:0.06em;">PS455500</span></div>
       <div class="detail-row"><span class="detail-key" id="key-status">상태</span><span class="ticket-status" id="val-status">접수 완료</span></div>
-      <div class="detail-row"><span class="detail-key" id="key-recv-date">접수일</span><span class="detail-val">2026. 05. 06</span></div>
+      <div id="row-qwarranty" class="detail-row"><span class="detail-key" id="key-qwarranty">품질 보증 기간</span><span class="detail-val" id="val-qwarranty">2026년 4월까지</span></div>
+      <div id="row-swarranty" class="detail-row"><span class="detail-key" id="key-swarranty">프로덕트 서비스 보증 기간</span><span class="detail-val" id="val-swarranty">2027년 4월까지</span></div>
       <div id="row-shipout" class="detail-row" style="display:none;"><span class="detail-key" id="key-shipout">출고일</span><span class="detail-val">2026. 06. 25</span></div>
     </div>
 
     <!-- 고객 정보 -->
-    <p class="section-label" id="lbl-customer">고객 정보</p>
-    <div class="detail-section">
+    <p class="section-label" id="lbl-customer" style="display:none;">고객 정보</p>
+    <div class="detail-section" style="display:none;">
       <div class="detail-row"><span class="detail-key" id="key-email">이메일</span><span class="detail-val">gildong.hong@gmail.com</span></div>
       <div class="detail-row"><span class="detail-key" id="key-phone">연락처</span><span class="detail-val">010-3948-2071</span></div>
     </div>
 
-    <!-- 접수 상세 -->
-    <p class="section-label" id="lbl-detail">접수 상세</p>
+    <!-- 픽업 일정 -->
+    <p class="section-label" id="lbl-pickup">픽업 일정</p>
     <div class="detail-section">
-      <div id="row-send" class="detail-row"><span class="detail-key" id="key-send">발송 방법</span><span class="detail-val" id="val-send">자택 픽업</span></div>
-      <div id="row-pickup-date" class="detail-row" style="display:none;"><span class="detail-key" id="key-pickup-date">픽업 예정일</span><span class="detail-val" id="val-pickup-date">2026. 05. 11</span></div>
-      <div id="row-pickup-addr" class="detail-row" style="display:none;"><span class="detail-key" id="key-pickup-addr">픽업 주소</span><span class="detail-val" id="val-pickup-addr">서울 성동구 왕십리로 83-21</span></div>
-      <div class="detail-row"><span class="detail-key" id="key-product">제품명</span><span class="detail-val">MUSTANG 01</span></div>
-      <div class="detail-row"><span class="detail-key" id="key-symptom">제품 현상</span><span class="detail-val" id="val-symptom">코 받침 부분 변형, 힌지 유격 발생</span></div>
-      <div class="detail-row"><span class="detail-key" id="key-svctype">서비스 유형</span><span class="detail-val" id="val-svctype">토탈 케어</span></div>
-      <div class="detail-row"><span class="detail-key" id="key-request">요청사항</span><span class="detail-val" id="val-request">전체 클리닝 후 코 받침 교체 요청드립니다.</span></div>
-      <div id="row-lens" class="detail-row"><span class="detail-key" id="key-lens">렌즈 유형</span><span class="detail-val" id="val-lens">미삽입</span></div>
-      <div id="row-desired" class="detail-row"><span class="detail-key" id="key-desired">출고 희망일</span><span class="detail-val">2026. 06. 25</span></div>
-      <div class="detail-row"><span class="detail-key" id="key-qwarranty">품질 보증</span><span class="detail-val" id="val-qwarranty">~2025. 03. 15 <span style="color:#999;font-size:11px;">(만료)</span></span></div>
-      <div class="detail-row"><span class="detail-key" id="key-swarranty">서비스 보증</span><span class="detail-val" id="val-swarranty">~2026. 03. 15 <span style="color:#000;font-size:11px;font-weight:500;">(유효)</span></span></div>
+      <div id="row-send" class="detail-row" style="display:none;"><span class="detail-key" id="key-send">발송 방법</span><span class="detail-val" id="val-send">자택 픽업</span></div>
+      <div id="row-pickup-date" class="detail-row"><span class="detail-key" id="key-pickup-date">택배 픽업 예정일</span><span class="detail-val" id="val-pickup-date">2024. 06. 05</span></div>
+      <div id="row-pickup-addr" class="detail-row"><span class="detail-key" id="key-pickup-addr">픽업 주소</span><span class="detail-val" id="val-pickup-addr">경기도 하남시</span></div>
+    </div>
+
+    <!-- 요청 내용 -->
+    <p class="section-label" id="lbl-detail">요청 내용</p>
+    <div class="detail-section">
+      <div id="row-lens" class="detail-row"><span class="detail-key" id="key-lens">렌즈 유형</span><span class="detail-val" id="val-lens">별도로 제작한 렌즈</span></div>
+      <div class="detail-row"><span class="detail-key" id="key-symptom">현상</span><span class="detail-val" id="val-symptom">프론트 손상</span></div>
+      <div class="detail-row"><span class="detail-key" id="key-request">요청 사항</span><span class="detail-val" id="val-request">[고객 텍스트]</span></div>
+      <div id="row-request-receive" class="detail-row"><span class="detail-key" id="key-request-receive">수령지</span><span class="detail-val" id="val-request-receive">홍대 FS</span></div>
+      <div id="row-svctype" class="detail-row" style="display:none;"><span class="detail-key" id="key-svctype">서비스 유형</span><span class="detail-val" id="val-svctype">토탈 케어</span></div>
+      <div id="row-desired" class="detail-row" style="display:none;"><span class="detail-key" id="key-desired">출고 희망일</span><span class="detail-val">2026. 06. 25</span></div>
     </div>
 
     <!-- 예상 수리 안내 -->
@@ -99,19 +106,28 @@
       <div class="illustration" style="height:100px;" id="img-label-2">이미지 2</div>
       <div class="illustration" style="height:100px;" id="img-label-3">이미지 3</div>
     </div>
+    <p class="section-label" id="lbl-proof-images">구매 증빙 이미지</p>
+    <div id="sec-proof-images" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:40px;">
+      <div class="illustration" style="height:100px;" id="proof-img-label-1">구매 증빙 이미지</div>
+    </div>
 
     <!-- 진단 결과 -->
     <div id="sec-diagnosis" style="display:none;">
-      <p class="section-label" id="lbl-diagnosis">진단 결과</p>
+      <p class="section-label" id="lbl-diagnosis">서비스 진단 결과</p>
       <div class="detail-section">
-        <div class="detail-row"><span class="detail-key" id="key-method">수리 방식</span><span class="detail-val" id="val-method">클리닝 &amp; 폴리싱 &amp; 기본 피팅</span></div>
-        <div class="detail-row"><span class="detail-key" id="key-cost">수리 비용</span><span class="detail-val" id="val-cost" style="font-weight:500;">₩45,000 <span style="font-size:12px;color:#555;">(유상)</span></span></div>
+        <div class="detail-row"><span class="detail-key" id="key-method">수리 내용</span><span class="detail-val" id="val-method">[수리 내용]</span></div>
+        <div id="row-est-ship" class="detail-row"><span class="detail-key" id="key-est-ship">출고 예정일</span><span class="detail-val" id="val-est-ship">2025. 12. 02</span></div>
+        <div class="detail-row"><span class="detail-key" id="key-cost">수리 비용</span><span class="detail-val" id="val-cost" style="font-weight:500;">40,000원</span></div>
         <div id="row-pay-date" class="detail-row" style="display:none;"><span class="detail-key" id="key-pay-date">결제 일시</span><span class="detail-val">2026. 05. 15</span></div>
-        <div id="row-est-ship" class="detail-row" style="display:none;"><span class="detail-key" id="key-est-ship">예상 출고일</span><span class="detail-val">2026. 06. 25</span></div>
+      </div>
+      <p id="lbl-ps-images-diagnosis" style="font-size:11px;color:#999;margin-bottom:8px;">PS 첨부 이미지</p>
+      <div id="sec-ps-images-diagnosis" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:24px;">
+        <div class="illustration" style="height:100px;" id="ps-diagnosis-img-label-1">PS 첨부 이미지</div>
       </div>
       <!-- 결제 대기 중 전용 버튼 -->
       <div id="sec-pay-btn" style="display:none;margin-bottom:32px;">
-        <a href="#" class="btn btn-primary btn-full" onclick="togglePaymentPanel();return false;" id="txt-btn-pay">결제하기</a>
+        <p id="txt-payment-note" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:12px;">결제를 완료하면 서비스가 시작됩니다.</p>
+        <a href="#" class="btn btn-primary btn-full" onclick="completePayment();return false;" id="txt-btn-pay">결제하기</a>
         <!-- 인라인 결제 패널 -->
         <div id="pay-panel" style="max-height:0;overflow:hidden;transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1);border:1px solid #e0e0e0;border-top:none;">
           <!-- KR -->
@@ -143,6 +159,8 @@
       <p class="section-label" id="lbl-result">서비스 결과</p>
       <div class="detail-section" style="margin-bottom:0;">
         <div class="detail-row"><span class="detail-key" id="key-result-method">수리 내용</span><span class="detail-val" id="val-result-method">클리닝 &amp; 폴리싱 &amp; 기본 피팅 완료</span></div>
+        <div id="row-replacement-before" class="detail-row" style="display:none;"><span class="detail-key" id="key-replacement-before">교체 전 일련번호</span><span class="detail-val" id="val-replacement-before" style="font-family:monospace;letter-spacing:0.04em;">SN-2024-KR-00847291</span></div>
+        <div id="row-replacement-after" class="detail-row" style="display:none;"><span class="detail-key" id="key-replacement-after">교체 후 일련번호</span><span class="detail-val" id="val-replacement-after" style="font-family:monospace;letter-spacing:0.04em;">SN-2025-KR-00912345</span></div>
         <div id="row-result-date" class="detail-row"><span class="detail-key" id="key-result-date">출고일</span><span class="detail-val">2026. 06. 25</span></div>
         <div id="row-receipt" class="detail-row"><span class="detail-key" id="key-receipt">영수증</span><span class="detail-val"><a href="#" onclick="alert('[영수증 보기]');return false;" style="color:#111;font-size:12px;text-decoration:underline;" id="val-receipt">영수증 보기</a></span></div>
         <div id="row-tracking" class="detail-row" style="display:none;"><span class="detail-key" id="key-tracking">운송장 번호</span><span class="detail-val" id="val-tracking" style="font-family:monospace;">CJ · 1234567890</span></div>
@@ -176,8 +194,8 @@
     <div class="divider"></div>
 
     <!-- 수령지 -->
-    <p class="section-label" id="lbl-address">수령지</p>
-    <div class="detail-section" style="margin-bottom:16px;">
+    <p class="section-label" id="lbl-address" style="display:none;">수령지</p>
+    <div id="sec-address" class="detail-section" style="display:none;margin-bottom:16px;">
       <div class="detail-row"><span class="detail-key" id="key-recv-method">수령 방법</span><span class="detail-val" id="val-recv-method">자택 배송</span></div>
       <div id="row-recv-addr" class="detail-row"><span class="detail-key" id="key-recv-addr">수령 주소</span><span class="detail-val" id="val-recv-addr">서울 성동구 왕십리로 83-21</span></div>
       <div id="row-recv-store" class="detail-row" style="display:none;"><span class="detail-key" id="key-recv-store">픽업 매장</span><span class="detail-val" id="val-recv-store">젠틀몬스터 성수</span></div>
@@ -187,7 +205,7 @@
     <div id="sec-actions-reception" style="display:none;">
       <div style="display:flex;gap:12px;margin-bottom:12px;">
         <button class="btn btn-secondary" id="txt-btn-edit-reception" style="flex:1;font-size:11px;" onclick="window.location.href='../reception/step1-edit.html'">접수 정보 수정</button>
-        <button class="btn btn-secondary" id="txt-btn-cancel-reception" style="flex:1;font-size:11px;" onclick="alert('[접수 취소]')">접수 취소</button>
+        <button class="btn btn-secondary" id="txt-btn-cancel-reception" style="flex:1;font-size:11px;" onclick="cancelRepairRequest()">접수 취소</button>
       </div>
       <p id="txt-reception-note" style="font-size:11px;color:#999;text-align:center;">접수 완료 상태에서만 전체 정보 수정이 가능합니다.</p>
     </div>
@@ -196,7 +214,7 @@
     <div id="sec-actions-editable" style="display:none;">
       <div style="display:flex;gap:12px;margin-bottom:12px;">
         <button class="btn btn-secondary" id="txt-btn-addr" style="flex:1;font-size:11px;" onclick="openAddrModal()">수령지 수정</button>
-        <button class="btn btn-secondary" id="txt-btn-cancel" style="flex:1;font-size:11px;" onclick="alert('[결제 취소]')">결제 취소</button>
+        <button class="btn btn-secondary" id="txt-btn-cancel" style="flex:1;font-size:11px;" onclick="cancelRepairRequest()">접수 취소</button>
       </div>
       <p id="txt-editable-note" style="font-size:11px;color:#999;text-align:center;"></p>
     </div>
@@ -205,13 +223,21 @@
     <div id="sec-actions-addr-only" style="display:none;">
       <div style="display:flex;gap:12px;margin-bottom:12px;">
         <button class="btn btn-secondary" id="txt-btn-addr2" style="flex:1;font-size:11px;" onclick="openAddrModal()">수령지 수정</button>
-        <button class="btn btn-secondary" id="txt-btn-cancel-addr" style="flex:1;font-size:11px;" onclick="alert('[접수 취소]')">접수 취소</button>
+        <button class="btn btn-secondary" id="txt-btn-cancel-addr" style="flex:1;font-size:11px;" onclick="cancelRepairRequest()">접수 취소</button>
       </div>
+    </div>
+
+    <!-- 액션 버튼: 수리 시작 후 취소 비활성화 -->
+    <div id="sec-actions-disabled" style="display:none;">
+      <div style="display:flex;gap:12px;margin-bottom:12px;">
+        <button class="btn btn-secondary disabled" id="txt-btn-cancel-disabled" style="flex:1;font-size:11px;cursor:not-allowed;opacity:0.4;" disabled>접수 취소</button>
+      </div>
+      <p id="txt-disabled-note" style="font-size:11px;color:#999;text-align:center;">수리가 시작된 이후에는 수정 및 취소가 불가합니다.</p>
     </div>
 
     <!-- 서비스 종료/취소 후 새 접수 버튼 -->
     <div id="sec-actions-new" style="display:none;margin-bottom:24px;">
-      <a href="../reception/start.html" class="btn btn-secondary" id="txt-btn-new" style="width:100%;text-align:center;padding:14px;">새 수리 접수하기</a>
+      <a href="../reception/step1.html" class="btn btn-secondary" id="txt-btn-new" style="width:100%;text-align:center;padding:14px;">새 수리 접수하기</a>
     </div>
 
     <!-- 취소 처리 후 재접수 버튼 -->
@@ -259,7 +285,7 @@
 
     <div style="margin-bottom:20px;">
       <label style="font-size:11px;letter-spacing:0.06em;color:#999;display:block;margin-bottom:8px;" id="addr-modal-label-method">수령 방법</label>
-      <div class="check-group" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div class="check-group" style="display:grid;grid-template-columns:1fr;gap:8px;">
         <label id="recv-method-btn-home" class="check-item selected" onclick="selectRecvMethod('home')" style="margin:0;cursor:pointer;">
           <input type="radio" name="modal-receive" value="home" checked>
           <div>
@@ -267,7 +293,7 @@
             <p class="check-item-desc">수리 완료 후 자택으로 배송해 드립니다.</p>
           </div>
         </label>
-        <label id="recv-method-btn-store" class="check-item" onclick="selectRecvMethod('store')" style="margin:0;cursor:pointer;">
+        <label id="recv-method-btn-store" class="check-item" onclick="selectRecvMethod('home')" style="display:none;margin:0;cursor:pointer;">
           <input type="radio" name="modal-receive" value="store">
           <div>
             <p class="check-item-title">매장 픽업</p>
@@ -401,16 +427,16 @@ const SC = {
     sendMethod:'pickup', showPickupInfo:true, pickupDate:'2026. 05. 11', pickupAddr:'서울 성동구 왕십리로 83-21', receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
     ko:{ label:'접수 완료',       msg:'제품 픽업 또는 발송을 완료해 주세요. 서비스가 곧 진행됩니다.' },
     en:{ label:'Submitted',       msg:'Please complete product pickup or shipment. Service will begin shortly.' } },
-  'moving':       { ticketId:'2604280FRDBNQXLWZK', tracker:[1,2,0,0,0,0], canAddr:true,  canCancel:false, canReceptionCancel:false, showShipout:false, showDiag:false, showConsent:false, showPayBtn:false, showResult:false, showTracking:false, showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
+  'moving':       { ticketId:'2604280FRDBNQXLWZK', tracker:[1,2,0,0,0,0], canAddr:true,  canCancel:true, canReceptionCancel:false, showShipout:false, showDiag:false, showConsent:false, showPayBtn:false, showResult:false, showTracking:false, showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
     ko:{ label:'제품 이동 중',    msg:'제품이 이동 중입니다. 입고 완료 시 알림을 드립니다.' },
     en:{ label:'In Transit',      msg:'Your product is on its way to the PS team. We will notify you upon arrival.' } },
-  'judged':       { ticketId:'2604150ABSCMRJVPNQ', tracker:[1,1,2,0,0,0], canAddr:true,  canCancel:false, canReceptionCancel:false, showShipout:false, showDiag:true,  showConsent:false, showPayBtn:false, showResult:false, showTracking:false, showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
+  'judged':       { ticketId:'2604150ABSCMRJVPNQ', tracker:[1,1,2,0,0,0], canAddr:true,  canCancel:true, canReceptionCancel:false, showShipout:false, showDiag:true,  showConsent:false, showPayBtn:false, showResult:false, showTracking:false, showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
     ko:{ label:'서비스 판정 완료',msg:'수리 내용과 비용을 확인해 주세요. 동의 후 결제가 진행됩니다.' },
     en:{ label:'Diagnosis Complete',msg:'Please review the repair details and cost. Payment follows your approval.' } },
-  'pending':      { ticketId:'2604020LQTDKXPWMBN', tracker:[1,1,2,0,0,0], canAddr:true,  canCancel:false, canReceptionCancel:false, showShipout:false, showDiag:true,  showConsent:false, showPayBtn:false, showResult:false, showTracking:false, showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
+  'pending':      { ticketId:'2604020LQTDKXPWMBN', tracker:[1,1,2,0,0,0], canAddr:true,  canCancel:true, canReceptionCancel:false, showShipout:false, showDiag:true,  showConsent:false, showPayBtn:false, showResult:false, showTracking:false, showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
     ko:{ label:'수리 여부 확인 중',msg:'수리 가능 여부를 확인 중입니다. 담당자가 곧 연락드릴 예정입니다.' },
     en:{ label:'Awaiting Confirmation',msg:'We are reviewing the repairability. Our team will contact you shortly.' } },
-  'payment-wait': { ticketId:'2603200DRMZXKQWLNB', tracker:[1,1,2,0,0,0], canAddr:true,  canCancel:false, canReceptionCancel:false, showShipout:false, showDiag:true,  showConsent:false, showPayBtn:true,  showResult:false, showTracking:false, showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
+  'payment-wait': { ticketId:'2603200DRMZXKQWLNB', tracker:[1,1,2,0,0,0], canAddr:true,  canCancel:true, canReceptionCancel:false, showShipout:false, showDiag:true,  showConsent:false, showPayBtn:true,  showResult:false, showTracking:false, showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
     ko:{ label:'결제 대기 중',    msg:'수리 비용 결제를 완료해 주세요.' },
     en:{ label:'Payment Required', msg:'Please complete the payment to proceed with the repair.' } },
   'paid':         { ticketId:'2603100MTNXVBQWRKP', tracker:[1,1,1,0,0,0], canAddr:true,  canCancel:true,  canReceptionCancel:false, showShipout:false, showDiag:true,  showConsent:true,  showPayBtn:false, showResult:false, showTracking:false, showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
@@ -440,9 +466,9 @@ const SC = {
   'delivered':       { ticketId:'2601080MSEZNWQXRBL', tracker:[1,1,1,1,2,0], canAddr:false, canCancel:false, canReceptionCancel:false, showShipout:true,  showDiag:true,  showConsent:true,  showPayBtn:false, showResult:true,  showTracking:true,  showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
     ko:{ label:'배송 완료',        msg:'제품이 배송 완료되었습니다.' },
     en:{ label:'Delivered',         msg:'Your product has been delivered.' } },
-  'store-arrived':   { ticketId:'2512150ABSVWLQXPKN', tracker:[1,1,1,1,2,0], canAddr:false, canCancel:false, canReceptionCancel:false, showShipout:true,  showDiag:true,  showConsent:true,  showPayBtn:false, showResult:true,  showTracking:false, showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'store', receiveStore:'젠틀몬스터 성수',
-    ko:{ label:'매장도착',         msg:'제품이 매장에 도착하였습니다. 방문하여 제품을 수령해 주세요.' },
-    en:{ label:'Store Arrived',     msg:'Your product has arrived at the store. Please visit to pick it up.' } },
+  'store-arrived':   { ticketId:'2512150ABSVWLQXPKN', tracker:[1,1,1,1,2,0], canAddr:false, canCancel:false, canReceptionCancel:false, showShipout:true,  showDiag:true,  showConsent:true,  showPayBtn:false, showResult:true,  showTracking:true, showProgress:false, isCancelled:false, isEnd:false, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
+    ko:{ label:'배송 완료',         msg:'제품이 배송 완료되었습니다.' },
+    en:{ label:'Delivered',     msg:'Your product has been delivered.' } },
   'cancelled':       { ticketId:'2605010GMPSCNCLD', tracker:[1,1,1,1,1,2], canAddr:false, canCancel:false, canReceptionCancel:false, showShipout:false, showDiag:false, showConsent:false, showPayBtn:false, showResult:true, resultOnly:true, showTracking:false, showProgress:false, isCancelled:true, displayAsCompleted:true, adminStatus:'취소', isEnd:false, sendMethod:'pickup', showPickupInfo:true, pickupDate:'2026. 05. 11', pickupAddr:'서울 성동구 왕십리로 83-21', receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
     ko:{ label:'서비스 취소',      msg:'' },
     en:{ label:'Service Cancelled', msg:'' },
@@ -454,94 +480,127 @@ const SC = {
   'done':            { ticketId:'2511050MNSVGSJKKGZQ', tracker:[1,1,1,1,1,2], canAddr:false, canCancel:false, canReceptionCancel:false, showShipout:true,  showDiag:true,  showConsent:true,  showPayBtn:false, showResult:true,  showTracking:true,  showProgress:false, isCancelled:false, isEnd:true, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
     ko:{ label:'서비스 종료',      msg:'수리 서비스가 종료되었습니다.' },
     en:{ label:'Service Complete',  msg:'The repair service has been completed.' } },
+  'replacement-complete': { ticketId:'2605120PLNQWERTYUIO', tracker:[1,1,1,1,1,2], canAddr:false, canCancel:false, canReceptionCancel:false, showShipout:true, showDiag:true, showConsent:true, showPayBtn:false, showResult:true, showTracking:true, showProgress:false, isCancelled:false, isEnd:true, sendMethod:'pickup', showPickupInfo:false, receiveMethod:'home', receiveAddr:'서울 성동구 왕십리로 83-21',
+    productName:'스마트 브리즈비 03 (BK)', ticketNo:'PS455500', purchaseOrder:'2605120PLNQWERTYUIO', hasPurchaseHistory:true,
+    qualityWarranty:{ ko:'2028년 5월 12일까지', en:'Until May 12, 2028' },
+    serviceWarranty:{ ko:'2030년 5월 31일까지', en:'Until May 31, 2030' },
+    repairContent:{ ko:'제품 교체(신품)', en:'Product replacement (new)' },
+    resultMethod:{ ko:'제품 교체(신품) 완료', en:'Product replacement completed' },
+    replacementBeforeSerial:'SN-2024-KR-00847291',
+    replacementAfterSerial:'SN-2025-KR-00912345',
+    protectionPlanTransferred:true,
+    ko:{ label:'서비스 종료', msg:'제품 교체가 완료되었습니다.' },
+    en:{ label:'Service Complete', msg:'Product replacement has been completed.' } },
 };
 
 // ─── i18n ───
 let currentLang = 'ko';
 let currentSCId = 'received';
 
+const SERVICE_DETAIL = {
+  productName: 'Gelati 01',
+  ticketNo: 'PS455500',
+  hasPurchaseHistory: true,
+  qualityWarranty: { ko:'2026년 4월까지', en:'Until April 2026' },
+  serviceWarranty: { ko:'2027년 4월까지', en:'Until April 2027' },
+  pickupDate: '2024. 06. 05',
+  pickupAddr: { ko:'경기도 하남시', en:'Hanam-si, Gyeonggi-do' },
+  lensType: { ko:'별도로 제작한 렌즈', en:'Custom-made lenses' },
+  symptom: { ko:'프론트 손상', en:'Front frame damage' },
+  request: { ko:'[고객 텍스트]', en:'[Customer text]' },
+  receivePlace: { ko:'홍대 FS', en:'Hongdae FS' },
+  repairContent: { ko:'[수리 내용]', en:'[Repair details]' },
+  expectedShipAt: '2025. 12. 02',
+  repairCost: { ko:'40,000원', en:'KRW 40,000' },
+  customerImageLabel: { ko:'고객 첨부 이미지', en:'Customer image' },
+  purchaseProofImageLabel: { ko:'구매 증빙 이미지', en:'Purchase proof image' },
+  psImageLabel: { ko:'PS 첨부 이미지', en:'PS image' }
+};
+
 const STRINGS = {
   ko: {
     back: '← 수리 서비스 내역', backBottom: '← 내역으로 돌아가기',
     tabAccount:'계정', tabPurchased:'구매한 제품', tabWishlist:'위시리스트', tabRepair:'수리 서비스 내역', tabProfile:'프로필', tabLogout:'로그아웃',
     tr:['접수', '이동', '판정', '수리', '배송', '완료'],
-    lbl_reception:'접수 정보', lbl_customer:'고객 정보', lbl_detail:'접수 상세', lbl_estimate:'예상 수리 안내', lbl_images:'고객 첨부 이미지',
-    lbl_diagnosis:'진단 결과', lbl_result:'서비스 결과', lbl_delivery_info:'배송 정보', lbl_address:'수령지', lbl_memo:'PS팀 메모',
+    lbl_reception:'제품 정보', lbl_customer:'고객 정보', lbl_pickup:'픽업 일정', lbl_detail:'요청 내용', lbl_estimate:'예상 수리 안내', lbl_images:'고객 첨부 이미지',
+    lbl_proof_images:'구매 증빙 이미지', lbl_diagnosis:'서비스 진단 결과', lbl_result:'서비스 결과', lbl_delivery_info:'배송 정보', lbl_address:'수령지', lbl_memo:'PS팀 메모',
     key_ticket:'티켓 번호', key_status:'상태', key_recv_date:'접수일', key_shipout:'출고일',
     key_email:'이메일', key_phone:'연락처',
-    key_send:'발송 방법', key_product:'제품명', key_symptom:'제품 현상', key_svctype:'서비스 유형', key_request:'요청사항',
-    key_lens:'렌즈 유형', key_desired:'출고 희망일', key_qwarranty:'품질 보증', key_swarranty:'서비스 보증',
+    key_send:'발송 방법', key_product:'제품명', key_symptom:'현상', key_svctype:'서비스 유형', key_request:'요청 사항', key_request_receive:'수령지',
+    key_lens:'렌즈 유형', key_desired:'출고 희망일', key_qwarranty:'품질 보증 기간', key_swarranty:'프로덕트 서비스 보증 기간',
     key_estimate_method:'예상 수리 방식', key_estimate_cost:'예상 수리 비용',
-    key_method:'수리 방식', key_cost:'수리 비용', key_pay_date:'결제 일시', key_est_ship:'예상 출고일',
+    key_method:'수리 내용', key_cost:'수리 비용', key_pay_date:'결제 일시', key_est_ship:'출고 예정일',
     key_result_method:'수리 내용', key_result_date:'출고일', key_receipt:'영수증', key_tracking:'운송장 번호',
+    key_replacement_before:'교체 전 일련번호', key_replacement_after:'교체 후 일련번호',
     key_addr:'수령지',
-    key_pickup_date:'픽업 예정일', key_pickup_addr:'픽업 주소',
+    key_pickup_date:'택배 픽업 예정일', key_pickup_addr:'픽업 주소',
     key_recv_method:'수령 방법', key_recv_addr:'수령 주소', key_recv_store:'픽업 매장',
     val_home_delivery:'자택 배송', val_store_pickup:'매장 픽업',
     val_home_pickup:'자택 픽업',
     addr_label_method:'수령 방법', addr_panel_title:'수령지 수정',
-    val_send:'CJ 택배 픽업', val_svctype:'토탈 케어', val_fitting:'기본 피팅', val_lens:'미삽입',
-    val_qwarranty:'~2025. 03. 15 <span style="color:#999;font-size:11px;">(만료)</span>',
-    val_swarranty:'~2026. 03. 15 <span style="color:#000;font-size:11px;font-weight:500;">(유효)</span>',
-    val_method:'클리닝 &amp; 폴리싱 &amp; 기본 피팅',
-    val_cost:'₩45,000 <span style="font-size:12px;color:#555;">(유상)</span>',
+    val_send:'CJ 택배 픽업', val_svctype:'토탈 케어', val_fitting:'기본 피팅', val_lens:'별도로 제작한 렌즈',
+    val_qwarranty:'2026년 4월까지',
+    val_swarranty:'2027년 4월까지',
+    val_method:'[수리 내용]',
+    val_cost:'40,000원',
     val_consent:'동의 완료 · 2026. 05. 15',
     val_result_method:'클리닝 &amp; 폴리싱 &amp; 기본 피팅 완료',
     val_delivery_shipping:'배송 중', val_delivery_done:'배송 완료',
     val_addr:'서울 성동구 왕십리로 83-21',
     val_memo:'전체 클리닝 및 폴리싱 완료. 코 받침 기본 피팅 진행. 힌지 유격 없음, 코팅 양호.',
     in_progress:'제품이 수리 진행 중입니다.<br>완료 시 이메일과 카카오톡으로 안내드립니다.',
-    btn_pay:'결제하기',
+    btn_pay:'결제하기', btn_paid:'결제 완료', payment_note:'결제를 완료하면 서비스가 시작됩니다.',
     btn_edit_reception:'접수 정보 수정', btn_cancel_reception:'접수 취소',
     note_reception:'접수 완료 상태에서만 전체 정보 수정이 가능합니다.',
-    btn_addr:'수령지 수정', btn_cancel:'결제 취소',
-    btn_addr2:'수령지 수정', btn_addr_d:'수령지 수정', btn_cancel_d:'결제 취소',
+    btn_addr:'수령지 수정', btn_cancel:'접수 취소',
+    btn_addr2:'수령지 수정', btn_addr_d:'수령지 수정', btn_cancel_d:'접수 취소',
     note_editable:'',
     note_disabled:'수리가 시작된 이후에는 수정 및 취소가 불가합니다.',
     btn_new:'새 수리 접수하기',
     btn_reapply:'이전 정보로 다시 접수하기',
-    img1:'이미지 1', img2:'이미지 2', img3:'이미지 3',
+    img1:'고객 첨부 이미지', img2:'고객 첨부 이미지', img3:'고객 첨부 이미지',
   },
   en: {
     back: '← Repair History', backBottom: '← Back to List',
     tabAccount:'Account', tabPurchased:'Purchases', tabWishlist:'Wishlist', tabRepair:'Repair History', tabProfile:'Profile', tabLogout:'Sign Out',
     tr:['Submitted', 'In Transit', 'Diagnosis', 'Repair', 'Delivery', 'Complete'],
-    lbl_reception:'Ticket Information', lbl_customer:'Customer Information', lbl_detail:'Service Details', lbl_estimate:'Estimated Repair Information', lbl_images:'Customer Photos',
-    lbl_diagnosis:'Diagnosis Result', lbl_result:'Service Result', lbl_delivery_info:'Delivery Information', lbl_address:'Delivery Address', lbl_memo:'PS Team Note',
+    lbl_reception:'Product Information', lbl_customer:'Customer Information', lbl_pickup:'Pickup Schedule', lbl_detail:'Request Details', lbl_estimate:'Estimated Repair Information', lbl_images:'Customer Image',
+    lbl_proof_images:'Purchase Proof Image', lbl_diagnosis:'Service Diagnosis Result', lbl_result:'Service Result', lbl_delivery_info:'Delivery Information', lbl_address:'Delivery Address', lbl_memo:'PS Team Note',
     key_ticket:'Ticket No.', key_status:'Status', key_recv_date:'Submitted', key_shipout:'Shipped',
     key_email:'Email', key_phone:'Phone',
-    key_send:'Shipping Method', key_product:'Product', key_symptom:'Condition', key_svctype:'Service Type', key_request:'Request',
-    key_lens:'Lens Type', key_desired:'Preferred Ship-out Date', key_qwarranty:'Quality Warranty', key_swarranty:'Service Warranty',
+    key_send:'Shipping Method', key_product:'Product', key_symptom:'Issue', key_svctype:'Service Type', key_request:'Request', key_request_receive:'Receiving Place',
+    key_lens:'Lens Type', key_desired:'Preferred Ship-out Date', key_qwarranty:'Quality Warranty Period', key_swarranty:'Product Service Warranty Period',
     key_estimate_method:'Estimated Repair Method', key_estimate_cost:'Estimated Repair Cost',
-    key_method:'Repair Method', key_cost:'Repair Cost', key_pay_date:'Payment Date', key_est_ship:'Est. Ship-out Date',
+    key_method:'Repair Details', key_cost:'Repair Cost', key_pay_date:'Payment Date', key_est_ship:'Estimated Ship-out Date',
     key_result_method:'Repair Content', key_result_date:'Ship-out Date', key_receipt:'Receipt', key_tracking:'Tracking No.',
+    key_replacement_before:'Previous Serial No.', key_replacement_after:'New Serial No.',
     key_addr:'Delivery Address',
-    key_pickup_date:'Est. Pickup Date', key_pickup_addr:'Pickup Address',
+    key_pickup_date:'Courier Pickup Date', key_pickup_addr:'Pickup Address',
     key_recv_method:'Return Method', key_recv_addr:'Delivery Address', key_recv_store:'Pickup Store',
     val_home_delivery:'Home Delivery', val_store_pickup:'Store Pickup',
     val_home_pickup:'Home Pickup',
     addr_label_method:'Return Method', addr_panel_title:'Edit Delivery',
-    val_send:'CJ Courier Pickup', val_svctype:'Total Care', val_fitting:'Basic Fitting', val_lens:'No Lens',
-    val_qwarranty:'~Mar 15, 2025 <span style="color:#999;font-size:11px;">(Expired)</span>',
-    val_swarranty:'~Mar 15, 2026 <span style="color:#000;font-size:11px;font-weight:500;">(Valid)</span>',
-    val_method:'Cleaning &amp; Polishing &amp; Basic Fitting',
-    val_cost:'₩45,000 <span style="font-size:12px;color:#555;">(Paid)</span>',
+    val_send:'CJ Courier Pickup', val_svctype:'Total Care', val_fitting:'Basic Fitting', val_lens:'Custom-made lenses',
+    val_qwarranty:'Until April 2026',
+    val_swarranty:'Until April 2027',
+    val_method:'[Repair details]',
+    val_cost:'KRW 40,000',
     val_consent:'Consent confirmed · May 15, 2026',
     val_result_method:'Cleaning &amp; Polishing &amp; Basic Fitting Complete',
     val_delivery_shipping:'In Delivery', val_delivery_done:'Delivered',
     val_addr:'83-21 Wangsimniro, Seongdong-gu, Seoul',
     val_memo:'Completed full cleaning and polishing. Basic nose pad fitting performed. Hinge plays well, coating in good condition.',
     in_progress:'Your product is currently being repaired.<br>We will notify you via email upon completion.',
-    btn_pay:'Pay Now',
+    btn_pay:'Pay Now', btn_paid:'Payment Complete', payment_note:'The service will begin once payment is complete.',
     btn_edit_reception:'Edit Request', btn_cancel_reception:'Cancel Request',
     note_reception:'Full edits are available in Submitted status only.',
-    btn_addr:'Edit Address', btn_cancel:'Cancel Payment',
-    btn_addr2:'Edit Address', btn_addr_d:'Edit Address', btn_cancel_d:'Cancel Payment',
+    btn_addr:'Edit Address', btn_cancel:'Cancel Request',
+    btn_addr2:'Edit Address', btn_addr_d:'Edit Address', btn_cancel_d:'Cancel Request',
     note_editable:'',
     note_disabled:'Modifications and cancellations are not possible after repair has started.',
     btn_new:'Submit New Repair Request',
     btn_reapply:'Restart with Previous Info',
-    img1:'Image 1', img2:'Image 2', img3:'Image 3',
+    img1:'Customer image', img2:'Customer image', img3:'Customer image',
   }
 };
 
@@ -558,6 +617,135 @@ function localize(value, lang, fallback) {
   return value[lang] || value.ko || fallback || '';
 }
 
+function readJson(key, fallback) {
+  try {
+    var raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch(e) {
+    return fallback;
+  }
+}
+
+function writeJson(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch(e) {}
+}
+
+function syncReplacementSerialToPurchases(sc) {
+  if (!sc || !sc.showReplacementSerial && !sc.replacementAfterSerial) return;
+  var order = sc.purchaseOrder || '';
+  if (!order) return;
+  var map = readJson('ps-replacement-serials', {});
+  map[order] = {
+    beforeSerial: sc.replacementBeforeSerial || '',
+    afterSerial: sc.replacementAfterSerial || '',
+    protectionPlanTransferred: !!sc.protectionPlanTransferred,
+    productName: sc.productName || SERVICE_DETAIL.productName,
+    updatedAt: localTimestamp()
+  };
+  writeJson('ps-replacement-serials', map);
+}
+
+function renderReplacementResult(sc) {
+  var shouldShow = !!(sc && sc.showResult && (sc.replacementAfterSerial || sc.replacementBeforeSerial));
+  var rows = ['row-replacement-before', 'row-replacement-after'];
+  rows.forEach(function(id) { shouldShow ? show(id) : hide(id); });
+  if (!shouldShow) return;
+  setText('key-replacement-before', STRINGS[currentLang].key_replacement_before);
+  setText('key-replacement-after', STRINGS[currentLang].key_replacement_after);
+  setText('val-replacement-before', sc.replacementBeforeSerial || '-');
+  setText('val-replacement-after', sc.replacementAfterSerial || '-');
+  syncReplacementSerialToPurchases(sc);
+}
+
+function localTimestamp() {
+  var now = new Date();
+  var pad = function(value) { return String(value).padStart(2, '0'); };
+  return now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()) + ' ' + pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+}
+
+function ticketCancelledMap() {
+  return readJson('ps-customer-cancelled-tickets', {});
+}
+
+function isTicketCancelled(ticketId) {
+  return !!ticketCancelledMap()[ticketId];
+}
+
+function markTicketCancelled(ticketId) {
+  var cancelled = ticketCancelledMap();
+  cancelled[ticketId] = { status: 'CANCELED', label: '취소', updatedAt: localTimestamp() };
+  writeJson('ps-customer-cancelled-tickets', cancelled);
+}
+
+function buildCancelledScenario(source) {
+  return Object.assign({}, SC.cancelled, {
+    ticketId: getDisplayTicketNo(source),
+    ticketNo: getDisplayTicketNo(source),
+    pickupDate: source.pickupDate,
+    pickupAddr: source.pickupAddr,
+    receiveAddr: source.receiveAddr || '서울 성동구 왕십리로 83-21'
+  });
+}
+
+function setCancelledScenarioFor(sourceId) {
+  var source = SC[sourceId] || SC[currentSCId] || SC.received;
+  SC['cancelled-current'] = buildCancelledScenario(source);
+  return 'cancelled-current';
+}
+
+function isCancelActive(sc) {
+  return !!sc && !sc.isCancelled && !sc.isEnd && (sc.canReceptionCancel || sc.canCancel);
+}
+
+function isCancelDisabledByRepairStart(id, sc) {
+  if (!sc || sc.isCancelled || sc.isEnd || isCancelActive(sc)) return false;
+  return id === 'repairing' ||
+    id === 'repaired' ||
+    id === 'accessory-ready' ||
+    id === 'accessory-shipping' ||
+    id === 'accessory-delivered' ||
+    id === 'shipping' ||
+    id === 'delivered' ||
+    id === 'store-arrived';
+}
+
+function syncAdminCancelledTicket(sc) {
+  if (!sc || !sc.ticketId) return;
+  var ticketNo = getDisplayTicketNo(sc);
+  var key = 'ps-admin-extra-tickets';
+  var tickets = readJson(key, []);
+  var existing = tickets.find(function(ticket) { return ticket.ticketNo === ticketNo; }) || {};
+  var productNameEl = document.querySelector('.page-title');
+  var cancelledTicket = Object.assign({
+    id: 'customer-cancel-' + ticketNo,
+    ticketNo: ticketNo,
+    branchCode: '1110',
+    receivedAt: localTimestamp(),
+    hqReceivedAt: null,
+    expectedShipAt: null,
+    receptionPlace: 'PS 온라인 접수',
+    customerName: '한혜지',
+    phone: '010-8565-9384',
+    email: 'monster563@gentlemonster.com',
+    receptionTitle: 'PS 온라인 접수',
+    productName: productNameEl ? productNameEl.textContent.trim() : SERVICE_DETAIL.productName,
+    repairDepartment: '본사',
+    repairDetail: '수리취소',
+    trackingNo: null,
+    reexportCondition: 'N',
+    shippingMethod: '택배(HQ)',
+    shippedAt: null,
+    soDocumentNo: null
+  }, existing, {
+    status: 'CANCELED',
+    paymentCompleted: 'C',
+    paymentDate: null,
+    repairDetail: '수리취소'
+  });
+  writeJson(key, [cancelledTicket].concat(tickets.filter(function(ticket) { return ticket.ticketNo !== ticketNo; })));
+  try { localStorage.setItem('ps-admin-last-cancelled-ticket', ticketNo); } catch(e) {}
+}
+
 function getDeliveryStatusText(id, sc, strings) {
   return (sc.deliveryState === 'done' || id === 'delivered' || id === 'store-arrived' || id === 'accessory-delivered') ? strings.val_delivery_done : strings.val_delivery_shipping;
 }
@@ -571,6 +759,89 @@ function renderTracker(trackerArr, labels, isCancelled) {
     const dot = v === 1 ? '✓' : '';
     return '<div class="' + cls + '"><div class="status-node-line"></div><div class="status-node-dot">' + dot + '</div><p class="status-node-label">' + labels[i] + '</p></div>';
   }).join('');
+}
+
+function getDisplayTicketNo(sc) {
+  return (sc && sc.ticketNo) || SERVICE_DETAIL.ticketNo;
+}
+
+function serviceText(key) {
+  return localize(SERVICE_DETAIL[key], currentLang, SERVICE_DETAIL[key] || '');
+}
+
+function scenarioDetailText(sc, key) {
+  if (sc && sc[key]) return localize(sc[key], currentLang, sc[key]);
+  return serviceText(key);
+}
+
+function paymentCompletedMap() {
+  return readJson('ps-payment-completed-tickets', {});
+}
+
+function isPaymentCompleted(ticketNo) {
+  return !!paymentCompletedMap()[ticketNo];
+}
+
+function markPaymentCompleted(ticketNo) {
+  var completed = paymentCompletedMap();
+  completed[ticketNo] = { status: 'PAID', label: '결제 완료', updatedAt: localTimestamp() };
+  writeJson('ps-payment-completed-tickets', completed);
+}
+
+function applyServiceDetailValues(sc) {
+  var ticketNo = getDisplayTicketNo(sc);
+  var hasPurchaseHistory = SERVICE_DETAIL.hasPurchaseHistory !== false && (!sc || sc.hasPurchaseHistory !== false);
+  setText('val-product-title', (sc && sc.productName) || SERVICE_DETAIL.productName);
+  setText('val-ticket-header', ticketNo);
+  setText('val-ticket', ticketNo);
+  setText('val-qwarranty', scenarioDetailText(sc, 'qualityWarranty'));
+  setText('val-swarranty', scenarioDetailText(sc, 'serviceWarranty'));
+  setText('val-pickup-date', (sc && sc.pickupDate) || SERVICE_DETAIL.pickupDate);
+  setText('val-pickup-addr', scenarioDetailText(sc, 'pickupAddr'));
+  setText('val-lens', scenarioDetailText(sc, 'lensType'));
+  setText('val-symptom', scenarioDetailText(sc, 'symptom'));
+  setText('val-request', scenarioDetailText(sc, 'request'));
+  setText('val-request-receive', scenarioDetailText(sc, 'receivePlace'));
+  setText('val-method', scenarioDetailText(sc, 'repairContent'));
+  setText('val-est-ship', (sc && sc.expectedShipAt) || SERVICE_DETAIL.expectedShipAt);
+  setText('val-cost', scenarioDetailText(sc, 'repairCost'));
+  setText('img-label-1', scenarioDetailText(sc, 'customerImageLabel'));
+  setText('img-label-2', scenarioDetailText(sc, 'customerImageLabel'));
+  setText('img-label-3', scenarioDetailText(sc, 'customerImageLabel'));
+  setText('proof-img-label-1', scenarioDetailText(sc, 'purchaseProofImageLabel'));
+  setText('lbl-ps-images-diagnosis', scenarioDetailText(sc, 'psImageLabel'));
+  setText('ps-diagnosis-img-label-1', scenarioDetailText(sc, 'psImageLabel'));
+  hasPurchaseHistory ? show('row-qwarranty') : hide('row-qwarranty');
+  hasPurchaseHistory ? show('row-swarranty') : hide('row-swarranty');
+}
+
+function configurePaymentAction(sc) {
+  var button = document.getElementById('txt-btn-pay');
+  if (!button || !sc || !sc.showDiag) {
+    hide('sec-pay-btn');
+    return;
+  }
+  var ticketNo = getDisplayTicketNo(sc);
+  var completed = sc.showConsent || isPaymentCompleted(ticketNo);
+  var shouldShow = sc.showPayBtn || completed;
+  if (!shouldShow) {
+    hide('sec-pay-btn');
+    return;
+  }
+  show('sec-pay-btn');
+  setText('txt-payment-note', STRINGS[currentLang].payment_note);
+  button.textContent = completed ? STRINGS[currentLang].btn_paid : STRINGS[currentLang].btn_pay;
+  button.style.pointerEvents = completed ? 'none' : '';
+  button.style.opacity = completed ? '0.45' : '';
+  button.className = completed ? 'btn btn-secondary btn-full' : 'btn btn-primary btn-full';
+  button.onclick = completed ? function(e) {
+    if (e) e.preventDefault();
+    return false;
+  } : function(e) {
+    if (e) e.preventDefault();
+    completePayment();
+    return false;
+  };
 }
 
 function setLang(lang) {
@@ -594,7 +865,9 @@ function setLang(lang) {
 
   // Section labels
   setText('lbl-reception', s.lbl_reception); setText('lbl-customer', s.lbl_customer);
+  setText('lbl-pickup', s.lbl_pickup);
   setText('lbl-detail', s.lbl_detail); setText('lbl-images', s.lbl_images);
+  setText('lbl-proof-images', s.lbl_proof_images);
   setText('lbl-estimate', s.lbl_estimate);
   setText('lbl-diagnosis', s.lbl_diagnosis); setText('lbl-result', s.lbl_result);
   setText('lbl-delivery-info', s.lbl_delivery_info);
@@ -607,6 +880,7 @@ function setLang(lang) {
   setText('key-phone', s.key_phone); setText('key-send', s.key_send);
   setText('key-product', s.key_product); setText('key-symptom', s.key_symptom);
   setText('key-svctype', s.key_svctype); setText('key-request', s.key_request);
+  setText('key-request-receive', s.key_request_receive);
   setText('key-lens', s.key_lens);
   setText('key-desired', s.key_desired); setText('key-qwarranty', s.key_qwarranty);
   setText('key-swarranty', s.key_swarranty);
@@ -618,6 +892,8 @@ function setLang(lang) {
   setText('key-result-method', s.key_result_method); setText('key-result-date', s.key_result_date);
   setText('key-receipt', s.key_receipt);
   setText('key-tracking', s.key_tracking);
+  setText('key-replacement-before', s.key_replacement_before);
+  setText('key-replacement-after', s.key_replacement_after);
   setText('key-delivery-info-status', currentLang === 'en' ? 'Delivery Progress' : '배송 진행');
   setText('key-delivery-info-tracking', s.key_tracking);
   setText('key-addr', s.key_addr);
@@ -635,6 +911,10 @@ function setLang(lang) {
   setText('val-result-method', s.val_result_method);
   setText('val-addr', s.val_addr); setText('val-memo', s.val_memo);
   setText('txt-in-progress', s.in_progress);
+  setText('txt-payment-note', s.payment_note);
+  setText('lbl-ps-images-diagnosis', SERVICE_DETAIL.psImageLabel[currentLang]);
+  setText('proof-img-label-1', SERVICE_DETAIL.purchaseProofImageLabel[currentLang]);
+  setText('ps-diagnosis-img-label-1', SERVICE_DETAIL.psImageLabel[currentLang]);
 
   // Buttons
   setText('txt-btn-pay', s.btn_pay);
@@ -643,6 +923,8 @@ function setLang(lang) {
   setText('txt-reception-note', s.note_reception);
   setText('txt-btn-addr', s.btn_addr); setText('txt-btn-cancel', s.btn_cancel);
   setText('txt-btn-addr2', s.btn_addr2); setText('txt-editable-note', s.note_editable);
+  setText('txt-btn-cancel-disabled', s.btn_cancel_reception);
+  setText('txt-disabled-note', s.note_disabled);
   setText('txt-btn-new', s.btn_new);
   setText('txt-btn-reapply', s.btn_reapply);
   setText('img-label-1', s.img1); setText('img-label-2', s.img2); setText('img-label-3', s.img3);
@@ -653,20 +935,16 @@ function setLang(lang) {
   setText('val-status', scTxt.label);
   setText('txt-status-msg', scTxt.msg);
   scTxt.msg ? show('txt-status-msg') : hide('txt-status-msg');
-  setText('val-symptom', localize(sc.detailSymptom, lang, lang === 'en' ? 'Nose pad deformation, hinge looseness' : '코 받침 부분 변형, 힌지 유격 발생'));
-  setText('val-svctype', localize(sc.detailServiceType, lang, lang === 'en' ? 'Total Care' : '토탈 케어'));
-  setText('val-request', localize(sc.detailRequest, lang, lang === 'en' ? 'Full cleaning and nose pad replacement requested.' : '전체 클리닝 후 코 받침 교체 요청드립니다.'));
+  applyServiceDetailValues(sc);
   if (sc.estimateMethod && sc.estimateCost) {
     setText('val-estimate-method', sc.estimateMethod[lang] || sc.estimateMethod.ko || '');
     setText('val-estimate-cost', sc.estimateCost[lang] || sc.estimateCost.ko || '');
   }
-  if (sc.showDiag) {
-    setText('val-method', lang === 'en' ? 'Hinge part replacement' : '힌지 부품 교체');
-    setText('val-cost', lang === 'en' ? 'KRW 45,000 <span style="font-size:12px;color:#555;">(Chargeable)</span>' : '₩45,000 <span style="font-size:12px;color:#555;">(유상)</span>');
-  }
   setText('val-result-method', sc.resultMethod ? (sc.resultMethod[lang] || sc.resultMethod.ko || s.val_result_method) : s.val_result_method);
   setText('val-delivery-info-status', getDeliveryStatusText(currentSCId, sc, s));
   setText('val-delivery-info-tracking', sc.trackingNo || 'CJ · 9876543210');
+  configurePaymentAction(sc);
+  renderReplacementResult(sc);
 
   // Tracker
   renderTracker(sc.tracker, s.tr, sc.isCancelled && !sc.displayAsCompleted);
@@ -685,11 +963,7 @@ function setScenario(id) {
   const s = STRINGS[currentLang];
   const scTxt = sc[currentLang];
 
-  // Ticket ID
-  if (sc.ticketId) {
-    setText('val-ticket-header', sc.ticketId);
-    setText('val-ticket', sc.ticketId);
-  }
+  applyServiceDetailValues(sc);
 
   // Status badge & message
   const statusEl = document.getElementById('val-status');
@@ -701,9 +975,7 @@ function setScenario(id) {
   }
   setText('txt-status-msg', scTxt.msg);
   scTxt.msg ? show('txt-status-msg') : hide('txt-status-msg');
-  setText('val-symptom', localize(sc.detailSymptom, currentLang, currentLang === 'en' ? 'Nose pad deformation, hinge looseness' : '코 받침 부분 변형, 힌지 유격 발생'));
-  setText('val-svctype', localize(sc.detailServiceType, currentLang, currentLang === 'en' ? 'Total Care' : '토탈 케어'));
-  setText('val-request', localize(sc.detailRequest, currentLang, currentLang === 'en' ? 'Full cleaning and nose pad replacement requested.' : '전체 클리닝 후 코 받침 교체 요청드립니다.'));
+  applyServiceDetailValues(sc);
 
   // Tracker
   renderTracker(sc.tracker, s.tr, sc.isCancelled && !sc.displayAsCompleted);
@@ -721,41 +993,25 @@ function setScenario(id) {
   }
 
   // 발송 방법 & 픽업 정보
-  sc.showSendMethod === false ? hide('row-send') : show('row-send');
+  hide('row-send');
   var isAccessory = id.indexOf('accessory-') === 0 || sc.isAccessory;
   isAccessory ? hide('row-lens') : show('row-lens');
-  isAccessory ? hide('row-desired') : show('row-desired');
-  if (sc.showSendMethod !== false && sc.sendMethod === 'pickup') {
-    setText('val-send', s.val_home_pickup || '자택 픽업');
-  }
-  if (sc.showPickupInfo) {
-    show('row-pickup-date'); show('row-pickup-addr');
-    if (sc.pickupDate) setText('val-pickup-date', sc.pickupDate);
-    if (sc.pickupAddr) setText('val-pickup-addr', sc.pickupAddr);
-  } else {
-    hide('row-pickup-date'); hide('row-pickup-addr');
-  }
+  hide('row-desired');
+  show('row-pickup-date'); show('row-pickup-addr');
 
-  // 수령 방법
-  if (sc.receiveMethod === 'store') {
-    setText('val-recv-method', s.val_store_pickup || '매장 픽업');
-    hide('row-recv-addr'); show('row-recv-store');
-    if (sc.receiveStore) setText('val-recv-store', sc.receiveStore);
-  } else {
-    setText('val-recv-method', s.val_home_delivery || '자택 배송');
-    show('row-recv-addr'); hide('row-recv-store');
-    if (sc.receiveAddr) setText('val-recv-addr', sc.receiveAddr);
-  }
+  // 수령 방법은 자택 배송만 지원한다.
+  setText('val-recv-method', s.val_home_delivery || '자택 배송');
+  show('row-recv-addr'); hide('row-recv-store');
+  if (sc.receiveAddr) setText('val-recv-addr', sc.receiveAddr);
 
   // Diagnosis section
   sc.showDiag ? show('sec-diagnosis') : hide('sec-diagnosis');
   if (sc.showDiag) {
-    setText('val-method', currentLang === 'en' ? 'Hinge part replacement' : '힌지 부품 교체');
-    setText('val-cost', currentLang === 'en' ? 'KRW 45,000 <span style="font-size:12px;color:#555;">(Chargeable)</span>' : '₩45,000 <span style="font-size:12px;color:#555;">(유상)</span>');
+    applyServiceDetailValues(sc);
   }
   sc.showConsent  ? show('row-pay-date')  : hide('row-pay-date');
-  sc.showConsent  ? show('row-est-ship')  : hide('row-est-ship');
-  sc.showPayBtn   ? show('sec-pay-btn')   : hide('sec-pay-btn');
+  sc.showDiag     ? show('row-est-ship')  : hide('row-est-ship');
+  configurePaymentAction(sc);
 
   // In-progress message (shown when diag visible but result not yet)
   (currentSCId === 'repairing' && sc.showProgress) ? show('sec-in-progress-msg') : hide('sec-in-progress-msg');
@@ -774,6 +1030,7 @@ function setScenario(id) {
     show('result-memo'); show('lbl-ps-images'); show('sec-ps-images');
     sc.showTracking ? show('row-tracking') : hide('row-tracking');
   }
+  renderReplacementResult(sc);
 
   if (sc.showDeliveryInfo) {
     show('sec-delivery-info');
@@ -786,7 +1043,8 @@ function setScenario(id) {
 
   // Action buttons: determine which panel to show
   hide('sec-actions-reception'); hide('sec-actions-editable');
-  hide('sec-actions-addr-only'); hide('sec-actions-new'); hide('sec-actions-reapply');
+  hide('sec-actions-addr-only'); hide('sec-actions-disabled');
+  hide('sec-actions-new'); hide('sec-actions-reapply');
 
   if (sc.isCancelled) {
     show('sec-actions-reapply');
@@ -798,6 +1056,8 @@ function setScenario(id) {
     show('sec-actions-editable');
   } else if (sc.canAddr && !sc.canCancel) {
     show('sec-actions-addr-only');
+  } else if (isCancelDisabledByRepairStart(id, sc)) {
+    show('sec-actions-disabled');
   }
 
   // Badge class for delivered/store-arrived
@@ -821,6 +1081,14 @@ function togglePaymentPanel() {
   }
 }
 
+function completePayment() {
+  var sc = SC[currentSCId];
+  markPaymentCompleted(getDisplayTicketNo(sc));
+  setScenario('paid');
+}
+
+window.completePayment = completePayment;
+
 function openLangModal() {
   alert(currentLang === 'en' ? '[Country / language selection]' : '[국가/언어 선택]');
 }
@@ -829,7 +1097,7 @@ function openAddrModal() {
   const overlay = document.getElementById('addr-modal-overlay');
   overlay.style.display = 'flex';
   document.body.style.overflow = 'hidden';
-  selectRecvMethod(_currentRecvMethod || 'home');
+  selectRecvMethod('home');
 }
 function closeAddrModal() {
   document.getElementById('addr-modal-overlay').style.display = 'none';
@@ -855,16 +1123,19 @@ var RECV_STORES = [
 ];
 
 window.selectRecvMethod = function (type) {
-  _currentRecvMethod = type;
+  _currentRecvMethod = 'home';
   var homeBtn = document.getElementById('recv-method-btn-home');
   var storeBtn = document.getElementById('recv-method-btn-store');
   var homeSection = document.getElementById('recv-home-section');
   var storeSection = document.getElementById('recv-store-section');
-  if (homeBtn) homeBtn.classList.toggle('selected', type === 'home');
-  if (storeBtn) storeBtn.classList.toggle('selected', type === 'store');
-  document.querySelectorAll('input[name="modal-receive"]').forEach(function(r) { r.checked = r.value === type; });
-  if (homeSection) homeSection.style.display = type==='home' ? '' : 'none';
-  if (storeSection) storeSection.style.display = type==='store' ? '' : 'none';
+  if (homeBtn) homeBtn.classList.add('selected');
+  if (storeBtn) {
+    storeBtn.classList.remove('selected');
+    storeBtn.style.display = 'none';
+  }
+  document.querySelectorAll('input[name="modal-receive"]').forEach(function(r) { r.checked = r.value === 'home'; });
+  if (homeSection) homeSection.style.display = '';
+  if (storeSection) storeSection.style.display = 'none';
 };
 
 window.filterRecvStores = function (val) {
@@ -978,36 +1249,42 @@ function checkAddForm() {
 }
 
 function saveAddr() {
-  if (_currentRecvMethod === 'store') {
-    if (_selectedRecvStoreIdx === null) { alert('매장을 선택해 주세요.'); return; }
-    var store = RECV_STORES[_selectedRecvStoreIdx];
-    document.getElementById('val-recv-method').textContent = '매장 픽업';
-    document.getElementById('val-recv-store').textContent = store.name;
-    document.getElementById('row-recv-addr').style.display = 'none';
-    document.getElementById('row-recv-store').style.display = '';
-  } else {
-    var selected = ADDRESS_BOOK[_selectedAddrIdx] || ADDRESS_BOOK[1];
-    var addr = selected.addr + (selected.detail ? ', ' + selected.detail : '') + (selected.zip ? ', ' + selected.zip : '') + ', 대한민국';
-    document.getElementById('val-recv-method').textContent = '자택 배송';
-    document.getElementById('val-recv-addr').textContent = addr;
-    document.getElementById('row-recv-addr').style.display = '';
-    document.getElementById('row-recv-store').style.display = 'none';
-  }
+  _currentRecvMethod = 'home';
+  var selected = ADDRESS_BOOK[_selectedAddrIdx] || ADDRESS_BOOK[1];
+  var addr = selected.addr + (selected.detail ? ', ' + selected.detail : '') + (selected.zip ? ', ' + selected.zip : '') + ', 대한민국';
+  document.getElementById('val-recv-method').textContent = '자택 배송';
+  document.getElementById('val-recv-addr').textContent = addr;
+  document.getElementById('row-recv-addr').style.display = '';
+  document.getElementById('row-recv-store').style.display = 'none';
   closeAddrModal();
 }
+
+function cancelRepairRequest() {
+  var sc = SC[currentSCId];
+  if (!isCancelActive(sc)) {
+    alert(currentLang === 'en' ? 'Cancellation is no longer available after repair has started.' : '수리 진행 중 상태부터는 접수 취소가 불가합니다.');
+    return;
+  }
+  markTicketCancelled(getDisplayTicketNo(sc));
+  syncAdminCancelledTicket(sc);
+  setScenario(setCancelledScenarioFor(currentSCId));
+}
+
+window.cancelRepairRequest = cancelRepairRequest;
+
 document.getElementById('addr-modal-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeAddrModal();
 });
 
 function getPreviousRequestProduct() {
   return {
-    name: 'MUSTANG 01',
+    name: SERVICE_DETAIL.productName,
     order: 'ORD-20230315-4821',
     store: '온라인',
-    date: '2023. 03. 15',
-    qw: '~2025. 03. 15 (만료)',
-    sw: '~2026. 03. 15 (유효)',
-    purchaseDate: '2023-03-15',
+    date: '2024. 04. 01',
+    qw: '2026년 4월까지',
+    sw: '2027년 4월까지',
+    purchaseDate: '2024-04-01',
     productSubCategory: 'SUNGLASS METAL',
     isAi: false
   };
@@ -1018,15 +1295,15 @@ function reapplyRepairRequest() {
   var current = SC[currentSCId] || {};
   var source = {
     ticketId: current.ticketId || '',
-    symptom: '코 받침 부분 변형, 힌지 유격 발생',
+    symptom: serviceText('symptom'),
     serviceType: 'total-care',
-    request: '전체 클리닝 후 코 받침 교체 요청드립니다.',
-    lensType: 'none',
+    request: serviceText('request'),
+    lensType: 'custom',
     sendMethod: current.sendMethod || 'pickup',
-    pickupAddr: current.pickupAddr || '서울 성동구 왕십리로 83-21',
-    receiveMethod: current.receiveMethod || 'home',
-    receiveAddr: current.receiveAddr || '서울 성동구 왕십리로 83-21',
-    receiveStore: current.receiveStore || ''
+    pickupAddr: serviceText('pickupAddr'),
+    receiveMethod: current.receiveMethod || 'store',
+    receiveAddr: current.receiveAddr || '',
+    receiveStore: serviceText('receivePlace')
   };
   try {
     localStorage.setItem('ps-from-purchased', JSON.stringify(product));
@@ -1060,7 +1337,10 @@ window.addEventListener('load', function() {
   setLang(saved || 'ko');
   var params = new URLSearchParams(window.location.search);
   var sc = params.get('scenario');
-  setScenario(SC[sc] ? sc : 'received');
+  var scenarioId = SC[sc] ? sc : 'received';
+  if (scenarioId === 'payment-wait' && isPaymentCompleted(getDisplayTicketNo(SC[scenarioId]))) scenarioId = 'paid';
+  if (isTicketCancelled(getDisplayTicketNo(SC[scenarioId]))) scenarioId = setCancelledScenarioFor(scenarioId);
+  setScenario(scenarioId);
 });
 </script>
 </body>

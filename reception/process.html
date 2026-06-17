@@ -202,10 +202,14 @@
     <p class="section-label" style="margin-top:0;">빠른 이동</p>
     <nav class="process-flow" aria-label="접수 프로세스 빠른 이동">
       <a href="../index.html">서비스 홈</a>
-      <a href="start.html">약관</a>
+      <a href="../my-service/account.html">My Account</a>
       <a href="step1.html">기본 정보</a>
+      <a href="step1-service-guide.html">서비스 안내</a>
       <a href="step2-service-type.html">유형 선택</a>
-      <a href="step3-details.html">상세 입력</a>
+      <a href="step2-total-care.html">토탈 케어</a>
+      <a href="step2-repair.html">제품 수리</a>
+      <a href="step2-consulting.html">상담/기타</a>
+      <a href="step3-details.html">사진·렌즈</a>
       <a href="step3-shipping.html">배송 정보</a>
       <a href="step4-estimate.html">안내 확인</a>
       <a href="complete.html">접수 완료</a>
@@ -219,10 +223,11 @@
           <p class="process-step">HOME</p>
           <div>
             <p class="process-title">서비스 홈</p>
-            <p class="process-desc">GNB 서비스 진입 후 수리 서비스 접수와 상담 접수로 이동하는 시작 화면입니다.</p>
+            <p class="process-desc">서비스 페이지에서 수리 서비스 접수 CTA와 스토어 내 서비스 안내를 확인하는 시작 화면입니다.</p>
             <div class="process-tags">
               <span class="process-tag">진입</span>
               <span class="process-tag">CTA</span>
+              <span class="process-tag">스토어 서비스</span>
             </div>
           </div>
           <div class="process-actions">
@@ -232,29 +237,31 @@
         </article>
 
         <article class="process-card">
-          <p class="process-step">STEP 01</p>
+          <p class="process-step">ENTRY</p>
           <div>
-            <p class="process-title">수리 서비스 약관</p>
-            <p class="process-desc">온라인 접수 전 필수 약관과 수리 서비스 유의사항을 확인합니다.</p>
+            <p class="process-title">My Account 접수 진입</p>
+            <p class="process-desc">계정 홈 또는 구매한 제품의 주문 건에서 접수를 시작하며, 주문 번호가 있으면 해당 주문에서 구매한 제품만 기본 정보에 노출됩니다.</p>
             <div class="process-tags">
-              <span class="process-tag">필수 동의</span>
-              <span class="process-tag">약관</span>
+              <span class="process-tag">계정</span>
+              <span class="process-tag">구매 내역</span>
+              <span class="process-tag">주문 범위</span>
             </div>
           </div>
           <div class="process-actions">
-            <a class="process-link primary" href="start.html">화면 보기</a>
-            <a class="process-link" href="https://www.notion.so/351bdf641e4c80a5b16ec403700ff78e?v=351bdf641e4c80d5b288000c866ed8d8&source=copy_link" target="_blank" rel="noopener">노션 보기</a>
+            <a class="process-link primary" href="../my-service/account.html">화면 보기</a>
+            <a class="process-link" href="../my-service/purchased.html">구매내역</a>
           </div>
         </article>
 
         <article class="process-card">
-          <p class="process-step">STEP 02</p>
+          <p class="process-step">STEP 01</p>
           <div>
             <p class="process-title">기본 정보 입력</p>
-            <p class="process-desc">구매 내역 기반 또는 직접 입력 방식으로 제품과 구매 정보를 입력합니다.</p>
+            <p class="process-desc">구매 내역 기반 또는 직접 입력 방식으로 제품 정보를 선택하고, IE 제품은 일련번호와 Protection Plan 상태를 함께 저장합니다.</p>
             <div class="process-tags">
               <span class="process-tag">제품 정보</span>
               <span class="process-tag">구매 정보</span>
+              <span class="process-tag">IE 상태</span>
             </div>
           </div>
           <div class="process-actions">
@@ -264,13 +271,31 @@
         </article>
 
         <article class="process-card">
-          <p class="process-step">STEP 03</p>
+          <p class="process-step">STEP 01-1</p>
+          <div>
+            <p class="process-title">수리 신청 전 안내</p>
+            <p class="process-desc">수리 기간, 제품 발송, 보관/폐기 안내와 수리 서비스 약관을 확인하고 필수 동의를 받습니다.</p>
+            <div class="process-tags">
+              <span class="process-tag">유의사항</span>
+              <span class="process-tag">약관</span>
+              <span class="process-tag">필수 동의</span>
+            </div>
+          </div>
+          <div class="process-actions">
+            <a class="process-link primary" href="step1-service-guide.html">화면 보기</a>
+            <a class="process-link" href="https://www.notion.so/351bdf641e4c80a5b16ec403700ff78e?v=351bdf641e4c80d5b288000c866ed8d8&source=copy_link" target="_blank" rel="noopener">노션 보기</a>
+          </div>
+        </article>
+
+        <article class="process-card">
+          <p class="process-step">STEP 02</p>
           <div>
             <p class="process-title">서비스 유형 선택</p>
-            <p class="process-desc">토탈 케어, 제품 수리, 상담/기타 중 고객의 접수 목적에 맞는 유형을 선택합니다.</p>
+            <p class="process-desc">Organic 제품은 토탈 케어, 제품 수리, 상담/기타로 분기하고, IE 제품은 같은 흐름 안에서 IE 전용 조건을 유지합니다.</p>
             <div class="process-tags">
               <span class="process-tag">분기 시작</span>
               <span class="process-tag">서비스 유형</span>
+              <span class="process-tag">IE 통합</span>
             </div>
           </div>
           <div class="process-actions">
@@ -288,10 +313,11 @@
           <p class="process-step">TYPE A</p>
           <div>
             <p class="process-title">토탈 케어</p>
-            <p class="process-desc">제품 전체 케어, 피팅 여부, 출고 희망일, 긴급 서비스 옵션을 선택합니다.</p>
+            <p class="process-desc">제품 전체 케어, 피팅 옵션, 출고 희망일, 긴급 출고 옵션을 선택하고 3년 이후 제품 안내를 확인합니다.</p>
             <div class="process-tags">
               <span class="process-tag">토탈 케어</span>
-              <span class="process-tag">긴급 서비스</span>
+              <span class="process-tag">출고 희망일</span>
+              <span class="process-tag">+n만원</span>
             </div>
           </div>
           <div class="process-actions">
@@ -304,10 +330,11 @@
           <p class="process-step">TYPE B</p>
           <div>
             <p class="process-title">제품 수리</p>
-            <p class="process-desc">파손/변형, 장식 문제, 부속품 문제 등 제품 수리 사유와 수리 가능 분기를 확인합니다.</p>
+            <p class="process-desc">문제 부위와 현상을 선택하고, Organic 보증 연차별 수리 조건과 IE 본품/충전 케이스 수리 조건을 확인합니다.</p>
             <div class="process-tags">
               <span class="process-tag">제품 수리</span>
-              <span class="process-tag">수리 불가 분기</span>
+              <span class="process-tag">보증 연차</span>
+              <span class="process-tag">IE 수리</span>
             </div>
           </div>
           <div class="process-actions">
@@ -320,10 +347,12 @@
           <p class="process-step">TYPE C</p>
           <div>
             <p class="process-title">상담/기타</p>
-            <p class="process-desc">제품 결함/이상, 부속품 요청, 상담원 연결 등 수리 외 상담성 접수를 처리합니다.</p>
+            <p class="process-desc">제품 결함·이상 문의, 부속품 요청, 상담원 연결을 처리합니다. IE 상담에서 안전문제 리포트를 계속 접수하면 제품 수리 화면으로 다시 이동합니다.</p>
             <div class="process-tags">
-              <span class="process-tag">상담</span>
-              <span class="process-tag">기타 요청</span>
+              <span class="process-tag">결함 문의</span>
+              <span class="process-tag">부속품</span>
+              <span class="process-tag">GEN 상담</span>
+              <span class="process-tag">IE → 수리</span>
             </div>
           </div>
           <div class="process-actions">
@@ -338,14 +367,15 @@
       <p class="section-label">상세 입력 및 안내</p>
       <div class="process-grid">
         <article class="process-card">
-          <p class="process-step">STEP 04</p>
+          <p class="process-step">STEP 03</p>
           <div>
             <p class="process-title">사진·렌즈·패키지 정보</p>
-            <p class="process-desc">제품 상태 사진, 렌즈 포함 여부, 케이스/보증 카드 미동봉 안내를 확인합니다.</p>
+            <p class="process-desc">제품 상태 사진, 공통 서비스 요청 사항, 렌즈 유형, 패키지 동봉 확인을 입력합니다. IE는 자가 진단 결과 사진을 선택 첨부할 수 있습니다.</p>
             <div class="process-tags">
               <span class="process-tag">첨부</span>
+              <span class="process-tag">요청 사항</span>
               <span class="process-tag">렌즈</span>
-              <span class="process-tag">패키지</span>
+              <span class="process-tag">IE 자가진단</span>
             </div>
           </div>
           <div class="process-actions">
@@ -355,14 +385,15 @@
         </article>
 
         <article class="process-card">
-          <p class="process-step">STEP 05</p>
+          <p class="process-step">STEP 04</p>
           <div>
             <p class="process-title">배송 정보</p>
-            <p class="process-desc">방문, 자택 픽업, 매장 수령, 자택 배송 등 발송/수령 방식을 입력합니다.</p>
+            <p class="process-desc">KR/SG 발송 방식을 선택하고, IE는 포장 키트 안내와 백업·페어링 해제 필수 체크를 완료합니다.</p>
             <div class="process-tags">
-              <span class="process-tag">픽업</span>
-              <span class="process-tag">DHL</span>
-              <span class="process-tag">매장</span>
+              <span class="process-tag">KR 픽업</span>
+              <span class="process-tag">SG INT</span>
+              <span class="process-tag">IE 페어링</span>
+              <span class="process-tag">포장 키트</span>
             </div>
           </div>
           <div class="process-actions">
@@ -372,14 +403,15 @@
         </article>
 
         <article class="process-card">
-          <p class="process-step">STEP 06</p>
+          <p class="process-step">STEP 05</p>
           <div>
             <p class="process-title">수리 안내 확인</p>
-            <p class="process-desc">접수 정보, 예상 수리 방식, 비용, 리드타임, 관세 고지 옵션을 확인합니다.</p>
+            <p class="process-desc">접수 요약, 증상별 예상 진행 내용, 비용, IE 수리 정보 요약, 포장 키트 발송 안내를 확인합니다.</p>
             <div class="process-tags">
+              <span class="process-tag">접수 요약</span>
               <span class="process-tag">예상 비용</span>
-              <span class="process-tag">리드타임</span>
-              <span class="process-tag">관세</span>
+              <span class="process-tag">IE 수리요약</span>
+              <span class="process-tag">발송 안내</span>
             </div>
           </div>
           <div class="process-actions">
@@ -397,10 +429,11 @@
           <p class="process-step">DONE</p>
           <div>
             <p class="process-title">접수 완료</p>
-            <p class="process-desc">접수 번호, 접수 요약, 이후 진행 안내를 확인하는 완료 화면입니다.</p>
+            <p class="process-desc">접수 번호 발급 완료 상태를 보여주고 수리 서비스 내역으로 이동합니다. 상세 발송 안내는 안내 확인 단계에서 처리합니다.</p>
             <div class="process-tags">
               <span class="process-tag">완료</span>
               <span class="process-tag">접수 번호</span>
+              <span class="process-tag">내역 보기</span>
             </div>
           </div>
           <div class="process-actions">
@@ -413,10 +446,10 @@
           <p class="process-step">CLOSE</p>
           <div>
             <p class="process-title">접수 불가 안내</p>
-            <p class="process-desc">7년 초과 또는 수리 가능 범위 초과로 온라인 접수가 어려운 경우 상담 접수로 연결합니다.</p>
+            <p class="process-desc">서비스 보증 기간이 경과해 해당 수리가 어려운 경우, 토탈 케어 또는 부속품 교체 등 가능한 대체 서비스를 안내합니다.</p>
             <div class="process-tags">
               <span class="process-tag">수리 불가</span>
-              <span class="process-tag">상담 접수</span>
+              <span class="process-tag">대체 서비스</span>
             </div>
           </div>
           <div class="process-actions">
