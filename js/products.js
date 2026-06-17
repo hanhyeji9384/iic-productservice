@@ -75,7 +75,87 @@ var PS_PRODUCTS = [
     subCategory: 'AI EYEWEAR',
     isAi: true,
     protectionPlan: true,
-    protectionPlanJoinedAt: '2026-05-12',
+  },
+  {
+    name: 'PALETTE 02 (GD)',
+    order: '2605200PLGDQRSTUVW',
+    serialNumber: 'PA020526-00007520',
+    store: '젠틀몬스터 온라인',
+    purchaseDate: '2026-05-20',
+    subCategory: 'SUNGLASS METAL',
+    isAi: false,
+  },
+  {
+    name: '스마트 브리즈비 02 (GR)',
+    order: '2602030AJKXLQPBMNVZ',
+    serialNumber: 'R4AC9002K86',
+    store: '젠틀몬스터 온라인',
+    purchaseDate: '2026-02-03',
+    subCategory: 'AI EYEWEAR',
+    isAi: true,
+  },
+  {
+    name: 'TOFINO 01 (BK)',
+    order: '2507180TFBKJKLMNOP',
+    serialNumber: 'TO010725-00002184',
+    store: '젠틀몬스터 온라인',
+    purchaseDate: '2025-07-18',
+    subCategory: 'SUNGLASS METAL',
+    isAi: false,
+  },
+  {
+    name: '스마트 브리즈비 01 (BL)',
+    order: '2508180MNSVGSJKKGZQ',
+    serialNumber: 'R4AC9001K85',
+    store: '젠틀몬스터 온라인',
+    purchaseDate: '2025-08-18',
+    subCategory: 'AI EYEWEAR',
+    isAi: true,
+  },
+  {
+    name: '스마트 브리즈비 04 (SV)',
+    order: '2405200AIQUALTEST',
+    serialNumber: 'R4AC2305K88',
+    store: '젠틀몬스터 온라인',
+    purchaseDate: '2024-05-20',   // AI: 품질 보증 만료 / 부품 보유 기간 유효
+    subCategory: 'AI EYEWEAR',
+    isAi: true,
+  },
+  {
+    name: '스마트 브리즈비 00 (BK)',
+    order: '2104100AISERVTEST',
+    serialNumber: 'R4AC2104K80',
+    store: '젠틀몬스터 청담',
+    purchaseDate: '2021-04-10',   // AI: 부품 보유 기간 만료
+    subCategory: 'AI EYEWEAR',
+    isAi: true,
+  },
+  {
+    name: 'FRIDA 03',
+    order: '2411200PQRSTUVWXYZ',
+    serialNumber: 'FR030924-00006418',
+    store: '온라인',
+    purchaseDate: '2024-11-20',
+    subCategory: 'SUNGLASS ACETATE',
+    isAi: false,
+  },
+  {
+    name: 'MONDO 03 (GY)',
+    order: '2308100MGYBKQRSTUV',
+    serialNumber: 'MO030823-00003275',
+    store: '젠틀몬스터 온라인',
+    purchaseDate: '2023-08-10',
+    subCategory: 'SUNGLASS ACETATE',
+    isAi: false,
+  },
+  {
+    name: 'JENNIE 01 (BK)',
+    order: '오프라인 등록',
+    serialNumber: 'JE010322-00001942',
+    store: '젠틀몬스터 가로수길',
+    purchaseDate: '2022-03-15',
+    subCategory: 'SUNGLASS ACETATE',
+    isAi: false,
   },
 ];
 
@@ -151,6 +231,17 @@ function psFormatDate(isoDate) {
   return p[0] + '. ' + p[1] + '. ' + p[2];
 }
 
+function psFormatWarrantyDeadline(date) {
+  if (!(date instanceof Date) || isNaN(date.getTime())) return '';
+  return date.getFullYear() + '년 ' + (date.getMonth() + 1) + '월 ' + date.getDate() + '일까지';
+}
+
+function psFormatMonthDeadline(year, month) {
+  if (!year || !month) return '';
+  var lastDay = new Date(year, month, 0).getDate();
+  return year + '년 ' + month + '월 ' + lastDay + '일까지';
+}
+
 function psParseDateLike(value) {
   if (!value) return '';
   var str = String(value);
@@ -166,11 +257,7 @@ function psQualityWarranty(isoDate) {
   if (!isoDate) return '';
   var d = new Date(isoDate);
   d.setFullYear(d.getFullYear() + 2);
-  var expired = d < new Date();
-  var s = '~' + d.getFullYear() + '. ' +
-    String(d.getMonth() + 1).padStart(2, '0') + '. ' +
-    String(d.getDate()).padStart(2, '0');
-  return s + (expired ? ' <span style="color:#999;">(만료)</span>' : ' <span style="color:#111;font-weight:500;">(유효)</span>');
+  return psFormatWarrantyDeadline(d);
 }
 
 // 서비스 보증: 구매일 + 3년
@@ -178,17 +265,15 @@ function psServiceWarranty(isoDate) {
   if (!isoDate) return '';
   var d = new Date(isoDate);
   d.setFullYear(d.getFullYear() + 3);
-  var expired = d < new Date();
-  var s = '~' + d.getFullYear() + '. ' +
-    String(d.getMonth() + 1).padStart(2, '0') + '. ' +
-    String(d.getDate()).padStart(2, '0');
-  return s + (expired ? ' <span style="color:#999;">(만료)</span>' : ' <span style="font-size:11px;">(유효)</span>');
+  return psFormatWarrantyDeadline(d);
 }
 
 var PS_SMART_SERIAL_MANUFACTURE_YM = {
   R4AC9001K85: '2025-08',
   R4AC9002K86: '2026-02',
-  R4AC9003K87: '2026-05'
+  R4AC9003K87: '2026-05',
+  R4AC2305K88: '2023-05',
+  R4AC2104K80: '2021-04'
 };
 
 function psCurrentCountry() {
@@ -225,17 +310,11 @@ function psPartsRetentionPeriod(serialNumber, fallbackDate, country) {
 
   var retainYears = psPartsRetentionYears(country || psCurrentCountry());
   var endYear = year + retainYears;
-  var firstDayAfterEndMonth = new Date(endYear, month, 1);
-  var now = new Date();
-  var firstDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  var expired = firstDayAfterEndMonth <= firstDayOfCurrentMonth;
-
-  return '~' + endYear + '. ' + String(month).padStart(2, '0') +
-    (expired ? ' <span style="color:#999;">(만료)</span>' : ' <span style="font-size:11px;">(유효)</span>');
+  return psFormatMonthDeadline(endYear, month);
 }
 
 function psSecondaryWarrantyLabel(product) {
-  return psGetProductLine(product) === 'ie' ? '부품 보유 기간' : '서비스 보증';
+  return psGetProductLine(product) === 'ie' ? '부품 보유 기간' : '프로덕트 서비스 보증 기간';
 }
 
 function psSecondaryWarrantyValue(product) {
@@ -246,25 +325,21 @@ function psSecondaryWarrantyValue(product) {
   return psServiceWarranty(product.purchaseDate || psParseDateLike(product.date));
 }
 
-function psProtectionPlanJoinedAt(product) {
-  if (!product || !product.protectionPlan) return '';
-  return psParseDateLike(product.protectionPlanJoinedAt || product.protectionPlanDate || product.protectionPlanJoinedDate || product.protectionPlanStartDate || '');
-}
-
 function psProtectionPlanBadge(product) {
-  return psProtectionPlanJoinedAt(product)
+  return product && product.protectionPlan
     ? '<span style="display:inline-flex;align-items:center;height:20px;margin-left:8px;padding:0 8px;border:1px solid #1428a0;border-radius:999px;color:#1428a0;font-size:10px;font-weight:500;letter-spacing:0.02em;vertical-align:1px;">Protection Plan</span>'
     : '';
 }
 
 // step1 제품 목록 렌더링
-function psRenderProductList(containerId) {
+function psRenderProductList(containerId, products) {
   var container = document.getElementById(containerId);
   if (!container) return;
 
+  var sourceProducts = Array.isArray(products) ? products : PS_PRODUCTS;
   var html = '';
-  PS_PRODUCTS.forEach(function(p, i) {
-    var isLast = i === PS_PRODUCTS.length - 1;
+  sourceProducts.forEach(function(p, i) {
+    var isLast = i === sourceProducts.length - 1;
     var bdrBottom = isLast ? '' : 'border-bottom:1px solid var(--gray-200);';
     var bgColor = p.isAi ? '#f0f3ff' : '';
     var thumbBg = p.isAi ? '#e8eaf6' : '#f0f0f0';
@@ -286,12 +361,8 @@ function psRenderProductList(containerId) {
     html += '<span style="color:#999;">시리얼 넘버</span><span style="font-family:monospace;letter-spacing:0.03em;">' + (p.serialNumber || '-') + '</span>';
     html += '<span style="color:#999;">구매처</span><span>' + p.store + '</span>';
     html += '<span style="color:#999;">구매일</span><span>' + psFormatDate(p.purchaseDate) + '</span>';
-    html += '<span style="color:#999;">품질 보증</span><span>' + psQualityWarranty(p.purchaseDate) + '</span>';
-    html += '<span style="color:#999;">' + psSecondaryWarrantyLabel(p) + '</span><span style="font-weight:500;">' + psSecondaryWarrantyValue(p) + '</span>';
-    var protectionPlanJoinedAt = psProtectionPlanJoinedAt(p);
-    if (protectionPlanJoinedAt) {
-      html += '<span style="color:#999;">Protection Plan 가입일</span><span style="font-weight:500;">' + psFormatDate(protectionPlanJoinedAt) + '</span>';
-    }
+    html += '<span style="color:#999;white-space:nowrap;">품질 보증 기간 :</span><span>' + psQualityWarranty(p.purchaseDate) + '</span>';
+    html += '<span style="color:#999;white-space:nowrap;">' + psSecondaryWarrantyLabel(p) + ' :</span><span style="font-weight:500;">' + psSecondaryWarrantyValue(p) + '</span>';
     html += '</div>';
 
     html += '</div>';
