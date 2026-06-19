@@ -117,7 +117,7 @@ var PS_PRODUCTS = [
     order: '2405200AIQUALTEST',
     serialNumber: 'R4AC2305K88',
     store: '젠틀몬스터 온라인',
-    purchaseDate: '2024-05-20',   // AI: 품질 보증 만료 / 부품 보유 기간 유효
+    purchaseDate: '2024-05-20',   // AI: 품질 보증 만료 / 서비스 보증 기간 유효
     subCategory: 'AI EYEWEAR',
     isAi: true,
   },
@@ -126,7 +126,7 @@ var PS_PRODUCTS = [
     order: '2104100AISERVTEST',
     serialNumber: 'R4AC2104K80',
     store: '젠틀몬스터 청담',
-    purchaseDate: '2021-04-10',   // AI: 부품 보유 기간 만료
+    purchaseDate: '2021-04-10',   // AI: 서비스 보증 기간 만료
     subCategory: 'AI EYEWEAR',
     isAi: true,
   },
@@ -314,14 +314,11 @@ function psPartsRetentionPeriod(serialNumber, fallbackDate, country) {
 }
 
 function psSecondaryWarrantyLabel(product) {
-  return psGetProductLine(product) === 'ie' ? '부품 보유 기간' : '프로덕트 서비스 보증 기간';
+  return '프로덕트 서비스 보증 기간';
 }
 
 function psSecondaryWarrantyValue(product) {
   if (!product) return '';
-  if (psGetProductLine(product) === 'ie') {
-    return psPartsRetentionPeriod(product.serialNumber || product.serialNo || product.serial || product.sn, product.purchaseDate || product.date);
-  }
   return psServiceWarranty(product.purchaseDate || psParseDateLike(product.date));
 }
 
