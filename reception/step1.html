@@ -328,8 +328,8 @@
     </div>
 
     <div class="btn-wrap">
-      <a href="../index.html" class="btn btn-secondary" id="txt-btn-prev">이전</a>
-      <a href="step1-service-guide.html" class="btn btn-primary" id="txt-btn-next">다음</a>
+      <a href="step1-service-guide.html" class="btn btn-secondary" id="txt-btn-prev">이전</a>
+      <a href="step1-terms.html" class="btn btn-primary" id="txt-btn-next">다음</a>
     </div>
 
   </div>
@@ -631,19 +631,15 @@ function updateLockedProductSecondaryWarranty(country) {
   var lockedCard = document.getElementById('locked-product-card');
   if (!lockedCard || lockedCard.style.display === 'none') return;
 
-  var productLine = lockedCard.getAttribute('data-product-line') || '';
   var labelEl = document.getElementById('lpc-secondary-label');
   var valueEl = document.getElementById('lpc-sw');
   if (!labelEl || !valueEl) return;
 
-  var serialNumber = lockedCard.getAttribute('data-serial-number') || (document.getElementById('lpc-serial') || {}).textContent || '';
   var purchaseDate = lockedCard.getAttribute('data-purchase-date') || parsePurchaseDateStr((document.getElementById('lpc-date') || {}).textContent || '');
   labelEl.style.display = '';
   valueEl.style.display = '';
-  labelEl.textContent = productLine === 'ie' ? '부품 보유 기간 :' : '프로덕트 서비스 보증 기간 :';
-  valueEl.innerHTML = productLine === 'ie'
-    ? (typeof psPartsRetentionPeriod === 'function' ? psPartsRetentionPeriod(serialNumber, purchaseDate, country) : '')
-    : (typeof psServiceWarranty === 'function' ? psServiceWarranty(purchaseDate) : valueEl.innerHTML);
+  labelEl.textContent = '프로덕트 서비스 보증 기간 :';
+  valueEl.innerHTML = typeof psServiceWarranty === 'function' ? psServiceWarranty(purchaseDate) : valueEl.innerHTML;
 }
 
 window.setCountry = function(country) {
@@ -854,10 +850,10 @@ function selectHistoryProduct(idx) {
   var prodErr = document.getElementById('product-selection-error');
   if (prodErr) prodErr.style.display = 'none';
 
-  // IE 제품 선택 시 다음 안내 화면에서 IE 약관/서비스 안내로 분기
+  // IE 제품 선택 시 다음 약관 화면에서 IE 필수 동의로 분기
   var nextBtn = document.getElementById('txt-btn-next');
   if (nextBtn) {
-    nextBtn.href = 'step1-service-guide.html';
+    nextBtn.href = 'step1-terms.html';
   }
   renderStep1ServiceGuide();
 }
@@ -881,7 +877,7 @@ function toggleManualInput() {
     updateSerialFieldMode(false);
     updateManualPurchaseStoreMode(false);
     var nextBtn = document.getElementById('txt-btn-next');
-    if (nextBtn) { nextBtn.href = 'step1-service-guide.html'; nextBtn.classList.remove('disabled'); }
+    if (nextBtn) { nextBtn.href = 'step1-terms.html'; nextBtn.classList.remove('disabled'); }
     renderStep1ServiceGuide();
   }
 }
@@ -932,7 +928,7 @@ function selectProduct(name) {
   updateSerialFieldMode(isAi);
   updateManualPurchaseStoreMode(isAi);
   var nextBtn = document.getElementById('txt-btn-next');
-  if (nextBtn) nextBtn.href = 'step1-service-guide.html';
+  if (nextBtn) nextBtn.href = 'step1-terms.html';
   renderStep1ServiceGuide();
 }
 
@@ -1021,11 +1017,9 @@ function setLockedProductCard(product) {
   var secondaryValue = document.getElementById('lpc-sw');
   secondaryLabel.style.display = '';
   secondaryValue.style.display = '';
-  secondaryLabel.textContent = productLine === 'ie' ? '부품 보유 기간 :' : '프로덕트 서비스 보증 기간 :';
-  var secondaryFallback = productLine === 'ie'
-    ? (typeof psPartsRetentionPeriod === 'function' ? psPartsRetentionPeriod(serialNumber, purchaseDate || product.date) : '')
-    : (typeof psServiceWarranty === 'function' ? psServiceWarranty(purchaseDate) : '');
-  secondaryValue.innerHTML = warrantyTextOrFallback(productLine === 'ie' ? product.partsRetentionPeriod : product.sw, secondaryFallback);
+  secondaryLabel.textContent = '프로덕트 서비스 보증 기간 :';
+  var secondaryFallback = typeof psServiceWarranty === 'function' ? psServiceWarranty(purchaseDate) : '';
+  secondaryValue.innerHTML = warrantyTextOrFallback(product.sw, secondaryFallback);
   var protectionBadge = document.getElementById('lpc-protection-badge');
   if (protectionBadge) protectionBadge.style.display = product.protectionPlan ? 'inline-flex' : 'none';
   lockedCard.style.display = 'block';
@@ -1052,7 +1046,7 @@ function applyScenario(scenario) {
     var prevBtn = document.getElementById('txt-btn-prev');
     if (prevBtn) prevBtn.href = '../my-service/detail.html';
     var nextBtn = document.getElementById('txt-btn-next');
-    if (nextBtn) nextBtn.href = 'step2-service-type.html?mode=edit';
+    if (nextBtn) nextBtn.href = 'step1-terms.html?mode=edit';
     renderStep1ServiceGuide();
   }
 }
@@ -1060,6 +1054,9 @@ function applyScenario(scenario) {
 window.addEventListener('load', function() {
   var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
   setLang(saved || 'ko');
+
+  var initialPrevBtn = document.getElementById('txt-btn-prev');
+  if (initialPrevBtn) initialPrevBtn.href = 'step1-service-guide.html' + window.location.search;
 
   renderProductHistory(PS_PRODUCTS);
   selectHistoryProduct(0);
@@ -1152,7 +1149,7 @@ window.addEventListener('load', function() {
         existState.productName = name; existState.orderNo = orderNo; existState.purchaseStore = purchaseStore; existState.purchaseDate = purchaseDate; existState.serialNumber = serialNumber; existState.productSubCategory = productSubCategory; existState.productLine = productLine; existState.isAi = isAi; existState.aiProduct = isAi; existState.protectionPlan = protectionPlan;
         try { localStorage.setItem('ps-state', JSON.stringify(existState)); } catch(ex) {}
         e.preventDefault();
-        window.location.href = 'step2-service-type.html?mode=edit';
+        window.location.href = 'step1-terms.html?mode=edit';
       } else {
         var nextState = {
           productName: name, orderNo: orderNo, purchaseStore: purchaseStore, purchaseDate: purchaseDate, serialNumber: serialNumber, productSubCategory: productSubCategory, productLine: productLine, isAi: isAi, aiProduct: isAi, protectionPlan: protectionPlan,
@@ -1175,9 +1172,10 @@ window.addEventListener('load', function() {
         try { localStorage.setItem('ps-state', JSON.stringify(nextState)); } catch(ex) {}
         e.preventDefault();
         var nextQuery = [];
+        if (urlParams.get('order')) nextQuery.push('order=' + encodeURIComponent(urlParams.get('order')));
         if (isReapplyMode) nextQuery.push('mode=reapply');
         if (productLine === 'ie') nextQuery.push('ai=true');
-        window.location.href = 'step1-service-guide.html' + (nextQuery.length ? '?' + nextQuery.join('&') : '');
+        window.location.href = 'step1-terms.html' + (nextQuery.length ? '?' + nextQuery.join('&') : '');
       }
     });
   }
@@ -1200,7 +1198,7 @@ window.addEventListener('load', function() {
 
     var nextBtn = document.getElementById('txt-btn-next');
     if (nextBtn) {
-      nextBtn.href = isReapplyMode ? 'step1-service-guide.html?mode=reapply' : 'step1-service-guide.html';
+      nextBtn.href = isReapplyMode ? 'step1-terms.html?mode=reapply' : 'step1-terms.html';
     }
     if (isReapplyMode) {
       var prevBtn = document.getElementById('txt-btn-prev');

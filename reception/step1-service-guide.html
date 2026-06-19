@@ -3,215 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>서비스 안내 및 약관 — GENTLE MONSTER</title>
+  <title>서비스 진행 안내 — GENTLE MONSTER</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
   <script src="../js/lang-modal.js"></script>
   <style>
-    .selected-product {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      padding: 16px 0;
-      border-top: 1px solid var(--gray-200);
-      border-bottom: 1px solid var(--gray-200);
-      margin-bottom: 40px;
-    }
-
-    .selected-product-label {
-      font-size: 11px;
-      color: var(--gray-400);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-
-    .selected-product-name {
-      font-size: 15px;
-      font-weight: 500;
-    }
-
-    .selected-product-meta {
-      font-size: 12px;
-      color: var(--gray-500);
-      line-height: 1.7;
-      text-align: right;
-    }
-
-    .guide-steps {
+    .guide-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      grid-auto-rows: 1fr;
+      grid-template-columns: repeat(4, 1fr);
       gap: 1px;
-      aspect-ratio: 1 / 1;
       border: 1px solid var(--gray-200);
-      margin-bottom: 40px;
       background: var(--gray-200);
+      margin: 40px 0 48px;
     }
 
-    .guide-step {
-      min-height: 0;
+    .guide-card {
+      min-height: 208px;
       padding: 24px;
       background: #fff;
     }
 
-    .guide-step-num {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-      border: 1px solid #111;
-      border-radius: 50%;
-      margin-bottom: 22px;
-      font-size: 11px;
-      font-weight: 500;
-      color: #111;
+    .guide-card-num {
+      margin-bottom: 20px;
+      font-size: 10px;
+      color: var(--gray-400);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
     }
 
-    .guide-step-title {
+    .guide-card-title {
       margin-bottom: 12px;
       font-size: 14px;
       font-weight: 500;
       line-height: 1.45;
     }
 
-    .guide-step-copy {
+    .guide-card-copy {
       font-size: 12px;
       color: #555;
       line-height: 1.8;
       white-space: pre-line;
     }
 
-    .terms-toggle {
-      margin-top: 20px;
-      padding-top: 18px;
-      border-top: 1px solid var(--gray-200);
-    }
-
-    .terms-toggle summary {
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 500;
-      text-decoration: underline;
-    }
-
-    .terms-toggle-body {
-      padding-top: 18px;
-      font-size: 12px;
-      color: #555;
-      line-height: 1.85;
-      white-space: pre-line;
-    }
-
-    .terms-modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      padding: 32px;
-      background: rgba(0,0,0,0.45);
-    }
-
-    .terms-modal-panel {
-      width: min(720px, 100%);
-      max-height: min(780px, calc(100vh - 64px));
-      display: flex;
-      flex-direction: column;
-      background: #fff;
-      box-shadow: 0 24px 60px rgba(0,0,0,0.18);
-    }
-
-    .terms-modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 22px 28px;
-      border-bottom: 1px solid var(--gray-200);
-    }
-
-    .terms-modal-title {
-      font-size: 17px;
-      font-weight: 500;
-    }
-
-    .terms-modal-close {
-      width: 32px;
-      height: 32px;
-      border: 1px solid var(--gray-200);
-      background: #fff;
-      font-size: 18px;
-      cursor: pointer;
-    }
-
-    .terms-modal-body {
-      padding: 28px;
-      overflow-y: auto;
-    }
-
-    .terms-modal-footer {
-      padding: 20px 28px 28px;
-      border-top: 1px solid var(--gray-200);
-      background: #fff;
-    }
-
-    .terms-modal-agree {
-      width: 100%;
-      height: 48px;
-      border: 1px solid #111;
-      background: #111;
-      color: #fff;
-      font-family: inherit;
-      font-size: 13px;
-      cursor: pointer;
-    }
-
-    .terms-modal-agree:disabled {
-      border-color: var(--gray-200);
-      background: var(--gray-200);
-      color: var(--gray-400);
-      cursor: not-allowed;
-    }
-
-    .agreement-list {
-      display: grid;
-      gap: 10px;
-      margin: 24px 0 0;
-    }
-
-    .agreement-check {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      cursor: pointer;
-    }
-
-    .agreement-check input {
-      width: 16px;
-      height: 16px;
-      margin-top: 2px;
-      accent-color: #111;
-      flex-shrink: 0;
-    }
-
-    .agreement-check span {
-      font-size: 13px;
-      line-height: 1.7;
-      color: #333;
-    }
-
     @media (max-width: 900px) {
-      .selected-product {
-        flex-direction: column;
+      .guide-grid {
+        grid-template-columns: 1fr;
       }
-
-      .selected-product-meta {
-        text-align: left;
-      }
-
     }
   </style>
 </head>
@@ -236,54 +74,158 @@
 
 <main class="page-wrapper">
   <div class="content">
-    <div class="step-progress">
-      <div class="step-item active"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 01</p><p class="step-label">기본 정보</p></div>
-      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 02</p><p class="step-label">서비스 유형</p></div>
-      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 03</p><p class="step-label">서비스 상세</p></div>
-      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 04</p><p class="step-label">사진·렌즈</p></div>
-      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 05</p><p class="step-label">배송 정보</p></div>
-      <div class="step-item"><div class="step-line"></div><div class="step-dot"></div><p class="step-num">STEP 06</p><p class="step-label">안내 확인</p></div>
-    </div>
-
     <p class="page-eyebrow">Product Service</p>
-    <h1 class="page-title" id="guide-title">프로덕트 서비스 안내</h1>
-    <p class="page-desc" id="guide-desc"></p>
+    <h1 class="page-title">프로덕트 서비스 진행 안내</h1>
+    <p class="page-desc">
+      접수 전, 젠틀몬스터 프로덕트 서비스가 어떤 방식으로 진행되는지 먼저 확인해 주세요.<br>
+      오가닉 제품과 IE 제품 모두 큰 진행 흐름은 동일하며, 제품 정보 입력 후 상세 조건에 따라 필요한 안내가 이어집니다.
+    </p>
 
-    <div class="selected-product">
-      <div>
-        <p class="selected-product-label">선택한 제품</p>
-        <p class="selected-product-name" id="selected-product-name">-</p>
+    <div class="guide-grid" aria-label="프로덕트 서비스 진행 방식">
+      <div class="guide-card">
+        <p class="guide-card-num">STEP 01</p>
+        <p class="guide-card-title">서비스 접수</p>
+        <p class="guide-card-copy">온라인으로 원하는 수리 또는 케어 서비스를 접수해 주세요.
+제품 정보 입력 후 서비스 유형을 선택할 수 있습니다.</p>
       </div>
-      <p class="selected-product-meta" id="selected-product-meta"></p>
+      <div class="guide-card">
+        <p class="guide-card-num">STEP 02</p>
+        <p class="guide-card-title">제품 발송 또는 방문</p>
+        <p class="guide-card-copy">접수 내용에 따라 스토어 방문, 택배 픽업, 직접 발송 중 가능한 방법을 안내합니다.
+제품 본체만 안전하게 준비해 주세요.</p>
+      </div>
+      <div class="guide-card">
+        <p class="guide-card-num">STEP 03</p>
+        <p class="guide-card-title">점검 및 서비스 안내</p>
+        <p class="guide-card-copy">제품이 도착하면 프로덕트 서비스팀이 상태를 확인합니다.
+실물 점검 후 진행 내용, 비용, 예상 일정을 안내드립니다.</p>
+      </div>
+      <div class="guide-card">
+        <p class="guide-card-num">STEP 04</p>
+        <p class="guide-card-title">서비스 완료 및 배송</p>
+        <p class="guide-card-copy">서비스가 완료되면 선택한 수령 방식에 따라 제품을 전달합니다.
+상세 안내는 카카오톡 또는 이메일로 확인해 주세요.</p>
+      </div>
     </div>
-
-    <p class="section-label">이용 방법</p>
-    <div class="guide-steps" id="guide-steps"></div>
-
-    <p id="agreement-error" style="display:none;font-size:12px;color:#c00;margin:-16px 0 28px;">필수 확인사항을 확인하고 동의해 주세요.</p>
 
     <div class="btn-wrap">
-      <a href="step1.html" class="btn btn-secondary" id="txt-btn-prev">이전</a>
-      <a href="step2-service-type.html" class="btn btn-primary" id="txt-btn-next">다음</a>
+      <a href="../index.html" class="btn btn-secondary">이전</a>
+      <a href="step1.html" class="btn btn-primary" id="btn-start-reception">다음</a>
     </div>
-  </div>
-</main>
 
-<div id="terms-modal-overlay" class="terms-modal-overlay" onclick="if(event.target===this)closeTermsModal()">
-  <div class="terms-modal-panel" role="dialog" aria-modal="true" aria-labelledby="modal-terms-title">
-    <div class="terms-modal-header">
-      <span class="terms-modal-title" id="modal-terms-title">수리 신청 전, 꼭 확인해 주세요.</span>
-      <button type="button" class="terms-modal-close" aria-label="닫기" onclick="closeTermsModal()">&times;</button>
-    </div>
-    <div class="terms-modal-body">
-      <div id="terms-body"></div>
-      <div class="agreement-list" id="agreement-list"></div>
-    </div>
-    <div class="terms-modal-footer">
-      <button type="button" class="terms-modal-agree" id="modal-agree-btn" onclick="confirmTerms()" disabled>다음</button>
-    </div>
   </div>
-</div>
+
+  <!-- 스토어 내 서비스 섹션 -->
+  <section style="border-top:1px solid var(--gray-200);padding:64px 0;background:#fff;">
+    <div style="max-width:1200px;margin:0 auto;padding:0 32px;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start;">
+
+      <div>
+        <h2 data-ko="스토어 내 서비스" data-en="In-Store Service" style="font-size:22px;font-weight:400;margin-bottom:20px;">스토어 내 서비스</h2>
+        <p data-ko="고객님의 편안한 제품 사용을 위해,<br>전 세계 오프라인 스토어에서 커스텀 피팅과 코받침·나사 교체를 지원합니다." data-en="For your comfortable product experience,<br>we support custom fitting and nose pad/screw replacement at offline stores worldwide." style="font-size:13px;color:#555;line-height:1.9;margin-bottom:32px;">
+          고객님의 편안한 제품 사용을 위해,<br>
+          전 세계 오프라인 스토어에서 커스텀 피팅과 코받침·나사 교체를 지원합니다.
+        </p>
+
+        <p data-ko="가까운 스토어 찾기" data-en="Find Nearby Stores" style="font-size:11px;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:#aaa;margin-bottom:16px;">가까운 스토어 찾기</p>
+
+        <div id="sp-store-list">
+          <div style="padding:16px 0;border-top:1px solid var(--gray-200);">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+              <strong data-ko="하우스 노웨어 서울" data-en="House Nowhere Seoul" style="font-size:15px;font-weight:400;">하우스 노웨어 서울</strong>
+              <span style="font-size:12px;color:#aaa;">29m</span>
+            </div>
+            <p data-ko="오픈 <span style='color:#888'>· 오후 9:00시까지 영업</span>" data-en="Open <span style='color:#888'>· Open until 9:00 PM</span>" style="font-size:12px;color:#2a7c42;margin-bottom:2px;">오픈 <span style="color:#888;">· 오후 9:00시까지 영업</span></p>
+            <p data-ko="서울특별시 성동구 뚝섬로 433" data-en="433 Ttukseom-ro, Seongdong-gu, Seoul" style="font-size:12px;color:#888;margin-bottom:10px;">서울특별시 성동구 뚝섬로 433</p>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+              <span data-ko="피팅 서비스" data-en="Fitting Service" style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">피팅 서비스</span>
+              <span data-ko="간편 수리" data-en="Minor Repair" style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">간편 수리</span>
+              <span data-ko="수리 제품 픽업" data-en="Product Pickup" style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">수리 제품 픽업</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="sp-stockist-list" style="display:none;">
+          <div style="padding:16px 0;border-top:1px solid var(--gray-200);">
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px;">
+              <strong data-ko="디렉토" data-en="Directo" style="font-size:15px;font-weight:400;">디렉토</strong>
+              <span style="font-size:12px;color:#aaa;">612m</span>
+            </div>
+            <p data-ko="서울 성동구 성수이로 7길 30 1층 (성수동2가, 빌딩8)" data-en="30 Seongsui-ro 7-gil, 1F, Seongdong-gu, Seoul" style="font-size:12px;color:#888;margin-bottom:10px;">서울 성동구 성수이로 7길 30 1층 (성수동2가, 빌딩8)</p>
+            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+              <span data-ko="렌즈 분리" data-en="Lens Removal" style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">렌즈 분리</span>
+              <span data-ko="심플리페어" data-en="Simplipair" style="padding:3px 8px;font-size:10px;border:1px solid #2a7c42;color:#2a7c42;">심플리페어</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="sp-filter-wrap" style="margin:24px 0 20px;">
+          <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;">
+            <input type="checkbox" id="sp-filter" onchange="toggleSimplipairMap(this.checked)"
+              style="width:15px;height:15px;accent-color:#111;cursor:pointer;">
+            <span>심플리페어</span>
+          </label>
+          <p data-ko="서비스 인증 안경원에서는 아래 서비스를 무료로 받아보실 수 있습니다." data-en="At certified service optical stores, the following services are available free of charge." style="font-size:12px;color:#666;line-height:1.8;margin-top:10px;margin-bottom:8px;">
+            서비스 인증 안경원에서는 아래 서비스를 무료로 받아보실 수 있습니다.
+          </p>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;">
+            <span data-ko="무료 피팅" data-en="Free Fitting" style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">무료 피팅</span>
+            <span data-ko="코받침·나사 교체" data-en="Nose Pad/Screw Replacement" style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">코받침·나사 교체</span>
+            <span data-ko="렌즈 분리·삽입" data-en="Lens Removal/Insertion" style="padding:3px 8px;font-size:10px;border:1px solid #ddd;color:#666;">렌즈 분리·삽입</span>
+          </div>
+        </div>
+
+        <a id="btn-more-stores" data-ko="더 찾아보기" data-en="Find More Stores" href="../store.html" style="display:block;margin-top:32px;padding:14px;border:1px solid #ddd;text-align:center;font-size:13px;color:#111;text-decoration:none;letter-spacing:0.04em;transition:border-color 0.15s;"
+          onmouseover="this.style.borderColor='#111'" onmouseout="this.style.borderColor='#ddd'">더 찾아보기</a>
+      </div>
+
+      <div style="position:relative;">
+        <div id="sp-store-img" style="width:100%;aspect-ratio:4/3;background:#e8e8e8;position:relative;overflow:hidden;cursor:pointer;"
+             onclick="window.location.href='../store.html'">
+          <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:12px;color:#aaa;letter-spacing:0.06em;">STORE IMAGE</div>
+          <div id="sp-img-overlay" style="position:absolute;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;"
+               onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
+            <span data-ko="스토어 세부 정보 보기" data-en="View Store Details" style="color:#fff;font-size:12px;font-weight:500;letter-spacing:0.06em;border:1px solid rgba(255,255,255,0.7);padding:8px 18px;">스토어 세부 정보 보기</span>
+          </div>
+        </div>
+
+        <div id="sp-map" style="display:none;width:100%;aspect-ratio:4/3;background:#e8e8e8;position:relative;overflow:hidden;">
+          <div style="position:absolute;left:0;right:0;top:25%;height:1px;background:rgba(255,255,255,0.6);"></div>
+          <div style="position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(255,255,255,0.6);"></div>
+          <div style="position:absolute;left:0;right:0;top:75%;height:1px;background:rgba(255,255,255,0.6);"></div>
+          <div style="position:absolute;top:0;bottom:0;left:33%;width:1px;background:rgba(255,255,255,0.6);"></div>
+          <div style="position:absolute;top:0;bottom:0;left:66%;width:1px;background:rgba(255,255,255,0.6);"></div>
+          <span style="position:absolute;top:8%;left:10%;font-size:10px;color:#bbb;pointer-events:none;">서울특별시</span>
+          <div style="position:absolute;top:48%;left:54%;width:12px;height:12px;border-radius:50%;background:#4a90d9;border:2px solid #fff;box-shadow:0 0 0 4px rgba(74,144,217,0.2);transform:translate(-50%,-50%);z-index:3;"></div>
+
+          <div id="sp-tooltip" style="display:none;position:absolute;background:#fff;border-radius:6px;box-shadow:0 4px 16px rgba(0,0,0,0.15);padding:12px 14px;min-width:210px;z-index:20;pointer-events:none;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">
+              <strong id="sp-tt-name" style="font-size:13px;font-weight:500;color:#111;"></strong>
+              <span id="sp-tt-dist" style="font-size:11px;color:#888;margin-left:12px;white-space:nowrap;flex-shrink:0;"></span>
+            </div>
+            <p id="sp-tt-addr" style="font-size:11px;color:#666;line-height:1.5;margin-bottom:8px;"></p>
+            <div style="display:flex;gap:4px;">
+              <span id="sp-tt-svc" style="font-size:10px;color:#555;border:1px solid #ddd;padding:2px 7px;"></span>
+              <span style="font-size:10px;color:#2a7c42;border:1px solid #2a7c42;padding:2px 7px;">심플리페어</span>
+            </div>
+          </div>
+
+          <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'디렉토','612m','서울 성동구 아차산로 72','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:35%;left:57%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+          <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'블루선 성수점','1.2km','서울 성동구 왕십리로 15','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:37%;left:60%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+          <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'큐브안경원','3.6km','서울 광진구 아차산로 537-17, 1호','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:40%;left:66%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+          <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'이태원블링크 안경','2.8km','서울 용산구 이태원로 180','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:47%;left:40%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+          <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'메티스 안경','2.3km','서울 중구 명동4길 14','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:46%;left:45%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+          <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'제우스안경','2.1km','서울 중구 명동9길 24','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:44%;left:46%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+          <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'리웍스120','3.9km','서울 마포구 독막로 79','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:55%;left:33%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+          <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'자이스비전센터 강남점','5.2km','서울 강남구 강남대로 438','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:62%;left:46%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+          <div onclick="window.location.href='../store.html?filter=simplipair'" onmouseover="showSpTip(this,'커스텀아이즈','6.4km','서울 송파구 올림픽로 300','렌즈 분리')" onmouseout="hideSpTip()" style="position:absolute;top:66%;left:63%;width:8px;height:8px;border-radius:50%;background:#111;transform:translate(-50%,-50%);cursor:pointer;z-index:2;"></div>
+          <div style="position:absolute;bottom:10px;right:12px;font-size:10px;color:#aaa;pointer-events:none;">지도 데이터 ©2025 TMap Mobility</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
 
 <footer class="site-footer">
   <div class="footer-inner" style="flex-direction:column;gap:16px;">
@@ -308,182 +250,59 @@
 </footer>
 
 <script>
-var STEP1_GUIDE = {
-  organic: {
-    label: 'Organic',
-    title: '프로덕트 서비스 안내',
-    desc: '전문가의 섬세한 손길로, 고객님의 소중한 제품을 오래도록 아름답게.<br>수리부터 케어까지, 지금 젠틀몬스터 프리미엄 프로덕트 서비스를 만나보세요.',
-    steps: [
-      ['1단계 · 수리 접수', '온라인으로 원하는 수리 또는 케어 서비스를 접수해 주세요.\n접수를 완료하면 스토어 방문과 픽업 서비스 중 편한 방법을 선택할 수 있어요.\n제품 본체만 안전하게 포장해 준비해주세요.'],
-      ['2단계 · 점검 및 서비스 안내', '제품이 도착하면 프로덕트 서비스팀이 세심하게 점검합니다.\n필요한 서비스 내용을 확인해 안내해 드립니다.'],
-      ['3단계 · 결제 및 서비스 진행', '안내받은 서비스 내용과 예상 출고 일정을 확인해 주세요.\n서비스 비용을 결제하면 서비스가 시작됩니다.'],
-      ['4단계 · 서비스 완료 및 배송', '서비스가 끝나면 제품을 안전하게 포장해 보내드립니다.']
-    ],
-    terms: [
-      ['수리 기간 안내', '유상 수리 : 결제 후 평일 기준 7일 이내 처리·발송\n무상 수리 : 선택한 희망 출고일에 맞춰 진행 (상황에 따라 1~3일 변동될 수 있습니다)'],
-      ['제품을 보내실 때', '케이스·보증 카드는 분실 위험이 있으니 동봉하지 말아 주세요.\n› 동봉된 경우, 분실 방지를 위해 함께 반송될 수 있습니다.\n별도 제작 렌즈는 빼고 보내주세요. 수리 중 손상될 수 있으며, 동봉된 렌즈의 파손에 대해서는 보상이 제공되지 않습니다.'],
-      ['제품 보관 및 폐기 안내', '프로덕트 서비스팀은 제품 판정일로부터 30일간 보관합니다.\n30일 이내 결제 확인 또는 회신이 없으면, 제품은 반송되거나 관련 법령에 따라 폐기될 수 있습니다.\n› 폐기 후에는 보상·반환이 불가합니다.']
-    ],
-    fullTerms: '제1조 [목적]\n본 약관은 젠틀몬스터 제품의 수리 서비스(이하 “서비스”) 이용과 관련하여,\n고객과 젠틀몬스터(이하 “회사”) 간의 권리, 의무 및 기타 필요한 사항을 규정함을 목적으로 합니다.\n\n제2조 [보증 기준]\n회사는 젠틀몬스터 정품 제품에 한하여 아래 기준으로 보증 서비스를 제공합니다.\n수리 보증 기간: 최초 구매일로부터 36개월\n품질 보증 기간: 최초 구매일로부터 24개월\n품질 보증 기간 내 제조상 결함으로 인한 제품 이상은 무상 수리를 제공합니다.\n\n보증 적용 여부는 프로덕트 서비스팀의 실물 검수 과정을 통해 판정됩니다.\n공식 구매 증빙(보증 카드, 구매 영수증 등)이 확인되지 않은 제품은 보증 및 서비스 제공이 제한됩니다.\n외부에서 제작된 렌즈, 사설 코패드, 케이스 등은 보증 및 서비스 대상에 포함되지 않습니다.\n\n제3조 [수리 서비스 이용 및 절차]\n고객은 수리 접수 시 회사가 지정한 절차에 따라 제품을 발송해야 합니다.\n케이스 및 보증 카드는 분실 위험이 있으므로 동봉하지 않습니다.\n외부 제작 렌즈는 수리 중 손상될 우려가 있어 미삽입 상태로 발송해야 합니다.\n렌즈 파손에 대해서는 보상이 제공되지 않습니다.\n제품은 도착일 기준으로 순차적으로 점검 및 수리가 진행됩니다.\n유상 수리의 경우, 고객의 결제 완료 이후 수리가 시작됩니다.\n서비스 진행 내용(판정, 비용, 출고 예정일 등)은 이메일·카카오톡·My Account를 통해 안내됩니다.\n\n제4조 [수리 기간 및 비용]\n수리 기간은 서비스 유형 및 협력업체 여부에 따라 상이하며, 아래 기준을 원칙으로 합니다.\n본사 수리: 입고일로부터 약 10–15일 내외\n협력업체 수리: 입고일로부터 약 25–30일 내외\n\n유상 수리의 경우, 비용은 제품의 상태에 따라 산정됩니다.\n수리비 결제 지연 또는 고객 응답 지연으로 인한 지체에 대해서는 회사가 책임지지 않습니다.\n\n제5조 [제품 보관 및 처리]\n회사는 서비스 판정일 기준 30일간 제품을 무상 보관합니다.\n보관 기간 내 결제 확인이 이루어지지 않거나 고객 회신이 없을 경우,\n제품은 반송되거나 관련 법령에 따라 적절한 방식으로 폐기될 수 있습니다.\n제품 폐기 이후에는 어떠한 형태의 보상이나 반환이 불가합니다.\n\n제6조 [기타]\n본 약관에서 정하지 않은 사항은 「전자상거래 등에서의 소비자보호에 관한 법률」 및 관련 규정을 따릅니다.',
-    checks: [{ id: 'terms', text: '수리 서비스 약관 전체 내용에 동의합니다. (필수)' }]
-  },
-  ie: {
-    label: 'IE',
-    title: '스마트 아이웨어 서비스 안내',
-    desc: '전문가의 섬세한 손길로, 소중한 JINJU의 기능과 아름다움을 지켜드립니다.<br>지금 바로 프리미엄 프로덕트 서비스를 경험해 보세요.',
-    steps: [
-      ['1단계 · 수리 접수', '온라인으로 원하는 서비스를 접수해 주세요.\n접수를 완료하면 포장 키트를 보내드립니다.\n키트 수령 후 제품을 안전하게 포장해 발송해 주세요.'],
-      ['2단계 · 점검 및 서비스 안내', '제품이 도착하면 프로덕트 서비스팀이 세심하게 점검합니다.\n필요한 서비스 내용을 확인해 안내드립니다.'],
-      ['3단계 · 결제 및 서비스 진행', '안내받은 서비스 내용과 예상 출고 일정을 확인해 주세요.\n서비스 비용을 결제하면 서비스가 시작됩니다.'],
-      ['4단계 · 서비스 완료 및 배송', '서비스가 끝나면 제품을 안전하게 포장해 보내드립니다.']
-    ],
-    terms: [
-      ['수리 기간 안내', '유상 수리 : 결제 후 영업일 기준 7일 이내 처리·발송\n무상 수리 : 진행 내용에 따라 소요 기간이 달라질 수 있습니다.'],
-      ['데이터 안내', '페어링을 해제하면 기기에 저장된 데이터가 초기화됩니다.\n개인정보와 설정값을 미리 백업하신 후 제품을 발송해 주세요.'],
-      ['제품을 보내실 때', '제품 본체 또는 충전 케이스만 보내주세요.\n안경닦이 등 부속품은 분실 우려가 있어 함께 보내지 말아 주세요.'],
-      ['제품 보관 및 폐기 안내', '프로덕트 서비스팀은 제품 판정일로부터 30일간 보관합니다.\n30일 이내 결제 확인 또는 회신이 없으면, 제품은 반송되거나 관련 법령에 따라 폐기될 수 있습니다.\n› 폐기 후에는 보상·반환이 불가합니다.']
-    ],
-    fullTerms: '',
-    checks: [
-      { id: 'data', text: '위 내용을 확인했으며, 데이터 초기화에 동의합니다. (필수)' },
-      { id: 'terms', text: '수리 서비스 약관 전체 내용에 동의합니다. (필수)' }
-    ]
-  }
-};
-
-var currentGuideLine = 'organic';
-var psState = {};
-var termsConfirmed = false;
-
-function setText(id, html) {
-  var el = document.getElementById(id);
-  if (el) el.innerHTML = html;
-}
-
-function getQueryStringForStep1() {
-  var params = new URLSearchParams(window.location.search);
-  var keep = [];
-  if (params.get('mode')) keep.push('mode=' + encodeURIComponent(params.get('mode')));
-  return keep.length ? '?' + keep.join('&') : '';
-}
-
-function getNextQueryString() {
-  var params = new URLSearchParams(window.location.search);
-  var keep = [];
-  if (params.get('mode')) keep.push('mode=' + encodeURIComponent(params.get('mode')));
-  if (currentGuideLine === 'ie') keep.push('ai=true');
-  return keep.length ? '?' + keep.join('&') : '';
-}
-
-function renderGuide() {
-  try { psState = JSON.parse(localStorage.getItem('ps-state') || '{}'); } catch(e) { psState = {}; }
-  currentGuideLine = psState.productLine || (psState.isAi || psState.aiProduct ? 'ie' : 'organic');
-  var data = STEP1_GUIDE[currentGuideLine] || STEP1_GUIDE.organic;
-
-  setText('guide-title', data.title);
-  setText('guide-desc', data.desc);
-  setText('selected-product-name', psState.productName || '제품 선택 필요');
-  setText('selected-product-meta', [
-    psState.serialNumber ? 'S/N ' + psState.serialNumber : '',
-    psState.purchaseDate ? '구매일 ' + psState.purchaseDate : '',
-    psState.purchaseStore || ''
-  ].filter(Boolean).join('<br>'));
-
-  var steps = document.getElementById('guide-steps');
-  if (steps) {
-    steps.innerHTML = data.steps.map(function(step, index) {
-      return '<div class="guide-step">'
-      + '<span class="guide-step-num">' + String(index + 1).padStart(2, '0') + '</span>'
-      + '<p class="guide-step-title">' + step[0].replace(/^[0-9]단계 · /, '') + '</p>'
-      + '<p class="guide-step-copy">' + step[1] + '</p>'
-      + '</div>'
-    }).join('');
-  }
-
-  var termsHtml = data.terms.map(function(section) {
-    return '<div class="terms-section">'
-      + '<p class="terms-section-title">' + section[0] + '</p>'
-      + '<p class="terms-copy">' + section[1] + '</p>'
-      + '</div>';
-  }).join('');
-  if (currentGuideLine === 'organic') {
-    termsHtml += '<details class="terms-toggle"><summary>수리 서비스 약관 보기 (PDF)</summary><div class="terms-toggle-body">' + data.fullTerms + '</div></details>';
-  } else {
-    termsHtml += '<details class="terms-toggle"><summary>수리 서비스 약관 보기 (PDF)</summary><div class="terms-toggle-body">IE 수리 서비스 약관 PDF는 추후 연결 예정입니다.</div></details>';
-  }
-  setText('terms-body', termsHtml);
-
-  var agreementList = document.getElementById('agreement-list');
-  if (agreementList) {
-    agreementList.innerHTML = data.checks.map(function(check) {
-      return '<label class="agreement-check">'
-        + '<input type="checkbox" id="agree-' + check.id + '" onchange="onTermsCheckChange()">'
-        + '<span>' + check.text + '</span>'
-        + '</label>';
-    }).join('');
-  }
-  termsConfirmed = !!psState.serviceGuideAgreed && psState.termsAgreeYn === 'Y';
-
-  var prev = document.getElementById('txt-btn-prev');
-  if (prev) prev.href = 'step1.html' + getQueryStringForStep1();
-  var next = document.getElementById('txt-btn-next');
-  if (next) next.href = 'step2-service-type.html' + getNextQueryString();
-}
-
-function hideAgreementError() {
-  var error = document.getElementById('agreement-error');
-  if (error) error.style.display = 'none';
-}
-
-function openTermsModal() {
-  hideAgreementError();
-  var overlay = document.getElementById('terms-modal-overlay');
-  if (overlay) overlay.style.display = 'flex';
-  onTermsCheckChange();
-}
-
-function closeTermsModal() {
-  var overlay = document.getElementById('terms-modal-overlay');
-  if (overlay) overlay.style.display = 'none';
-}
-
-function onTermsCheckChange() {
-  hideAgreementError();
-  var btn = document.getElementById('modal-agree-btn');
-  if (btn) btn.disabled = !isReady();
-}
-
-function confirmTerms() {
-  if (!isReady()) {
-    onTermsCheckChange();
-    return;
-  }
-  termsConfirmed = true;
-  psState.serviceGuideAgreed = true;
-  psState.termsAgreeYn = 'Y';
-  psState.ieDataResetConsent = currentGuideLine === 'ie' ? !!document.getElementById('agree-data')?.checked : false;
-  try { localStorage.setItem('ps-state', JSON.stringify(psState)); } catch(ex) {}
-  window.location.href = 'step2-service-type.html' + getNextQueryString();
-}
-
-function isReady() {
-  var data = STEP1_GUIDE[currentGuideLine] || STEP1_GUIDE.organic;
-  return data.checks.every(function(check) {
-    var el = document.getElementById('agree-' + check.id);
-    return el && el.checked;
+function applyDataLang(lang) {
+  document.querySelectorAll('[data-' + lang + ']').forEach(function(el) {
+    el.innerHTML = el.getAttribute('data-' + lang);
   });
 }
 
-window.addEventListener('load', function() {
-  renderGuide();
+function setLang(lang) {
+  try { localStorage.setItem('ps-lang', lang); } catch(e) {}
+  applyDataLang(lang);
+}
 
-  var next = document.getElementById('txt-btn-next');
-  if (next) {
-    next.addEventListener('click', function(e) {
-      e.preventDefault();
-      openTermsModal();
-    });
-  }
+function toggleSimplipairMap(checked) {
+  document.getElementById('sp-store-img').style.display = checked ? 'none' : 'block';
+  document.getElementById('sp-map').style.display = checked ? 'block' : 'none';
+  document.getElementById('sp-store-list').style.display = checked ? 'none' : 'block';
+  document.getElementById('sp-stockist-list').style.display = checked ? 'block' : 'none';
+  document.getElementById('btn-more-stores').href = checked ? '../store.html?filter=simplipair' : '../store.html';
+}
+
+function showSpTip(el, name, dist, addr, svc) {
+  var tip = document.getElementById('sp-tooltip');
+  var map = document.getElementById('sp-map');
+  if (!tip || !map) return;
+  document.getElementById('sp-tt-name').textContent = name;
+  document.getElementById('sp-tt-dist').textContent = dist;
+  document.getElementById('sp-tt-addr').textContent = addr;
+  document.getElementById('sp-tt-svc').textContent = svc;
+  var mapRect = map.getBoundingClientRect();
+  var elRect = el.getBoundingClientRect();
+  var leftPx = elRect.left - mapRect.left + el.offsetWidth / 2;
+  var topPx = elRect.top - mapRect.top;
+  tip.style.left = leftPx + 'px';
+  tip.style.top = topPx + 'px';
+  tip.style.transform = 'translate(-50%, calc(-100% - 10px))';
+  tip.style.display = 'block';
+}
+
+function hideSpTip() {
+  var tip = document.getElementById('sp-tooltip');
+  if (tip) tip.style.display = 'none';
+}
+
+function buildStep1Href() {
+  var params = new URLSearchParams(window.location.search);
+  var query = params.toString();
+  return 'step1.html' + (query ? '?' + query : '');
+}
+
+window.addEventListener('load', function() {
+  var start = document.getElementById('btn-start-reception');
+  if (start) start.href = buildStep1Href();
+  var saved; try { saved = localStorage.getItem('ps-lang'); } catch(e) {}
+  if (typeof window.setLang === 'function') window.setLang(saved || 'ko');
 });
 </script>
 </body>

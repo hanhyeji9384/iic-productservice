@@ -122,7 +122,7 @@
     </div><!-- /service-type-section -->
 
     <div class="btn-wrap" style="margin-top:48px;">
-      <a href="step1.html" class="btn btn-secondary" id="txt-btn-prev">이전</a>
+      <a href="step1-terms.html" class="btn btn-secondary" id="txt-btn-prev">이전</a>
       <a href="step3-shipping.html" onclick="saveAiNext()" class="btn btn-primary" id="btn-ai-next" style="display:none;opacity:0.4;pointer-events:none;">다음</a>
     </div>
 
@@ -255,7 +255,7 @@ function showAllOptions() {
   });
   document.getElementById('btn-change-type').style.display = 'none';
   var prev = document.getElementById('txt-btn-prev');
-  if (prev) prev.href = currentFlowMode ? 'step1.html?mode=' + encodeURIComponent(currentFlowMode) : 'step1.html';
+  if (prev) prev.href = currentFlowMode === 'edit' ? 'step1.html?mode=edit' : (currentFlowMode ? 'step1-terms.html?mode=' + encodeURIComponent(currentFlowMode) : 'step1-terms.html');
 }
 
 function applySelectedServiceType(type, mode) {
@@ -274,7 +274,7 @@ function applySelectedServiceType(type, mode) {
   });
   document.getElementById('btn-change-type').style.display = 'block';
   var prev = document.getElementById('txt-btn-prev');
-  if (prev) prev.href = currentFlowMode ? 'step1.html?mode=' + encodeURIComponent(currentFlowMode) : 'step1.html';
+  if (prev) prev.href = currentFlowMode === 'edit' ? 'step1.html?mode=edit' : (currentFlowMode ? 'step1-terms.html?mode=' + encodeURIComponent(currentFlowMode) : 'step1-terms.html');
 }
 
 // ─── IE 이상 유형 ───
