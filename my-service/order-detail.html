@@ -394,7 +394,7 @@ var ORDER_DETAILS = {
     items: [
       {
         name: '스마트 브리즈비 03 (BK)', color: '블랙', price: 499000, quantity: 1,
-        serialNumber: 'R4AC9003K87',
+        serialNumber: 'R4AL5003K87',
         qualityWarranty: '2028년 5월 12일까지',
         serviceWarranty: '2029년 5월 12일까지',
         partsRetentionPeriod: '2030년 5월 31일까지',
@@ -407,7 +407,7 @@ var ORDER_DETAILS = {
       {
         type: 'plan',
         name: '스마트 브리즈비 03 (BK)를 위한 Protection Plan',
-        color: '제품 교체 및 주요 수리 비용 보장',
+        color: 'Protection Plan 가입',
         price: 30000,
         quantity: 1
       }
@@ -433,7 +433,7 @@ var ORDER_DETAILS = {
     items: [
       {
         name: '스마트 브리즈비 02 (GR)', color: '그레이', price: 499000, quantity: 1,
-        serialNumber: 'R4AC9002K86',
+        serialNumber: 'R4AL2002K86',
         qualityWarranty: '2028년 2월 3일까지',
         serviceWarranty: '2029년 2월 3일까지',
         partsRetentionPeriod: '2030년 2월 28일까지',
@@ -491,7 +491,7 @@ var ORDER_DETAILS = {
     items: [
       {
         name: '스마트 브리즈비 01 (BL)', color: '블랙/블루', price: 479000, quantity: 1,
-        serialNumber: 'R4AC9001K85',
+        serialNumber: 'R4AK8001K85',
         qualityWarranty: '2027년 8월 18일까지',
         serviceWarranty: '2028년 8월 18일까지',
         partsRetentionPeriod: '2029년 8월 31일까지',
@@ -610,9 +610,20 @@ function subtotal(order) {
   }, 0);
 }
 
-function warrantyRows(item) {
+function isIeItem(item) {
+  var subCategory = String((item && item.productSubCategory) || '').toUpperCase();
+  return !!(item && (item.isAi || subCategory.indexOf('AI EYEWEAR') >= 0));
+}
+
+function shouldShowSerialNumber(order, item) {
+  if (!item || !item.serialNumber || item.type === 'plan') return false;
+  if (isIeItem(item)) return true;
+  return !!(order && (order.channel === 'OFFLINE' || order.orderNo === '오프라인 등록'));
+}
+
+function warrantyRows(item, order) {
   var rows = [];
-  if (item.serialNumber) rows.push(['일련번호', item.serialNumber]);
+  if (shouldShowSerialNumber(order, item)) rows.push(['시리얼 번호', item.serialNumber]);
   if (item.qualityWarranty) rows.push(['품질 보증 기간', item.qualityWarranty]);
   if (item.serviceWarranty) rows.push(['프로덕트 서비스 보증 기간', item.serviceWarranty]);
   if (item.isAi && item.partsRetentionPeriod) rows.push(['부품 보유 기간', item.partsRetentionPeriod]);
@@ -624,6 +635,7 @@ function warrantyRows(item) {
 function lineItemHtml(item, index, orderKey, order) {
   var isPlan = item.type === 'plan';
   var title = escapeHtml(item.name);
+  var warrantyHtml = warrantyRows(item, order);
   if (isPlan) title = title.replace('Protection Plan', '<span class="plan-highlight">Protection Plan</span>');
   var repairButton = '';
   if (!isPlan) {
@@ -636,7 +648,7 @@ function lineItemHtml(item, index, orderKey, order) {
     + '<p class="order-item-name">' + title + '</p>'
     + '<p class="order-item-meta">' + escapeHtml(item.color || '') + '<br>수량 ' + Number(item.quantity || 1) + '</p>'
     + '<p class="order-item-price">' + money(item.price) + '</p>'
-    + (warrantyRows(item) ? '<div class="warranty-grid">' + warrantyRows(item) + '</div>' : '')
+    + (warrantyHtml ? '<div class="warranty-grid">' + warrantyHtml + '</div>' : '')
     + repairButton
     + '</div>'
     + '</article>';

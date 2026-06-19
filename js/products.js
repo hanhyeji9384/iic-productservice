@@ -60,7 +60,7 @@ var PS_PRODUCTS = [
   {
     name: '스마트 브리즈비 01 (BL)',
     order: '2509050MNSVGSJKKGZF',
-    serialNumber: 'R4AC9001K85',
+    serialNumber: 'R4AK9001K85',
     store: '젠틀몬스터 온라인 공식몰',
     purchaseDate: '2025-09-05',   // AI 아이웨어 플로우
     subCategory: 'AI EYEWEAR',
@@ -69,7 +69,7 @@ var PS_PRODUCTS = [
   {
     name: '스마트 브리즈비 03 (BK)',
     order: '2605120PLNQWERTYUIO',
-    serialNumber: 'R4AC9003K87',
+    serialNumber: 'R4AL5003K87',
     store: '젠틀몬스터 온라인 공식몰',
     purchaseDate: '2026-05-12',
     subCategory: 'AI EYEWEAR',
@@ -88,7 +88,7 @@ var PS_PRODUCTS = [
   {
     name: '스마트 브리즈비 02 (GR)',
     order: '2602030AJKXLQPBMNVZ',
-    serialNumber: 'R4AC9002K86',
+    serialNumber: 'R4AL2002K86',
     store: '젠틀몬스터 온라인',
     purchaseDate: '2026-02-03',
     subCategory: 'AI EYEWEAR',
@@ -106,7 +106,7 @@ var PS_PRODUCTS = [
   {
     name: '스마트 브리즈비 01 (BL)',
     order: '2508180MNSVGSJKKGZQ',
-    serialNumber: 'R4AC9001K85',
+    serialNumber: 'R4AK8001K85',
     store: '젠틀몬스터 온라인',
     purchaseDate: '2025-08-18',
     subCategory: 'AI EYEWEAR',
@@ -269,6 +269,10 @@ function psServiceWarranty(isoDate) {
 }
 
 var PS_SMART_SERIAL_MANUFACTURE_YM = {
+  R4AK8001K85: '2025-08',
+  R4AK9001K85: '2025-09',
+  R4AL2002K86: '2026-02',
+  R4AL5003K87: '2026-05',
   R4AC9001K85: '2025-08',
   R4AC9002K86: '2026-02',
   R4AC9003K87: '2026-05',
