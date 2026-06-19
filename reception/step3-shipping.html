@@ -202,12 +202,12 @@
       <label class="check-item" id="urgent-check-item" style="margin-bottom:8px;">
         <input type="checkbox" id="urgent-check" onchange="toggleTotalCareUrgent()" style="accent-color:var(--black);width:16px;height:16px;margin-top:2px;flex-shrink:0;cursor:pointer;">
         <div>
-          <p id="title-urgent" class="check-item-title">입고 후 5영업일 이내 출고  ▢  +n만원</p>
+          <p id="title-urgent" class="check-item-title">입고 후 5영업일 이내 출고 +n만원</p>
           <p id="desc-urgent" class="check-item-desc"></p>
         </div>
       </label>
       <div id="urgent-cal-note" style="display:none;padding:12px 14px;background:var(--gray-50);border:1px solid var(--gray-200);font-size:12px;color:var(--gray-600);margin-bottom:8px;line-height:1.7;">
-        <span id="txt-urgent-note">입고 후 5영업일 이내 출고  ▢  +n만원</span>
+        <span id="txt-urgent-note">입고 후 5영업일 이내 출고 +n만원</span>
       </div>
 
       <p id="lbl-dispatch" class="section-label" style="margin-top:32px;"><span id="lbl-dispatch-text">출고 희망일</span> <span id="dispatch-req" class="required-mark">*</span><span id="dispatch-opt" style="font-size:10px;color:#999;text-transform:none;letter-spacing:0;display:none;">(선택)</span></p>
@@ -419,7 +419,7 @@
 
     <div class="btn-wrap" style="margin-top:40px;">
       <a id="btn-prev" href="step3-details.html" class="btn btn-secondary">이전</a>
-      <a id="btn-next" href="step4-estimate.html" class="btn btn-primary" style="opacity:0.4;pointer-events:none;" onclick="saveShippingState()">다음 — 안내 확인</a>
+      <a id="btn-next" href="step4-estimate.html" class="btn btn-primary" style="opacity:0.4;pointer-events:none;" onclick="saveShippingState()">다음</a>
     </div>
 
   </div>
@@ -472,14 +472,14 @@ const STRINGS = {
     lblAddrSearch: '주소 찾기 *',
     lblAddTitle: '새로운 주소 추가하기',
     btnBack: '뒤로가기', btnSave: '저장 & 계속하기',
-    btnPrev: '이전', btnNext: '다음 — 안내 확인',
+    btnPrev: '이전', btnNext: '다음',
     searchPlaceholder: '매장명 또는 지역 검색',
     scheduleTitle: '서비스 일정',
     scheduleDesc: '토탈 케어 접수 시 긴급 수리 여부와 출고 희망일을 선택해 주세요.',
     lblUrgent: '긴급 서비스',
-    titleUrgent: '입고 후 5영업일 이내 출고  ▢  +n만원',
+    titleUrgent: '입고 후 5영업일 이내 출고 +n만원',
     descUrgent: '',
-    txtUrgentNote: '입고 후 5영업일 이내 출고  ▢  +n만원',
+    txtUrgentNote: '입고 후 5영업일 이내 출고 +n만원',
     lblDispatch: '출고 희망일',
     lblDispatchSelected: '출고 희망일',
     txtDispatchHint: '선택하신 날짜는 희망일로, 진행 내용에 따라 실제 출고일은 달라질 수 있습니다.<br>정확한 출고일은 알림톡 또는 이메일로 안내드릴게요.',
@@ -527,14 +527,14 @@ const STRINGS = {
     lblAddrSearch: 'Search Address *',
     lblAddTitle: 'Add New Address',
     btnBack: 'Back', btnSave: 'Save & Continue',
-    btnPrev: 'Back', btnNext: 'Next — Confirm',
+    btnPrev: 'Back', btnNext: 'Next',
     searchPlaceholder: 'Search store name or area',
     scheduleTitle: 'Service Schedule',
     scheduleDesc: 'For Total Care requests, select urgent service or a preferred dispatch date.',
     lblUrgent: 'Urgent Service',
-    titleUrgent: 'Dispatched within 5 business days of receipt  □  +n KRW',
+    titleUrgent: 'Dispatched within 5 business days of receipt +n KRW',
     descUrgent: '',
-    txtUrgentNote: 'Dispatched within 5 business days of receipt  □  +n KRW',
+    txtUrgentNote: 'Dispatched within 5 business days of receipt +n KRW',
     lblDispatch: 'Preferred Dispatch Date',
     lblDispatchSelected: 'Preferred Dispatch Date',
     txtDispatchHint: 'The selected date is a preferred date, and the actual dispatch date may change depending on the service details.<br>We will notify you of the exact dispatch date by AlimTalk or email.',

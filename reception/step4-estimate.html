@@ -78,7 +78,7 @@
           <div>
             <span id="est-cost" class="summary-val" style="font-size:16px;">₩49,800</span>
             <div id="est-urgent-fee" style="display:none;margin-top:4px;">
-              <span id="val-urgent-fee" style="font-size:12px;color:#c8491a;">+ 긴급 서비스 +n만원</span>
+              <span id="val-urgent-fee" style="font-size:12px;color:#c8491a;">+ 긴급 서비스 50,000원</span>
             </div>
           </div>
         </div>
@@ -171,19 +171,9 @@
 
     <p id="common-guide" style="font-size:12px;color:var(--gray-500);line-height:1.8;">상세 안내는 카카오톡 또는 이메일을 확인해 주세요.</p>
 
-    <div id="agreement-section" style="border-top:1px solid var(--gray-100);padding-top:28px;margin-top:32px;">
-      <p id="lbl-agreement" class="section-label" style="margin-top:0;">동의 및 안내</p>
-      <label class="inline-check" style="align-items:flex-start;margin-bottom:8px;">
-        <input type="checkbox" id="marketing-consent" autocomplete="off" onclick="try{var s=JSON.parse(localStorage.getItem('ps-state')||'{}');s.marketingConsent=this.checked;s.marketingAgreeYn=this.checked?'Y':'N';localStorage.setItem('ps-state',JSON.stringify(s));}catch(e){}" onchange="try{var s=JSON.parse(localStorage.getItem('ps-state')||'{}');s.marketingConsent=this.checked;s.marketingAgreeYn=this.checked?'Y':'N';localStorage.setItem('ps-state',JSON.stringify(s));}catch(e){}">
-        <span>
-          <span id="marketing-consent-label" style="display:block;color:var(--gray-800);">[선택] 마케팅 정보 수신 및 활용에 동의합니다.</span>
-        </span>
-      </label>
-    </div>
-
     <div class="btn-wrap">
       <a id="btn-prev" href="step3-shipping.html" class="btn btn-secondary">이전</a>
-      <a id="btn-complete" href="complete.html" class="btn btn-primary" onclick="saveMarketingConsent();try{var i=document.getElementById('marketing-consent');var s=JSON.parse(localStorage.getItem('ps-state')||'{}');s.marketingConsent=!!(i&&i.checked);s.marketingAgreeYn=s.marketingConsent?'Y':'N';localStorage.setItem('ps-state',JSON.stringify(s));}catch(e){}">접수 완료하기</a>
+      <a id="btn-complete" href="complete.html" class="btn btn-primary">접수 완료하기</a>
     </div>
 
   </div>
@@ -218,6 +208,7 @@ var currentLang = 'ko';
 var currentCountry = 'kr';
 var sendMethod = 'pickup';
 var receiveMethod = 'home';
+var URGENT_SERVICE_FEE = 50000;
 
 var DEFAULT_CONTACT = {
   kr: {
@@ -261,7 +252,7 @@ var STRINGS = {
     keySvcDetail: '서비스 상세',
     keyUrgentOpt: '추가 옵션',
     valUrgent: '긴급 서비스',
-    urgentFeeLabel: '+ 긴급 서비스 +n만원',
+    urgentFeeLabel: '+ 긴급 서비스 50,000원',
     keySend: '발송 방법',
     keyRecv: '수령 방법',
     keyAddr: '수령 주소',
@@ -273,8 +264,6 @@ var STRINGS = {
     noticeMain: '› 실물 확인 후 최종 진행 내용이 결정되며, 비용과 소요 기간은 달라질 수 있습니다.',
     noticePaid: '유상 수리의 경우 결제 완료 후 수리가 시작됩니다.',
     commonGuide: '상세 안내는 카카오톡 또는 이메일을 확인해 주세요.',
-    lblAgreement: '동의 및 안내',
-    marketingConsentLabel: '[선택] 마케팅 정보 수신 및 활용에 동의합니다.',
     btnPrev: '이전',
     btnComplete: '접수 완료하기',
   },
@@ -293,7 +282,7 @@ var STRINGS = {
     keySvcDetail: 'Detail',
     keyUrgentOpt: 'Add-on',
     valUrgent: '',
-    urgentFeeLabel: '',
+    urgentFeeLabel: '+ Urgent service KRW 50,000',
     keySend: 'Shipping',
     keyRecv: 'Return',
     keyAddr: 'Address',
@@ -305,8 +294,6 @@ var STRINGS = {
     noticeMain: '› Final service details will be determined after product inspection. Cost and lead time may change.',
     noticePaid: 'For paid repairs, service will begin after payment is completed.',
     commonGuide: 'Please check KakaoTalk or email for detailed guidance.',
-    lblAgreement: 'Consent',
-    marketingConsentLabel: '[Optional] I agree to receive and use marketing information.',
     btnPrev: 'Back',
     btnComplete: 'Confirm & Submit',
   },
@@ -397,6 +384,21 @@ function fmt(n) {
   return n.toLocaleString('ko-KR') + '원';
 }
 
+function getScenarioCost(scenario, state) {
+  scenario = scenario || {};
+  state = state || {};
+
+  if (scenario.urgent) {
+    if (scenario.baseCost !== null && scenario.baseCost !== undefined) return fmt(scenario.baseCost);
+    var savedCost = parseWonAmount(state.estimatedCost || state.estimateCost);
+    if (savedCost !== null) return fmt(savedCost + URGENT_SERVICE_FEE);
+  }
+
+  if (scenario.baseCost !== null && scenario.baseCost !== undefined) return fmt(scenario.baseCost);
+  if (scenario.costRatio) return fmt(Math.round(PRODUCT_RETAIL_PRICE * scenario.costRatio));
+  return state.estimatedCost || state.estimateCost || '₩49,800';
+}
+
 function setText(id, text) {
   var el = document.getElementById(id);
   if (el) el.textContent = text;
@@ -458,8 +460,9 @@ function getProcessText(key, state) {
   return '상담/기타 : 요청 사항 확인 후 안내';
 }
 
-function getEstimatedCost(state) {
+function getEstimatedCost(state, scenario) {
   state = state || {};
+  if (scenario) return getScenarioCost(scenario, state);
   return state.estimatedCost || state.estimateCost || '₩49,800';
 }
 
@@ -587,14 +590,14 @@ function renderIeRepairSummary(state) {
   return true;
 }
 
-function renderReceptionSummary(state) {
+function renderReceptionSummary(state, scenario) {
   state = state || {};
   setText('val-ticket', state.ticketId || state.ticketNo || state.ticketNumber || '555555');
   setText('val-product', state.productName || 'ALIO-01');
   setText('val-lens', getLensLabel(state));
   setText('val-issue', getIssueLabel(state));
   setText('val-dispatch', formatDotDate(state.dispatchDate || state.estimatedDispatchDate));
-  setText('est-cost', getEstimatedCost(state));
+  setText('est-cost', getEstimatedCost(state, scenario));
   renderIeRepairSummary(state);
   renderShippingGuide(state);
 }
@@ -679,38 +682,10 @@ function applyStrings(state) {
   setText('notice-main', st.noticeMain);
   setText('notice-paid', st.noticePaid);
   setText('common-guide', st.commonGuide);
-  setText('lbl-agreement', st.lblAgreement);
-  setText('marketing-consent-label', st.marketingConsentLabel);
   setText('btn-prev', st.btnPrev);
   setText('btn-complete', st.btnComplete);
   updateSendReceiveLabels(state);
   renderReceptionSummary(state);
-}
-
-function saveMarketingConsent() {
-  try {
-    var state = getSavedState();
-    var input = document.getElementById('marketing-consent');
-    state.marketingConsent = !!(input && input.checked);
-    state.marketingAgreeYn = state.marketingConsent ? 'Y' : 'N';
-    localStorage.setItem('ps-state', JSON.stringify(state));
-  } catch(e) {}
-}
-
-function restoreMarketingConsent(state) {
-  var input = document.getElementById('marketing-consent');
-  if (!input) return;
-  input.checked = !!(state && (state.marketingConsent || state.marketingAgreeYn === 'Y'));
-}
-
-var lastMarketingConsentState = null;
-function syncMarketingConsent() {
-  var input = document.getElementById('marketing-consent');
-  if (!input) return;
-  var checked = !!input.checked;
-  if (checked === lastMarketingConsentState) return;
-  lastMarketingConsentState = checked;
-  saveMarketingConsent();
 }
 
 function setLang(lang) {
@@ -764,16 +739,16 @@ function setScenario(key) {
     setText('est-method', getProcessText(key, state));
     var costEl = document.getElementById('est-cost');
     if (costEl) {
-      costEl.textContent = getEstimatedCost(state);
+      costEl.textContent = getEstimatedCost(state, s);
       costEl.style.color = '#111';
     }
     setText('est-leadtime', loc.leadtime);
     var urgentFee = document.getElementById('est-urgent-fee');
-    if (urgentFee) urgentFee.style.display = 'none';
+    if (urgentFee) urgentFee.style.display = s.urgent ? '' : 'none';
     var paidNotice = document.getElementById('notice-paid');
     if (paidNotice) paidNotice.style.display = 'none';
     setText('notice-main', STRINGS[currentLang].noticeMain);
-    renderReceptionSummary(state);
+    renderReceptionSummary(state, s);
   }
 
   var btnComplete = document.getElementById('btn-complete');
@@ -841,11 +816,6 @@ window.addEventListener('load', function() {
 
   applyStrings(state);
   setScenario(getScenarioFromState(state));
-  restoreMarketingConsent(state);
-  var marketingConsentInput = document.getElementById('marketing-consent');
-  if (marketingConsentInput) marketingConsentInput.addEventListener('change', saveMarketingConsent);
-  syncMarketingConsent();
-  window.setInterval(syncMarketingConsent, 300);
   if (state.productName) setText('val-product', state.productName);
 });
 </script>
