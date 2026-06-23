@@ -605,7 +605,9 @@ export function CustomerDetailPage() {
         {/* 기본 정보 */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="text-xs font-semibold text-gray-700">기본 정보</h3>
+            <div>
+              <h3 className="text-xs font-semibold text-gray-700">공식홈페이지 고객정보</h3>
+            </div>
             {customerEditMode ? (
               <div className="flex items-center gap-1.5">
                 <button
@@ -630,7 +632,7 @@ export function CustomerDetailPage() {
                 <button
                   type="button"
                   onClick={() => setCustomerEditMode(true)}
-                  className="px-2.5 py-1 rounded-lg border border-gray-200 text-[11px] font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors"
+                  className="hidden px-2.5 py-1 rounded-lg border border-gray-200 text-[11px] font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-colors"
                 >
                   수정
                 </button>
@@ -691,14 +693,6 @@ export function CustomerDetailPage() {
                     <option value="N">미동의</option>
                   </select>
                 </CustomerInput>
-                <CustomerInput label="등록일">
-                  <input
-                    type="text"
-                    value={customer.registeredAt}
-                    readOnly
-                    className={`${inputCls} bg-gray-50 text-gray-500 font-mono cursor-not-allowed`}
-                  />
-                </CustomerInput>
               </div>
             ) : (
               <dl className="grid grid-cols-3 gap-x-8 gap-y-4">
@@ -732,10 +726,6 @@ export function CustomerDetailPage() {
                     </span>
                   </dd>
                 </div>
-                <div className="col-span-3">
-                  <dt className="text-[11px] font-medium text-gray-400 mb-0.5">등록일</dt>
-                  <dd className="text-sm text-gray-600 font-mono">{customer.registeredAt}</dd>
-                </div>
               </dl>
             )}
           </div>
@@ -744,12 +734,14 @@ export function CustomerDetailPage() {
         {/* 주소 관리 */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
           <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-            <h3 className="text-xs font-semibold text-gray-700">주소 관리</h3>
+            <div>
+              <h3 className="text-xs font-semibold text-gray-700">PS 접수자 주소 정보</h3>
+            </div>
             {!showAddForm && (
               <button
                 type="button"
                 onClick={() => setShowAddForm(true)}
-                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                className="hidden items-center gap-1 text-xs text-gray-500 hover:text-gray-800 transition-colors"
               >
                 <Plus className="w-3.5 h-3.5" />추가
               </button>
@@ -786,7 +778,7 @@ export function CustomerDetailPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
+                      <div className="hidden items-center gap-1 flex-shrink-0">
                         <IconBtn icon={<Pencil className="w-3.5 h-3.5" />} onClick={() => startEdit(addr)} />
                         <IconBtn icon={<Trash2 className="w-3.5 h-3.5" />} onClick={() => setDeleteTargetId(addr.id)} danger />
                       </div>
@@ -805,7 +797,7 @@ export function CustomerDetailPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 flex-shrink-0">
+                      <div className="hidden items-center gap-1 flex-shrink-0">
                         <button
                           type="button"
                           onClick={() => setDefault(addr.id)}
