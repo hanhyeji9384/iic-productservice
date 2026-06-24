@@ -19,6 +19,42 @@
       margin-bottom: 36px;
     }
 
+    .scenario-control {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px dashed var(--gray-200);
+    }
+
+    .scenario-title {
+      margin-bottom: 10px;
+      color: var(--gray-400);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .scenario-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .scenario-button {
+      height: 42px;
+      border: 1px solid var(--gray-300);
+      background: var(--white);
+      color: var(--black);
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .scenario-button.active {
+      border-color: var(--black);
+      background: var(--black);
+      color: var(--white);
+    }
+
     .selected-product-label {
       font-size: 11px;
       color: var(--gray-400);
@@ -120,6 +156,21 @@
       color: #333;
     }
 
+    .agreement-error {
+      display: none;
+      margin: -8px 0 28px;
+      color: #c00;
+      font-size: 12px;
+    }
+
+    .btn-primary.disabled,
+    .btn-primary[aria-disabled='true'] {
+      background: var(--black);
+      color: var(--white);
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
     @media (max-width: 900px) {
       .selected-product {
         flex-direction: column;
@@ -165,6 +216,14 @@
     <h1 class="page-title">약관 및 필수 동의</h1>
     <p class="page-desc">입력하신 제품 정보로 접수를 진행하기 전, 수리 서비스 약관과 필수 확인사항을 확인해 주세요.</p>
 
+    <div class="scenario-control" aria-label="프로토타입 시나리오">
+      <p class="scenario-title">Prototype Scenario</p>
+      <div class="scenario-buttons">
+        <button type="button" class="scenario-button" data-scenario-line="organic">일반 제품</button>
+        <button type="button" class="scenario-button" data-scenario-line="ie">AI 제품</button>
+      </div>
+    </div>
+
     <div class="selected-product">
       <div>
         <p class="selected-product-label">선택한 제품</p>
@@ -179,11 +238,11 @@
       <div class="agreement-list" id="agreement-list"></div>
     </div>
 
-    <p id="agreement-error" style="display:none;font-size:12px;color:#c00;margin:-8px 0 28px;">필수 확인사항을 확인하고 동의해 주세요.</p>
+    <p id="agreement-error" class="agreement-error">필수 확인사항을 확인하고 동의해 주세요.</p>
 
     <div class="btn-wrap">
       <a href="step1.html" class="btn btn-secondary" id="txt-btn-prev">이전</a>
-      <a href="step2-service-type.html" class="btn btn-primary" id="txt-btn-next" style="opacity:0.4;pointer-events:none;">다음</a>
+      <a href="step2-service-type.html" class="btn btn-primary disabled" id="txt-btn-next" aria-disabled="true">다음</a>
     </div>
   </div>
 </main>
@@ -215,26 +274,36 @@ var TERMS_DATA = {
   organic: {
     title: '수리 신청 전, 꼭 확인해 주세요.',
     sections: [
-      ['수리 기간 안내', '유상 수리 : 결제 후 평일 기준 7일 이내 처리·발송\n무상 수리 : 선택한 희망 출고일에 맞춰 진행 (상황에 따라 1~3일 변동될 수 있습니다)'],
-      ['제품을 보내실 때', '케이스·보증 카드는 분실 위험이 있으니 동봉하지 말아 주세요.\n› 동봉된 경우, 분실 방지를 위해 함께 반송될 수 있습니다.\n별도 제작 렌즈는 빼고 보내주세요. 수리 중 손상될 수 있으며, 동봉된 렌즈의 파손에 대해서는 보상이 제공되지 않습니다.'],
-      ['제품 보관 및 폐기 안내', '프로덕트 서비스팀은 제품 판정일로부터 30일간 보관합니다.\n30일 이내 결제 확인 또는 회신이 없으면, 제품은 반송되거나 관련 법령에 따라 폐기될 수 있습니다.\n› 폐기 후에는 보상·반환이 불가합니다.']
+      ['제품을 보내실 때', '케이스·보증 카드는 분실 위험이 있으니 동봉하지 말아 주세요.\n동봉된 경우, 분실 방지를 위해 함께 반송될 수 있습니다.\n별도 제작 렌즈는 빼고 보내주세요. 수리 중 손상될 수 있으며, 동봉된 렌즈의 파손에 대해서는 보상이 제공되지 않습니다.'],
+      ['제품 보관 및 폐기 안내', '프로덕트 서비스팀은 제품 판정일로부터 30일간 보관합니다.\n30일 이내 결제 확인 또는 회신이 없으면, 제품은 반송되거나 관련 법령에 따라 폐기될 수 있습니다.\n폐기 후에는 보상·반환이 불가합니다.']
     ],
-    fullTerms: '제1조 [목적]\n본 약관은 젠틀몬스터 제품의 수리 서비스(이하 “서비스”) 이용과 관련하여,\n고객과 젠틀몬스터(이하 “회사”) 간의 권리, 의무 및 기타 필요한 사항을 규정함을 목적으로 합니다.\n\n제2조 [보증 기준]\n회사는 젠틀몬스터 정품 제품에 한하여 아래 기준으로 보증 서비스를 제공합니다.\n수리 보증 기간: 최초 구매일로부터 36개월\n품질 보증 기간: 최초 구매일로부터 24개월\n품질 보증 기간 내 제조상 결함으로 인한 제품 이상은 무상 수리를 제공합니다.\n\n보증 적용 여부는 프로덕트 서비스팀의 실물 검수 과정을 통해 판정됩니다.\n공식 구매 증빙(보증 카드, 구매 영수증 등)이 확인되지 않은 제품은 보증 및 서비스 제공이 제한됩니다.\n외부에서 제작된 렌즈, 사설 코패드, 케이스 등은 보증 및 서비스 대상에 포함되지 않습니다.\n\n제3조 [수리 서비스 이용 및 절차]\n고객은 수리 접수 시 회사가 지정한 절차에 따라 제품을 발송해야 합니다.\n케이스 및 보증 카드는 분실 위험이 있으므로 동봉하지 않습니다.\n외부 제작 렌즈는 수리 중 손상될 우려가 있어 미삽입 상태로 발송해야 합니다.\n렌즈 파손에 대해서는 보상이 제공되지 않습니다.\n제품은 도착일 기준으로 순차적으로 점검 및 수리가 진행됩니다.\n유상 수리의 경우, 고객의 결제 완료 이후 수리가 시작됩니다.\n서비스 진행 내용(판정, 비용, 출고 예정일 등)은 이메일·카카오톡·My Account를 통해 안내됩니다.\n\n제4조 [수리 기간 및 비용]\n수리 기간은 서비스 유형 및 협력업체 여부에 따라 상이하며, 아래 기준을 원칙으로 합니다.\n본사 수리: 입고일로부터 약 10–15일 내외\n협력업체 수리: 입고일로부터 약 25–30일 내외\n\n유상 수리의 경우, 비용은 제품의 상태에 따라 산정됩니다.\n수리비 결제 지연 또는 고객 응답 지연으로 인한 지체에 대해서는 회사가 책임지지 않습니다.\n\n제5조 [제품 보관 및 처리]\n회사는 서비스 판정일 기준 30일간 제품을 무상 보관합니다.\n보관 기간 내 결제 확인이 이루어지지 않거나 고객 회신이 없을 경우,\n제품은 반송되거나 관련 법령에 따라 적절한 방식으로 폐기될 수 있습니다.\n제품 폐기 이후에는 어떠한 형태의 보상이나 반환이 불가합니다.\n\n제6조 [기타]\n본 약관에서 정하지 않은 사항은 「전자상거래 등에서의 소비자보호에 관한 법률」 및 관련 규정을 따릅니다.',
-    checks: [{ id: 'terms', text: '수리 서비스 약관 전체 내용에 동의합니다. (필수)' }]
+    fullTerms: '제1조 [목적]\n본 약관은 젠틀몬스터 제품의 수리 서비스 이용과 관련하여 고객과 젠틀몬스터 간의 권리, 의무 및 기타 필요한 사항을 규정함을 목적으로 합니다.\n\n제2조 [보증 기준]\n회사는 젠틀몬스터 정품 제품에 한하여 기준에 따라 보증 서비스를 제공합니다.\n품질 보증 기간 내 제조상 결함으로 인한 제품 이상은 무상 수리를 제공합니다.\n\n제3조 [수리 서비스 이용 및 절차]\n고객은 수리 접수 시 회사가 지정한 절차에 따라 제품을 발송해야 합니다.\n케이스 및 보증 카드는 분실 위험이 있으므로 동봉하지 않습니다.\n외부 제작 렌즈는 수리 중 손상될 우려가 있어 미삽입 상태로 발송해야 합니다.\n\n제4조 [수리 기간 및 비용]\n수리 기간은 서비스 유형 및 협력업체 여부에 따라 상이합니다.\n유상 수리의 경우 비용은 제품 상태에 따라 산정됩니다.\n\n제5조 [제품 보관 및 처리]\n회사는 서비스 판정일 기준 30일간 제품을 보관합니다.\n보관 기간 내 결제 확인 또는 고객 회신이 없을 경우 제품은 반송되거나 관련 법령에 따라 폐기될 수 있습니다.',
+    checks: [{ id: 'terms', text: '수리 서비스 약관 전체 내용에 동의합니다. (필수)' }],
+    defaultProduct: {
+      productName: 'MUSTANG 01',
+      serialNumber: 'FR010125-00003821',
+      purchaseDate: '2025-01-15',
+      purchaseStore: '하우스 노웨어 서울'
+    }
   },
   ie: {
     title: '스마트 아이웨어 접수 전, 꼭 확인해 주세요.',
     sections: [
-      ['수리 기간 안내', '유상 수리 : 결제 후 영업일 기준 7일 이내 처리·발송\n무상 수리 : 진행 내용에 따라 소요 기간이 달라질 수 있습니다.'],
       ['데이터 안내', '페어링을 해제하면 기기에 저장된 데이터가 초기화됩니다.\n개인정보와 설정값을 미리 백업하신 후 제품을 발송해 주세요.'],
       ['제품을 보내실 때', '제품 본체 또는 충전 케이스만 보내주세요.\n안경닦이 등 부속품은 분실 우려가 있어 함께 보내지 말아 주세요.'],
-      ['제품 보관 및 폐기 안내', '프로덕트 서비스팀은 제품 판정일로부터 30일간 보관합니다.\n30일 이내 결제 확인 또는 회신이 없으면, 제품은 반송되거나 관련 법령에 따라 폐기될 수 있습니다.\n› 폐기 후에는 보상·반환이 불가합니다.']
+      ['제품 보관 및 폐기 안내', '프로덕트 서비스팀은 제품 판정일로부터 30일간 보관합니다.\n30일 이내 결제 확인 또는 회신이 없으면, 제품은 반송되거나 관련 법령에 따라 폐기될 수 있습니다.\n폐기 후에는 보상·반환이 불가합니다.']
     ],
     fullTerms: 'IE 수리 서비스 약관 PDF는 추후 연결 예정입니다.',
     checks: [
       { id: 'data', text: '위 내용을 확인했으며, 데이터 초기화 가능성에 동의합니다. (필수)' },
       { id: 'terms', text: '수리 서비스 약관 전체 내용에 동의합니다. (필수)' }
-    ]
+    ],
+    defaultProduct: {
+      productName: '스마트 브리즈비 03 (BK)',
+      serialNumber: 'R4AC9001K85',
+      purchaseDate: '2025-01-15',
+      purchaseStore: '젠틀몬스터 스토어'
+    }
   }
 };
 
@@ -243,7 +312,9 @@ var currentLine = 'organic';
 
 function readState() {
   try { psState = JSON.parse(localStorage.getItem('ps-state') || '{}'); } catch(e) { psState = {}; }
-  currentLine = psState.productLine || (psState.isAi || psState.aiProduct ? 'ie' : 'organic');
+  var params = new URLSearchParams(window.location.search);
+  var hasAiQuery = params.get('ai') === 'true' || params.get('productLine') === 'ie';
+  currentLine = psState.productLine || (psState.isAi || psState.aiProduct || hasAiQuery ? 'ie' : 'organic');
   if (currentLine !== 'ie') currentLine = 'organic';
 }
 
@@ -257,55 +328,108 @@ function setHtml(id, html) {
   if (el) el.innerHTML = html;
 }
 
-function queryForStep2() {
-  var params = new URLSearchParams(window.location.search);
-  var keep = [];
-  if (params.get('mode')) keep.push('mode=' + encodeURIComponent(params.get('mode')));
-  if (currentLine === 'ie') keep.push('ai=true');
-  return keep.length ? '?' + keep.join('&') : '';
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
-function queryForStep1() {
+function buildQuery(extra) {
   var params = new URLSearchParams(window.location.search);
-  var keep = [];
-  if (params.get('order')) keep.push('order=' + encodeURIComponent(params.get('order')));
-  if (params.get('mode')) keep.push('mode=' + encodeURIComponent(params.get('mode')));
-  return keep.length ? '?' + keep.join('&') : '';
+  var keep = new URLSearchParams();
+  ['mode', 'order'].forEach(function(key) {
+    if (params.get(key)) keep.set(key, params.get(key));
+  });
+  Object.keys(extra || {}).forEach(function(key) {
+    if (extra[key]) keep.set(key, extra[key]);
+  });
+  var query = keep.toString();
+  return query ? '?' + query : '';
 }
 
-function renderTerms() {
-  readState();
+function scenarioProduct(line) {
+  var data = TERMS_DATA[line] || TERMS_DATA.organic;
+  return data.defaultProduct;
+}
+
+function applyScenario(line) {
+  currentLine = line === 'ie' ? 'ie' : 'organic';
+  var product = scenarioProduct(currentLine);
+  psState.productLine = currentLine;
+  psState.isAi = currentLine === 'ie';
+  psState.aiProduct = currentLine === 'ie';
+  psState.productName = product.productName;
+  psState.serialNumber = product.serialNumber;
+  psState.purchaseDate = product.purchaseDate;
+  psState.purchaseStore = product.purchaseStore;
+  psState.serviceGuideAgreed = false;
+  psState.termsAgreeYn = 'N';
+  psState.ieDataResetConsent = false;
+
+  try { localStorage.setItem('ps-state', JSON.stringify(psState)); } catch(e) {}
+  renderTerms({ readState: false });
+}
+
+function renderScenarioButtons() {
+  document.querySelectorAll('[data-scenario-line]').forEach(function(button) {
+    var isActive = button.getAttribute('data-scenario-line') === currentLine;
+    button.classList.toggle('active', isActive);
+    button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+  });
+}
+
+function renderSelectedProduct(data) {
+  var fallback = data.defaultProduct || {};
+  var productName = psState.productName || fallback.productName || '제품 정보 확인 필요';
+  var meta = [
+    psState.orderNo ? '주문번호 ' + psState.orderNo : '',
+    'S/N ' + (psState.serialNumber || fallback.serialNumber || '-'),
+    '구매일 ' + (psState.purchaseDate || fallback.purchaseDate || '-'),
+    psState.purchaseStore || fallback.purchaseStore || ''
+  ].filter(Boolean).map(escapeHtml).join('<br>');
+
+  setText('selected-product-name', productName);
+  setHtml('selected-product-meta', meta);
+}
+
+function renderTerms(options) {
+  if (!options || options.readState !== false) readState();
   var data = TERMS_DATA[currentLine] || TERMS_DATA.organic;
   setText('terms-title', data.title);
-  setText('selected-product-name', psState.productName || '제품 정보 확인 필요');
-  setHtml('selected-product-meta', [
-    psState.orderNo ? '주문번호 ' + psState.orderNo : '',
-    psState.serialNumber ? 'S/N ' + psState.serialNumber : '',
-    psState.purchaseDate ? '구매일 ' + psState.purchaseDate : '',
-    psState.purchaseStore || ''
-  ].filter(Boolean).join('<br>'));
+  renderScenarioButtons();
+  renderSelectedProduct(data);
 
   var body = data.sections.map(function(section) {
     return '<div class="terms-section">'
-      + '<p class="terms-section-title">' + section[0] + '</p>'
-      + '<p class="terms-copy">' + section[1] + '</p>'
+      + '<p class="terms-section-title">' + escapeHtml(section[0]) + '</p>'
+      + '<p class="terms-copy">' + escapeHtml(section[1]) + '</p>'
       + '</div>';
   }).join('');
-  body += '<details class="terms-toggle"><summary>수리 서비스 약관 보기 (PDF)</summary><div class="terms-toggle-body">' + data.fullTerms + '</div></details>';
+  body += '<details class="terms-toggle"><summary>수리 서비스 약관 보기 (PDF)</summary><div class="terms-toggle-body">' + escapeHtml(data.fullTerms) + '</div></details>';
   setHtml('terms-body', body);
 
   setHtml('agreement-list', data.checks.map(function(check) {
     return '<label class="agreement-check">'
-      + '<input type="checkbox" id="agree-' + check.id + '" onchange="updateNextState()">'
-      + '<span>' + check.text + '</span>'
+      + '<input type="checkbox" id="agree-' + check.id + '" data-agreement="' + check.id + '">'
+      + '<span>' + escapeHtml(check.text) + '</span>'
       + '</label>';
   }).join(''));
+  bindAgreementInputs();
 
   var prev = document.getElementById('txt-btn-prev');
-  if (prev) prev.href = 'step1.html' + queryForStep1();
+  if (prev) prev.href = 'step1.html' + buildQuery({});
   var next = document.getElementById('txt-btn-next');
-  if (next) next.href = 'step2-service-type.html' + queryForStep2();
+  if (next) next.href = 'step2-service-type.html' + buildQuery(currentLine === 'ie' ? { ai: 'true' } : {});
   updateNextState();
+}
+
+function bindAgreementInputs() {
+  document.querySelectorAll('[data-agreement]').forEach(function(input) {
+    input.addEventListener('change', updateNextState);
+  });
 }
 
 function allChecked() {
@@ -321,8 +445,8 @@ function updateNextState() {
   var next = document.getElementById('txt-btn-next');
   var error = document.getElementById('agreement-error');
   if (next) {
-    next.style.opacity = ok ? '1' : '0.4';
-    next.style.pointerEvents = ok ? 'auto' : 'none';
+    next.classList.toggle('disabled', !ok);
+    next.setAttribute('aria-disabled', ok ? 'false' : 'true');
   }
   if (error && ok) error.style.display = 'none';
 }
@@ -335,12 +459,19 @@ function saveAgreement() {
   }
   psState.serviceGuideAgreed = true;
   psState.termsAgreeYn = 'Y';
-  psState.ieDataResetConsent = currentLine === 'ie' ? !!document.getElementById('agree-data')?.checked : false;
+  var dataAgree = document.getElementById('agree-data');
+  psState.ieDataResetConsent = currentLine === 'ie' ? !!(dataAgree && dataAgree.checked) : false;
+  psState.productLine = currentLine;
   try { localStorage.setItem('ps-state', JSON.stringify(psState)); } catch(e) {}
   return true;
 }
 
 window.addEventListener('load', function() {
+  document.querySelectorAll('[data-scenario-line]').forEach(function(button) {
+    button.addEventListener('click', function() {
+      applyScenario(button.getAttribute('data-scenario-line'));
+    });
+  });
   renderTerms();
   var next = document.getElementById('txt-btn-next');
   if (next) {
