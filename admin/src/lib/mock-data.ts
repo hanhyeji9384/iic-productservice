@@ -905,6 +905,22 @@ export const COMPONENT_RETURNS: ComponentReturn[] = [
     returnedAt: '2026-06-17 09:30:00',
     alimtalkSentYn: 'Y',
   },
+  {
+    id: 'CR202606180003',
+    sourceTicketNo: '2606142ZAIJ4LOQPJVZ',
+    branchCode: 'C1002',
+    customerName: 'Chris Park',
+    phone: '+1-212-555-0101',
+    email: 'chris.park@example.com',
+    productName: 'LILIT-01',
+    componentType: 'OTHER',
+    courier: 'FedEx',
+    trackingNo: '772945681204',
+    status: 'IN_PROGRESS',
+    createdAt: '2026-06-18 11:05:30',
+    returnedAt: null,
+    alimtalkSentYn: 'N',
+  },
 ]
 
 export const MEMBERS: Member[] = [

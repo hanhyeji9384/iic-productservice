@@ -28,83 +28,83 @@ interface NavGroup {
 const NAV: NavGroup[] = [
   {
     label: '시스템 관리',
-    i18nKey: 'admin::nav::system-management',
+    i18nKey: 'nav.system_management',
     icon: UserCog,
     children: [
-      { to: '/members',                  label: '회원 관리',      i18nKey: 'admin::nav::system-management::members', icon: UserCog },
-      { to: '/roles',                    label: '권한 관리',      i18nKey: 'admin::nav::system-management::roles', icon: Shield },
-      { to: '/settings/reception-slots', label: '접수 슬롯 설정', i18nKey: 'admin::nav::system-management::reception-slots', icon: CalendarDays },
+      { to: '/members',                  label: '회원 관리',      i18nKey: 'nav.system_management.members', icon: UserCog },
+      { to: '/roles',                    label: '권한 관리',      i18nKey: 'nav.system_management.roles', icon: Shield },
+      { to: '/settings/reception-slots', label: '접수 슬롯 설정', i18nKey: 'nav.system_management.reception_slots', icon: CalendarDays },
     ],
   },
   {
     label: '마스터 관리',
-    i18nKey: 'admin::nav::master-management',
+    i18nKey: 'nav.master_management',
     icon: Package,
     children: [
-      { to: '/products',           label: '제품 리스트',      i18nKey: 'admin::nav::master-management::product-list', icon: Package },
-      { to: '/product-management', label: '제품 관리',        i18nKey: 'admin::nav::master-management::product-management', icon: Package },
-      { to: '/parts',              label: '부품 관리',        i18nKey: 'admin::nav::master-management::parts', icon: Wrench },
-      { to: '/stores',             label: '매장/거래처 관리', i18nKey: 'admin::nav::master-management::stores', icon: Store },
+      { to: '/products',           label: '제품 리스트',      i18nKey: 'nav.master_management.product_list', icon: Package },
+      { to: '/product-management', label: '제품 관리',        i18nKey: 'nav.master_management.product_management', icon: Package },
+      { to: '/parts',              label: '부품 관리',        i18nKey: 'nav.master_management.parts', icon: Wrench },
+      { to: '/stores',             label: '매장/거래처 관리', i18nKey: 'nav.master_management.stores', icon: Store },
     ],
   },
   {
     label: '재고 관리',
-    i18nKey: 'admin::nav::stock-management',
+    i18nKey: 'nav.stock_management',
     icon: ArchiveX,
     children: [
-      { to: '/stock', label: '재고 현황', i18nKey: 'admin::nav::stock-management::stock', icon: ArchiveX },
+      { to: '/stock', label: '재고 현황', i18nKey: 'nav.stock_management.stock', icon: ArchiveX },
     ],
   },
   {
     label: '고객 관리',
-    i18nKey: 'admin::nav::customer-management',
+    i18nKey: 'nav.customer_management',
     icon: Users,
     children: [
-      { to: '/customers', label: '고객', i18nKey: 'admin::nav::customer-management::customers', icon: Users },
+      { to: '/customers', label: '고객', i18nKey: 'nav.customer_management.customers', icon: Users },
     ],
   },
   {
     label: '티켓 관리',
-    i18nKey: 'admin::nav::ticket-management',
+    i18nKey: 'nav.ticket_management',
     icon: Ticket,
     children: [
-      { to: '/tickets',         label: '티켓 관리',             i18nKey: 'admin::nav::ticket-management::tickets', icon: Ticket },
-      { to: '/shipping',        label: '출고 관리',             i18nKey: 'admin::nav::ticket-management::shipping', icon: Truck },
-      { to: '/shipping/component-returns', label: '구성품 반송', i18nKey: 'admin::nav::ticket-management::component-returns', icon: Package },
-      { to: '/invoice-packing', label: '인보이스/패킹리스트', i18nKey: 'admin::nav::ticket-management::invoice-packing', icon: FileText },
+      { to: '/tickets',         label: '티켓 관리',             i18nKey: 'nav.ticket_management.tickets', icon: Ticket },
+      { to: '/shipping',        label: '출고 관리',             i18nKey: 'nav.ticket_management.shipping', icon: Truck },
+      { to: '/shipping/component-returns', label: '구성품 반송', i18nKey: 'nav.ticket_management.component_returns', icon: Package },
+      { to: '/invoice-packing', label: '인보이스/패킹리스트', i18nKey: 'nav.ticket_management.invoice_packing', icon: FileText },
     ],
   },
   {
     label: '로그 관리',
-    i18nKey: 'admin::nav::log-management',
+    i18nKey: 'nav.log_management',
     icon: Download,
     children: [
-      { to: '/download-logs', label: '다운로드 로그', i18nKey: 'admin::nav::log-management::download-logs', icon: Download },
-      { to: '/privacy-logs',  label: '개인정보 처리 로그', i18nKey: 'admin::nav::log-management::privacy-logs', icon: ShieldCheck },
+      { to: '/download-logs', label: '다운로드 로그', i18nKey: 'nav.log_management.download_logs', icon: Download },
+      { to: '/privacy-logs',  label: '개인정보 처리 로그', i18nKey: 'nav.log_management.privacy_logs', icon: ShieldCheck },
     ],
   },
   {
     label: '에러 페이지',
-    i18nKey: 'admin::nav::error-pages',
+    i18nKey: 'nav.error_pages',
     icon: AlertTriangle,
     children: [
-      { to: '/errors/404',     label: '404 Not Found',    i18nKey: 'admin::nav::error-pages::not-found', icon: AlertTriangle },
-      { to: '/errors/403',     label: '403 Forbidden',    i18nKey: 'admin::nav::error-pages::forbidden', icon: AlertTriangle },
-      { to: '/errors/500',     label: '500 Server Error', i18nKey: 'admin::nav::error-pages::server-error', icon: AlertTriangle },
-      { to: '/errors/offline', label: 'Offline',          i18nKey: 'admin::nav::error-pages::offline', icon: AlertTriangle },
+      { to: '/errors/404',     label: '404 Not Found',    i18nKey: 'nav.error_pages.not_found', icon: AlertTriangle },
+      { to: '/errors/403',     label: '403 Forbidden',    i18nKey: 'nav.error_pages.forbidden', icon: AlertTriangle },
+      { to: '/errors/500',     label: '500 Server Error', i18nKey: 'nav.error_pages.server_error', icon: AlertTriangle },
+      { to: '/errors/offline', label: 'Offline',          i18nKey: 'nav.error_pages.offline', icon: AlertTriangle },
     ],
   },
   {
     label: '인증 페이지',
-    i18nKey: 'admin::nav::auth-pages',
+    i18nKey: 'nav.auth_pages',
     icon: KeyRound,
     children: [
-      { to: '/auth/login',           label: '로그인',       i18nKey: 'admin::nav::auth-pages::login', icon: KeyRound },
-      { to: '/auth/otp',             label: 'OTP 인증',     i18nKey: 'admin::nav::auth-pages::otp', icon: KeyRound },
-      { to: '/auth/forgot-password', label: '비밀번호 찾기', i18nKey: 'admin::nav::auth-pages::forgot-password', icon: KeyRound },
-      { to: '/auth/reset-password',      label: '비밀번호 변경',      i18nKey: 'admin::nav::auth-pages::reset-password', icon: KeyRound },
-      { to: '/auth/reset-password/done', label: '비밀번호 변경 완료', i18nKey: 'admin::nav::auth-pages::reset-password-done', icon: KeyRound },
-      { to: '/auth/setup-2fa',           label: 'Google Auth 등록',  i18nKey: 'admin::nav::auth-pages::setup-totp', icon: KeyRound },
+      { to: '/auth/login',           label: '로그인',       i18nKey: 'nav.auth_pages.login', icon: KeyRound },
+      { to: '/auth/otp',             label: 'OTP 인증',     i18nKey: 'nav.auth_pages.otp', icon: KeyRound },
+      { to: '/auth/forgot-password', label: '비밀번호 찾기', i18nKey: 'nav.auth_pages.forgot_password', icon: KeyRound },
+      { to: '/auth/reset-password',      label: '비밀번호 변경',      i18nKey: 'nav.auth_pages.reset_password', icon: KeyRound },
+      { to: '/auth/reset-password/done', label: '비밀번호 변경 완료', i18nKey: 'nav.auth_pages.reset_password_done', icon: KeyRound },
+      { to: '/auth/setup-2fa',           label: 'Google Auth 등록',  i18nKey: 'nav.auth_pages.setup_totp', icon: KeyRound },
     ],
   },
 ]
@@ -170,6 +170,7 @@ export function AdminLayout() {
         <div className={`py-5 border-b border-gray-100 ${collapsed ? 'px-3' : 'px-5'}`}>
           <button
             onClick={() => navigate(pfx)}
+            data-i18n-skip="true"
             className={`hover:opacity-70 transition-opacity ${collapsed ? 'flex justify-center w-full' : 'flex items-center gap-2.5'}`}
           >
             <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gray-900 flex items-center justify-center">
@@ -325,6 +326,7 @@ export function AdminLayout() {
               </div>
               <button
                 onClick={() => navigate('/login')}
+                data-i18n-skip="true"
                 className="flex items-center gap-2 pl-3 pr-3.5 py-1.5 text-xs font-medium bg-gray-100 rounded-xl text-gray-700 hover:bg-gray-200 transition-colors"
               >
                 <LogOut className="w-3.5 h-3.5" />

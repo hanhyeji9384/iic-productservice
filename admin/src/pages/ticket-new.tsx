@@ -102,9 +102,17 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
   return <dt className="text-[11px] font-medium text-gray-400 mb-1">{children}</dt>
 }
 
-function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
+function SectionCard({
+  title,
+  children,
+  className = '',
+}: {
+  title: string
+  children: React.ReactNode
+  className?: string
+}) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${className}`}>
       <div className="px-5 py-3 border-b border-gray-100">
         <h3 className="text-xs font-semibold text-gray-700">{title}</h3>
       </div>
@@ -1139,10 +1147,18 @@ export function TicketNewPage() {
     const addresses = [...customerAddresses]
     const ticketBranchCode = resolveTicketBranchCode()
     const selectedDeliveryAddress = customerAddresses.find(address => address.id === form.deliveryAddressId)
+    const selectedPickupStore = STORES.find(store => store.code === form.pickupStoreCode)
     const deliveryCountry = isNewCustomer
       ? (form.country || defaultCountryForBranch(ticketBranchCode))
       : (selectedDeliveryAddress?.country || form.country || defaultCountryForBranch(ticketBranchCode))
     const deliveryCity = isNewCustomer ? form.newAddressCity.trim() : selectedDeliveryAddress?.city?.trim()
+    const receptionMethod = form.receptionType === 'STORE'
+      ? 'store'
+      : form.receptionType === 'HOME'
+        ? 'house'
+        : null
+    const isHomeReception = receptionMethod === 'house'
+    const isStoreReception = receptionMethod === 'store'
 
     if (form.receptionType === 'HOME' && isOverseasCountry(deliveryCountry) && !deliveryCity) {
       alert('해외 자택수령 주소는 City 입력이 필요합니다.')
@@ -1193,6 +1209,21 @@ export function TicketNewPage() {
       receptionTitle: reRepairSourceTicket ? '재수리 접수' : undefined,
       originalTicketNo: reRepairSourceTicket?.ticketNo,
       reRepairYn: reRepairSourceTicket ? 'Y' : 'N',
+      receptionMethod,
+      receptionStoreCode: isStoreReception ? form.pickupStoreCode || null : null,
+      receptionStoreName: isStoreReception ? form.pickupStoreName || selectedPickupStore?.name || null : null,
+      deliveryCountry: isHomeReception ? deliveryCountry : null,
+      deliveryZipCode: isHomeReception
+        ? (isNewCustomer ? form.newAddressZipCode.trim() : selectedDeliveryAddress?.zipCode) || null
+        : null,
+      deliveryAddress1: isHomeReception
+        ? (isNewCustomer ? form.newAddressLine1.trim() : selectedDeliveryAddress?.address1) || null
+        : null,
+      deliveryAddress2: isHomeReception
+        ? (isNewCustomer ? form.newAddressLine2.trim() : selectedDeliveryAddress?.address2) || null
+        : null,
+      deliveryCity: isHomeReception ? deliveryCity || null : null,
+      deliveryState: null,
       productName: form.productName || '-',
       repairDepartment: '',
       repairDetail: '',
@@ -1281,7 +1312,7 @@ export function TicketNewPage() {
           )}
 
           {/* 접수 정보 */}
-          <SectionCard title="접수 정보">
+          <SectionCard title="2. 접수/수령 정보" className="order-2">
             <dl className="space-y-5">
               <div>
                 <FieldLabel>접수처</FieldLabel>
@@ -1431,7 +1462,7 @@ export function TicketNewPage() {
           </SectionCard>
 
           {/* 고객 정보 */}
-          <SectionCard title="고객 정보">
+          <SectionCard title="1. 고객 정보" className="order-1">
             <dl className="space-y-5">
               <div>
                 <FieldLabel>고객 검색</FieldLabel>
@@ -1554,7 +1585,7 @@ export function TicketNewPage() {
           </SectionCard>
 
           {/* 제품 정보 */}
-          <SectionCard title="제품 정보">
+          <SectionCard title="3. 제품 정보" className="order-3">
             <dl className="space-y-5">
               <div>
                 <FieldLabel>제품명</FieldLabel>

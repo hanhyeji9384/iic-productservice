@@ -1,8 +1,11 @@
-import { useMemo, useState, useEffect } from 'react'
-import { ArrowDown, ArrowUp, ArrowUpDown, Filter, Printer } from 'lucide-react'
+import { useMemo, useState, useEffect, useRef } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { ArrowDown, ArrowUp, ArrowUpDown, ExternalLink, Filter, Printer } from 'lucide-react'
+import { Pagination } from '@/components/pagination'
 import { PRODUCTS } from '@/lib/mock-data'
-import { getTicketsWithExtras } from '@/lib/prototype-storage'
+import { getComponentReturns, getCustomersWithOverrides, getTicketsWithExtras } from '@/lib/prototype-storage'
 import { maskName } from '@/lib/masking'
+import type { ComponentReturn, Ticket } from '@/lib/types'
 
 type Tab = 'cj' | 'dhl' | 'haengrang' | 'fedex'
 type SortKey = 'ticketNo' | 'customerName' | 'productName' | 'receptionPlace' | 'receivedAt'
@@ -23,9 +26,10 @@ const BRANCH_TABS: Record<string, Tab[]> = {
 
 const TBD_TABS: Tab[] = ['haengrang']
 
-type ColKey = 'ticketNo' | 'customerName' | 'productName' | 'receptionPlace' | 'receivedAt'
+type ColKey = 'tag' | 'ticketNo' | 'customerName' | 'productName' | 'receptionPlace' | 'receivedAt'
 
 const TABLE_COLS: { key: ColKey; label: string; sort: SortKey; filterable: boolean }[] = [
+  { key: 'tag',           label: '태그',         sort: 'ticketNo',       filterable: false },
   { key: 'ticketNo',      label: 'Ticket No.',  sort: 'ticketNo',       filterable: true  },
   { key: 'customerName',  label: '고객명',       sort: 'customerName',   filterable: true  },
   { key: 'productName',   label: '제품코드',     sort: 'productName',    filterable: false },
@@ -34,8 +38,77 @@ const TABLE_COLS: { key: ColKey; label: string; sort: SortKey; filterable: boole
 ]
 
 const initFilters: Record<string, string> = { ticketNo: '', customerName: '' }
+const PAGE_SIZE = 20
+
+type ShippingRow = {
+  id: string
+  type: 'ticket' | 'component-return'
+  ticketNo: string
+  branchCode: string
+  customerName: string
+  phone: string
+  email: string
+  productName: string
+  receptionPlace: string
+  receivedAt: string
+}
+
+function ticketToRow(ticket: Ticket): ShippingRow {
+  return {
+    id: `ticket:${ticket.ticketNo}`,
+    type: 'ticket',
+    ticketNo: ticket.ticketNo,
+    branchCode: ticket.branchCode,
+    customerName: ticket.customerName,
+    phone: ticket.phone,
+    email: ticket.email,
+    productName: ticket.productName,
+    receptionPlace: ticket.receptionPlace,
+    receivedAt: ticket.receivedAt,
+  }
+}
+
+function componentReturnToRow(record: ComponentReturn): ShippingRow {
+  return {
+    id: `component-return:${record.id}`,
+    type: 'component-return',
+    ticketNo: record.sourceTicketNo,
+    branchCode: record.branchCode,
+    customerName: record.customerName,
+    phone: record.phone,
+    email: record.email,
+    productName: record.productName,
+    receptionPlace: '구성품 반송 출고',
+    receivedAt: record.createdAt,
+  }
+}
+
+function componentReturnMatchesTab(record: ComponentReturn, tab: Tab) {
+  if (record.status === 'COMPLETED') return false
+  if (tab === 'cj') return record.courier === 'CJ대한통운'
+  if (tab === 'fedex') return record.courier === 'FedEx'
+  if (tab === 'dhl') return record.courier === 'DHL'
+  return false
+}
+
+function normalizeDigits(value?: string | null) {
+  return String(value ?? '').replace(/\D/g, '')
+}
+
+function findMappedCustomer(row: ShippingRow) {
+  const rowEmail = row.email.trim().toLowerCase()
+  const rowPhone = normalizeDigits(row.phone)
+  return getCustomersWithOverrides().find(customer => {
+    const sameEmail = Boolean(rowEmail && customer.email.trim().toLowerCase() === rowEmail)
+    const customerPhone = normalizeDigits(customer.phone)
+    const samePhone = Boolean(rowPhone && customerPhone === rowPhone)
+    return sameEmail || samePhone
+  })
+}
 
 export function ShippingPage() {
+  const navigate = useNavigate()
+  const { langCode = 'ko' } = useParams()
   const [branch, setBranch] = useState('')
   const [activeTab, setActiveTab] = useState<Tab>('cj')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -44,24 +117,45 @@ export function ShippingPage() {
   const [filterPopover, setFilterPopover] = useState<{ col: string; rect: DOMRect } | null>(null)
   const [sortKey, setSortKey] = useState<SortKey>('receivedAt')
   const [sortDir, setSortDir] = useState<SortDir>('asc')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [toast, setToast] = useState<{ message: string; ok: boolean } | null>(null)
+  const toastTimerRef = useRef<number | null>(null)
 
   const visibleTabs = TABS.filter(t => BRANCH_TABS[branch].includes(t.key))
   const currentTab = visibleTabs.find(t => t.key === activeTab) ?? visibleTabs[0]
   const isTbd = TBD_TABS.includes(currentTab.key)
 
   const allTickets = getTicketsWithExtras()
+  const componentReturns = getComponentReturns()
 
-  const baseTickets = isTbd ? [] : allTickets.filter(t =>
-    t.status === 'READY_TO_SHIP' && t.shippingMethod === currentTab.method
-  )
+  const baseRows = useMemo(() => {
+    if (isTbd) return []
+
+    const regularRows = allTickets
+      .filter(ticket =>
+        ticket.status === 'READY_TO_SHIP' &&
+        ticket.shippingMethod === currentTab.method &&
+        (!branch || ticket.branchCode === branch)
+      )
+      .map(ticketToRow)
+
+    const componentReturnRows = componentReturns
+      .filter(record =>
+        componentReturnMatchesTab(record, currentTab.key) &&
+        (!branch || record.branchCode === branch)
+      )
+      .map(componentReturnToRow)
+
+    return [...componentReturnRows, ...regularRows]
+  }, [allTickets, branch, componentReturns, currentTab.key, currentTab.method, isTbd])
 
   const filtered = useMemo(() => {
-    return baseTickets.filter(t => {
-      if (appliedFilters.ticketNo.trim() && !t.ticketNo.toLowerCase().includes(appliedFilters.ticketNo.trim().toLowerCase())) return false
-      if (appliedFilters.customerName.trim() && !t.customerName.toLowerCase().includes(appliedFilters.customerName.trim().toLowerCase())) return false
+    return baseRows.filter(row => {
+      if (appliedFilters.ticketNo.trim() && !row.ticketNo.toLowerCase().includes(appliedFilters.ticketNo.trim().toLowerCase())) return false
+      if (appliedFilters.customerName.trim() && !row.customerName.toLowerCase().includes(appliedFilters.customerName.trim().toLowerCase())) return false
       return true
     })
-  }, [baseTickets, appliedFilters])
+  }, [baseRows, appliedFilters])
 
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
@@ -71,7 +165,9 @@ export function ShippingPage() {
     })
   }, [filtered, sortKey, sortDir])
 
-  const allSelected = sorted.length > 0 && selectedIds.size === sorted.length
+  const paginated = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+  const currentPageRowIds = paginated.map(row => row.id)
+  const allSelected = currentPageRowIds.length > 0 && currentPageRowIds.every(rowId => selectedIds.has(rowId))
 
   useEffect(() => {
     if (!filterPopover) return
@@ -83,17 +179,45 @@ export function ShippingPage() {
     return () => document.removeEventListener('mousedown', close)
   }, [filterPopover])
 
+  useEffect(() => {
+    const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
+    if (currentPage > totalPages) setCurrentPage(totalPages)
+  }, [currentPage, sorted.length])
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
+    }
+  }, [])
+
+  function showToast(message: string, ok = true) {
+    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
+    setToast({ message, ok })
+    toastTimerRef.current = window.setTimeout(() => setToast(null), 2500)
+  }
+
+  function handleCustomerClick(row: ShippingRow) {
+    const customer = findMappedCustomer(row)
+    if (!customer) {
+      showToast('연결된 고객 정보를 찾을 수 없습니다.', false)
+      return
+    }
+    navigate(`/${langCode}/customers/${customer.id}`)
+  }
+
   function handleBranchChange(code: string) {
     setBranch(code)
     const firstNonTbd = (BRANCH_TABS[code] ?? []).find(k => !TBD_TABS.includes(k))
     setActiveTab(firstNonTbd ?? BRANCH_TABS[code][0])
     setSelectedIds(new Set())
+    setCurrentPage(1)
   }
 
   function handleTabChange(tab: Tab) {
     if (TBD_TABS.includes(tab)) return
     setActiveTab(tab)
     setSelectedIds(new Set())
+    setCurrentPage(1)
   }
 
   function handleSort(key: SortKey) {
@@ -103,6 +227,7 @@ export function ShippingPage() {
       setSortKey(key)
       setSortDir('asc')
     }
+    setCurrentPage(1)
   }
 
   function handleFilterIconClick(col: string, e: React.MouseEvent<HTMLButtonElement>) {
@@ -114,6 +239,7 @@ export function ShippingPage() {
     setFilters(prev => ({ ...prev, [key]: value }))
     setAppliedFilters(prev => ({ ...prev, [key]: value }))
     setFilterPopover(null)
+    setCurrentPage(1)
   }
 
   function hasActiveFilter(col: string) {
@@ -127,21 +253,25 @@ export function ShippingPage() {
   }
 
   function toggleAll() {
-    if (allSelected) setSelectedIds(new Set())
-    else setSelectedIds(new Set(sorted.map(t => t.ticketNo)))
-  }
-
-  function toggleSelect(ticketNo: string) {
     setSelectedIds(prev => {
       const next = new Set(prev)
-      if (next.has(ticketNo)) next.delete(ticketNo)
-      else next.add(ticketNo)
+      if (allSelected) currentPageRowIds.forEach(rowId => next.delete(rowId))
+      else currentPageRowIds.forEach(rowId => next.add(rowId))
+      return next
+    })
+  }
+
+  function toggleSelect(rowId: string) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(rowId)) next.delete(rowId)
+      else next.add(rowId)
       return next
     })
   }
 
   function handlePrint(type: 'all' | 'selected') {
-    const ids = type === 'selected' ? [...selectedIds] : sorted.map(t => t.ticketNo)
+    const ids = type === 'selected' ? [...selectedIds] : sorted.map(row => row.id)
     // TODO: navigate to print page per delivery type
     alert(`${currentTab.label} 송장 출력 (${ids.length}건)\n준비 중입니다.`)
   }
@@ -152,7 +282,6 @@ export function ShippingPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-gray-900">출고 관리</h1>
-            <p className="mt-1 text-sm text-gray-400">배치 처리 완료 후 송장 출력을 진행합니다.</p>
           </div>
         </div>
 
@@ -197,11 +326,11 @@ export function ShippingPage() {
             {!isTbd && (
               <div className="flex items-center gap-2 pb-3">
                 <span className="text-xs text-gray-400">
-                  {baseTickets.length > 0 ? `출력 가능 ${baseTickets.length}건` : '출력 가능한 건 없음'}
+                  {baseRows.length > 0 ? `출력 가능 ${baseRows.length}건` : '출력 가능한 건 없음'}
                 </span>
                 <button
                   onClick={() => handlePrint('all')}
-                  disabled={baseTickets.length === 0}
+                  disabled={baseRows.length === 0}
                   className="px-3 py-1.5 border border-gray-200 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >전체 출력</button>
               </div>
@@ -227,81 +356,118 @@ export function ShippingPage() {
             <div className="px-5 py-14 text-center">
               <p className="text-sm text-gray-400">준비 중입니다.</p>
             </div>
-          ) : baseTickets.length === 0 ? (
+          ) : baseRows.length === 0 ? (
             <div className="px-5 py-14 text-center">
               <Printer className="w-8 h-8 text-gray-200 mx-auto mb-3" />
               <p className="text-sm text-gray-400">배치 처리된 건이 없습니다.</p>
             </div>
           ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="px-4 py-3 bg-gray-50/50 w-10">
-                    <input type="checkbox" checked={allSelected} onChange={toggleAll} className="rounded border-gray-300 cursor-pointer" />
-                  </th>
-                  {TABLE_COLS.map(col => {
-                    const isFiltered = hasActiveFilter(col.key)
-                    return (
-                      <th
-                        key={col.key}
-                        className={`px-4 py-3 text-left text-[10px] font-medium leading-none whitespace-nowrap transition-colors ${
-                          isFiltered ? 'bg-blue-50 text-blue-700' : 'bg-gray-50/50 text-gray-500'
-                        }`}
-                      >
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => handleSort(col.sort)}
-                            className="group flex items-center gap-1 text-[10px] font-medium leading-none hover:text-gray-700 transition-colors"
-                          >
-                            {col.label}
-                            <SortIcon col={col.sort} />
-                          </button>
-                          {col.filterable && (
+            <>
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-200">
+                    <th className="px-4 py-3 bg-gray-50/50 w-10">
+                      <input type="checkbox" checked={allSelected} onChange={toggleAll} className="rounded border-gray-300 cursor-pointer" />
+                    </th>
+                    {TABLE_COLS.map(col => {
+                      const isFiltered = hasActiveFilter(col.key)
+                      return (
+                        <th
+                          key={col.key}
+                          className={`px-4 py-3 text-left text-[10px] font-medium leading-none whitespace-nowrap transition-colors ${
+                            isFiltered ? 'bg-blue-50 text-blue-700' : 'bg-gray-50/50 text-gray-500'
+                          }`}
+                        >
+                          <div className="flex items-center gap-1">
                             <button
-                              onClick={e => handleFilterIconClick(col.key, e)}
-                              className={`rounded transition-colors ${
-                                filterPopover?.col === col.key || isFiltered
-                                  ? 'text-blue-500'
-                                  : 'text-gray-300 hover:text-gray-500'
-                              }`}
+                              onClick={() => handleSort(col.sort)}
+                              className="group flex items-center gap-1 text-[10px] font-medium leading-none hover:text-gray-700 transition-colors"
                             >
-                              <Filter className="h-2.5 w-2.5" />
+                              {col.label}
+                              <SortIcon col={col.sort} />
                             </button>
-                          )}
-                        </div>
-                        {isFiltered && (
-                          <div className="mt-1 max-w-[140px] truncate text-[10px] font-medium text-blue-600 normal-case tracking-normal">
-                            {appliedFilters[col.key]}
+                            {col.filterable && (
+                              <button
+                                onClick={e => handleFilterIconClick(col.key, e)}
+                                className={`rounded transition-colors ${
+                                  filterPopover?.col === col.key || isFiltered
+                                    ? 'text-blue-500'
+                                    : 'text-gray-300 hover:text-gray-500'
+                                }`}
+                              >
+                                <Filter className="h-2.5 w-2.5" />
+                              </button>
+                            )}
                           </div>
+                          {isFiltered && (
+                            <div className="mt-1 max-w-[140px] truncate text-[10px] font-medium text-blue-600 normal-case tracking-normal">
+                              {appliedFilters[col.key]}
+                            </div>
+                          )}
+                        </th>
+                      )
+                    })}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {sorted.length === 0 ? (
+                    <tr>
+                      <td colSpan={TABLE_COLS.length + 1} className="px-5 py-10 text-center text-xs text-gray-400">검색 결과가 없습니다.</td>
+                    </tr>
+                  ) : paginated.map(row => (
+                    <tr key={row.id} className={`hover:bg-gray-50/50 transition-colors ${selectedIds.has(row.id) ? 'bg-gray-50' : ''}`}>
+                      <td className="px-4 py-3">
+                        <input type="checkbox" checked={selectedIds.has(row.id)} onChange={() => toggleSelect(row.id)} className="rounded border-gray-300 cursor-pointer" />
+                      </td>
+                      <td className="px-4 py-3">
+                        {row.type === 'component-return' ? (
+                          <span className="inline-flex w-fit rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold leading-none text-amber-700">
+                            구성품 반송
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-300">-</span>
                         )}
-                      </th>
-                    )
-                  })}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {sorted.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-5 py-10 text-center text-xs text-gray-400">검색 결과가 없습니다.</td>
-                  </tr>
-                ) : sorted.map(t => (
-                  <tr key={t.id} className={`hover:bg-gray-50/50 transition-colors ${selectedIds.has(t.ticketNo) ? 'bg-gray-50' : ''}`}>
-                    <td className="px-4 py-3">
-                      <input type="checkbox" checked={selectedIds.has(t.ticketNo)} onChange={() => toggleSelect(t.ticketNo)} className="rounded border-gray-300 cursor-pointer" />
-                    </td>
-                    <td className="px-4 py-3 text-xs font-mono font-semibold text-gray-900">{t.ticketNo}</td>
-                    <td className="px-4 py-3 text-xs text-gray-700">{maskName(t.customerName)}</td>
-                    <td className="px-4 py-3 text-xs font-mono text-gray-700">
-                      {PRODUCTS.find(p => p.name === t.productName)?.productCode ?? t.productName}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-gray-500">{t.receptionPlace}</td>
-                    <td className="px-4 py-3 text-xs font-mono text-gray-500 whitespace-nowrap">
-                      {t.receivedAt} <span className="font-sans text-gray-400">(KST)</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/${langCode}/tickets/${row.ticketNo}`)}
+                          className="inline-flex items-center gap-1 font-mono text-xs font-semibold text-gray-900 underline-offset-4 hover:underline"
+                        >
+                          {row.ticketNo}
+                          <ExternalLink className="h-3 w-3 text-gray-300" />
+                        </button>
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          type="button"
+                          onClick={() => handleCustomerClick(row)}
+                          className="inline-flex items-center gap-1 text-xs font-semibold text-gray-900 underline-offset-4 hover:text-blue-600 hover:underline"
+                        >
+                          {maskName(row.customerName)}
+                          <ExternalLink className="h-3 w-3 text-gray-300" />
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 text-xs font-mono text-gray-700">
+                        {PRODUCTS.find(p => p.name === row.productName)?.productCode ?? row.productName}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-gray-500">{row.receptionPlace}</td>
+                      <td className="px-4 py-3 text-xs font-mono text-gray-500 whitespace-nowrap">
+                        {row.receivedAt} <span className="font-sans text-gray-400">(KST)</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {sorted.length > PAGE_SIZE && (
+                <Pagination
+                  total={sorted.length}
+                  perPage={PAGE_SIZE}
+                  current={currentPage}
+                  onChange={setCurrentPage}
+                />
+              )}
+            </>
           )}
         </div>
       </div>
@@ -345,6 +511,15 @@ export function ShippingPage() {
             </div>
           </div>
         </>
+      )}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 rounded-xl px-4 py-3 text-sm font-medium shadow-lg ${
+            toast.ok ? 'bg-gray-900 text-white' : 'bg-red-600 text-white'
+          }`}
+        >
+          {toast.message}
+        </div>
       )}
     </div>
   )

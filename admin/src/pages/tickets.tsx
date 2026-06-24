@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, FileDown, Filter, Lock, Plus, ScanLine, Trash2, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, ExternalLink, FileDown, Filter, Lock, Plus, ScanLine, Trash2, X } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Pagination } from '@/components/pagination'
 import { BRANCHES, MEMBERS } from '@/lib/mock-data'
 import { addDownloadLog } from '@/lib/download-logs'
 import { maskEmail, maskName, maskPhone } from '@/lib/masking'
-import { getTicketsWithExtras } from '@/lib/prototype-storage'
+import { getCustomersWithOverrides, getTicketsWithExtras } from '@/lib/prototype-storage'
 import { getSoDocumentInfo } from '@/lib/ticket-so'
 import type { PaymentCompleted, Ticket, TicketReceptionTag, TicketStatus } from '@/lib/types'
+import { I18nText, useI18nLabel } from '@/lib/i18n-inspector'
+import { ticketStatusI18nKey } from '@/lib/ticket-status-i18n'
 
 const ITEMS_PER_PAGE = 20
 
@@ -206,6 +208,13 @@ function normalizeDigits(value: string) {
   return value.replace(/\D/g, '')
 }
 
+function findMappedCustomer(ticket: Ticket) {
+  const ticketEmail = ticket.email.trim().toLowerCase()
+  return getCustomersWithOverrides().find(customer => {
+    return Boolean(ticketEmail && customer.email.trim().toLowerCase() === ticketEmail)
+  })
+}
+
 function matchesText(value: string | null | undefined, query: string) {
   const trimmed = query.trim().toLowerCase()
   return !trimmed || normalizeText(value).includes(trimmed)
@@ -235,7 +244,9 @@ function StatusBadge({ status }: { status: TicketStatus }) {
   const meta = STATUS_META[status]
   return (
     <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${meta.className}`}>
-      {meta.label}
+      <I18nText i18nKey={ticketStatusI18nKey(status)} display="tooltip">
+        {meta.label}
+      </I18nText>
     </span>
   )
 }
@@ -318,12 +329,21 @@ export function TicketsPage() {
   const [originalDownloadOpen, setOriginalDownloadOpen] = useState(false)
   const [exportPassword, setExportPassword] = useState('')
   const [exportReason, setExportReason] = useState('')
+  const [toast, setToast] = useState<{ message: string; ok: boolean } | null>(null)
   const [tickets] = useState(() => getTicketsWithExtras())
   const scanInputRef = useRef<HTMLInputElement>(null)
   const modalScanRef = useRef<HTMLInputElement>(null)
   const exportMenuRef = useRef<HTMLDivElement>(null)
+  const toastTimerRef = useRef<number | null>(null)
   const navigate = useNavigate()
   const { langCode } = useParams<{ langCode: string }>()
+  const i18nLabel = useI18nLabel()
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
+    }
+  }, [])
 
   useEffect(() => {
     if (!exportMenuOpen) return
@@ -421,6 +441,21 @@ export function TicketsPage() {
     if (!exportPassword || !exportReason.trim()) return
     downloadExcel(false, exportReason)
     closeOriginalDownloadModal()
+  }
+
+  function showToast(message: string, ok = true) {
+    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
+    setToast({ message, ok })
+    toastTimerRef.current = window.setTimeout(() => setToast(null), 2500)
+  }
+
+  function handleCustomerClick(ticket: Ticket) {
+    const customer = findMappedCustomer(ticket)
+    if (!customer) {
+      showToast('연결된 고객 정보를 찾을 수 없습니다.', false)
+      return
+    }
+    navigate(`/${langCode}/customers/${customer.id}`)
   }
 
   function handleDeleteConfirm() {
@@ -581,7 +616,10 @@ export function TicketsPage() {
     const k = key as ColumnFilterKey
     const val = appliedColumnFilters[k]
     switch (k) {
-      case 'status': return STATUS_META[val as TicketStatus]?.label ?? val
+      case 'status': {
+        const status = val as TicketStatus
+        return STATUS_META[status] ? i18nLabel(ticketStatusI18nKey(status), STATUS_META[status].label) : val
+      }
       case 'paymentCompleted': return PAYMENT_META[val as PaymentCompleted]?.label ?? val
       default: return val
     }
@@ -595,9 +633,9 @@ export function TicketsPage() {
     { key: 'hqReceivedAt', label: '본사입고일', sort: 'hqReceivedAt' },
     { key: 'expectedShipAt', label: '출고예정일', sort: 'expectedShipAt' },
     { key: 'receptionPlace', label: '접수처', sort: 'receptionPlace' },
+    { key: 'email', label: '이메일', sort: null },
     { key: 'customerName', label: '고객명', sort: 'customerName' },
     { key: 'phone', label: '전화번호', sort: null },
-    { key: 'email', label: '이메일', sort: null },
     { key: 'productName', label: '제품명', sort: 'productName' },
     { key: 'repairDepartment', label: '수리진행처', sort: 'repairDepartment' },
     { key: 'repairDetail', label: '수리내용', sort: null },
@@ -683,7 +721,10 @@ export function TicketsPage() {
       case 'shippedAt':      return renderDateFilter('shippedAt')
       case 'status':
         return renderSelectFilter('status',
-          (Object.keys(STATUS_META) as TicketStatus[]).map(s => ({ value: s, label: STATUS_META[s].label }))
+          (Object.keys(STATUS_META) as TicketStatus[]).map(s => ({
+            value: s,
+            label: i18nLabel(ticketStatusI18nKey(s), STATUS_META[s].label),
+          }))
         )
       case 'repairDepartment':
         return renderSelectFilter('repairDepartment',
@@ -983,9 +1024,18 @@ export function TicketsPage() {
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs text-gray-600">{displayValue(ticket.hqReceivedAt)}</td>
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs text-gray-600">{displayValue(ticket.expectedShipAt)}</td>
                     <td className="px-4 py-3.5 text-xs text-gray-700 max-w-[260px] truncate">{ticket.receptionPlace}</td>
-                    <td className="px-4 py-3.5 whitespace-nowrap text-xs font-semibold text-gray-900">{maskName(ticket.customerName)}</td>
+                    <td className="px-4 py-3.5 whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => handleCustomerClick(ticket)}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-gray-900 underline-offset-4 transition-colors hover:text-blue-600 hover:underline"
+                      >
+                        {maskEmail(ticket.email)}
+                        <ExternalLink className="h-3 w-3 flex-shrink-0 text-gray-300" />
+                      </button>
+                    </td>
+                    <td className="px-4 py-3.5 whitespace-nowrap text-xs text-gray-600">{maskName(ticket.customerName)}</td>
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs text-gray-600">{maskPhone(ticket.phone)}</td>
-                    <td className="px-4 py-3.5 whitespace-nowrap text-xs text-gray-600">{maskEmail(ticket.email)}</td>
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs font-medium text-gray-900">{ticket.productName}</td>
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs text-gray-700">{ticket.repairDepartment}</td>
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs text-gray-600 max-w-[200px] truncate">{ticket.repairDetail}</td>
@@ -1179,7 +1229,7 @@ export function TicketsPage() {
                 >
                   <option value="">-</option>
                   {(Object.keys(STATUS_META) as TicketStatus[]).map(s => (
-                    <option key={s} value={s}>{STATUS_META[s].label}</option>
+                    <option key={s} value={s}>{i18nLabel(ticketStatusI18nKey(s), STATUS_META[s].label)}</option>
                   ))}
                 </select>
               </div>
@@ -1231,6 +1281,15 @@ export function TicketsPage() {
               <button onClick={handleDeleteConfirm} className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors text-sm font-medium">삭제</button>
             </div>
           </div>
+        </div>
+      )}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 rounded-xl px-4 py-3 text-sm font-medium shadow-lg ${
+            toast.ok ? 'bg-gray-900 text-white' : 'bg-red-600 text-white'
+          }`}
+        >
+          {toast.message}
         </div>
       )}
     </div>

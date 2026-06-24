@@ -6,6 +6,8 @@ import { BRANCHES, COUNTRIES, MEMBERS, PRODUCTS } from '@/lib/mock-data'
 import { getCustomerById, getTicketsWithExtras, saveCustomerAddresses, upsertPrototypeCustomer } from '@/lib/prototype-storage'
 import type { Customer, CustomerAddress, Ticket, TicketStatus } from '@/lib/types'
 import { inputCls } from '@/lib/utils'
+import { I18nText, useI18nLabel } from '@/lib/i18n-inspector'
+import { ticketStatusI18nKey } from '@/lib/ticket-status-i18n'
 
 function todayStr() { return new Date().toISOString().slice(0, 10) }
 function monthsAgoStr(n: number) {
@@ -227,6 +229,7 @@ function getCustomerTicketSortValue(ticket: Ticket, key: CustomerTicketSortKey) 
 export function CustomerDetailPage() {
   const { customerId, langCode } = useParams()
   const navigate = useNavigate()
+  const i18nLabel = useI18nLabel()
 
   const base = getCustomerById(customerId)
   const [customer, setCustomer] = useState<Customer | undefined>(base)
@@ -444,7 +447,10 @@ export function CustomerDetailPage() {
 
   function getAppliedTicketFilterDisplay(key: CustomerTicketFilterKey) {
     const value = appliedTicketFilters[key]
-    if (key === 'status') return STATUS_LABELS[value as TicketStatus] ?? value
+    if (key === 'status') {
+      const status = value as TicketStatus
+      return STATUS_LABELS[status] ? i18nLabel(ticketStatusI18nKey(status), STATUS_LABELS[status]) : value
+    }
     if (key === 'technician') {
       const member = MEMBERS.find(item => item.id === value)
       return member ? `${member.name} (${member.loginId})` : value
@@ -569,7 +575,10 @@ export function CustomerDetailPage() {
         return renderTicketTextFilter('ticketNo', '티켓번호')
       case 'status':
         return renderTicketSelectFilter('status',
-          (Object.keys(STATUS_LABELS) as TicketStatus[]).map(status => ({ value: status, label: STATUS_LABELS[status] }))
+          (Object.keys(STATUS_LABELS) as TicketStatus[]).map(status => ({
+            value: status,
+            label: i18nLabel(ticketStatusI18nKey(status), STATUS_LABELS[status]),
+          }))
         )
       case 'productCode':
         return renderTicketTextFilter('productCode', '제품코드')
@@ -752,7 +761,9 @@ export function CustomerDetailPage() {
             {addresses.length === 0 && !showAddForm ? (
               <div className="rounded-xl border border-dashed border-gray-200 py-6 text-center">
                 <MapPin className="w-5 h-5 text-gray-200 mx-auto mb-1.5" />
-                <p className="text-xs text-gray-400">등록된 주소가 없습니다.</p>
+                <p className="text-xs text-gray-400">
+                  <I18nText i18nKey="customers.detail.addresses.empty">등록된 주소가 없습니다.</I18nText>
+                </p>
               </div>
             ) : (
               addresses.map(addr =>
@@ -770,7 +781,9 @@ export function CustomerDetailPage() {
                       <div className="flex items-start gap-2.5">
                         <Star className="w-4 h-4 text-amber-400 fill-amber-400 mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="text-[11px] font-semibold text-amber-600 mb-1">기본 주소</p>
+                          <p className="text-[11px] font-semibold text-amber-600 mb-1">
+                            <I18nText i18nKey="customers.detail.addresses.default">기본 주소</I18nText>
+                          </p>
                           <p className="text-sm text-gray-800 font-medium">{addr.address1}</p>
                           {addr.address2 && <p className="text-xs text-gray-500 mt-0.5">{addr.address2}</p>}
                           <p className="text-[11px] text-gray-400 mt-0.5 font-mono">
@@ -934,7 +947,9 @@ export function CustomerDetailPage() {
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium ${STATUS_COLOR[t.status]}`}>
-                            {STATUS_LABELS[t.status]}
+                            <I18nText i18nKey={ticketStatusI18nKey(t.status)} display="tooltip">
+                              {STATUS_LABELS[t.status]}
+                            </I18nText>
                           </span>
                         </td>
                         <td className="px-4 py-3 text-xs font-mono text-gray-700 whitespace-nowrap">{getProductCode(t)}</td>

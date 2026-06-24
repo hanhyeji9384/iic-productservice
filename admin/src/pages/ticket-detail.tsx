@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { AlertTriangle, ArrowLeft, Barcode, CheckCircle2, ChevronDown, Circle, History, Mail, MessageSquare, Package, RotateCcw, Search, Send } from 'lucide-react'
-import { BRANCHES, MEMBERS } from '@/lib/mock-data'
-import { createComponentReturnFromTicket, getTicketsWithExtras } from '@/lib/prototype-storage'
+import { AlertTriangle, ArrowLeft, Barcode, CheckCircle2, ChevronDown, Circle, ExternalLink, History, Mail, MessageSquare, Package, RotateCcw, Search, Send } from 'lucide-react'
+import { BRANCHES, MEMBERS, STORES } from '@/lib/mock-data'
+import { createComponentReturnFromTicket, getComponentReturns, getCustomersWithOverrides, getTicketsWithExtras } from '@/lib/prototype-storage'
 import { formatCurrency, formatRepairChargeType, getSoDocumentInfo } from '@/lib/ticket-so'
-import type { ComponentType, PaymentCompleted, Ticket, TicketReceptionTag, TicketStatus } from '@/lib/types'
+import type { PaymentCompleted, Ticket, TicketReceptionTag, TicketStatus } from '@/lib/types'
 import { BarcodePrintModal } from '@/components/barcode-print-modal'
+import { I18nText } from '@/lib/i18n-inspector'
+import { ticketStatusI18nKey } from '@/lib/ticket-status-i18n'
 
 const STATUS_META: Record<TicketStatus, { label: string; className: string }> = {
   RECEIVED:          { label: '접수',            className: 'bg-blue-50 text-blue-700 border-blue-200' },
@@ -81,15 +83,6 @@ const RECEPTION_TAG_META: Record<TicketReceptionTag, { label: string; className:
   },
 }
 
-const COMPONENT_TYPE_OPTIONS: { value: ComponentType; label: string }[] = [
-  { value: 'CASE', label: '케이스' },
-  { value: 'WARRANTY_CARD', label: '보증카드' },
-  { value: 'LENS', label: '렌즈' },
-  { value: 'CLOTH', label: '안경닦이' },
-  { value: 'CHARGING_CASE', label: '충전 케이스' },
-  { value: 'OTHER', label: '기타 구성품' },
-]
-
 function getReceptionTitle(ticket: Ticket) {
   if (ticket.receptionTitle) return ticket.receptionTitle
   return /online/i.test(ticket.receptionPlace) ? 'PS 온라인 접수' : null
@@ -98,6 +91,122 @@ function getReceptionTitle(ticket: Ticket) {
 function isOnlineAutoCreatedTicket(ticket: Ticket) {
   const sourceText = `${ticket.receptionTitle ?? ''} ${ticket.receptionPlace}`
   return /online|온라인/i.test(sourceText)
+}
+
+function getReceptionChannel(ticket: Ticket) {
+  const source = ticket.receptionPlace
+  if (/online|온라인/i.test(`${ticket.receptionTitle ?? ''} ${source}`)) return '온라인'
+  if (/법인|GM_US_|IICOMBINED/i.test(source)) return '법인'
+  if (/GM_OS_|안경원|B2B|거래처|가맹/i.test(source)) return '가맹점'
+  if (/GM_(FLAGSHIP|DS|MALL|FS|WS)_|store|스토어|매장/i.test(source)) return '매장'
+  return '-'
+}
+
+function normalizeReceptionName(value?: string | null) {
+  return String(value ?? '')
+    .toLowerCase()
+    .replace(/[\s_()（）\-[\]]/g, '')
+}
+
+function receptionTail(value?: string | null) {
+  const raw = String(value ?? '')
+  const parts = raw.split('_')
+  return normalizeReceptionName(parts[parts.length - 1] ?? raw)
+}
+
+function findReceptionStore(ticket: Ticket) {
+  const source = ticket.receptionPlace
+  const normalizedSource = normalizeReceptionName(source)
+  const sourceTail = receptionTail(source)
+  return STORES.find(store => {
+    const normalizedStore = normalizeReceptionName(store.name)
+    const storeTail = receptionTail(store.name)
+    return (
+      store.name === source ||
+      normalizedStore === normalizedSource ||
+      normalizedStore.includes(normalizedSource) ||
+      normalizedSource.includes(normalizedStore) ||
+      (sourceTail.length >= 3 && storeTail.includes(sourceTail))
+    )
+  })
+}
+
+function getReceptionMethod(ticket: Ticket): 'store' | 'house' | null {
+  if (ticket.receptionMethod === 'store' || ticket.receptionMethod === 'house') {
+    return ticket.receptionMethod
+  }
+  if (/행낭|자체수령|매장수령/i.test(ticket.shippingMethod)) return 'store'
+  if (/택배|DHL|FedEx|배송/i.test(ticket.shippingMethod)) return 'house'
+  return null
+}
+
+function getMockReceivingAddress(ticket: Ticket) {
+  const isUs = ticket.branchCode === 'C1002' || /US|FedEx/i.test(`${ticket.receptionPlace} ${ticket.shippingMethod}`)
+  return isUs
+    ? '10013 / United States New York 70 Wooster St'
+    : '06028 / 대한민국 서울특별시 강남구 강남대로162길 24 2층'
+}
+
+function formatAddressInfo({
+  country,
+  zipCode,
+  city,
+  state,
+  address1,
+  address2,
+}: {
+  country?: string | null
+  zipCode?: string | null
+  city?: string | null
+  state?: string | null
+  address1?: string | null
+  address2?: string | null
+}) {
+  const address = [country, city, state, address1, address2].filter(Boolean).join(' ')
+  if (zipCode && address) return `${zipCode} / ${address}`
+  if (zipCode) return zipCode
+  return address || null
+}
+
+function formatReceivingInfo(
+  ticket: Ticket,
+  fallbackAddress?: {
+    country?: string
+    zipCode?: string
+    city?: string
+    address1?: string
+    address2?: string
+  }
+) {
+  const method = getReceptionMethod(ticket)
+  if (method === 'store') {
+    return ticket.receptionStoreName || ticket.receptionPlace || null
+  }
+
+  if (method === 'house') {
+    const ticketAddress = formatAddressInfo({
+      country: ticket.deliveryCountry,
+      zipCode: ticket.deliveryZipCode,
+      city: ticket.deliveryCity,
+      state: ticket.deliveryState,
+      address1: ticket.deliveryAddress1,
+      address2: ticket.deliveryAddress2,
+    })
+
+    if (ticketAddress) return ticketAddress
+
+    const formattedFallbackAddress = formatAddressInfo({
+      country: fallbackAddress?.country,
+      zipCode: fallbackAddress?.zipCode,
+      city: fallbackAddress?.city,
+      address1: fallbackAddress?.address1,
+      address2: fallbackAddress?.address2,
+    })
+
+    return formattedFallbackAddress || getMockReceivingAddress(ticket)
+  }
+
+  return null
 }
 
 function getMemberLabel(id?: string, name?: string) {
@@ -115,6 +224,36 @@ function Field({ label, value }: { label: string; value?: string | null }) {
     <div>
       <dt className="text-[11px] font-medium text-gray-400 mb-0.5">{label}</dt>
       <dd className="text-sm text-gray-800">{value || '-'}</dd>
+    </div>
+  )
+}
+
+function ClickableField({
+  label,
+  value,
+  onClick,
+}: {
+  label: string
+  value?: string | null
+  onClick: () => void
+}) {
+  return (
+    <div>
+      <dt className="text-[11px] font-medium text-gray-400 mb-0.5">{label}</dt>
+      <dd className="text-sm text-gray-800">
+        {value ? (
+          <button
+            type="button"
+            onClick={onClick}
+            className="inline-flex items-center gap-1 text-sm font-medium text-gray-900 underline-offset-4 transition-colors hover:text-blue-600 hover:underline"
+          >
+            {value}
+            <ExternalLink className="h-3 w-3 flex-shrink-0 text-gray-300" />
+          </button>
+        ) : (
+          '-'
+        )}
+      </dd>
     </div>
   )
 }
@@ -462,7 +601,9 @@ export function TicketDetailPage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [showBarcodeModal, setShowBarcodeModal] = useState(false)
   const [autoPrintBarcode, setAutoPrintBarcode] = useState(false)
-  const [selectedComponentType, setSelectedComponentType] = useState<ComponentType | ''>('')
+  const [toast, setToast] = useState<{ message: string; ok: boolean } | null>(null)
+  const [componentReturnCreated, setComponentReturnCreated] = useState(false)
+  const toastTimerRef = useRef<number | null>(null)
   const ticket = getTicketsWithExtras().find(t => t.ticketNo === ticketNo)
   const autoPrintRequested = (location.state as { autoPrintBarcodeOnce?: boolean } | null)?.autoPrintBarcodeOnce === true
   const onlineAutoPrintRequested = ticket ? isOnlineAutoCreatedTicket(ticket) : false
@@ -478,6 +619,17 @@ export function TicketDetailPage() {
     }
     if (autoPrintRequested) navigate(location.pathname, { replace: true, state: null })
   }, [autoPrintRequested, location.pathname, navigate, shouldAutoPrintBarcode, ticketNo])
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!ticketNo) return
+    setComponentReturnCreated(getComponentReturns().some(record => record.sourceTicketNo === ticketNo))
+  }, [ticketNo])
 
   if (!ticket) {
     return (
@@ -501,11 +653,42 @@ export function TicketDetailPage() {
     getMemberLabel(ticket.judgementManagerId, ticket.judgementManagerName) || '-'
   const receptionTitle = getReceptionTitle(ticket)
   const receptionTags = ticket.receptionTags ?? []
+  const receptionChannel = getReceptionChannel(ticket)
+  const shouldShowReceptionContact = receptionChannel === '매장' || receptionChannel === '가맹점'
+  const receptionStore = shouldShowReceptionContact ? findReceptionStore(ticket) : undefined
+  const receptionContact = receptionStore?.tel2 || null
+  const receptionMethod = getReceptionMethod(ticket)
+  const receptionMethodLabel = receptionMethod === 'store'
+    ? '매장수령'
+    : receptionMethod === 'house'
+      ? '자택수령'
+      : null
   const kakaoEnabled = !isOverseasTicket(ticket)
+  const ticketEmail = ticket.email.trim().toLowerCase()
+  const mappedCustomer = getCustomersWithOverrides().find(customer => {
+    return Boolean(ticketEmail && customer.email.trim().toLowerCase() === ticketEmail)
+  })
+  const fallbackReceivingAddress = mappedCustomer?.addresses?.find(address => address.isDefault) ?? mappedCustomer?.addresses?.[0]
+  const receivingInfo = formatReceivingInfo(ticket, fallbackReceivingAddress)
+
+  function showToast(message: string, ok = true) {
+    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
+    setToast({ message, ok })
+    toastTimerRef.current = window.setTimeout(() => setToast(null), 2500)
+  }
+
+  function handleCustomerClick() {
+    if (!mappedCustomer) {
+      showToast('연결된 고객 정보를 찾을 수 없습니다.', false)
+      return
+    }
+    navigate(`/${langCode}/customers/${mappedCustomer.id}`)
+  }
 
   function handleCreateComponentReturn() {
-    if (!ticket || !selectedComponentType) return
-    const record = createComponentReturnFromTicket(ticket, selectedComponentType)
+    if (!ticket || componentReturnCreated) return
+    const record = createComponentReturnFromTicket(ticket)
+    setComponentReturnCreated(true)
     navigate(`/${langCode}/shipping/component-returns`, {
       state: { componentReturnId: record.id },
     })
@@ -592,9 +775,9 @@ export function TicketDetailPage() {
               </button>
               <button
                 onClick={handleCreateComponentReturn}
-                disabled={!selectedComponentType}
-                title={!selectedComponentType ? '접수정보에서 구성품 유형을 선택해 주세요.' : '구성품 반송 건 생성'}
-                className="flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                disabled={componentReturnCreated}
+                title={componentReturnCreated ? '이미 구성품 반송 건이 생성되었습니다.' : '구성품 반송 건 생성'}
+                className="flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
               >
                 <Package className="w-3.5 h-3.5" />구성품 반송
               </button>
@@ -618,7 +801,9 @@ export function TicketDetailPage() {
               <p className="text-[11px] text-gray-400 mb-1.5">상태</p>
               <div className="flex items-center gap-2">
                 <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold border ${statusMeta.className}`}>
-                  {statusMeta.label}
+                  <I18nText i18nKey={ticketStatusI18nKey(ticket.status)} display="tooltip">
+                    {statusMeta.label}
+                  </I18nText>
                 </span>
                 <button className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors">
                   <History className="w-3 h-3" />내역
@@ -675,8 +860,10 @@ export function TicketDetailPage() {
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
                       <Field label="접수일시" value={`${ticket.receivedAt} (KST)`} />
                       <Field label="접수처" value={ticket.receptionPlace} />
-                      <Field label="접수처 유형" value="-" />
-                      <Field label="B2C 여부" value={soInfo.b2cYn} />
+                      <Field label="접수 채널" value={receptionChannel} />
+                      {shouldShowReceptionContact && (
+                        <Field label="담당자 연락처" value={receptionContact} />
+                      )}
                       <Field label="재수리 여부" value={ticket.reRepairYn} />
                       <TicketLinkField
                         label="기존 티켓번호"
@@ -687,21 +874,6 @@ export function TicketDetailPage() {
                       <Field label="보증서 동봉" value="-" />
                       <Field label="구매 증빙 여부" value="-" />
                       <Field label="구매일" value="-" />
-                      <div>
-                        <dt className="text-[11px] font-medium text-gray-400 mb-0.5">구성품 유형</dt>
-                        <dd>
-                          <select
-                            value={selectedComponentType}
-                            onChange={event => setSelectedComponentType(event.target.value as ComponentType | '')}
-                            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
-                          >
-                            <option value="">선택</option>
-                            {COMPONENT_TYPE_OPTIONS.map(option => (
-                              <option key={option.value} value={option.value}>{option.label}</option>
-                            ))}
-                          </select>
-                        </dd>
-                      </div>
                       <div className="col-span-2">
                         <Field label="구매처" value="-" />
                       </div>
@@ -746,17 +918,17 @@ export function TicketDetailPage() {
                   {/* 고객 정보 카드 */}
                   <SectionCard title="고객 정보">
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+                      <ClickableField label="이메일" value={ticket.email} onClick={handleCustomerClick} />
                       <Field label="고객명" value={ticket.customerName} />
-                      <Field label="국가" value="-" />
                       <Field label="전화번호" value={ticket.phone} />
-                      <Field label="이메일" value={ticket.email} />
+                      <Field label="국가" value="-" />
                       <Field label="마케팅 동의" value="-" />
                       <Field label="개인정보 동의" value="-" />
                       <div className="col-span-2">
-                        <Field label="수령 유형" value="-" />
+                        <Field label="수령 유형" value={receptionMethodLabel} />
                       </div>
                       <div className="col-span-2">
-                        <Field label="수령 정보" value="-" />
+                        <Field label="수령 정보" value={receivingInfo} />
                       </div>
                     </dl>
                   </SectionCard>
@@ -896,6 +1068,15 @@ export function TicketDetailPage() {
           </div>
         </div>
       </div>
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 rounded-xl px-4 py-3 text-sm font-medium shadow-lg ${
+            toast.ok ? 'bg-gray-900 text-white' : 'bg-red-600 text-white'
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
     </div>
   )
 }

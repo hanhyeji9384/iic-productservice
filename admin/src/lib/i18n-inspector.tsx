@@ -14,6 +14,7 @@ const STORAGE_KEY = 'ps-admin-i18n-mode'
 const I18nInspectorContext = createContext<I18nInspectorContextValue | null>(null)
 const AUTO_CONTROL_ATTR = 'data-i18n-auto-control'
 const PLACEHOLDER_CAPTION_ATTR = 'data-i18n-placeholder-caption'
+const AUTO_SKIP_TEXTS = new Set(['LOGOUT', 'Logout', '로그아웃'])
 
 const TEXT_TOKEN_MAP: Record<string, string> = {
   조회: 'search',
@@ -35,23 +36,29 @@ const TEXT_TOKEN_MAP: Record<string, string> = {
   확인: 'confirm',
   닫기: 'close',
   전송: 'send',
+  적용: 'apply',
+  지우기: 'clear',
+  전체: 'all',
+  뒤로가기: 'go_back',
+  '필터 초기화': 'reset_filter',
   로그인: 'login',
   로그아웃: 'logout',
+  티켓: 'tickets',
   이름: 'name',
   상태: 'status',
   유형: 'type',
   국가: 'country',
-  고객명: 'customer-name',
+  고객명: 'customer_name',
   연락처: 'phone',
   이메일: 'email',
-  제품명: 'product-name',
-  제품코드: 'product-code',
+  제품명: 'product_name',
+  제품코드: 'product_code',
   처리자: 'operator',
-  처리일시: 'processed-at',
-  생성일시: 'created-at',
-  발송일시: 'sent-at',
+  처리일시: 'processed_at',
+  생성일시: 'created_at',
+  발송일시: 'sent_at',
   검색어: 'keyword',
-  '검색 기준': 'search-criteria',
+  '검색 기준': 'search_criteria',
 }
 
 function readInitialMode(): I18nInspectorMode {
@@ -60,12 +67,12 @@ function readInitialMode(): I18nInspectorMode {
   return stored === 'key' || stored === 'both' ? stored : 'text'
 }
 
-function toKebab(value: string) {
+function toSnake(value: string) {
   return value
-    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
     .toLowerCase()
-    .replace(/[^a-z0-9_-]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    .replace(/[^a-z0-9_]+/g, '_')
+    .replace(/^_+|_+$/g, '')
 }
 
 function hashText(value: string) {
@@ -76,30 +83,83 @@ function hashText(value: string) {
   return (hash >>> 0).toString(36)
 }
 
+function isDynamicRouteSegment(segment: string) {
+  const normalized = decodeURIComponent(segment).trim()
+  if (normalized === 'new' || normalized === 'edit' || normalized === 'done') return false
+  if (/^\d+$/.test(normalized)) return true
+  if (/^[a-z]*\d{4,}[a-z0-9-]*$/i.test(normalized)) return true
+  if (/^[A-Z]{1,6}\d+[A-Z0-9-]*$/.test(normalized)) return true
+  if (normalized.length > 16 && /^[a-z0-9-]+$/i.test(normalized)) return true
+  return false
+}
+
 function routeNamespace() {
   if (typeof window === 'undefined') return 'home'
   const parts = window.location.pathname.split('/').filter(Boolean)
   const normalized = parts[0] === 'admin' ? parts.slice(1) : parts
   const withoutLang = /^[a-z]{2}$/i.test(normalized[0] ?? '') ? normalized.slice(1) : normalized
-  return withoutLang.map(toKebab).filter(Boolean).join('::') || 'home'
+  const routeParts: string[] = []
+  withoutLang.forEach(segment => {
+    const next = isDynamicRouteSegment(segment) ? 'detail' : toSnake(decodeURIComponent(segment))
+    if (!next || routeParts[routeParts.length - 1] === next) return
+    routeParts.push(next)
+  })
+  return routeParts.join('.') || 'home'
 }
 
 function tokenFromText(text: string) {
   const normalized = text.replace(/\s+/g, ' ').trim()
   if (TEXT_TOKEN_MAP[normalized]) return TEXT_TOKEN_MAP[normalized]
-  const ascii = toKebab(normalized)
+  const ascii = toSnake(normalized)
   if (ascii && /[a-z]/.test(ascii) && ascii.length <= 40) return ascii
   return `text-${hashText(normalized)}`
 }
 
-function autoKey(kind: string, text: string) {
-  return `admin::${routeNamespace()}::${kind}::${tokenFromText(text)}`
+function keyKind(element: HTMLElement) {
+  const tag = element.tagName.toLowerCase()
+  if (element.closest('th')) return 'column'
+  if (tag === 'button') return 'button'
+  if (tag === 'label') return 'label'
+  if (tag === 'legend') return 'legend'
+  if (tag === 'caption') return 'caption'
+  if (tag === 'h1') return 'title'
+  if (/^h[2-6]$/.test(tag)) return 'section'
+  if (element.getAttribute('role') === 'tab') return 'tab'
+  return tag
+}
+
+function autoKey(element: HTMLElement, text: string) {
+  return `${routeNamespace()}.${keyKind(element)}.${tokenFromText(text)}`
+}
+
+function displayKey(key: string) {
+  return key.replace(/::/g, '.')
+}
+
+function lokaliseKey(key: string) {
+  return displayKey(key).replace(/\./g, '::')
+}
+
+function keyTitle(key: string) {
+  const devKey = displayKey(key)
+  const lokalise = lokaliseKey(key)
+  return devKey === lokalise ? devKey : `${devKey}\nLokalise: ${lokalise}`
 }
 
 function cleanedText(element: HTMLElement) {
   const clone = element.cloneNode(true) as HTMLElement
   clone.querySelectorAll(`[${PLACEHOLDER_CAPTION_ATTR}], [${AUTO_CONTROL_ATTR}], [data-i18n-managed]`).forEach(node => node.remove())
   return clone.textContent?.replace(/\s+/g, ' ').trim() ?? ''
+}
+
+function isDataLikeText(text: string) {
+  if (!text) return true
+  if (/^[\d\s.,:/~()_-]+$/.test(text)) return true
+  if (/^\d{4}[.-]\d{1,2}[.-]\d{1,2}/.test(text)) return true
+  if (/^[\w.+-]+@[\w.-]+\.[a-z]{2,}$/i.test(text)) return true
+  if (/^\+?\d[\d\s().-]{6,}$/.test(text)) return true
+  if (/^[A-Z0-9]{8,}(-[A-Z0-9]{4,})?$/i.test(text)) return true
+  return false
 }
 
 function autoKind(element: HTMLElement) {
@@ -111,8 +171,11 @@ function autoKind(element: HTMLElement) {
 function isAutoTarget(element: HTMLElement) {
   if (element.closest('[data-i18n-managed], [data-i18n-skip], tbody td, input, textarea, select, svg')) return false
   if (element.closest(`[${AUTO_CONTROL_ATTR}]`)) return false
+  if (element.tagName.toLowerCase() === 'th' && element.querySelector('button,a,[role="button"],[role="tab"]')) return false
   if (element.children.length > 4 && !['button', 'th'].includes(element.tagName.toLowerCase())) return false
   const text = cleanedText(element)
+  if (AUTO_SKIP_TEXTS.has(text)) return false
+  if (isDataLikeText(text)) return false
   return text.length > 0 && text.length <= 140
 }
 
@@ -134,18 +197,18 @@ function applyAutoInspector(mode: I18nInspectorMode) {
   document.body.dataset.i18nMode = mode
 
   const textTargets = Array.from(
-    document.querySelectorAll<HTMLElement>('h1,h2,h3,h4,h5,h6,label,button,th,legend,caption,p,a,[role="tab"]')
+    document.querySelectorAll<HTMLElement>('h1,h2,h3,h4,h5,h6,label,button,th,legend,caption,[role="tab"]')
   )
 
   textTargets.forEach(element => {
     if (!isAutoTarget(element)) return
     const text = cleanedText(element)
-    const key = autoKey(element.tagName.toLowerCase(), text)
+    const key = autoKey(element, text)
     const kind = autoKind(element)
     element.dataset.i18nAutoKey = key
     element.dataset.i18nAutoKind = kind
     if (!element.dataset.i18nOriginalTitle && element.title) element.dataset.i18nOriginalTitle = element.title
-    element.title = mode === 'text' ? (element.dataset.i18nOriginalTitle ?? '') : key
+    element.title = mode === 'text' ? (element.dataset.i18nOriginalTitle ?? '') : keyTitle(key)
   })
 
   document.querySelectorAll<HTMLElement>('[data-i18n-auto-key]').forEach(element => {
@@ -168,21 +231,22 @@ function applyAutoInspector(mode: I18nInspectorMode) {
     if (element.closest('[data-i18n-managed], [data-i18n-skip]')) return
     const original = element.dataset.i18nOriginalPlaceholder ?? element.placeholder
     if (!element.dataset.i18nOriginalPlaceholder) element.dataset.i18nOriginalPlaceholder = original
-    const key = autoKey('placeholder', original)
+    const key = `${routeNamespace()}.placeholder.${tokenFromText(original)}`
     element.dataset.i18nPlaceholderKey = key
-    element.title = mode === 'text' ? '' : key
-    element.placeholder = mode === 'key' ? key : original
+    element.title = mode === 'text' ? '' : keyTitle(key)
+    element.placeholder = mode === 'key' ? displayKey(key) : original
 
     if (mode === 'both') {
       const existing = element.nextElementSibling
       if (existing?.hasAttribute(PLACEHOLDER_CAPTION_ATTR)) {
-        if (existing.textContent !== key) existing.textContent = key
+        const captionText = displayKey(key)
+        if (existing.textContent !== captionText) existing.textContent = captionText
       } else {
         const caption = document.createElement('p')
         caption.setAttribute(PLACEHOLDER_CAPTION_ATTR, 'true')
         caption.setAttribute(AUTO_CONTROL_ATTR, 'true')
         caption.className = 'mt-1 truncate font-mono text-[10px] text-blue-500'
-        caption.textContent = key
+        caption.textContent = displayKey(key)
         element.insertAdjacentElement('afterend', caption)
       }
     }
@@ -221,7 +285,7 @@ export function I18nInspectorProvider({ children }: { children: React.ReactNode 
   const value = useMemo<I18nInspectorContextValue>(() => ({
     mode,
     setMode: setModeState,
-    labelFor: (key, text) => mode === 'key' ? key : text,
+    labelFor: (key, text) => mode === 'key' ? displayKey(key) : text,
   }), [mode])
 
   return (
@@ -255,26 +319,38 @@ export function I18nText({
   const { mode } = useI18nInspector()
 
   if (mode === 'key') {
+    if (display === 'tooltip') {
+      return (
+        <span
+          data-i18n-managed="true"
+          className={`font-mono text-[11px] font-medium leading-snug text-blue-600 ${className}`}
+          title={keyTitle(i18nKey)}
+        >
+          {displayKey(i18nKey)}
+        </span>
+      )
+    }
+
     return (
-      <span data-i18n-managed="true" className={`font-mono text-[11px] text-blue-700 ${className}`} title={i18nKey}>
-        {i18nKey}
+      <span data-i18n-managed="true" className={`font-mono text-[11px] text-blue-700 ${className}`} title={keyTitle(i18nKey)}>
+        {displayKey(i18nKey)}
       </span>
     )
   }
 
   if (mode === 'both' && display === 'badge') {
     return (
-      <span data-i18n-managed="true" className={`inline-flex min-w-0 flex-wrap items-center gap-1.5 ${className}`} title={i18nKey}>
+      <span data-i18n-managed="true" className={`inline-flex min-w-0 flex-wrap items-center gap-1.5 ${className}`} title={keyTitle(i18nKey)}>
         <span>{children}</span>
         <span className="inline-flex max-w-full rounded-md border border-blue-100 bg-blue-50 px-1.5 py-0.5 font-mono text-[10px] font-medium leading-none text-blue-600">
-          {i18nKey}
+          {displayKey(i18nKey)}
         </span>
       </span>
     )
   }
 
   return (
-    <span data-i18n-managed="true" className={className} title={mode === 'both' ? i18nKey : undefined}>
+    <span data-i18n-managed="true" className={className} title={mode === 'both' ? keyTitle(i18nKey) : undefined}>
       {children}
     </span>
   )
@@ -284,8 +360,8 @@ export function I18nKeyCaption({ i18nKey }: { i18nKey: string }) {
   const { mode } = useI18nInspector()
   if (mode !== 'both') return null
   return (
-    <p data-i18n-managed="true" className="mt-1 truncate font-mono text-[10px] text-blue-500" title={i18nKey}>
-      {i18nKey}
+    <p data-i18n-managed="true" className="mt-1 truncate font-mono text-[10px] text-blue-500" title={keyTitle(i18nKey)}>
+      {displayKey(i18nKey)}
     </p>
   )
 }

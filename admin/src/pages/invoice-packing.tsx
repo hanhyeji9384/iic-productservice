@@ -586,7 +586,6 @@ export function InvoicePackingPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold text-gray-900">인보이스/패킹리스트</h1>
-            <p className="mt-1 text-sm text-gray-400">HQ-법인 간 이동 문서</p>
           </div>
         </div>
 

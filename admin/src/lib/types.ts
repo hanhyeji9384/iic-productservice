@@ -84,6 +84,15 @@ export type Ticket = {
   receptionTags?: TicketReceptionTag[]
   originalTicketNo?: string
   reRepairYn?: 'Y' | 'N'
+  receptionMethod?: 'store' | 'house' | null
+  receptionStoreCode?: string | null
+  receptionStoreName?: string | null
+  deliveryCountry?: string | null
+  deliveryZipCode?: string | null
+  deliveryAddress1?: string | null
+  deliveryAddress2?: string | null
+  deliveryCity?: string | null
+  deliveryState?: string | null
   judgementManagerId?: string
   judgementManagerName?: string
   judgementCompletedAt?: string | null

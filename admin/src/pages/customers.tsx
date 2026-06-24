@@ -9,21 +9,21 @@ import type { Customer, Ticket } from '@/lib/types'
 type SearchType = 'customerKey' | 'email' | 'phone' | 'name'
 
 const SEARCH_TYPE_META: Record<SearchType, { label: string; i18nKey: string }> = {
-  customerKey: { label: '고객 Key', i18nKey: 'admin::customers::search::criteria::customer-key' },
-  email: { label: 'ID/이메일', i18nKey: 'admin::customers::search::criteria::email' },
-  phone: { label: '휴대폰 번호', i18nKey: 'admin::customers::search::criteria::phone' },
-  name: { label: '이름', i18nKey: 'admin::customers::search::criteria::name' },
+  customerKey: { label: '고객 Key', i18nKey: 'customers.search.criteria.customer_key' },
+  email: { label: 'ID/이메일', i18nKey: 'customers.search.criteria.email' },
+  phone: { label: '휴대폰 번호', i18nKey: 'customers.search.criteria.phone' },
+  name: { label: '이름', i18nKey: 'customers.search.criteria.name' },
 }
 
 const CUSTOMER_TABLE_HEADERS = [
-  { label: '고객 Key', i18nKey: 'admin::customers::list::column::customer-key' },
-  { label: 'ID', i18nKey: 'admin::customers::list::column::id' },
-  { label: '이름', i18nKey: 'admin::customers::list::column::name' },
-  { label: '휴대폰 번호', i18nKey: 'admin::customers::list::column::phone' },
-  { label: '국가', i18nKey: 'admin::customers::list::column::country' },
-  { label: '가입일시', i18nKey: 'admin::customers::list::column::registered-at' },
-  { label: 'PS 접수 이력', i18nKey: 'admin::customers::list::column::ticket-history' },
-  { label: '최근 접수', i18nKey: 'admin::customers::list::column::latest-ticket' },
+  { label: '고객 Key', i18nKey: 'customers.list.column.customer_key' },
+  { label: 'ID', i18nKey: 'customers.list.column.id' },
+  { label: '이름', i18nKey: 'customers.list.column.name' },
+  { label: '휴대폰 번호', i18nKey: 'customers.list.column.phone' },
+  { label: '국가', i18nKey: 'customers.list.column.country' },
+  { label: '가입일시', i18nKey: 'customers.list.column.registered_at' },
+  { label: 'PS 접수 이력', i18nKey: 'customers.list.column.ticket_history' },
+  { label: '최근 접수', i18nKey: 'customers.list.column.latest_ticket' },
 ]
 
 function normalizeDigits(value: string) {
@@ -100,7 +100,7 @@ export function CustomersPage() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold text-gray-900">
-              <I18nText i18nKey="admin::customers::title">고객 조회</I18nText>
+              <I18nText i18nKey="customers.title">고객 조회</I18nText>
             </h1>
           </div>
         </div>
@@ -110,7 +110,7 @@ export function CustomersPage() {
             <div className="flex items-end gap-3">
               <div className="w-48">
                 <label className="mb-1.5 block text-xs font-medium text-gray-400">
-                  <I18nText i18nKey="admin::customers::search::criteria::label">검색 기준</I18nText>
+                  <I18nText i18nKey="customers.search.criteria.label">검색 기준</I18nText>
                 </label>
                 <select
                   value={searchType}
@@ -126,7 +126,7 @@ export function CustomersPage() {
               </div>
               <div className="min-w-[360px] flex-1">
                 <label className="mb-1.5 block text-xs font-medium text-gray-400">
-                  <I18nText i18nKey="admin::customers::search::keyword::label">검색어</I18nText>
+                  <I18nText i18nKey="customers.search.keyword.label">검색어</I18nText>
                 </label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300" />
@@ -135,11 +135,11 @@ export function CustomersPage() {
                     value={keyword}
                     onChange={event => setKeyword(event.target.value)}
                     onKeyDown={event => event.key === 'Enter' && handleSearch()}
-                    placeholder={i18nLabel('admin::customers::search::keyword::placeholder', '선택한 기준의 전체 값을 입력')}
+                    placeholder={i18nLabel('customers.search.keyword.placeholder', '선택한 기준의 전체 값을 입력')}
                     className="w-full rounded-xl border border-gray-100 bg-[#f8f9fb] py-2.5 pl-10 pr-4 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-300 focus:border-gray-300 focus:bg-white"
                   />
                 </div>
-                <I18nKeyCaption i18nKey="admin::customers::search::keyword::placeholder" />
+                <I18nKeyCaption i18nKey="customers.search.keyword.placeholder" />
               </div>
               <button
                 type="button"
@@ -148,7 +148,7 @@ export function CustomersPage() {
                 className="flex items-center gap-2 rounded-xl bg-black px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Search className="h-4 w-4" />
-                <I18nText i18nKey="admin::common::action::search" display="tooltip">조회</I18nText>
+                <I18nText i18nKey="common.action.search" display="tooltip">조회</I18nText>
               </button>
               {appliedSearch && (
                 <button
@@ -156,7 +156,7 @@ export function CustomersPage() {
                   onClick={handleReset}
                   className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-medium text-gray-500 transition-colors hover:border-gray-300 hover:text-gray-700"
                 >
-                  <I18nText i18nKey="admin::common::action::reset" display="tooltip">초기화</I18nText>
+                  <I18nText i18nKey="common.action.reset" display="tooltip">초기화</I18nText>
                 </button>
               )}
             </div>
@@ -168,7 +168,7 @@ export function CustomersPage() {
                 <UserSearch className="h-7 w-7" />
               </div>
               <p className="text-base font-semibold text-gray-900">
-                <I18nText i18nKey="admin::customers::empty::ready">고객 정보를 검색해 주세요.</I18nText>
+                <I18nText i18nKey="customers.empty.ready">고객 정보를 검색해 주세요.</I18nText>
               </p>
             </div>
           ) : results.length === 0 ? (
@@ -177,7 +177,7 @@ export function CustomersPage() {
                 <UserSearch className="h-7 w-7" />
               </div>
               <p className="text-base font-semibold text-gray-900">
-                <I18nText i18nKey="admin::customers::empty::no-result">조회된 고객 정보가 없습니다.</I18nText>
+                <I18nText i18nKey="customers.empty.no_result">조회된 고객 정보가 없습니다.</I18nText>
               </p>
             </div>
           ) : (
