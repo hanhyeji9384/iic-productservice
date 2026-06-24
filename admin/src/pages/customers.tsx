@@ -5,13 +5,12 @@ import { maskEmail, maskName, maskPhone } from '@/lib/masking'
 import { getCustomersWithOverrides, getTicketsWithExtras } from '@/lib/prototype-storage'
 import type { Customer, Ticket } from '@/lib/types'
 
-type SearchType = 'customerKey' | 'email' | 'phone' | 'name'
+type SearchType = 'customerKey' | 'email' | 'phone'
 
 const SEARCH_TYPE_LABEL: Record<SearchType, string> = {
   customerKey: '고객 Key',
   email: 'ID/이메일',
   phone: '휴대폰 번호',
-  name: '이름',
 }
 
 function normalizeDigits(value: string) {
@@ -41,8 +40,7 @@ function matchCustomer(customer: Customer, type: SearchType, keyword: string) {
   if (!q) return false
   if (type === 'customerKey') return customer.id.toLowerCase() === q
   if (type === 'email') return customer.email.toLowerCase() === q
-  if (type === 'phone') return normalizeDigits(customer.phone) === normalizeDigits(q)
-  return customer.name.toLowerCase() === q
+  return normalizeDigits(customer.phone) === normalizeDigits(q)
 }
 
 function linkedTickets(customer: Customer, tickets: Ticket[]) {
