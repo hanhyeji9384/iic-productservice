@@ -1,9 +1,10 @@
-import { CUSTOMERS, TICKETS } from './mock-data'
-import type { Customer, CustomerAddress, Ticket } from './types'
+import { COMPONENT_RETURNS, CUSTOMERS, TICKETS } from './mock-data'
+import type { ComponentReturn, ComponentType, Customer, CustomerAddress, Ticket } from './types'
 
 const CUSTOMER_OVERRIDES_KEY = 'ps-admin-customer-overrides'
 const EXTRA_TICKETS_KEY = 'ps-admin-extra-tickets'
 const CUSTOMER_CANCELLED_TICKETS_KEY = 'ps-customer-cancelled-tickets'
+const COMPONENT_RETURNS_KEY = 'ps-admin-component-returns'
 
 type CustomerOverride = Partial<Omit<Customer, 'id'>>
 
@@ -133,4 +134,62 @@ export function getTicketsWithExtras(): Ticket[] {
 export function addPrototypeTicket(ticket: Ticket) {
   const extras = getExtraTickets().filter(item => item.ticketNo !== ticket.ticketNo)
   writeJson(EXTRA_TICKETS_KEY, [ticket, ...extras])
+}
+
+function getStoredComponentReturns() {
+  return readJson<ComponentReturn[]>(COMPONENT_RETURNS_KEY, [])
+}
+
+function saveStoredComponentReturns(records: ComponentReturn[]) {
+  writeJson(COMPONENT_RETURNS_KEY, records)
+}
+
+function componentReturnId() {
+  const now = new Date()
+  const pad = (value: number, size = 2) => String(value).padStart(size, '0')
+  return `CR${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`
+}
+
+export function getComponentReturns(): ComponentReturn[] {
+  const stored = getStoredComponentReturns()
+  const storedIds = new Set(stored.map(record => record.id))
+  return [
+    ...stored,
+    ...COMPONENT_RETURNS.filter(record => !storedIds.has(record.id)),
+  ].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+}
+
+export function createComponentReturnFromTicket(ticket: Ticket, componentType: ComponentType) {
+  const existing = getComponentReturns().find(record =>
+    record.sourceTicketNo === ticket.ticketNo && record.componentType === componentType
+  )
+  if (existing) return existing
+
+  const record: ComponentReturn = {
+    id: componentReturnId(),
+    sourceTicketNo: ticket.ticketNo,
+    branchCode: ticket.branchCode,
+    customerName: ticket.customerName,
+    phone: ticket.phone,
+    email: ticket.email,
+    productName: ticket.productName,
+    componentType,
+    courier: ticket.branchCode === 'C1002' ? 'FedEx' : 'CJ대한통운',
+    trackingNo: null,
+    status: 'WAITING',
+    createdAt: localTimestamp(),
+    returnedAt: null,
+    alimtalkSentYn: 'N',
+  }
+
+  saveStoredComponentReturns([record, ...getStoredComponentReturns()])
+  return record
+}
+
+export function updateComponentReturn(record: ComponentReturn) {
+  const stored = getStoredComponentReturns()
+  const next = stored.some(item => item.id === record.id)
+    ? stored.map(item => item.id === record.id ? record : item)
+    : [record, ...stored]
+  saveStoredComponentReturns(next)
 }

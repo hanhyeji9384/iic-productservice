@@ -7,17 +7,20 @@ import {
   AlertTriangle, KeyRound, CalendarDays, Download, ShieldCheck, FileText,
 } from 'lucide-react'
 import { useSession } from '@/lib/session-context'
+import { I18nModeToggle, I18nText } from '@/lib/i18n-inspector'
 import { SessionWarningModal } from '@/components/session-warning-modal'
 import { SessionExpiredModal } from '@/components/session-expired-modal'
 
 interface NavChild {
   to: string
   label: string
+  i18nKey: string
   icon: React.ComponentType<{ className?: string }>
 }
 
 interface NavGroup {
   label: string
+  i18nKey: string
   icon: React.ComponentType<{ className?: string }>
   children: NavChild[]
 }
@@ -25,74 +28,83 @@ interface NavGroup {
 const NAV: NavGroup[] = [
   {
     label: '시스템 관리',
+    i18nKey: 'admin::nav::system-management',
     icon: UserCog,
     children: [
-      { to: '/members',                  label: '회원 관리',      icon: UserCog },
-      { to: '/roles',                    label: '권한 관리',      icon: Shield },
-      { to: '/settings/reception-slots', label: '접수 슬롯 설정', icon: CalendarDays },
+      { to: '/members',                  label: '회원 관리',      i18nKey: 'admin::nav::system-management::members', icon: UserCog },
+      { to: '/roles',                    label: '권한 관리',      i18nKey: 'admin::nav::system-management::roles', icon: Shield },
+      { to: '/settings/reception-slots', label: '접수 슬롯 설정', i18nKey: 'admin::nav::system-management::reception-slots', icon: CalendarDays },
     ],
   },
   {
     label: '마스터 관리',
+    i18nKey: 'admin::nav::master-management',
     icon: Package,
     children: [
-      { to: '/products',           label: '제품 리스트',      icon: Package },
-      { to: '/product-management', label: '제품 관리',        icon: Package },
-      { to: '/parts',              label: '부품 관리',        icon: Wrench },
-      { to: '/stores',             label: '매장/거래처 관리', icon: Store },
+      { to: '/products',           label: '제품 리스트',      i18nKey: 'admin::nav::master-management::product-list', icon: Package },
+      { to: '/product-management', label: '제품 관리',        i18nKey: 'admin::nav::master-management::product-management', icon: Package },
+      { to: '/parts',              label: '부품 관리',        i18nKey: 'admin::nav::master-management::parts', icon: Wrench },
+      { to: '/stores',             label: '매장/거래처 관리', i18nKey: 'admin::nav::master-management::stores', icon: Store },
     ],
   },
   {
     label: '재고 관리',
+    i18nKey: 'admin::nav::stock-management',
     icon: ArchiveX,
     children: [
-      { to: '/stock', label: '재고 현황', icon: ArchiveX },
+      { to: '/stock', label: '재고 현황', i18nKey: 'admin::nav::stock-management::stock', icon: ArchiveX },
     ],
   },
   {
     label: '고객 관리',
+    i18nKey: 'admin::nav::customer-management',
     icon: Users,
     children: [
-      { to: '/customers', label: '고객', icon: Users },
+      { to: '/customers', label: '고객', i18nKey: 'admin::nav::customer-management::customers', icon: Users },
     ],
   },
   {
     label: '티켓 관리',
+    i18nKey: 'admin::nav::ticket-management',
     icon: Ticket,
     children: [
-      { to: '/tickets',         label: '티켓 관리',             icon: Ticket },
-      { to: '/shipping',        label: '출고 관리',             icon: Truck },
-      { to: '/invoice-packing', label: '인보이스/패킹리스트', icon: FileText },
+      { to: '/tickets',         label: '티켓 관리',             i18nKey: 'admin::nav::ticket-management::tickets', icon: Ticket },
+      { to: '/shipping',        label: '출고 관리',             i18nKey: 'admin::nav::ticket-management::shipping', icon: Truck },
+      { to: '/shipping/component-returns', label: '구성품 반송', i18nKey: 'admin::nav::ticket-management::component-returns', icon: Package },
+      { to: '/invoice-packing', label: '인보이스/패킹리스트', i18nKey: 'admin::nav::ticket-management::invoice-packing', icon: FileText },
     ],
   },
   {
     label: '로그 관리',
+    i18nKey: 'admin::nav::log-management',
     icon: Download,
     children: [
-      { to: '/download-logs', label: '다운로드 로그', icon: Download },
-      { to: '/privacy-logs',  label: '개인정보 처리 로그', icon: ShieldCheck },
+      { to: '/download-logs', label: '다운로드 로그', i18nKey: 'admin::nav::log-management::download-logs', icon: Download },
+      { to: '/privacy-logs',  label: '개인정보 처리 로그', i18nKey: 'admin::nav::log-management::privacy-logs', icon: ShieldCheck },
     ],
   },
   {
     label: '에러 페이지',
+    i18nKey: 'admin::nav::error-pages',
     icon: AlertTriangle,
     children: [
-      { to: '/errors/404',     label: '404 Not Found',    icon: AlertTriangle },
-      { to: '/errors/403',     label: '403 Forbidden',    icon: AlertTriangle },
-      { to: '/errors/500',     label: '500 Server Error', icon: AlertTriangle },
-      { to: '/errors/offline', label: 'Offline',          icon: AlertTriangle },
+      { to: '/errors/404',     label: '404 Not Found',    i18nKey: 'admin::nav::error-pages::not-found', icon: AlertTriangle },
+      { to: '/errors/403',     label: '403 Forbidden',    i18nKey: 'admin::nav::error-pages::forbidden', icon: AlertTriangle },
+      { to: '/errors/500',     label: '500 Server Error', i18nKey: 'admin::nav::error-pages::server-error', icon: AlertTriangle },
+      { to: '/errors/offline', label: 'Offline',          i18nKey: 'admin::nav::error-pages::offline', icon: AlertTriangle },
     ],
   },
   {
     label: '인증 페이지',
+    i18nKey: 'admin::nav::auth-pages',
     icon: KeyRound,
     children: [
-      { to: '/auth/login',           label: '로그인',       icon: KeyRound },
-      { to: '/auth/otp',             label: 'OTP 인증',     icon: KeyRound },
-      { to: '/auth/forgot-password', label: '비밀번호 찾기', icon: KeyRound },
-      { to: '/auth/reset-password',      label: '비밀번호 변경',      icon: KeyRound },
-      { to: '/auth/reset-password/done', label: '비밀번호 변경 완료', icon: KeyRound },
-      { to: '/auth/setup-2fa',           label: 'Google Auth 등록',  icon: KeyRound },
+      { to: '/auth/login',           label: '로그인',       i18nKey: 'admin::nav::auth-pages::login', icon: KeyRound },
+      { to: '/auth/otp',             label: 'OTP 인증',     i18nKey: 'admin::nav::auth-pages::otp', icon: KeyRound },
+      { to: '/auth/forgot-password', label: '비밀번호 찾기', i18nKey: 'admin::nav::auth-pages::forgot-password', icon: KeyRound },
+      { to: '/auth/reset-password',      label: '비밀번호 변경',      i18nKey: 'admin::nav::auth-pages::reset-password', icon: KeyRound },
+      { to: '/auth/reset-password/done', label: '비밀번호 변경 완료', i18nKey: 'admin::nav::auth-pages::reset-password-done', icon: KeyRound },
+      { to: '/auth/setup-2fa',           label: 'Google Auth 등록',  i18nKey: 'admin::nav::auth-pages::setup-totp', icon: KeyRound },
     ],
   },
 ]
@@ -216,7 +228,7 @@ export function AdminLayout() {
                 >
                   <div className="flex items-center gap-3">
                     <GroupIcon className="w-4 h-4" />
-                    <span>{group.label}</span>
+                    <I18nText i18nKey={group.i18nKey} display="tooltip">{group.label}</I18nText>
                   </div>
                   <ChevronRight
                     className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${
@@ -234,7 +246,7 @@ export function AdminLayout() {
                   }}
                 >
                   <div className="ml-4 mt-0.5 space-y-0.5">
-                    {group.children.map(({ to, label, icon: Icon }) => (
+                    {group.children.map(({ to, label, i18nKey, icon: Icon }) => (
                       <NavLink
                         key={to}
                         to={`${pfx}${to}`}
@@ -248,7 +260,7 @@ export function AdminLayout() {
                         }
                       >
                         <Icon className="w-3.5 h-3.5" />
-                        <span>{label}</span>
+                        <I18nText i18nKey={i18nKey} display="tooltip">{label}</I18nText>
                       </NavLink>
                     ))}
                   </div>
@@ -277,6 +289,8 @@ export function AdminLayout() {
               }
             </button>
             <div className="flex items-center gap-3">
+              <I18nModeToggle />
+
               {/* 세션 테스트 (프로토타입 전용) */}
               <div className="relative">
                 <select
@@ -345,9 +359,9 @@ export function AdminLayout() {
             >
               <div className="ml-1.5 bg-white border border-gray-200 rounded-xl shadow-xl shadow-black/[0.08] py-1.5 min-w-[180px]">
                 <p className="px-3 py-1.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-                  {group.label}
+                  <I18nText i18nKey={group.i18nKey} display="tooltip">{group.label}</I18nText>
                 </p>
-                {group.children.map(({ to, label, icon: Icon }) => (
+                {group.children.map(({ to, label, i18nKey, icon: Icon }) => (
                   <NavLink
                     key={to}
                     to={`${pfx}${to}`}
@@ -362,7 +376,7 @@ export function AdminLayout() {
                     }
                   >
                     <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-                    <span className="whitespace-nowrap">{label}</span>
+                    <I18nText i18nKey={i18nKey} display="tooltip" className="whitespace-nowrap">{label}</I18nText>
                   </NavLink>
                 ))}
               </div>

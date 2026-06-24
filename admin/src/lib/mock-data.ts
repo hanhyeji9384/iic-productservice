@@ -9,6 +9,7 @@ import type {
   ProductChangeLog,
   Part,
   PartChangeLog,
+  ComponentReturn,
   Customer,
   Ticket,
 } from './types'
@@ -869,6 +870,41 @@ export const TICKETS: Ticket[] = [
   { id: 'T202606140078', ticketNo: '2606142BCKL6NQSRLXB', branchCode: 'C1002', receivedAt: '2026-06-12 11:00:00', status: 'READY_TO_SHIP', hqReceivedAt: '2026-06-13', expectedShipAt: '2026-06-26', receptionPlace: 'GM_US_LosAngeles',            customerName: 'David Lee',   phone: '+1-323-555-0303', email: 'david.lee@example.com',    productName: 'MASTER-01',    repairDepartment: '협력업체', repairDetail: '용접수리', technicianId: '27', trackingNo: null, paymentCompleted: 'Y', paymentDate: '2026-06-13 11:30:00', reexportCondition: 'N', shippingMethod: '해외택배(FedEx)', shippedAt: null, soDocumentNo: '0000220128' },
   { id: 'T202606140079', ticketNo: '2606142CDLM7ORTSMYC', branchCode: 'C1002', receivedAt: '2026-06-13 09:00:00', status: 'READY_TO_SHIP', hqReceivedAt: '2026-06-14', expectedShipAt: '2026-06-27', receptionPlace: 'GM_US_NewYork',               customerName: 'Amy Chen',    phone: '+1-646-555-0404', email: 'amy.chen@example.com',     productName: 'DREAMER-01',   repairDepartment: '본사',    repairDetail: '젠틀케어', technicianId: '31', trackingNo: null, paymentCompleted: 'Y', paymentDate: '2026-06-14 09:30:00', reexportCondition: 'N', shippingMethod: '해외택배(FedEx)', shippedAt: null, soDocumentNo: '0000220129' },
   { id: 'T202606140080', ticketNo: '2606142DEMN8PUSTZNZD', branchCode: 'C1002', receivedAt: '2026-06-14 10:00:00', status: 'READY_TO_SHIP', hqReceivedAt: '2026-06-15', expectedShipAt: '2026-06-28', receptionPlace: 'GM_US_Online',                customerName: 'Michael Jung', phone: '+1-917-555-0505', email: 'michael.jung@example.com', productName: 'TACHYON-01',   repairDepartment: '본사',    repairDetail: '부품 교체', technicianId: '2',  trackingNo: null, paymentCompleted: 'Y', paymentDate: '2026-06-15 10:30:00', reexportCondition: 'N', shippingMethod: '해외택배(FedEx)', shippedAt: null, soDocumentNo: '0000220130' },
+]
+
+export const COMPONENT_RETURNS: ComponentReturn[] = [
+  {
+    id: 'CR202606170001',
+    sourceTicketNo: '2606100MNSVGSJKKGZQ',
+    branchCode: '1110',
+    customerName: '한혜지',
+    phone: '010-8565-9384',
+    email: 'monster563@gentlemonster.com',
+    productName: 'HYPEOB-01',
+    componentType: 'CASE',
+    courier: 'CJ대한통운',
+    trackingNo: '364892103341',
+    status: 'IN_PROGRESS',
+    createdAt: '2026-06-17 10:24:12',
+    returnedAt: null,
+    alimtalkSentYn: 'Y',
+  },
+  {
+    id: 'CR202606160002',
+    sourceTicketNo: '2606072HJM9VQKSDRLE',
+    branchCode: '1110',
+    customerName: '박지호',
+    phone: '010-3456-7890',
+    email: 'jiho.park@example.com',
+    productName: 'LILIT-01',
+    componentType: 'WARRANTY_CARD',
+    courier: 'CJ대한통운',
+    trackingNo: '361877821190',
+    status: 'COMPLETED',
+    createdAt: '2026-06-16 15:18:40',
+    returnedAt: '2026-06-17 09:30:00',
+    alimtalkSentYn: 'Y',
+  },
 ]
 
 export const MEMBERS: Member[] = [

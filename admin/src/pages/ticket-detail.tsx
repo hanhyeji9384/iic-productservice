@@ -2,9 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { AlertTriangle, ArrowLeft, Barcode, CheckCircle2, ChevronDown, Circle, History, Mail, MessageSquare, Package, RotateCcw, Search, Send } from 'lucide-react'
 import { BRANCHES, MEMBERS } from '@/lib/mock-data'
-import { getTicketsWithExtras } from '@/lib/prototype-storage'
+import { createComponentReturnFromTicket, getTicketsWithExtras } from '@/lib/prototype-storage'
 import { formatCurrency, formatRepairChargeType, getSoDocumentInfo } from '@/lib/ticket-so'
-import type { PaymentCompleted, Ticket, TicketReceptionTag, TicketStatus } from '@/lib/types'
+import type { ComponentType, PaymentCompleted, Ticket, TicketReceptionTag, TicketStatus } from '@/lib/types'
 import { BarcodePrintModal } from '@/components/barcode-print-modal'
 
 const STATUS_META: Record<TicketStatus, { label: string; className: string }> = {
@@ -76,10 +76,19 @@ const RECEPTION_TAG_META: Record<TicketReceptionTag, { label: string; className:
     className: 'border-blue-200 bg-blue-50 text-blue-700',
   },
   PRE_RECEPTION: {
-    label: '사전',
+    label: '구매증빙 필요',
     className: 'border-violet-200 bg-violet-50 text-violet-700',
   },
 }
+
+const COMPONENT_TYPE_OPTIONS: { value: ComponentType; label: string }[] = [
+  { value: 'CASE', label: '케이스' },
+  { value: 'WARRANTY_CARD', label: '보증카드' },
+  { value: 'LENS', label: '렌즈' },
+  { value: 'CLOTH', label: '안경닦이' },
+  { value: 'CHARGING_CASE', label: '충전 케이스' },
+  { value: 'OTHER', label: '기타 구성품' },
+]
 
 function getReceptionTitle(ticket: Ticket) {
   if (ticket.receptionTitle) return ticket.receptionTitle
@@ -453,6 +462,7 @@ export function TicketDetailPage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [showBarcodeModal, setShowBarcodeModal] = useState(false)
   const [autoPrintBarcode, setAutoPrintBarcode] = useState(false)
+  const [selectedComponentType, setSelectedComponentType] = useState<ComponentType | ''>('')
   const ticket = getTicketsWithExtras().find(t => t.ticketNo === ticketNo)
   const autoPrintRequested = (location.state as { autoPrintBarcodeOnce?: boolean } | null)?.autoPrintBarcodeOnce === true
   const onlineAutoPrintRequested = ticket ? isOnlineAutoCreatedTicket(ticket) : false
@@ -492,6 +502,14 @@ export function TicketDetailPage() {
   const receptionTitle = getReceptionTitle(ticket)
   const receptionTags = ticket.receptionTags ?? []
   const kakaoEnabled = !isOverseasTicket(ticket)
+
+  function handleCreateComponentReturn() {
+    if (!ticket || !selectedComponentType) return
+    const record = createComponentReturnFromTicket(ticket, selectedComponentType)
+    navigate(`/${langCode}/shipping/component-returns`, {
+      state: { componentReturnId: record.id },
+    })
+  }
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'overview', label: '개요' },
@@ -573,8 +591,10 @@ export function TicketDetailPage() {
                 <Package className="w-3.5 h-3.5" />재고요청
               </button>
               <button
-                onClick={() => window.alert('구성품 반송 기능은 TBD입니다.')}
-                className="flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
+                onClick={handleCreateComponentReturn}
+                disabled={!selectedComponentType}
+                title={!selectedComponentType ? '접수정보에서 구성품 유형을 선택해 주세요.' : '구성품 반송 건 생성'}
+                className="flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <Package className="w-3.5 h-3.5" />구성품 반송
               </button>
@@ -667,6 +687,21 @@ export function TicketDetailPage() {
                       <Field label="보증서 동봉" value="-" />
                       <Field label="구매 증빙 여부" value="-" />
                       <Field label="구매일" value="-" />
+                      <div>
+                        <dt className="text-[11px] font-medium text-gray-400 mb-0.5">구성품 유형</dt>
+                        <dd>
+                          <select
+                            value={selectedComponentType}
+                            onChange={event => setSelectedComponentType(event.target.value as ComponentType | '')}
+                            className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-700 focus:border-gray-400 focus:outline-none"
+                          >
+                            <option value="">선택</option>
+                            {COMPONENT_TYPE_OPTIONS.map(option => (
+                              <option key={option.value} value={option.value}>{option.label}</option>
+                            ))}
+                          </select>
+                        </dd>
+                      </div>
                       <div className="col-span-2">
                         <Field label="구매처" value="-" />
                       </div>

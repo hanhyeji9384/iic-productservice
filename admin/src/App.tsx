@@ -22,11 +22,13 @@ import { TicketsPage } from '@/pages/tickets'
 import { TicketDetailPage } from '@/pages/ticket-detail'
 import { TicketNewPage } from '@/pages/ticket-new'
 import { ShippingPage } from '@/pages/shipping'
+import { ComponentReturnsPage } from '@/pages/component-returns'
 import { InvoicePackingPage } from '@/pages/invoice-packing'
 import { DownloadLogsPage } from '@/pages/download-logs'
 import { PrivacyLogsPage } from '@/pages/privacy-logs'
 import { ProductsProvider } from '@/lib/products-context'
 import { PartsProvider } from '@/lib/parts-context'
+import { I18nInspectorProvider } from '@/lib/i18n-inspector'
 import { ReceptionSlotsPage } from '@/pages/reception-slots'
 import { LoginPage } from '@/pages/login'
 import { ForgotPasswordPage } from '@/pages/forgot-password'
@@ -58,7 +60,7 @@ export default function App() {
         <Route path="*" element={<Navigate to="/ko" replace />} />
 
         {/* 어드민 — /:langCode 프리픽스 */}
-        <Route path="/:langCode" element={<SessionProvider><MembersProvider><ProductsProvider><PartsProvider><AdminLayout /></PartsProvider></ProductsProvider></MembersProvider></SessionProvider>}>
+        <Route path="/:langCode" element={<SessionProvider><MembersProvider><ProductsProvider><PartsProvider><I18nInspectorProvider><AdminLayout /></I18nInspectorProvider></PartsProvider></ProductsProvider></MembersProvider></SessionProvider>}>
           <Route index element={<HomePage />} />
 
           {/* 회원/권한 관리 */}
@@ -98,6 +100,7 @@ export default function App() {
           <Route path="tickets/new" element={<TicketNewPage />} />
           <Route path="tickets/:ticketNo" element={<TicketDetailPage />} />
           <Route path="shipping" element={<ShippingPage />} />
+          <Route path="shipping/component-returns" element={<ComponentReturnsPage />} />
           <Route path="invoice-packing" element={<InvoicePackingPage />} />
           <Route path="global-tickets" element={<PlaceholderPage title="국가별 티켓 관리" />} />
 

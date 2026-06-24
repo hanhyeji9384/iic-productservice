@@ -69,4 +69,40 @@
   .overflow-x-auto > table td {
     white-space: nowrap;
   }
+
+  body[data-i18n-mode='both'] [data-i18n-auto-key][data-i18n-auto-kind='badge']::after {
+    content: attr(data-i18n-auto-key);
+    display: inline-flex;
+    max-width: 100%;
+    margin-left: 0.375rem;
+    padding: 0.125rem 0.375rem;
+    border: 1px solid #dbeafe;
+    border-radius: 0.375rem;
+    background: #eff6ff;
+    color: #2563eb;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1;
+    vertical-align: middle;
+  }
+
+  body[data-i18n-mode='both'] [data-i18n-auto-key][data-i18n-auto-kind='tooltip'] {
+    text-decoration: underline dotted rgba(148, 163, 184, 0.75);
+    text-underline-offset: 3px;
+  }
+
+  body[data-i18n-mode='key'] [data-i18n-auto-key] {
+    color: transparent !important;
+    font-size: 0 !important;
+  }
+
+  body[data-i18n-mode='key'] [data-i18n-auto-key]::after {
+    content: attr(data-i18n-auto-key);
+    color: #1d4ed8;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.2;
+  }
 }

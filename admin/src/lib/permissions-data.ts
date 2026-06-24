@@ -50,6 +50,7 @@ export const PERMISSION_MENUS: PermissionMenu[] = [
   { id: 'customers',      label: '고객',           parentLabel: '고객 관리' },
   // 티켓 관리
   { id: 'tickets',         label: '티켓',               parentLabel: '티켓 관리' },
+  { id: 'component-returns', label: '구성품 반송',       parentLabel: '티켓 관리' },
   { id: 'invoice-packing', label: '인보이스/패킹리스트', parentLabel: '티켓 관리' },
   { id: 'global-tickets',  label: '국가별 티켓 관리',    parentLabel: '티켓 관리' },
 ]

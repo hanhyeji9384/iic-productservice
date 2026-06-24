@@ -171,7 +171,7 @@ const RECEPTION_TAG_META: Record<TicketReceptionTag, { label: string; className:
     className: 'border-blue-200 bg-blue-50 text-blue-700',
   },
   PRE_RECEPTION: {
-    label: '사전',
+    label: '구매증빙 필요',
     className: 'border-violet-200 bg-violet-50 text-violet-700',
   },
 }

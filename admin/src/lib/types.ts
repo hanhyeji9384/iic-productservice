@@ -111,6 +111,33 @@ export type Ticket = {
   sapSentAt?: string | null
 }
 
+export type ComponentType =
+  | 'CASE'
+  | 'WARRANTY_CARD'
+  | 'LENS'
+  | 'CLOTH'
+  | 'CHARGING_CASE'
+  | 'OTHER'
+
+export type ComponentReturnStatus = 'WAITING' | 'IN_PROGRESS' | 'COMPLETED'
+
+export type ComponentReturn = {
+  id: string
+  sourceTicketNo: string
+  branchCode: string
+  customerName: string
+  phone: string
+  email: string
+  productName: string
+  componentType: ComponentType
+  courier: string
+  trackingNo: string | null
+  status: ComponentReturnStatus
+  createdAt: string
+  returnedAt: string | null
+  alimtalkSentYn: 'Y' | 'N'
+}
+
 export type Member = {
   id: string
   loginId: string
