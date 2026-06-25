@@ -51,8 +51,8 @@ export default function App() {
       <Routes>
         {/* 인증 — 프리픽스 없음 */}
         <Route path="/login" element={<I18nInspectorProvider><LoginPage /></I18nInspectorProvider>} />
-        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/forgot-password" element={<I18nInspectorProvider><ForgotPasswordPage /></I18nInspectorProvider>} />
+        <Route path="/reset-password" element={<I18nInspectorProvider><ResetPasswordPage /></I18nInspectorProvider>} />
         <Route path="/setup-2fa" element={<I18nInspectorProvider><SetupTotpPage /></I18nInspectorProvider>} />
 
         {/* 기본 리다이렉트 */}
