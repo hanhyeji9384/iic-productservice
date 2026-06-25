@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Clock, LogOut, RefreshCw } from 'lucide-react'
 import { useSession } from '@/lib/session-context'
+import { I18nText } from '@/lib/i18n-inspector'
 
 const WARNING_SECONDS = 5 * 60 // 5분
 
@@ -58,18 +59,28 @@ export function SessionWarningModal() {
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 ${isUrgent ? 'bg-red-50' : 'bg-amber-50'}`}>
               <Clock className={`w-5 h-5 ${isUrgent ? 'text-red-500' : 'text-amber-500'}`} />
             </div>
-            <h2 className="text-base font-semibold text-gray-900">세션 만료 예정</h2>
+            <h2 className="text-base font-semibold text-gray-900">
+              <I18nText i18nKey="session.warning.title">
+                세션 만료 예정
+              </I18nText>
+            </h2>
           </div>
 
           <p className="text-sm text-gray-500 leading-relaxed mb-4">
-            잠시 후 자동 로그아웃됩니다. 세션을 연장하시겠습니까?
+            <I18nText i18nKey="session.warning.copy">
+              잠시 후 자동 로그아웃됩니다. 세션을 연장하시겠습니까?
+            </I18nText>
           </p>
 
           <div className={`flex items-center justify-center gap-2 py-3 rounded-xl ${isUrgent ? 'bg-red-50' : 'bg-gray-50'}`}>
             <span className={`text-2xl font-mono font-bold tabular-nums ${isUrgent ? 'text-red-600' : 'text-gray-700'}`}>
               {formatTime(remaining)}
             </span>
-            <span className={`text-xs ${isUrgent ? 'text-red-400' : 'text-gray-400'}`}>후 자동 로그아웃</span>
+            <span className={`text-xs ${isUrgent ? 'text-red-400' : 'text-gray-400'}`}>
+              <I18nText i18nKey="session.warning.countdown_suffix">
+                후 자동 로그아웃
+              </I18nText>
+            </span>
           </div>
         </div>
 
@@ -79,14 +90,18 @@ export function SessionWarningModal() {
             className="flex items-center gap-2 px-4 py-2.5 border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-100 transition-colors"
           >
             <LogOut className="w-4 h-4" />
-            로그아웃
+            <I18nText i18nKey="common.button.logout">
+              로그아웃
+            </I18nText>
           </button>
           <button
             onClick={handleExtend}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-black text-white text-sm font-medium rounded-xl hover:bg-gray-800 transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
-            연장하기
+            <I18nText i18nKey="session.warning.button.extend">
+              연장하기
+            </I18nText>
           </button>
         </div>
       </div>

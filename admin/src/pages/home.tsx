@@ -1,4 +1,5 @@
 import { Wrench } from 'lucide-react'
+import { I18nText } from '@/lib/i18n-inspector'
 
 export function HomePage() {
   return (
@@ -11,7 +12,9 @@ export function HomePage() {
           Product Service Admin
         </h2>
         <p className="text-sm text-gray-400">
-          왼쪽 메뉴에서 관리할 항목을 선택해주세요.
+          <I18nText i18nKey="home.copy.select_menu">
+            왼쪽 메뉴에서 관리할 항목을 선택해주세요.
+          </I18nText>
         </p>
       </div>
     </div>
