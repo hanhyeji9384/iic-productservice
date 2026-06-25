@@ -50,7 +50,7 @@ export default function App() {
     <BrowserRouter basename="/admin">
       <Routes>
         {/* 인증 — 프리픽스 없음 */}
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={<I18nInspectorProvider><LoginPage /></I18nInspectorProvider>} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/setup-2fa" element={<SetupTotpPage />} />
