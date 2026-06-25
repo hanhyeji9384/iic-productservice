@@ -1,5 +1,5 @@
 import { COMPONENT_RETURNS, CUSTOMERS, TICKETS } from './mock-data'
-import type { ComponentReturn, Customer, CustomerAddress, Ticket } from './types'
+import type { ComponentReturn, ComponentType, Customer, CustomerAddress, Ticket } from './types'
 
 const CUSTOMER_OVERRIDES_KEY = 'ps-admin-customer-overrides'
 const EXTRA_TICKETS_KEY = 'ps-admin-extra-tickets'
@@ -159,7 +159,7 @@ export function getComponentReturns(): ComponentReturn[] {
   ].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 }
 
-export function createComponentReturnFromTicket(ticket: Ticket) {
+export function createComponentReturnFromTicket(ticket: Ticket, componentType: ComponentType = 'NONE') {
   const existing = getComponentReturns().find(record => record.sourceTicketNo === ticket.ticketNo)
   if (existing) return existing
 
@@ -171,7 +171,7 @@ export function createComponentReturnFromTicket(ticket: Ticket) {
     phone: ticket.phone,
     email: ticket.email,
     productName: ticket.productName,
-    componentType: 'OTHER',
+    componentType,
     courier: ticket.branchCode === 'C1002' ? 'FedEx' : 'CJ대한통운',
     trackingNo: null,
     status: 'WAITING',

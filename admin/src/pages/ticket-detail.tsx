@@ -3,8 +3,9 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { AlertTriangle, ArrowLeft, Barcode, CheckCircle2, ChevronDown, Circle, ExternalLink, History, Mail, MessageSquare, Package, RotateCcw, Search, Send } from 'lucide-react'
 import { BRANCHES, MEMBERS, STORES } from '@/lib/mock-data'
 import { createComponentReturnFromTicket, getComponentReturns, getCustomersWithOverrides, getTicketsWithExtras } from '@/lib/prototype-storage'
+import { COMPONENT_TYPE_OPTIONS } from '@/lib/component-return'
 import { formatCurrency, formatRepairChargeType, getSoDocumentInfo } from '@/lib/ticket-so'
-import type { PaymentCompleted, Ticket, TicketReceptionTag, TicketStatus } from '@/lib/types'
+import type { ComponentType, PaymentCompleted, Ticket, TicketReceptionTag, TicketStatus } from '@/lib/types'
 import { BarcodePrintModal } from '@/components/barcode-print-modal'
 import { I18nText } from '@/lib/i18n-inspector'
 import { ticketStatusI18nKey } from '@/lib/ticket-status-i18n'
@@ -138,6 +139,38 @@ function getReceptionMethod(ticket: Ticket): 'store' | 'house' | null {
   if (/행낭|자체수령|매장수령/i.test(ticket.shippingMethod)) return 'store'
   if (/택배|DHL|FedEx|배송/i.test(ticket.shippingMethod)) return 'house'
   return null
+}
+
+function isGlobalTicket(ticket: Ticket) {
+  return ticket.branchCode === 'C1002' || /Global|US|DHL|FedEx/i.test(`${ticket.receptionPlace} ${ticket.shippingMethod}`)
+}
+
+function getPickupTrackingNo(ticket: Ticket) {
+  if (ticket.pickupTrackingNo) return ticket.pickupTrackingNo
+  const shouldHavePickup = ticket.reRepairYn === 'Y' || getReceptionMethod(ticket) === 'house' || ticket.status === 'PICKUP_WAITING'
+  if (!shouldHavePickup) return null
+  const carrier = isGlobalTicket(ticket) ? 'DHL' : 'CJ'
+  const trackingNo = ticket.trackingNo || (carrier === 'DHL' ? 'JD014600012345678901' : '364892103341')
+  return `${carrier} ${trackingNo}`
+}
+
+function getUrgentRepairYn(ticket: Ticket) {
+  if (ticket.urgentRepairYn) return ticket.urgentRepairYn
+  return ticket.reRepairYn === 'Y' || ticket.repairDetail.includes('제품교환') ? 'Y' : 'N'
+}
+
+function getPurchaseProofType(ticket: Ticket) {
+  const labelMap: Record<NonNullable<Ticket['purchaseProofType']>, string> = {
+    '-': '-',
+    MEMBERSHIP: '멤버십',
+    WARRANTY_CARD: '보증카드',
+    RECEIPT: '구매 영수증',
+    OTHER: '기타',
+  }
+  if (ticket.purchaseProofType) return labelMap[ticket.purchaseProofType]
+  return /온라인|online|my account/i.test(`${ticket.receptionTitle ?? ''} ${ticket.receptionPlace}`)
+    ? '멤버십'
+    : '-'
 }
 
 function getMockReceivingAddress(ticket: Ticket) {
@@ -310,18 +343,22 @@ function SectionCard({
   title,
   children,
   editLabel = '수정',
+  editable = true,
 }: {
   title: string
   children: React.ReactNode
   editLabel?: string
+  editable?: boolean
 }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
         <h3 className="text-xs font-semibold text-gray-700">{title}</h3>
-        <button className="text-xs text-gray-400 hover:text-gray-600 transition-colors px-2 py-1 rounded hover:bg-gray-50">
-          {editLabel}
-        </button>
+        {editable && (
+          <button className="text-xs text-gray-400 hover:text-gray-600 transition-colors px-2 py-1 rounded hover:bg-gray-50">
+            {editLabel}
+          </button>
+        )}
       </div>
       <div className="p-5">{children}</div>
     </div>
@@ -601,6 +638,8 @@ export function TicketDetailPage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview')
   const [showBarcodeModal, setShowBarcodeModal] = useState(false)
   const [autoPrintBarcode, setAutoPrintBarcode] = useState(false)
+  const [componentReturnModalOpen, setComponentReturnModalOpen] = useState(false)
+  const [selectedComponentType, setSelectedComponentType] = useState<ComponentType>('NONE')
   const [toast, setToast] = useState<{ message: string; ok: boolean } | null>(null)
   const [componentReturnCreated, setComponentReturnCreated] = useState(false)
   const toastTimerRef = useRef<number | null>(null)
@@ -668,8 +707,18 @@ export function TicketDetailPage() {
   const mappedCustomer = getCustomersWithOverrides().find(customer => {
     return Boolean(ticketEmail && customer.email.trim().toLowerCase() === ticketEmail)
   })
+  const customerCountry = (mappedCustomer?.country || (ticket.branchCode === 'C1002' ? 'US' : 'KR')).slice(0, 2).toUpperCase()
+  const customerMarketingAgree = mappedCustomer?.marketingAgree ?? '-'
+  const customerPrivacyAgree = mappedCustomer ? 'Y' : '-'
   const fallbackReceivingAddress = mappedCustomer?.addresses?.find(address => address.isDefault) ?? mappedCustomer?.addresses?.[0]
   const receivingInfo = formatReceivingInfo(ticket, fallbackReceivingAddress)
+  const pickupTrackingNo = getPickupTrackingNo(ticket)
+  const urgentRepairYn = getUrgentRepairYn(ticket)
+  const purchaseProofType = getPurchaseProofType(ticket)
+  const componentType = ticket.componentType || (receptionTags.includes('RETURN_COMPONENTS') ? '케이스' : '-')
+  const serviceCoupon = ticket.serviceCoupon || '-'
+  const customerRequest = ticket.customerRequest || '수리 전 상태와 비용을 확인한 뒤 진행해 주세요.'
+  const attachments = ticket.attachments ?? ['고객 첨부 이미지 1', '구매 증빙 이미지 1']
 
   function showToast(message: string, ok = true) {
     if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
@@ -687,8 +736,9 @@ export function TicketDetailPage() {
 
   function handleCreateComponentReturn() {
     if (!ticket || componentReturnCreated) return
-    const record = createComponentReturnFromTicket(ticket)
+    const record = createComponentReturnFromTicket(ticket, selectedComponentType)
     setComponentReturnCreated(true)
+    setComponentReturnModalOpen(false)
     navigate(`/${langCode}/shipping/component-returns`, {
       state: { componentReturnId: record.id },
     })
@@ -712,6 +762,58 @@ export function TicketDetailPage() {
           presentation={autoPrintBarcode ? 'silent' : 'modal'}
           onClose={() => { setShowBarcodeModal(false); setAutoPrintBarcode(false) }}
         />
+      )}
+      {componentReturnModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/35 px-4 py-6">
+          <button
+            type="button"
+            aria-label="모달 닫기"
+            className="absolute inset-0 cursor-default"
+            onClick={() => setComponentReturnModalOpen(false)}
+          />
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="구성품 반송 생성"
+            className="relative z-10 w-full max-w-sm rounded-2xl border border-gray-200 bg-white shadow-2xl"
+          >
+            <div className="border-b border-gray-100 px-5 py-4">
+              <p className="text-[11px] font-medium text-gray-400">구성품 반송</p>
+              <h2 className="mt-1 text-base font-bold text-gray-900">구성품 유형 선택</h2>
+            </div>
+            <div className="space-y-3 px-5 py-4">
+              <label htmlFor="ticket-component-return-type" className="block text-xs font-semibold text-gray-700">
+                구성품 유형
+              </label>
+              <select
+                id="ticket-component-return-type"
+                value={selectedComponentType}
+                onChange={event => setSelectedComponentType(event.target.value as ComponentType)}
+                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 outline-none transition-colors focus:border-gray-400"
+              >
+                {COMPONENT_TYPE_OPTIONS.map(option => (
+                  <option key={option.value} value={option.value}>{option.label}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex justify-end gap-2 border-t border-gray-100 px-5 py-4">
+              <button
+                type="button"
+                onClick={() => setComponentReturnModalOpen(false)}
+                className="inline-flex items-center justify-center rounded-lg border border-gray-200 px-4 py-2 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateComponentReturn}
+                className="inline-flex items-center justify-center rounded-lg bg-black px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-gray-800"
+              >
+                생성
+              </button>
+            </div>
+          </section>
+        </div>
       )}
       <button
         onClick={() => navigate(-1)}
@@ -774,7 +876,10 @@ export function TicketDetailPage() {
                 <Package className="w-3.5 h-3.5" />재고요청
               </button>
               <button
-                onClick={handleCreateComponentReturn}
+                onClick={() => {
+                  setSelectedComponentType('NONE')
+                  setComponentReturnModalOpen(true)
+                }}
                 disabled={componentReturnCreated}
                 title={componentReturnCreated ? '이미 구성품 반송 건이 생성되었습니다.' : '구성품 반송 건 생성'}
                 className="flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
@@ -858,33 +963,55 @@ export function TicketDetailPage() {
                   {/* 접수 정보 카드 */}
                   <SectionCard title="접수 정보">
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
-                      <Field label="접수일시" value={`${ticket.receivedAt} (KST)`} />
+                      <Field label="접수일" value={`${ticket.receivedAt} (KST)`} />
+                      <Field label="접수처 유형" value={receptionChannel} />
                       <Field label="접수처" value={ticket.receptionPlace} />
-                      <Field label="접수 채널" value={receptionChannel} />
                       {shouldShowReceptionContact && (
                         <Field label="담당자 연락처" value={receptionContact} />
                       )}
+                      <Field label="픽업 운송장 No." value={pickupTrackingNo} />
+                      <Field label="B2C 여부(법인용)" value={soInfo.b2cYn} />
+                      <Field label="서비스쿠폰" value={serviceCoupon} />
                       <Field label="재수리 여부" value={ticket.reRepairYn} />
+                      <Field label="긴급수리 여부" value={urgentRepairYn} />
                       <TicketLinkField
                         label="기존 티켓번호"
                         ticketNo={ticket.originalTicketNo}
                         onClick={originalTicketNo => navigate(`/${langCode}/tickets/${originalTicketNo}`)}
                       />
-                      <Field label="긴급 수리 여부" value="-" />
-                      <Field label="보증서 동봉" value="-" />
-                      <Field label="구매 증빙 여부" value="-" />
-                      <Field label="구매일" value="-" />
+                      <Field label="구매증빙 유형" value={purchaseProofType} />
+                      <Field label="구성품 유형" value={componentType} />
+                      <Field label="구매일" value={ticket.purchaseDate || '2026-05-12'} />
                       <div className="col-span-2">
-                        <Field label="구매처" value="-" />
+                        <Field label="구매처" value={ticket.purchasePlace || 'GENTLE MONSTER 공식 온라인 스토어'} />
                       </div>
                       <div className="col-span-2">
-                        <Field label="고객 요청사항" value="-" />
+                        <Field label="고객 요청사항" value={customerRequest} />
                       </div>
                     </dl>
                     {/* 첨부파일 */}
                     <div className="mt-4 border-t border-gray-100 pt-4">
-                      <p className="text-[11px] font-medium text-gray-400 mb-2">첨부파일</p>
-                      <p className="text-xs text-gray-400">첨부파일이 없습니다.</p>
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <p className="text-[11px] font-medium text-gray-400">첨부파일</p>
+                        <div className="flex items-center gap-1.5">
+                          <button className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-[11px] text-gray-600 hover:bg-gray-50">
+                            이미지 생성
+                          </button>
+                          <button className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-[11px] text-gray-600 hover:border-red-200 hover:bg-red-50 hover:text-red-500">
+                            이미지 삭제
+                          </button>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        {attachments.map((attachment, index) => (
+                          <div
+                            key={`${attachment}-${index}`}
+                            className="flex h-20 items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 text-[11px] text-gray-400"
+                          >
+                            {attachment}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </SectionCard>
 
@@ -916,14 +1043,14 @@ export function TicketDetailPage() {
                 <div className="space-y-4">
 
                   {/* 고객 정보 카드 */}
-                  <SectionCard title="고객 정보">
+                  <SectionCard title="고객 정보" editable={false}>
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
                       <ClickableField label="이메일" value={ticket.email} onClick={handleCustomerClick} />
                       <Field label="고객명" value={ticket.customerName} />
                       <Field label="전화번호" value={ticket.phone} />
-                      <Field label="국가" value="-" />
-                      <Field label="마케팅 동의" value="-" />
-                      <Field label="개인정보 동의" value="-" />
+                      <Field label="국가" value={customerCountry} />
+                      <Field label="마케팅 동의" value={customerMarketingAgree} />
+                      <Field label="개인정보 동의" value={customerPrivacyAgree} />
                       <div className="col-span-2">
                         <Field label="수령 유형" value={receptionMethodLabel} />
                       </div>

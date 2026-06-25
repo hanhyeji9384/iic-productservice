@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { ShieldX, ArrowLeft } from 'lucide-react'
+import { I18nText } from '@/lib/i18n-inspector'
 
 export function Error403Page() {
   const navigate = useNavigate()
@@ -14,11 +15,15 @@ export function Error403Page() {
           403
         </p>
         <h1 className="text-xl font-bold text-neutral-800 mb-2">
-          접근 권한이 없습니다
+          <I18nText i18nKey="error-403-title">
+            접근 권한이 없습니다
+          </I18nText>
         </h1>
         <p className="text-sm text-neutral-400 leading-relaxed mb-10">
-          이 페이지에 대한 접근 권한이 없습니다.<br />
-          필요한 경우 관리자에게 문의해주세요.
+          <I18nText i18nKey="error-403-description">
+            이 페이지에 대한 접근 권한이 없습니다.<br />
+            필요한 경우 관리자에게 문의해주세요.
+          </I18nText>
         </p>
         <div className="flex flex-col gap-3 w-full max-w-xs">
           <button
@@ -26,7 +31,9 @@ export function Error403Page() {
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-neutral-900 text-white text-sm font-bold rounded-[32px] shadow-sm hover:bg-neutral-700 active:scale-95 transition-all duration-200"
           >
             <ArrowLeft className="w-4 h-4" />
-            홈으로 돌아가기
+            <I18nText i18nKey="error-common-button-home">
+              홈으로 돌아가기
+            </I18nText>
           </button>
         </div>
       </div>

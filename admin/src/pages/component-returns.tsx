@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ExternalLink, Filter, Package, X } from 'lucide-react'
 import { BRANCHES } from '@/lib/mock-data'
-import { getComponentReturns, getCustomersWithOverrides, getTicketsWithExtras } from '@/lib/prototype-storage'
+import { getComponentReturns, getTicketsWithExtras } from '@/lib/prototype-storage'
 import { maskEmail, maskName, maskPhone } from '@/lib/masking'
 import { I18nText } from '@/lib/i18n-inspector'
 import { ticketStatusI18nKey } from '@/lib/ticket-status-i18n'
+import { componentTypeLabel } from '@/lib/component-return'
 import type { ComponentReturn, ComponentReturnStatus, TicketStatus } from '@/lib/types'
 
 const STATUS_OPTIONS: { value: ComponentReturnStatus; label: string; className: string }[] = [
@@ -63,17 +64,6 @@ function normalizeDigits(value?: string | null) {
   return String(value ?? '').replace(/\D/g, '')
 }
 
-function findMappedCustomer(record: ComponentReturn) {
-  const recordEmail = record.email.trim().toLowerCase()
-  const recordPhone = normalizeDigits(record.phone)
-  return getCustomersWithOverrides().find(customer => {
-    const sameEmail = Boolean(recordEmail && customer.email.trim().toLowerCase() === recordEmail)
-    const customerPhone = normalizeDigits(customer.phone)
-    const samePhone = Boolean(recordPhone && customerPhone === recordPhone)
-    return sameEmail || samePhone
-  })
-}
-
 function Field({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="min-w-0">
@@ -124,8 +114,6 @@ export function ComponentReturnsPage() {
   const [selectedId, setSelectedId] = useState(locationState?.componentReturnId ?? '')
   const [detailOpen, setDetailOpen] = useState(Boolean(locationState?.componentReturnId))
   const [draft, setDraft] = useState<ComponentReturn | null>(null)
-  const [toast, setToast] = useState<{ message: string; ok: boolean } | null>(null)
-  const toastTimerRef = useRef<number | null>(null)
 
   const ticketByNo = useMemo(() => {
     return new Map(getTicketsWithExtras().map(ticket => [ticket.ticketNo, ticket]))
@@ -179,12 +167,6 @@ export function ComponentReturnsPage() {
   }, [records, selectedId])
 
   useEffect(() => {
-    return () => {
-      if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
-    }
-  }, [])
-
-  useEffect(() => {
     if (!filterPopover) return
     const close = (event: MouseEvent) => {
       const target = event.target as HTMLElement
@@ -198,21 +180,6 @@ export function ComponentReturnsPage() {
     document.addEventListener('mousedown', close)
     return () => document.removeEventListener('mousedown', close)
   }, [filterPopover])
-
-  function showToast(message: string, ok = true) {
-    if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
-    setToast({ message, ok })
-    toastTimerRef.current = window.setTimeout(() => setToast(null), 2500)
-  }
-
-  function handleCustomerClick(record: ComponentReturn) {
-    const customer = findMappedCustomer(record)
-    if (!customer) {
-      showToast('연결된 고객 정보를 찾을 수 없습니다.', false)
-      return
-    }
-    navigate(`/${langCode}/customers/${customer.id}`)
-  }
 
   function openDetail(record: ComponentReturn) {
     setSelectedId(record.id)
@@ -449,6 +416,7 @@ export function ComponentReturnsPage() {
                     <HeaderCell label="고객명" col="customerName" />
                     <HeaderCell label="연락처" col="phone" />
                     <HeaderCell label="반송 상태" col="returnStatus" />
+                    <HeaderCell label="구성품 유형" />
                     <HeaderCell label="택배사" col="courier" />
                     <HeaderCell label="운송장 번호" col="trackingNo" />
                     <HeaderCell label="생성일시" />
@@ -458,7 +426,7 @@ export function ComponentReturnsPage() {
                 <tbody className="divide-y divide-gray-100">
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="px-5 py-12 text-center text-xs text-gray-400">구성품 반송 건이 없습니다.</td>
+                      <td colSpan={10} className="px-5 py-12 text-center text-xs text-gray-400">구성품 반송 건이 없습니다.</td>
                     </tr>
                   ) : filtered.map(record => {
                     const meta = statusMeta(record.status)
@@ -486,25 +454,14 @@ export function ComponentReturnsPage() {
                         <td className="px-4 py-3">
                           <TicketStatusBadge status={sourceTicket?.status} />
                         </td>
-                        <td className="px-4 py-3">
-                          <button
-                            type="button"
-                            onClick={event => {
-                              event.stopPropagation()
-                              handleCustomerClick(record)
-                            }}
-                            className="inline-flex items-center gap-1 text-xs font-semibold text-gray-900 underline-offset-4 hover:text-blue-600 hover:underline"
-                          >
-                            {maskName(record.customerName)}
-                            <ExternalLink className="h-3 w-3 text-gray-300" />
-                          </button>
-                        </td>
+                        <td className="px-4 py-3 text-xs font-semibold text-gray-900">{maskName(record.customerName)}</td>
                         <td className="px-4 py-3 text-xs text-gray-500">{maskPhone(record.phone)}</td>
                         <td className="px-4 py-3">
                           <span className={`inline-flex rounded-md border px-2 py-0.5 text-[11px] font-semibold ${meta.className}`}>
                             {meta.label}
                           </span>
                         </td>
+                        <td className="px-4 py-3 text-xs text-gray-700">{componentTypeLabel(record.componentType)}</td>
                         <td className="px-4 py-3 text-xs text-gray-700">{record.courier}</td>
                         <td className="px-4 py-3 text-xs font-mono text-gray-600">{record.trackingNo || '-'}</td>
                         <td className="px-4 py-3 text-xs font-mono text-gray-500 whitespace-nowrap">{record.createdAt} <span className="font-sans text-gray-400">(KST)</span></td>
@@ -568,16 +525,7 @@ export function ComponentReturnsPage() {
                         <dl className="grid grid-cols-2 gap-x-5 gap-y-4">
                           <div className="min-w-0">
                             <dt className="mb-1 text-[11px] font-medium text-gray-400">고객명</dt>
-                            <dd>
-                              <button
-                                type="button"
-                                onClick={() => handleCustomerClick(draft)}
-                                className="inline-flex items-center gap-1 break-words text-sm font-semibold text-gray-900 underline-offset-4 hover:text-blue-600 hover:underline [overflow-wrap:anywhere]"
-                              >
-                                {draft.customerName}
-                                <ExternalLink className="h-3 w-3 flex-shrink-0 text-gray-300" />
-                              </button>
-                            </dd>
+                            <dd className="break-words text-sm font-semibold text-gray-900 [overflow-wrap:anywhere]">{draft.customerName}</dd>
                           </div>
                           <Field label="법인" value={branchLabel(draft.branchCode)} />
                           <TicketStatusField status={draftSourceTicket?.status} />
@@ -595,6 +543,7 @@ export function ComponentReturnsPage() {
                         <h3 className="mb-4 text-xs font-semibold text-gray-700">반송 정보</h3>
                         <dl className="grid grid-cols-2 gap-x-5 gap-y-4">
                           <Field label="반송 상태" value={statusMeta(draft.status).label} />
+                          <Field label="구성품 유형" value={componentTypeLabel(draft.componentType)} />
                           <Field label="택배사" value={draft.courier} />
                           <Field label="운송장 번호" value={draft.trackingNo} />
                           <Field label="알림톡 발송" value={draft.alimtalkSentYn} />
@@ -641,15 +590,6 @@ export function ComponentReturnsPage() {
             {renderFilterPopover()}
           </div>
         </>
-      )}
-      {toast && (
-        <div
-          className={`fixed bottom-6 right-6 z-[80] rounded-xl px-4 py-3 text-sm font-medium shadow-lg ${
-            toast.ok ? 'bg-gray-900 text-white' : 'bg-red-600 text-white'
-          }`}
-        >
-          {toast.message}
-        </div>
       )}
     </div>
   )

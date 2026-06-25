@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { SearchX, ArrowLeft } from 'lucide-react'
+import { I18nText } from '@/lib/i18n-inspector'
 
 export function Error404Page() {
   const navigate = useNavigate()
@@ -14,18 +15,24 @@ export function Error404Page() {
           404
         </p>
         <h1 className="text-xl font-bold text-neutral-800 mb-2">
-          페이지를 찾을 수 없습니다
+          <I18nText i18nKey="error-404-title">
+            페이지를 찾을 수 없습니다
+          </I18nText>
         </h1>
         <p className="text-sm text-neutral-400 leading-relaxed mb-10">
-          요청하신 페이지가 존재하지 않거나<br />
-          주소가 잘못 입력되었습니다.
+          <I18nText i18nKey="error-404-description">
+            요청하신 페이지가 존재하지 않거나<br />
+            주소가 잘못 입력되었습니다.
+          </I18nText>
         </p>
         <button
           onClick={() => navigate('/')}
           className="inline-flex items-center gap-2 px-6 py-3 bg-neutral-900 text-white text-sm font-bold rounded-[32px] shadow-sm hover:bg-neutral-700 active:scale-95 transition-all duration-200"
         >
           <ArrowLeft className="w-4 h-4" />
-          홈으로 돌아가기
+          <I18nText i18nKey="error-common-button-home">
+            홈으로 돌아가기
+          </I18nText>
         </button>
       </div>
     </div>

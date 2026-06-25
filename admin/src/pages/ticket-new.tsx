@@ -929,6 +929,11 @@ function shippingMethodLabel(form: Form, branchCode = form.branchCode) {
   return '-'
 }
 
+function pickupTrackingNo(branchCode: string, ticketNo: string) {
+  if (branchCode === 'C1002') return `DHL JD${ticketNo.replace(/\D/g, '').slice(-14).padStart(14, '0')}`
+  return `CJ ${ticketNo.replace(/\D/g, '').slice(-12).padStart(12, '0')}`
+}
+
 function receptionTypeFromTicket(ticket: Ticket): Form['receptionType'] {
   if (ticket.shippingMethod.includes('행낭') || ticket.shippingMethod.includes('자체')) return 'STORE'
   if (ticket.shippingMethod && ticket.shippingMethod !== '-') return 'HOME'
@@ -1159,6 +1164,8 @@ export function TicketNewPage() {
         : null
     const isHomeReception = receptionMethod === 'house'
     const isStoreReception = receptionMethod === 'store'
+    const isReRepair = Boolean(reRepairSourceTicket)
+    const shouldCreatePickup = isReRepair || isHomeReception
 
     if (form.receptionType === 'HOME' && isOverseasCountry(deliveryCountry) && !deliveryCity) {
       alert('해외 자택수령 주소는 City 입력이 필요합니다.')
@@ -1199,7 +1206,7 @@ export function TicketNewPage() {
       ticketNo,
       branchCode: ticketBranchCode,
       receivedAt: localTimestamp(),
-      status: 'RECEIVED',
+      status: isReRepair ? 'PICKUP_WAITING' : 'RECEIVED',
       hqReceivedAt: null,
       expectedShipAt: null,
       receptionPlace: form.receptionStoreName || TICKET_BRANCHES.find(branch => branch.code === ticketBranchCode)?.name || '-',
@@ -1209,6 +1216,13 @@ export function TicketNewPage() {
       receptionTitle: reRepairSourceTicket ? '재수리 접수' : undefined,
       originalTicketNo: reRepairSourceTicket?.ticketNo,
       reRepairYn: reRepairSourceTicket ? 'Y' : 'N',
+      pickupTrackingNo: shouldCreatePickup ? pickupTrackingNo(ticketBranchCode, ticketNo) : null,
+      serviceCoupon: null,
+      urgentRepairYn: isReRepair ? 'Y' : 'N',
+      purchaseProofType: isNewCustomer ? '-' : 'MEMBERSHIP',
+      componentType: null,
+      customerRequest: null,
+      attachments: [],
       receptionMethod,
       receptionStoreCode: isStoreReception ? form.pickupStoreCode || null : null,
       receptionStoreName: isStoreReception ? form.pickupStoreName || selectedPickupStore?.name || null : null,

@@ -84,6 +84,13 @@ export type Ticket = {
   receptionTags?: TicketReceptionTag[]
   originalTicketNo?: string
   reRepairYn?: 'Y' | 'N'
+  pickupTrackingNo?: string | null
+  serviceCoupon?: string | null
+  urgentRepairYn?: 'Y' | 'N'
+  purchaseProofType?: '-' | 'MEMBERSHIP' | 'WARRANTY_CARD' | 'RECEIPT' | 'OTHER'
+  componentType?: string | null
+  customerRequest?: string | null
+  attachments?: string[]
   receptionMethod?: 'store' | 'house' | null
   receptionStoreCode?: string | null
   receptionStoreName?: string | null
@@ -121,6 +128,7 @@ export type Ticket = {
 }
 
 export type ComponentType =
+  | 'NONE'
   | 'CASE'
   | 'WARRANTY_CARD'
   | 'LENS'
