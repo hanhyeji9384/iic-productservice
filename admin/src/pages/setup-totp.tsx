@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ShieldCheck, Copy, Check, ArrowLeft, CheckCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { I18nText } from '@/lib/i18n-inspector'
 
 const MOCK_SECRET = 'JBSWY3DPEHPK3PXP'
 const MOCK_OTP = '123456'
@@ -56,6 +57,7 @@ export function SetupTotpPage() {
   const [copied, setCopied] = useState(false)
   const [otp, setOtp] = useState(['', '', '', '', '', ''])
   const [otpError, setOtpError] = useState('')
+  const [otpErrorKey, setOtpErrorKey] = useState('')
   const otpRefs = useRef<(HTMLInputElement | null)[]>([])
 
   function handleCopy() {
@@ -66,7 +68,7 @@ export function SetupTotpPage() {
 
   function handleOtpChange(i: number, value: string) {
     const digit = value.replace(/\D/g, '').slice(-1)
-    const next = [...otp]; next[i] = digit; setOtp(next); setOtpError('')
+    const next = [...otp]; next[i] = digit; setOtp(next); setOtpError(''); setOtpErrorKey('')
     if (digit && i < 5) otpRefs.current[i + 1]?.focus()
   }
 
@@ -81,19 +83,28 @@ export function SetupTotpPage() {
     const next = Array(6).fill('')
     for (let i = 0; i < 6; i++) next[i] = pasted[i] ?? ''
     setOtp(next)
+    setOtpError('')
+    setOtpErrorKey('')
     otpRefs.current[Math.min(pasted.length, 5)]?.focus()
   }
 
   function handleVerify(e: React.FormEvent) {
     e.preventDefault()
     const code = otp.join('')
-    if (code.length < 6) { setOtpError('6자리 코드를 모두 입력해주세요.'); return }
+    if (code.length < 6) {
+      setOtpError('6자리 코드를 모두 입력해주세요.')
+      setOtpErrorKey('auth.setup_2fa.error.required')
+      return
+    }
     if (code !== MOCK_OTP) {
       setOtpError('코드가 올바르지 않습니다. Google Authenticator 앱을 다시 확인해주세요.')
+      setOtpErrorKey('auth.setup_2fa.error.invalid')
       setOtp(['', '', '', '', '', ''])
       setTimeout(() => otpRefs.current[0]?.focus(), 50)
       return
     }
+    setOtpError('')
+    setOtpErrorKey('')
     setStep('done')
   }
 
@@ -121,15 +132,23 @@ export function SetupTotpPage() {
                 <CheckCircle className="w-8 h-8 text-emerald-500" strokeWidth={1.5}/>
               </div>
             </div>
-            <h1 className="text-[18px] font-semibold text-gray-900 mb-2">2단계 인증 설정 완료</h1>
+            <h1 className="text-[18px] font-semibold text-gray-900 mb-2">
+              <I18nText i18nKey="auth.setup_2fa.done.title">
+                2단계 인증 설정 완료
+              </I18nText>
+            </h1>
             <p className="text-sm text-gray-400 leading-relaxed mb-8">
-              다음 로그인부터 Google Authenticator 앱의 코드로 인증합니다.
+              <I18nText i18nKey="auth.setup_2fa.done.description">
+                다음 로그인부터 Google Authenticator 앱의 코드로 인증합니다.
+              </I18nText>
             </p>
             <button
               onClick={() => navigate('/ko')}
               className="w-full py-2.5 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-700 transition-colors"
             >
-              시작하기
+              <I18nText i18nKey="auth.setup_2fa.button.start">
+                시작하기
+              </I18nText>
             </button>
           </div>
         </div>
@@ -180,11 +199,21 @@ export function SetupTotpPage() {
           <>
             <div className="flex items-center gap-1.5 mb-1">
               <ShieldCheck className="w-3.5 h-3.5 text-gray-400"/>
-              <span className="text-[10px] text-gray-400 uppercase tracking-widest font-medium">2단계 인증 설정</span>
+              <span className="text-[10px] text-gray-400 uppercase tracking-widest font-medium">
+                <I18nText i18nKey="auth.setup_2fa.eyebrow">
+                  2단계 인증 설정
+                </I18nText>
+              </span>
             </div>
-            <h1 className="text-[18px] font-semibold text-gray-900 mb-1.5">QR 코드 스캔</h1>
+            <h1 className="text-[18px] font-semibold text-gray-900 mb-1.5">
+              <I18nText i18nKey="auth.setup_2fa.scan.title">
+                QR 코드 스캔
+              </I18nText>
+            </h1>
             <p className="text-sm text-gray-400 leading-relaxed mb-6">
-              Google Authenticator 앱을 열고 아래 QR 코드를 스캔하세요.
+              <I18nText i18nKey="auth.setup_2fa.scan.description">
+                Google Authenticator 앱을 열고 아래 QR 코드를 스캔하세요.
+              </I18nText>
             </p>
 
             {/* QR 코드 */}
@@ -200,7 +229,9 @@ export function SetupTotpPage() {
                 <span className="text-[10px] font-bold text-blue-600">G</span>
               </div>
               <p className="text-[11px] text-blue-700 leading-relaxed">
-                앱이 없다면 <span className="font-semibold">Google Authenticator</span>를 App Store 또는 Google Play에서 설치하세요.
+                <I18nText i18nKey="auth.setup_2fa.scan.app_guide">
+                  앱이 없다면 <span className="font-semibold">Google Authenticator</span>를 App Store 또는 Google Play에서 설치하세요.
+                </I18nText>
               </p>
             </div>
 
@@ -209,13 +240,21 @@ export function SetupTotpPage() {
               onClick={() => setShowManual(v => !v)}
               className="w-full flex items-center justify-between text-[12px] text-gray-400 hover:text-gray-600 transition-colors mb-2 py-1"
             >
-              <span>QR 코드를 스캔할 수 없나요?</span>
+              <span>
+                <I18nText i18nKey="auth.setup_2fa.manual.toggle">
+                  QR 코드를 스캔할 수 없나요?
+                </I18nText>
+              </span>
               {showManual ? <ChevronUp className="w-3.5 h-3.5"/> : <ChevronDown className="w-3.5 h-3.5"/>}
             </button>
 
             {showManual && (
               <div className="bg-gray-50 border border-gray-100 rounded-xl px-3.5 py-3 mb-4">
-                <p className="text-[11px] text-gray-400 mb-2">앱에서 키를 직접 입력하세요</p>
+                <p className="text-[11px] text-gray-400 mb-2">
+                  <I18nText i18nKey="auth.setup_2fa.manual.description">
+                    앱에서 키를 직접 입력하세요
+                  </I18nText>
+                </p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 text-[12px] font-mono text-gray-700 tracking-[0.1em] break-all leading-relaxed">
                     {MOCK_SECRET}
@@ -237,7 +276,9 @@ export function SetupTotpPage() {
               onClick={() => setStep('verify')}
               className="w-full py-2.5 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-700 transition-colors mt-1"
             >
-              스캔 완료
+              <I18nText i18nKey="auth.setup_2fa.button.scan_complete">
+                스캔 완료
+              </I18nText>
             </button>
           </>
         )}
@@ -250,16 +291,28 @@ export function SetupTotpPage() {
               className="flex items-center gap-1.5 text-[12px] text-gray-400 hover:text-gray-600 transition-colors mb-5"
             >
               <ArrowLeft className="w-3.5 h-3.5"/>
-              돌아가기
+              <I18nText i18nKey="common.button.back">
+                돌아가기
+              </I18nText>
             </button>
 
             <div className="flex items-center gap-1.5 mb-1">
               <ShieldCheck className="w-3.5 h-3.5 text-gray-400"/>
-              <span className="text-[10px] text-gray-400 uppercase tracking-widest font-medium">2단계 인증 설정</span>
+              <span className="text-[10px] text-gray-400 uppercase tracking-widest font-medium">
+                <I18nText i18nKey="auth.setup_2fa.eyebrow">
+                  2단계 인증 설정
+                </I18nText>
+              </span>
             </div>
-            <h1 className="text-[18px] font-semibold text-gray-900 mb-1.5">코드 확인</h1>
+            <h1 className="text-[18px] font-semibold text-gray-900 mb-1.5">
+              <I18nText i18nKey="auth.setup_2fa.verify.title">
+                코드 확인
+              </I18nText>
+            </h1>
             <p className="text-sm text-gray-400 leading-relaxed mb-6">
-              앱에 등록이 완료되었나요? 앱에 표시된 6자리 코드를 입력해주세요.
+              <I18nText i18nKey="auth.setup_2fa.verify.description">
+                앱에 등록이 완료되었나요? 앱에 표시된 6자리 코드를 입력해주세요.
+              </I18nText>
             </p>
 
             <form onSubmit={handleVerify} className="space-y-5">
@@ -285,13 +338,21 @@ export function SetupTotpPage() {
                 ))}
               </div>
 
-              {otpError && <p className="text-[12px] text-red-500 leading-relaxed">{otpError}</p>}
+              {otpError && (
+                <p className="text-[12px] text-red-500 leading-relaxed">
+                  <I18nText i18nKey={otpErrorKey}>
+                    {otpError}
+                  </I18nText>
+                </p>
+              )}
 
               <button
                 type="submit"
                 className="w-full py-2.5 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-700 transition-colors"
               >
-                인증 완료
+                <I18nText i18nKey="auth.setup_2fa.button.complete">
+                  인증 완료
+                </I18nText>
               </button>
             </form>
           </>

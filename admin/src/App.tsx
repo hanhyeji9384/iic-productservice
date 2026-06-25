@@ -53,7 +53,7 @@ export default function App() {
         <Route path="/login" element={<I18nInspectorProvider><LoginPage /></I18nInspectorProvider>} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
-        <Route path="/setup-2fa" element={<SetupTotpPage />} />
+        <Route path="/setup-2fa" element={<I18nInspectorProvider><SetupTotpPage /></I18nInspectorProvider>} />
 
         {/* 기본 리다이렉트 */}
         <Route path="/" element={<Navigate to="/ko" replace />} />
