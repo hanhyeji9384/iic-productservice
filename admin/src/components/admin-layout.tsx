@@ -14,13 +14,13 @@ import { SessionExpiredModal } from '@/components/session-expired-modal'
 interface NavChild {
   to: string
   label: string
-  i18nKey: string
+  i18nKey?: string
   icon: React.ComponentType<{ className?: string }>
 }
 
 interface NavGroup {
   label: string
-  i18nKey: string
+  i18nKey?: string
   icon: React.ComponentType<{ className?: string }>
   children: NavChild[]
 }
@@ -85,29 +85,32 @@ const NAV: NavGroup[] = [
   },
   {
     label: '에러 페이지',
-    i18nKey: 'nav.error_pages',
     icon: AlertTriangle,
     children: [
-      { to: '/errors/404',     label: '404 Not Found',    i18nKey: 'nav.error_pages.not_found', icon: AlertTriangle },
-      { to: '/errors/403',     label: '403 Forbidden',    i18nKey: 'nav.error_pages.forbidden', icon: AlertTriangle },
-      { to: '/errors/500',     label: '500 Server Error', i18nKey: 'nav.error_pages.server_error', icon: AlertTriangle },
-      { to: '/errors/offline', label: 'Offline',          i18nKey: 'nav.error_pages.offline', icon: AlertTriangle },
+      { to: '/errors/404',     label: '404 Not Found',    icon: AlertTriangle },
+      { to: '/errors/403',     label: '403 Forbidden',    icon: AlertTriangle },
+      { to: '/errors/500',     label: '500 Server Error', icon: AlertTriangle },
+      { to: '/errors/offline', label: 'Offline',          icon: AlertTriangle },
     ],
   },
   {
     label: '인증 페이지',
-    i18nKey: 'nav.auth_pages',
     icon: KeyRound,
     children: [
-      { to: '/auth/login',           label: '로그인',       i18nKey: 'nav.auth_pages.login', icon: KeyRound },
-      { to: '/auth/otp',             label: 'OTP 인증',     i18nKey: 'nav.auth_pages.otp', icon: KeyRound },
-      { to: '/auth/forgot-password', label: '비밀번호 찾기', i18nKey: 'nav.auth_pages.forgot_password', icon: KeyRound },
-      { to: '/auth/reset-password',      label: '비밀번호 변경',      i18nKey: 'nav.auth_pages.reset_password', icon: KeyRound },
-      { to: '/auth/reset-password/done', label: '비밀번호 변경 완료', i18nKey: 'nav.auth_pages.reset_password_done', icon: KeyRound },
-      { to: '/auth/setup-2fa',           label: 'Google Auth 등록',  i18nKey: 'nav.auth_pages.setup_totp', icon: KeyRound },
+      { to: '/auth/login',               label: '로그인',              icon: KeyRound },
+      { to: '/auth/otp',                 label: 'OTP 인증',            icon: KeyRound },
+      { to: '/auth/forgot-password',     label: '비밀번호 찾기',        icon: KeyRound },
+      { to: '/auth/reset-password',      label: '비밀번호 변경',        icon: KeyRound },
+      { to: '/auth/reset-password/done', label: '비밀번호 변경 완료',   icon: KeyRound },
+      { to: '/auth/setup-2fa',           label: 'Google Auth 등록',    icon: KeyRound },
     ],
   },
 ]
+
+function NavLabel({ i18nKey, label, className = '' }: { i18nKey?: string; label: string; className?: string }) {
+  if (!i18nKey) return <span className={className}>{label}</span>
+  return <I18nText i18nKey={i18nKey} display="tooltip" className={className}>{label}</I18nText>
+}
 
 export function AdminLayout() {
   const { triggerWarning, triggerExpiry } = useSession()
@@ -229,7 +232,7 @@ export function AdminLayout() {
                 >
                   <div className="flex items-center gap-3">
                     <GroupIcon className="w-4 h-4" />
-                    <I18nText i18nKey={group.i18nKey} display="tooltip">{group.label}</I18nText>
+                    <NavLabel i18nKey={group.i18nKey} label={group.label} />
                   </div>
                   <ChevronRight
                     className={`w-4 h-4 flex-shrink-0 transition-transform duration-200 ${
@@ -261,7 +264,7 @@ export function AdminLayout() {
                         }
                       >
                         <Icon className="w-3.5 h-3.5" />
-                        <I18nText i18nKey={i18nKey} display="tooltip">{label}</I18nText>
+                        <NavLabel i18nKey={i18nKey} label={label} />
                       </NavLink>
                     ))}
                   </div>
@@ -361,7 +364,7 @@ export function AdminLayout() {
             >
               <div className="ml-1.5 bg-white border border-gray-200 rounded-xl shadow-xl shadow-black/[0.08] py-1.5 min-w-[180px]">
                 <p className="px-3 py-1.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider">
-                  <I18nText i18nKey={group.i18nKey} display="tooltip">{group.label}</I18nText>
+                  <NavLabel i18nKey={group.i18nKey} label={group.label} />
                 </p>
                 {group.children.map(({ to, label, i18nKey, icon: Icon }) => (
                   <NavLink
@@ -378,7 +381,7 @@ export function AdminLayout() {
                     }
                   >
                     <Icon className="w-3.5 h-3.5 flex-shrink-0" />
-                    <I18nText i18nKey={i18nKey} display="tooltip" className="whitespace-nowrap">{label}</I18nText>
+                    <NavLabel i18nKey={i18nKey} label={label} className="whitespace-nowrap" />
                   </NavLink>
                 ))}
               </div>

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Pagination } from '@/components/pagination'
 import { cn } from '@/lib/utils'
+import { I18nText, useI18nLabel } from '@/lib/i18n-inspector'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -26,11 +27,31 @@ type Tab = 'settings' | 'holidays' | 'history'
 
 const LOG_PAGE_SIZE = 10
 
-const CATEGORY_STYLES: Record<LogEntry['category'], string> = {
-  '기본 설정':  'bg-gray-100 text-gray-700',
-  '날짜별 설정': 'bg-blue-50 text-blue-700',
-  '휴무일':     'bg-purple-50 text-purple-700',
+const CATEGORY_STYLES: Record<LogEntry['category'], { className: string; i18nKey: string }> = {
+  '기본 설정':  { className: 'bg-gray-100 text-gray-700', i18nKey: 'reception_slots.history.category.default' },
+  '날짜별 설정': { className: 'bg-blue-50 text-blue-700', i18nKey: 'reception_slots.history.category.date' },
+  '휴무일':     { className: 'bg-purple-50 text-purple-700', i18nKey: 'reception_slots.history.category.holiday' },
 }
+
+const TABS: Array<{ tab: Tab; label: string; i18nKey: string; Icon: typeof Settings }> = [
+  { tab: 'settings', label: '슬롯 설정', i18nKey: 'reception_slots.tab.settings', Icon: Settings },
+  { tab: 'holidays', label: '공휴일·휴무일', i18nKey: 'reception_slots.tab.holidays', Icon: CalendarDays },
+  { tab: 'history', label: '변경 이력', i18nKey: 'common.label.history', Icon: History },
+]
+
+const DEFAULT_GUIDES = [
+  { text: '영업일(월~금) 기준으로 적용됩니다. 토·일 및 공휴일은 자동으로 비활성화됩니다.', i18nKey: 'reception_slots.default.guide.weekday' },
+  { text: '날짜별 개별 설정이 있는 경우 기본값보다 우선 적용됩니다.', i18nKey: 'reception_slots.default.guide.priority' },
+  { text: '저장 시 오늘 이후 날짜에만 적용됩니다. 과거 날짜는 변경되지 않습니다.', i18nKey: 'reception_slots.default.guide.today' },
+  { text: '설정 변경은 이미 접수된 건에는 영향을 주지 않습니다.', i18nKey: 'reception_slots.default.guide.existing' },
+]
+
+const SLOT_LEGEND_ITEMS = [
+  { cls: 'bg-white border border-gray-200', label: '예약 가능', i18nKey: 'reception_slots.legend.available' },
+  { cls: 'bg-red-50 border border-red-200', label: '마감', i18nKey: 'reception_slots.legend.full' },
+  { cls: 'bg-white border-2 border-blue-400', label: '개별 설정', i18nKey: 'reception_slots.legend.custom' },
+  { cls: 'bg-gray-100 border border-gray-200', label: '휴무 · 공휴일', i18nKey: 'reception_slots.legend.closed' },
+]
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -91,6 +112,7 @@ function parseDate(ds: string): Date {
 // ─── Page ──────────────────────────────────────────────────────────────────────
 
 export function ReceptionSlotsPage() {
+  const i18nLabel = useI18nLabel()
   const todayStr = fmtDate(new Date())
   const [defaultHistory, setDefaultHistory] = useState<DefaultEntry[]>([
     { from: '0000-01-01', max: 30 },
@@ -114,7 +136,7 @@ export function ReceptionSlotsPage() {
   const [addDate, setAddDate] = useState('')
   const [addName, setAddName] = useState('')
 
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
+  const [toast, setToast] = useState<{ msg: string; ok: boolean; i18nKey?: string } | null>(null)
   const [changeLog, setChangeLog] = useState<LogEntry[]>([
     { id:  1, timestamp: '2026-05-20 14:15:00', category: '날짜별 설정', description: '2026-06-03 — 최대 50건 개별 설정 (이벤트 특별 운영)',              changedByName: '한혜지',  changedById: 'monster563' },
     { id:  2, timestamp: '2026-05-20 14:14:00', category: '날짜별 설정', description: '2026-06-11 — 휴무일 지정 (시스템 점검)',                           changedByName: '한혜지',  changedById: 'monster563' },
@@ -199,8 +221,8 @@ export function ReceptionSlotsPage() {
 
   // ─── actions ───
 
-  function showToast(msg: string, ok = true) {
-    setToast({ msg, ok })
+  function showToast(msg: string, ok = true, i18nKey?: string) {
+    setToast({ msg, ok, i18nKey })
     setTimeout(() => setToast(null), 2500)
   }
 
@@ -213,15 +235,27 @@ export function ReceptionSlotsPage() {
 
   function handleSaveDefault() {
     const v = parseInt(defaultMaxInput, 10)
-    if (!v || v < 1) { showToast('올바른 건수를 입력해주세요.', false); return }
-    if (v === currentDefault) { showToast('변경 사항이 없습니다.', false); return }
+    if (!v || v < 1) { showToast('올바른 건수를 입력해주세요.', false, 'reception_slots.toast.invalid_count'); return }
+    if (v === currentDefault) { showToast('변경 사항이 없습니다.', false, 'reception_slots.toast.no_changes'); return }
     const prev = currentDefault
     setDefaultHistory(hist => {
       const filtered = hist.filter(e => e.from !== todayStr)
       return [...filtered, { from: todayStr, max: v }]
     })
     addLog('기본 설정', `기본 최대 건수 ${prev}건 → ${v}건 변경 (오늘(${todayStr}) 이후 적용)`)
-    showToast(`기본 최대 접수 건수를 ${v}건으로 저장했습니다.`)
+    showToast(`기본 최대 접수 건수를 ${v}건으로 저장했습니다.`, true, 'reception_slots.toast.default_saved')
+  }
+
+  function handleToggleAutoHolidays() {
+    setAutoHolidays(prev => {
+      const next = !prev
+      showToast(
+        next ? '한국 공휴일 자동 반영을 켰습니다.' : '한국 공휴일 자동 반영을 껐습니다.',
+        true,
+        next ? 'reception_slots.toast.auto_holiday_enabled' : 'reception_slots.toast.auto_holiday_disabled',
+      )
+      return next
+    })
   }
 
   function handleSelectDate(ds: string) {
@@ -243,17 +277,17 @@ export function ReceptionSlotsPage() {
     if (detailOpt === 'default') {
       setOverrides(prev => { const n = { ...prev }; delete n[selectedDate]; return n })
       addLog('날짜별 설정', `${selectedDate} — 기본값으로 초기화`)
-      showToast('기본값으로 초기화했습니다.')
+      showToast('기본값으로 초기화했습니다.', true, 'reception_slots.toast.date_default_reset')
     } else if (detailOpt === 'override') {
       const v = parseInt(detailMax, 10)
-      if (!v || v < 1) { showToast('올바른 건수를 입력해주세요.', false); return }
+      if (!v || v < 1) { showToast('올바른 건수를 입력해주세요.', false, 'reception_slots.toast.invalid_count'); return }
       setOverrides(prev => ({ ...prev, [selectedDate]: { type: 'override', max: v, reason: detailReason } }))
       addLog('날짜별 설정', `${selectedDate} — 최대 ${v}건 개별 설정${detailReason ? ` (${detailReason})` : ''}`)
-      showToast(`${selectedDate} — 최대 ${v}건으로 설정했습니다.`)
+      showToast(`${selectedDate} — 최대 ${v}건으로 설정했습니다.`, true, 'reception_slots.toast.date_override_saved')
     } else {
       setOverrides(prev => ({ ...prev, [selectedDate]: { type: 'closed', reason: detailReason } }))
       addLog('날짜별 설정', `${selectedDate} — 휴무일 지정${detailReason ? ` (${detailReason})` : ''}`)
-      showToast(`${selectedDate} — 휴무일로 지정했습니다.`)
+      showToast(`${selectedDate} — 휴무일로 지정했습니다.`, true, 'reception_slots.toast.date_closed_saved')
     }
     setSelectedDate(null)
   }
@@ -262,25 +296,25 @@ export function ReceptionSlotsPage() {
     if (!selectedDate) return
     setOverrides(prev => { const n = { ...prev }; delete n[selectedDate]; return n })
     addLog('날짜별 설정', `${selectedDate} — 날짜별 설정 초기화`)
-    showToast('날짜별 설정을 초기화했습니다.')
+    showToast('날짜별 설정을 초기화했습니다.', true, 'reception_slots.toast.date_reset')
     setSelectedDate(null)
   }
 
   function handleAddHoliday() {
-    if (!addDate) { showToast('날짜를 선택해주세요.', false); return }
-    if (manualHolidays.some(h => h.date === addDate)) { showToast('이미 등록된 날짜입니다.', false); return }
+    if (!addDate) { showToast('날짜를 선택해주세요.', false, 'reception_slots.toast.date_required'); return }
+    if (manualHolidays.some(h => h.date === addDate)) { showToast('이미 등록된 날짜입니다.', false, 'reception_slots.toast.holiday_duplicate'); return }
     const name = addName.trim() || '지정 휴무일'
     setManualHolidays(prev => [...prev, { date: addDate, name }])
     addLog('휴무일', `${addDate} 추가 — ${name}`)
     setAddDate(''); setAddName('')
-    showToast('휴무일을 추가했습니다.')
+    showToast('휴무일을 추가했습니다.', true, 'reception_slots.toast.holiday_added')
   }
 
   function handleRemoveHoliday(date: string) {
     const name = manualHolidays.find(h => h.date === date)?.name ?? ''
     setManualHolidays(prev => prev.filter(h => h.date !== date))
     addLog('휴무일', `${date} 삭제${name ? ` — ${name}` : ''}`)
-    showToast('휴무일을 삭제했습니다.')
+    showToast('휴무일을 삭제했습니다.', true, 'reception_slots.toast.holiday_deleted')
   }
 
   // ─── cell rendering ───
@@ -470,7 +504,9 @@ export function ReceptionSlotsPage() {
               className="gap-1.5 text-gray-500 rounded-xl border-gray-200 hover:border-gray-400"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              초기화
+              <I18nText i18nKey="common.button.reset" display="tooltip">
+                초기화
+              </I18nText>
             </Button>
           )}
           <div className="flex gap-2 ml-auto">
@@ -480,14 +516,18 @@ export function ReceptionSlotsPage() {
               onClick={() => setSelectedDate(null)}
               className="rounded-xl border-gray-200 hover:border-gray-400"
             >
-              취소
+              <I18nText i18nKey="common.button.cancel" display="tooltip">
+                취소
+              </I18nText>
             </Button>
             <Button
               size="sm"
               onClick={handleSaveOverride}
               className="rounded-xl bg-black hover:bg-gray-800 text-white"
             >
-              저장
+              <I18nText i18nKey="common.label.saved" display="tooltip">
+                저장
+              </I18nText>
             </Button>
           </div>
         </div>
@@ -516,16 +556,22 @@ export function ReceptionSlotsPage() {
         {/* ── 페이지 헤더 ── */}
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">접수 슬롯 설정</h1>
+            <h1 className="text-xl font-bold text-gray-900">
+              <I18nText i18nKey="nav.system_management.reception_slots" display="tooltip">
+                접수 슬롯 설정
+              </I18nText>
+            </h1>
             <p className="text-sm text-gray-500 mt-1">
-              온라인 수리 접수 시 고객이 선택하는 출고 희망일의 일 최대 접수 건수를 관리합니다.
+              <I18nText i18nKey="reception_slots.description">
+                온라인 수리 접수 시 고객이 선택하는 출고 희망일의 일 최대 접수 건수를 관리합니다.
+              </I18nText>
             </p>
           </div>
         </div>
 
         {/* ── 탭 ── */}
         <div className="flex gap-1 border-b border-gray-200">
-          {([['settings', '슬롯 설정', Settings], ['holidays', '공휴일·휴무일', CalendarDays], ['history', '변경 이력', History]] as const).map(([tab, label, Icon]) => (
+          {TABS.map(({ tab, label, i18nKey, Icon }) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -534,7 +580,9 @@ export function ReceptionSlotsPage() {
               }`}
             >
               <Icon className="w-4 h-4" />
-              {label}
+              <I18nText i18nKey={i18nKey} display="tooltip">
+                {label}
+              </I18nText>
             </button>
           ))}
         </div>
@@ -545,13 +593,23 @@ export function ReceptionSlotsPage() {
         {/* ── 기본 설정 ── */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
           <div className="px-6 py-4 border-b border-gray-100">
-            <p className="text-sm font-semibold text-gray-900">기본 설정</p>
-            <p className="text-xs text-gray-400 mt-0.5">날짜별 개별 설정이 없는 영업일에 공통 적용됩니다.</p>
+            <p className="text-sm font-semibold text-gray-900">
+              <I18nText i18nKey="reception_slots.default.title" display="tooltip">
+                기본 설정
+              </I18nText>
+            </p>
+            <p className="text-xs text-gray-400 mt-0.5">
+              <I18nText i18nKey="reception_slots.default.description">
+                날짜별 개별 설정이 없는 영업일에 공통 적용됩니다.
+              </I18nText>
+            </p>
           </div>
           <div className="px-6 py-5 space-y-4">
             <div className="flex items-center gap-4">
               <Label className="text-sm font-medium text-gray-700 w-52 flex-shrink-0">
-                영업일 기준 일 최대 접수 건수
+                <I18nText i18nKey="reception_slots.label.default_max" display="tooltip">
+                  영업일 기준 일 최대 접수 건수
+                </I18nText>
               </Label>
               <div className="flex items-center gap-2">
                 <Input
@@ -561,26 +619,27 @@ export function ReceptionSlotsPage() {
                   className="w-24 text-right font-semibold tabular-nums rounded-xl border border-gray-200 focus:border-gray-400"
                   min={1} max={999}
                 />
-                <span className="text-sm text-gray-500">건 / 일</span>
+                <span className="text-sm text-gray-500">
+                  <I18nText i18nKey="reception_slots.unit.per_day" display="tooltip">
+                    건 / 일
+                  </I18nText>
+                </span>
                 <Button
                   size="sm"
                   onClick={handleSaveDefault}
                   className="px-4 bg-black hover:bg-gray-800 text-white rounded-xl"
                 >
-                  저장
+                  <I18nText i18nKey="common.label.saved" display="tooltip">
+                    저장
+                  </I18nText>
                 </Button>
               </div>
             </div>
             <ul className="space-y-1.5 bg-gray-50/70 rounded-xl px-4 py-3">
-              {[
-                '영업일(월~금) 기준으로 적용됩니다. 토·일 및 공휴일은 자동으로 비활성화됩니다.',
-                '날짜별 개별 설정이 있는 경우 기본값보다 우선 적용됩니다.',
-                `저장 시 오늘(${todayStr}) 이후 날짜에만 적용됩니다. 과거 날짜는 변경되지 않습니다.`,
-                '설정 변경은 이미 접수된 건에는 영향을 주지 않습니다.',
-              ].map(txt => (
-                <li key={txt} className="text-xs text-gray-500 flex gap-2">
+              {DEFAULT_GUIDES.map(({ text, i18nKey }) => (
+                <li key={i18nKey} className="text-xs text-gray-500 flex gap-2">
                   <span className="mt-0.5 text-gray-300 flex-shrink-0">•</span>
-                  {txt}
+                  <I18nText i18nKey={i18nKey}>{text}</I18nText>
                 </li>
               ))}
             </ul>
@@ -592,8 +651,16 @@ export function ReceptionSlotsPage() {
           {/* 카드 헤더 */}
           <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
             <div>
-              <p className="text-sm font-semibold text-gray-900">월별 슬롯 현황 · 날짜별 설정</p>
-              <p className="text-xs text-gray-400 mt-0.5">날짜를 클릭하면 최대 건수 변경 또는 휴무 지정이 가능합니다.</p>
+              <p className="text-sm font-semibold text-gray-900">
+                <I18nText i18nKey="reception_slots.calendar.title" display="tooltip">
+                  월별 슬롯 현황 · 날짜별 설정
+                </I18nText>
+              </p>
+              <p className="text-xs text-gray-400 mt-0.5">
+                <I18nText i18nKey="reception_slots.calendar.description">
+                  날짜를 클릭하면 최대 건수 변경 또는 휴무 지정이 가능합니다.
+                </I18nText>
+              </p>
             </div>
             {/* 월 이동 */}
             <div className="flex items-center gap-2">
@@ -626,15 +693,12 @@ export function ReceptionSlotsPage() {
             <div className="px-6 py-5 space-y-3 min-w-0">
               {/* 범례 */}
               <div className="flex flex-wrap gap-4 text-xs text-gray-400 pb-3 border-b border-gray-100">
-                {[
-                  { cls: 'bg-white border border-gray-200', label: '예약 가능' },
-                  { cls: 'bg-red-50 border border-red-200', label: '마감' },
-                  { cls: 'bg-white border-2 border-blue-400', label: '개별 설정' },
-                  { cls: 'bg-gray-100 border border-gray-200', label: '휴무 · 공휴일' },
-                ].map(({ cls, label }) => (
+                {SLOT_LEGEND_ITEMS.map(({ cls, label, i18nKey }) => (
                   <span key={label} className="flex items-center gap-1.5">
                     <span className={cn('inline-block w-3 h-3 rounded', cls)} />
-                    {label}
+                    <I18nText i18nKey={i18nKey} display="tooltip">
+                      {label}
+                    </I18nText>
                   </span>
                 ))}
               </div>
@@ -680,8 +744,16 @@ export function ReceptionSlotsPage() {
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm">
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-gray-900">공휴일 · 휴무일 관리</p>
-                <p className="text-xs text-gray-400 mt-0.5">지정된 날짜는 달력에서 자동으로 비활성화됩니다.</p>
+                <p className="text-sm font-semibold text-gray-900">
+                  <I18nText i18nKey="reception_slots.holiday.title" display="tooltip">
+                    공휴일 · 휴무일 관리
+                  </I18nText>
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  <I18nText i18nKey="reception_slots.holiday.description">
+                    지정된 날짜는 달력에서 자동으로 비활성화됩니다.
+                  </I18nText>
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -708,13 +780,21 @@ export function ReceptionSlotsPage() {
               {/* 자동 반영 토글 */}
               <div className="flex items-center justify-between p-4 bg-gray-50/70 rounded-xl">
                 <div>
-                  <p className="text-sm font-medium text-gray-800">한국 공휴일 자동 반영</p>
-                  <p className="text-xs text-gray-400 mt-0.5">대한민국 법정 공휴일을 자동으로 휴무일로 처리합니다.</p>
+                  <p className="text-sm font-medium text-gray-800">
+                    <I18nText i18nKey="reception_slots.holiday.auto_title" display="tooltip">
+                      한국 공휴일 자동 반영
+                    </I18nText>
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    <I18nText i18nKey="reception_slots.holiday.auto_description">
+                      대한민국 법정 공휴일을 자동으로 휴무일로 처리합니다.
+                    </I18nText>
+                  </p>
                 </div>
                 <button
                   role="switch"
                   aria-checked={autoHolidays}
-                  onClick={() => setAutoHolidays(v => !v)}
+                  onClick={handleToggleAutoHolidays}
                   className={cn('relative w-11 h-6 rounded-full transition-colors flex-shrink-0', autoHolidays ? 'bg-blue-500' : 'bg-gray-200')}
                 >
                   <span className={cn('absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200', autoHolidays ? 'translate-x-6' : 'translate-x-1')} />
@@ -723,15 +803,25 @@ export function ReceptionSlotsPage() {
 
               {/* 통합 목록 */}
               {holidayListItems.length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-8">등록된 공휴일·휴무일이 없습니다.</p>
+                <p className="text-sm text-gray-400 text-center py-8">
+                  <I18nText i18nKey="common.empty.no_results">
+                    조회 결과가 없습니다.
+                  </I18nText>
+                </p>
               ) : (
                 <div className="rounded-xl border border-gray-100 overflow-hidden">
                   <table className="w-full">
                     <thead>
                       <tr className="bg-gray-50/50 border-b border-gray-100">
-                        <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 tracking-wide">날짜</th>
-                        <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 tracking-wide">이름</th>
-                        <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 tracking-wide w-[80px]">구분</th>
+                        <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 tracking-wide">
+                          <I18nText i18nKey="common.label.date" display="tooltip">날짜</I18nText>
+                        </th>
+                        <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 tracking-wide">
+                          <I18nText i18nKey="common.label.name" display="tooltip">이름</I18nText>
+                        </th>
+                        <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 tracking-wide w-[80px]">
+                          <I18nText i18nKey="common.label.type" display="tooltip">구분</I18nText>
+                        </th>
                         <th className="px-4 py-2.5 w-10" />
                       </tr>
                     </thead>
@@ -749,7 +839,12 @@ export function ReceptionSlotsPage() {
                                 'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
                                 auto ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600',
                               )}>
-                                {auto ? '공휴일' : '휴무일'}
+                                <I18nText
+                                  i18nKey={auto ? 'reception_slots.holiday.type.public_holiday' : 'reception_slots.holiday.type.closed_day'}
+                                  display="tooltip"
+                                >
+                                  {auto ? '공휴일' : '휴무일'}
+                                </I18nText>
                               </span>
                             </td>
                             <td className="px-4 py-3">
@@ -773,7 +868,9 @@ export function ReceptionSlotsPage() {
               {/* 휴무일 추가 폼 */}
               <div className="flex items-end gap-3 pt-1 border-t border-gray-100">
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium text-gray-500">날짜</Label>
+                  <Label className="text-xs font-medium text-gray-500">
+                    <I18nText i18nKey="common.label.date" display="tooltip">날짜</I18nText>
+                  </Label>
                   <Input
                     type="date"
                     value={addDate}
@@ -782,11 +879,16 @@ export function ReceptionSlotsPage() {
                   />
                 </div>
                 <div className="space-y-1.5 flex-1">
-                  <Label className="text-xs font-medium text-gray-500">이름 <span className="text-gray-400 font-normal">(선택)</span></Label>
+                  <Label className="text-xs font-medium text-gray-500">
+                    <I18nText i18nKey="common.label.name" display="tooltip">이름</I18nText>
+                    <span className="text-gray-400 font-normal"> (선택)</span>
+                  </Label>
                   <Input
                     value={addName}
                     onChange={e => setAddName(e.target.value)}
-                    placeholder="예: 창립기념일"
+                    placeholder={i18nLabel('reception_slots.placeholder.holiday_name', '예: 창립기념일')}
+                    data-i18n-managed="true"
+                    data-i18n-placeholder-key="reception_slots.placeholder.holiday_name"
                     className="rounded-xl border border-gray-200 focus:border-gray-400"
                   />
                 </div>
@@ -797,7 +899,9 @@ export function ReceptionSlotsPage() {
                   className="gap-1.5 rounded-xl border-gray-200 hover:border-gray-400 hover:bg-gray-50 text-gray-700 mb-0.5"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  휴무일 추가
+                  <I18nText i18nKey="reception_slots.button.add_holiday" display="tooltip">
+                    휴무일 추가
+                  </I18nText>
                 </Button>
               </div>
             </div>
@@ -813,16 +917,28 @@ export function ReceptionSlotsPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">처리 일시</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap w-[100px]">구분</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50">변경 내용</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">처리자</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
+                        <I18nText i18nKey="common.label.processed_at" display="tooltip">처리 일시</I18nText>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap w-[100px]">
+                        <I18nText i18nKey="common.label.type" display="tooltip">구분</I18nText>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50">
+                        <I18nText i18nKey="common.label.change_summary" display="tooltip">변경 내용</I18nText>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
+                        <I18nText i18nKey="common.label.changed_by" display="tooltip">처리자</I18nText>
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {paginated.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-400">변경 이력이 없습니다.</td>
+                        <td colSpan={4} className="px-6 py-12 text-center text-sm text-gray-400">
+                          <I18nText i18nKey="common.empty.no_results">
+                            조회 결과가 없습니다.
+                          </I18nText>
+                        </td>
                       </tr>
                     ) : paginated.map(entry => (
                       <tr key={entry.id} className="hover:bg-gray-50/50 transition-colors">
@@ -830,8 +946,10 @@ export function ReceptionSlotsPage() {
                           {entry.timestamp} <span className="text-gray-400">(KST)</span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={cn('inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold', CATEGORY_STYLES[entry.category])}>
-                            {entry.category}
+                          <span className={cn('inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold', CATEGORY_STYLES[entry.category].className)}>
+                            <I18nText i18nKey={CATEGORY_STYLES[entry.category].i18nKey} display="tooltip">
+                              {entry.category}
+                            </I18nText>
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-700">{entry.description}</td>
@@ -858,7 +976,11 @@ export function ReceptionSlotsPage() {
             toast.ok ? 'bg-gray-900 text-white' : 'bg-red-600 text-white',
           )}
         >
-          {toast.msg}
+          {toast.i18nKey ? (
+            <I18nText i18nKey={toast.i18nKey} display="tooltip">
+              {toast.msg}
+            </I18nText>
+          ) : toast.msg}
         </div>
       )}
     </div>

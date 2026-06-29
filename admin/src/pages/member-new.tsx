@@ -5,6 +5,7 @@ import { ROLES } from '@/lib/mock-data'
 import { OPTICAL_STORES, HQ_ROLES, FRANCHISE_ROLES, getBranchName, BranchMultiSelect, StoreMultiSelect } from '@/components/members/branch-store-select'
 import { useMembers } from '@/lib/members-context'
 import { cn, inputCls } from '@/lib/utils'
+import { I18nText, useI18nLabel } from '@/lib/i18n-inspector'
 
 type NewForm = {
   name: string
@@ -27,6 +28,7 @@ function localTimestamp() {
 
 export function MemberNewPage() {
   const navigate = useNavigate()
+  const i18nLabel = useI18nLabel()
   const { langCode } = useParams()
   const pfx = `/${langCode}`
   const { members, addMember } = useMembers()
@@ -40,6 +42,7 @@ export function MemberNewPage() {
     assignedStores: [],
   })
   const [attemptedSave, setAttemptedSave] = useState(false)
+  const [toast, setToast] = useState<{ title: string; titleKey: string; message: string; messageKey: string } | null>(null)
 
   const normalizedLoginId = form.loginId.trim().toLowerCase()
   const normalizedEmail = form.email.trim().toLowerCase()
@@ -81,7 +84,13 @@ export function MemberNewPage() {
       managedBranches: form.managedBranches,
       assignedStores: form.assignedStores,
     })
-    navigate(`${pfx}/members`)
+    setToast({
+      title: '저장 완료',
+      titleKey: 'common.toast.saved.title',
+      message: '저장이 완료되었습니다.',
+      messageKey: 'common.toast.saved.description',
+    })
+    window.setTimeout(() => navigate(`${pfx}/members`), 700)
   }
 
   return (
@@ -92,16 +101,35 @@ export function MemberNewPage() {
         <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
           <ArrowLeft className="w-5 h-5 text-gray-600" />
         </button>
-        <span className="text-sm text-gray-400">회원 관리</span>
+        <span className="text-sm text-gray-400">
+          <I18nText i18nKey="nav.system_management.members" display="tooltip">
+            회원 관리
+          </I18nText>
+        </span>
         <span className="text-sm text-gray-300">/</span>
-        <span className="text-sm text-gray-700 font-medium">회원 등록</span>
-        <div className="ml-auto">
+        <span className="text-sm text-gray-700 font-medium">
+          <I18nText i18nKey="members.create.title" display="tooltip">
+            회원 등록
+          </I18nText>
+        </span>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => navigate(`${pfx}/members`)}
+            className="px-5 py-2 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium"
+          >
+            <I18nText i18nKey="common.button.cancel" display="tooltip">
+              취소
+            </I18nText>
+          </button>
           <button
             onClick={handleSave}
             className="flex items-center gap-2 px-5 py-2 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors text-sm font-medium"
           >
             <Check className="w-4 h-4" />
-            등록
+            <I18nText i18nKey="common.label.saved" display="tooltip">
+              저장
+            </I18nText>
           </button>
         </div>
       </div>
@@ -111,26 +139,35 @@ export function MemberNewPage() {
 
         {/* 기본 정보 */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">기본 정보</h2>
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+            <I18nText i18nKey="members.section.basic" display="tooltip">
+              기본 정보
+            </I18nText>
+          </h2>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">이름 <span className="text-red-400">*</span></p>
+              <p className="text-xs text-gray-400 mb-1.5">
+                <I18nText i18nKey="common.label.name" display="tooltip">
+                  이름
+                </I18nText>
+                <span className="text-red-400"> *</span>
+              </p>
               <input
                 value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                 className={cn(inputCls, nameError && 'border-red-300 bg-red-50 focus:border-red-400')}
-                placeholder="홍길동"
+                placeholder={i18nLabel('members.placeholder.name', '홍길동')}
               />
               {nameError && <p className="mt-1 text-[11px] text-red-500">{nameError}</p>}
             </div>
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">로그인 ID <span className="text-red-400">*</span></p>
+              <p className="text-xs text-gray-400 mb-1.5">ID <span className="text-red-400">*</span></p>
               <input
                 value={form.loginId}
                 onChange={e => setForm(f => ({ ...f, loginId: e.target.value }))}
                 className={cn(inputCls, loginIdError && 'border-red-300 bg-red-50 focus:border-red-400')}
-                placeholder="monster001"
+                placeholder={i18nLabel('members.placeholder.login_id', 'monster001')}
               />
               {loginIdError && <p className="mt-1 text-[11px] text-red-500">{loginIdError}</p>}
             </div>
@@ -138,7 +175,12 @@ export function MemberNewPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">역할 <span className="text-red-400">*</span></p>
+              <p className="text-xs text-gray-400 mb-1.5">
+                <I18nText i18nKey="common.label.role" display="tooltip">
+                  역할
+                </I18nText>
+                <span className="text-red-400"> *</span>
+              </p>
               <div className="relative">
                 <select
                   value={form.roleId}
@@ -158,11 +200,15 @@ export function MemberNewPage() {
               </div>
             </div>
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">상태</p>
+              <p className="text-xs text-gray-400 mb-1.5">
+                <I18nText i18nKey="common.label.status" display="tooltip">
+                  상태
+                </I18nText>
+              </p>
               <div className="relative">
                 <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as 'active' | 'inactive' }))} className={inputCls + ' appearance-none pr-8 cursor-pointer'}>
-                  <option value="active">활성</option>
-                  <option value="inactive">비활성</option>
+                  <option value="active">{i18nLabel('common.label.active', '활성')}</option>
+                  <option value="inactive">{i18nLabel('common.label.inactive', '비활성')}</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               </div>
@@ -170,24 +216,30 @@ export function MemberNewPage() {
           </div>
 
           <div>
-            <p className="text-xs text-gray-400 mb-1.5">이메일 <span className="text-red-400">*</span></p>
+            <p className="text-xs text-gray-400 mb-1.5">email <span className="text-red-400">*</span></p>
             <input
               type="email"
               value={form.email}
               onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
               className={cn(inputCls, emailError && 'border-red-300 bg-red-50 focus:border-red-400')}
-              placeholder="name@gentlemonster.com"
+              placeholder={i18nLabel('members.placeholder.email', 'name@gentlemonster.com')}
             />
             {emailError && <p className="mt-1 text-[11px] text-red-500">{emailError}</p>}
           </div>
 
           <div className="px-3 py-2.5 bg-blue-50 border border-blue-100 rounded-xl text-[11px] text-blue-500">
-            등록 완료 시 비밀번호 설정 링크가 이메일로 발송됩니다.
+            <I18nText i18nKey="members.create.password_notice">
+              등록 완료 시 비밀번호 설정 링크가 이메일로 발송됩니다.
+            </I18nText>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">서비스 기술자</p>
+              <p className="text-xs text-gray-400 mb-1.5">
+                <I18nText i18nKey="common.label.service_technician" display="tooltip">
+                  서비스 기술자
+                </I18nText>
+              </p>
               <button
                 type="button"
                 onClick={() => setForm(f => ({ ...f, isTechnician: !f.isTechnician }))}
@@ -199,28 +251,39 @@ export function MemberNewPage() {
               </button>
             </div>
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">연락처</p>
-              <input value={form.tel} onChange={e => setForm(f => ({ ...f, tel: e.target.value }))} className={inputCls} placeholder="010-0000-0000" />
+              <p className="text-xs text-gray-400 mb-1.5">
+                <I18nText i18nKey="common.label.account_expires_at" display="tooltip">
+                  계정 만료일
+                </I18nText>
+              </p>
+              <input type="date" value={form.expiresAt} onChange={e => setForm(f => ({ ...f, expiresAt: e.target.value }))} className={inputCls} />
+              <p className="mt-1 text-[11px] text-gray-400">
+                <I18nText i18nKey="members.create.expires_hint">
+                  비워두면 무기한 적용됩니다.
+                </I18nText>
+              </p>
             </div>
-          </div>
-
-          <div>
-            <p className="text-xs text-gray-400 mb-1.5">계정 만료일</p>
-            <input type="date" value={form.expiresAt} onChange={e => setForm(f => ({ ...f, expiresAt: e.target.value }))} className={inputCls} />
-            <p className="mt-1 text-[11px] text-gray-400">비워두면 무기한 적용됩니다.</p>
           </div>
         </div>
 
         {/* 담당 정보 */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">담당 정보</h2>
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+            <I18nText i18nKey="members.section.assignment" display="tooltip">
+              담당 정보
+            </I18nText>
+          </h2>
 
           {isStoreOwnerRole(form.roleId) ? (
             <>
               <div>
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Globe className="w-4 h-4 text-gray-400" />
-                  <p className="text-xs text-gray-400">법인</p>
+                  <p className="text-xs text-gray-400">
+                    <I18nText i18nKey="common.label.branch" display="tooltip">
+                      법인
+                    </I18nText>
+                  </p>
                 </div>
                 <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-500">
                   {form.managedBranches[0] ? getBranchName(form.managedBranches[0]) : '—'}
@@ -229,7 +292,12 @@ export function MemberNewPage() {
               <div>
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Building2 className="w-4 h-4 text-gray-400" />
-                  <p className="text-xs text-gray-400">담당 매장 <span className="text-red-400">*</span></p>
+                  <p className="text-xs text-gray-400">
+                    <I18nText i18nKey="common.label.assigned_store" display="tooltip">
+                      담당 매장
+                    </I18nText>
+                    <span className="text-red-400"> *</span>
+                  </p>
                 </div>
                 <div className="relative">
                   <select
@@ -259,31 +327,49 @@ export function MemberNewPage() {
               <div>
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Globe className="w-4 h-4 text-gray-400" />
-                  <p className="text-xs text-gray-400">담당 법인 <span className="text-red-400">*</span></p>
+                  <p className="text-xs text-gray-400">
+                    <I18nText i18nKey="common.label.assigned_branch" display="tooltip">
+                      담당 법인
+                    </I18nText>
+                    <span className="text-red-400"> *</span>
+                  </p>
                 </div>
                 <BranchMultiSelect
                   value={form.managedBranches}
                   onChange={v => setForm(f => ({ ...f, managedBranches: v }))}
                 />
-                <p className="mt-1 text-[11px] text-gray-400">HQ 역할은 기본으로 전체가 설정됩니다.</p>
               </div>
               <div>
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Building2 className="w-4 h-4 text-gray-400" />
-                  <p className="text-xs text-gray-400">담당 스토어</p>
+                  <p className="text-xs text-gray-400">
+                    <I18nText i18nKey="common.label.assigned_store" display="tooltip">
+                      담당 스토어
+                    </I18nText>
+                  </p>
                 </div>
                 <StoreMultiSelect
                   value={form.assignedStores}
                   onChange={v => setForm(f => ({ ...f, assignedStores: v }))}
                   branchCodes={form.managedBranches}
                 />
-                <p className="mt-1 text-[11px] text-gray-400">담당 법인에 속한 스토어만 표시됩니다.</p>
               </div>
             </>
           )}
         </div>
 
       </div>
+
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 rounded-xl bg-gray-900 px-5 py-3 text-white shadow-lg animate-in slide-in-from-bottom-2 fade-in duration-200">
+          <p className="text-sm font-semibold">
+            <I18nText i18nKey={toast.titleKey}>{toast.title}</I18nText>
+          </p>
+          <p className="mt-0.5 text-xs text-white/75">
+            <I18nText i18nKey={toast.messageKey}>{toast.message}</I18nText>
+          </p>
+        </div>
+      )}
     </div>
   )
 }

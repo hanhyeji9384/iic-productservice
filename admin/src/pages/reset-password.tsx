@@ -170,7 +170,7 @@ export function ResetPasswordPage({ done: initialDone = false }: { done?: boolea
               onClick={() => navigate('/login')}
               className="w-full py-2.5 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-700 transition-colors"
             >
-              <I18nText i18nKey="auth.reset_password.button.go_login">
+              <I18nText i18nKey="auth.common.button.back_to_login">
                 로그인하러 가기
               </I18nText>
             </button>

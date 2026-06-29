@@ -1,21 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { User, ArrowLeft, CheckCircle } from 'lucide-react'
-import { MEMBERS } from '@/lib/mock-data'
 import { I18nText, useI18nLabel } from '@/lib/i18n-inspector'
-
-function maskEmail(email: string) {
-  const [local, domain] = email.split('@')
-  const masked = local.slice(0, 2) + '***'
-  return `${masked}@${domain}`
-}
 
 export function ForgotPasswordPage() {
   const navigate = useNavigate()
   const i18nLabel = useI18nLabel()
   const [loginId, setLoginId] = useState('')
   const [sent, setSent] = useState(false)
-  const [maskedEmail, setMaskedEmail] = useState('')
   const [toast, setToast] = useState<{ message: string; i18nKey: string } | null>(null)
   const toastTimerRef = useRef<number | null>(null)
 
@@ -34,15 +26,9 @@ export function ForgotPasswordPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!loginId.trim()) {
-      showErrorToast('아이디를 입력해주세요.', 'auth.forgot_password.error.required')
+      showErrorToast('로그인 ID를 입력해주세요.', 'auth.forgot_password.error.required')
       return
     }
-    const member = MEMBERS.find(m => m.loginId === loginId.trim())
-    if (!member) {
-      showErrorToast('등록된 아이디가 없습니다.', 'auth.forgot_password.error.not_found')
-      return
-    }
-    setMaskedEmail(maskEmail(member.email))
     setToast(null)
     setSent(true)
   }
@@ -79,36 +65,27 @@ export function ForgotPasswordPage() {
             </div>
             <h1 className="text-[18px] font-semibold text-gray-900 mb-2">
               <I18nText i18nKey="auth.forgot_password.sent.title">
-                이메일을 발송했습니다
+                재설정 링크가 발송되었습니다
               </I18nText>
             </h1>
             <p className="text-sm text-gray-400 leading-relaxed mb-6">
               <I18nText i18nKey="auth.forgot_password.sent.description">
-                등록된 이메일 주소<br />
-                <span className="font-medium text-gray-600">{maskedEmail}</span>으로<br />
-                비밀번호 변경 링크를 전송했습니다.
+                입력한 계정에 등록된 이메일로<br />
+                비밀번호 재설정 링크를 발송했습니다.
               </I18nText>
             </p>
             <p className="text-xs text-gray-400 mb-6">
               <I18nText i18nKey="auth.forgot_password.sent.help">
-                메일이 오지 않는다면 스팸함을 확인하거나<br />
-                아래 버튼을 눌러 다시 시도해 주세요.
+                링크는 1회만 사용할 수 있으며<br />
+                발송 후 30분 동안 유효합니다.
               </I18nText>
             </p>
-            <button
-              onClick={() => { setSent(false); setLoginId(''); setToast(null) }}
-              className="w-full py-2.5 border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition-colors mb-3"
-            >
-              <I18nText i18nKey="auth.forgot_password.button.resend">
-                다시 전송하기
-              </I18nText>
-            </button>
             <button
               onClick={() => navigate('/login')}
               className="w-full flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-gray-600 transition-colors py-1"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <I18nText i18nKey="auth.forgot_password.button.back_to_login">
+              <I18nText i18nKey="auth.common.button.back_to_login">
                 로그인으로 돌아가기
               </I18nText>
             </button>
@@ -123,15 +100,15 @@ export function ForgotPasswordPage() {
             </h1>
             <p className="text-sm text-gray-400 mb-6">
               <I18nText i18nKey="auth.forgot_password.description">
-                아이디를 입력하면 등록된 이메일로 비밀번호 변경 링크를 전송합니다.
+                로그인 ID를 입력하면 등록된 이메일로 비밀번호 재설정 링크를 발송합니다.
               </I18nText>
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-[12px] font-medium text-gray-600 mb-1.5">
-                  <I18nText i18nKey="login.field.id">
-                    아이디
+                  <I18nText i18nKey="auth.common.field.login_id">
+                    로그인 ID
                   </I18nText>
                 </label>
                 <div className="relative">
@@ -140,7 +117,7 @@ export function ForgotPasswordPage() {
                     type="text"
                     value={loginId}
                     onChange={e => setLoginId(e.target.value)}
-                    placeholder={i18nLabel('login.placeholder.id', '아이디를 입력하세요')}
+                    placeholder={i18nLabel('auth.common.placeholder.login_id', '로그인 ID를 입력하세요')}
                     className="w-full pl-9 pr-3.5 py-2.5 text-sm border border-gray-200 rounded-xl outline-none focus:border-gray-400 transition-colors placeholder:text-gray-300"
                   />
                 </div>
@@ -151,7 +128,7 @@ export function ForgotPasswordPage() {
                 className="w-full py-2.5 bg-gray-900 text-white text-sm font-medium rounded-xl hover:bg-gray-700 transition-colors mt-2"
               >
                 <I18nText i18nKey="auth.forgot_password.button.send">
-                  변경 링크 전송
+                  재설정 링크 발송
                 </I18nText>
               </button>
             </form>
@@ -161,7 +138,7 @@ export function ForgotPasswordPage() {
               className="w-full flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-gray-600 transition-colors py-1 mt-4"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <I18nText i18nKey="auth.forgot_password.button.back_to_login">
+              <I18nText i18nKey="auth.common.button.back_to_login">
                 로그인으로 돌아가기
               </I18nText>
             </button>

@@ -6,6 +6,7 @@ import { Pagination } from '@/components/pagination'
 import { SummaryCell } from '@/components/summary-cell'
 import { useMembers } from '@/lib/members-context'
 import { formatDateTime } from '@/lib/utils'
+import { I18nText } from '@/lib/i18n-inspector'
 import type { MemberChangeLog } from '@/lib/types'
 
 function maskName(name: string): string {
@@ -22,10 +23,10 @@ function formatMemberCreatedAt(value: string) {
   return value.includes(':') ? formatDateTime(value) : `${value.slice(0, 10)} 00:00:00`
 }
 
-const CHANGE_TYPE_STYLES: Record<MemberChangeLog['changeType'], { bg: string; label: string }> = {
-  CREATE: { bg: 'bg-gray-100 text-gray-500', label: '생성' },
-  UPDATE: { bg: 'bg-blue-50 text-blue-700', label: '수정' },
-  DELETE: { bg: 'bg-red-50 text-red-700',   label: '삭제' },
+const CHANGE_TYPE_STYLES: Record<MemberChangeLog['changeType'], { bg: string; label: string; i18nKey: string }> = {
+  CREATE: { bg: 'bg-gray-100 text-gray-500', label: '등록', i18nKey: 'common.label.register' },
+  UPDATE: { bg: 'bg-blue-50 text-blue-700', label: '수정', i18nKey: 'common.label.update' },
+  DELETE: { bg: 'bg-red-50 text-red-700',   label: '삭제', i18nKey: 'common.label.delete' },
 }
 
 export function MembersPage() {
@@ -260,7 +261,8 @@ export function MembersPage() {
     return null
   }
 
-  const hasActiveFilters = Object.values(appliedColumnFilters).some(Boolean)
+  const activeFilterCount = Object.values(appliedColumnFilters).filter(Boolean).length
+  const hasActiveFilters = activeFilterCount > 0
 
   return (
     <div className="overflow-x-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -269,14 +271,20 @@ export function MembersPage() {
         {/* 헤더 */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">회원 관리</h1>
+            <h1 className="text-xl font-bold text-gray-900">
+              <I18nText i18nKey="nav.system_management.members" display="tooltip">
+                회원 관리
+              </I18nText>
+            </h1>
           </div>
           <button
             onClick={() => navigate(`${pfx}/members/new`)}
             className="flex items-center gap-2 px-5 py-2.5 bg-black text-white rounded-xl hover:bg-gray-800 transition-colors text-sm font-medium"
           >
             <UserPlus className="w-4 h-4" />
-            회원 등록
+            <I18nText i18nKey="common.label.register" display="tooltip">
+              등록
+            </I18nText>
           </button>
         </div>
 
@@ -291,7 +299,9 @@ export function MembersPage() {
               }`}
             >
               <Icon className="w-4 h-4" />
-              {label}
+              <I18nText i18nKey={tab === 'list' ? 'members.tab.list' : 'common.label.history'} display="tooltip">
+                {label}
+              </I18nText>
             </button>
           ))}
         </div>
@@ -302,9 +312,17 @@ export function MembersPage() {
             {/* 테이블 */}
             <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
               {hasActiveFilters && (
-                <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-end">
+                <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-end gap-3">
+                  <span className="text-xs text-gray-400">
+                    <I18nText i18nKey="common.filter.applied_count">
+                      {activeFilterCount}개 필터 적용 중
+                    </I18nText>
+                  </span>
                   <button onClick={handleReset} className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-                    <X className="w-3 h-3" />초기화
+                    <X className="w-3 h-3" />
+                    <I18nText i18nKey="common.button.reset" display="tooltip">
+                      초기화
+                    </I18nText>
                   </button>
                 </div>
               )}
@@ -320,7 +338,10 @@ export function MembersPage() {
                           <th className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}>
                             <div className="flex items-center gap-1.5">
                               <button onClick={() => handleSort('name')} className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
-                                이름 <SortIcon col="name" />
+                                <I18nText i18nKey="common.label.name" display="tooltip">
+                                  이름
+                                </I18nText>
+                                <SortIcon col="name" />
                               </button>
                               <button
                                 onClick={e => { const rect = e.currentTarget.getBoundingClientRect(); setFilterPopover({ col: 'name', rect }) }}
@@ -370,7 +391,7 @@ export function MembersPage() {
                           <th className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}>
                             <div className="flex items-center gap-1.5">
                               <button onClick={() => handleSort('email')} className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
-                                이메일 <SortIcon col="email" />
+                                email <SortIcon col="email" />
                               </button>
                               <button
                                 onClick={e => { const rect = e.currentTarget.getBoundingClientRect(); setFilterPopover({ col: 'email', rect }) }}
@@ -394,7 +415,11 @@ export function MembersPage() {
                         return (
                           <th className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}>
                             <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-semibold tracking-wide">역할</span>
+                              <span className="text-xs font-semibold tracking-wide">
+                                <I18nText i18nKey="common.label.role" display="tooltip">
+                                  역할
+                                </I18nText>
+                              </span>
                               <button
                                 onClick={e => { const rect = e.currentTarget.getBoundingClientRect(); setFilterPopover({ col: 'role', rect }) }}
                                 className={`flex-shrink-0 rounded p-0.5 transition-colors ${isFiltered ? 'text-blue-500' : 'text-gray-300 hover:text-gray-500'}`}
@@ -411,7 +436,11 @@ export function MembersPage() {
                         )
                       })()}
 
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">기술자</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
+                        <I18nText i18nKey="common.label.technician" display="tooltip">
+                          기술자
+                        </I18nText>
+                      </th>
 
                       {/* 상태 */}
                       {(() => {
@@ -420,7 +449,10 @@ export function MembersPage() {
                           <th className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}>
                             <div className="flex items-center gap-1.5">
                               <button onClick={() => handleSort('status')} className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
-                                상태 <SortIcon col="status" />
+                                <I18nText i18nKey="common.label.status" display="tooltip">
+                                  상태
+                                </I18nText>
+                                <SortIcon col="status" />
                               </button>
                               <button
                                 onClick={e => { const rect = e.currentTarget.getBoundingClientRect(); setFilterPopover({ col: 'status', rect }) }}
@@ -431,7 +463,9 @@ export function MembersPage() {
                             </div>
                             {isFiltered && (
                               <div className="mt-1 max-w-[120px] truncate text-[10px] font-medium normal-case tracking-normal text-blue-600">
-                                {appliedColumnFilters.status === 'active' ? '활성' : '비활성'}
+                                <I18nText i18nKey={appliedColumnFilters.status === 'active' ? 'common.label.active' : 'common.label.inactive'}>
+                                  {appliedColumnFilters.status === 'active' ? '활성' : '비활성'}
+                                </I18nText>
                               </div>
                             )}
                           </th>
@@ -441,7 +475,10 @@ export function MembersPage() {
                       {/* 등록일시 */}
                       <th className="px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap text-gray-500">
                         <button onClick={() => handleSort('createdAt')} className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
-                          등록일시 <SortIcon col="createdAt" />
+                          <I18nText i18nKey="common.label.created_at" display="tooltip">
+                            등록일시
+                          </I18nText>
+                          <SortIcon col="createdAt" />
                         </button>
                       </th>
 
@@ -453,7 +490,10 @@ export function MembersPage() {
                           <th className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}>
                             <div className="flex items-center gap-1.5">
                               <button onClick={() => handleSort('lastLoginAt')} className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide">
-                                마지막 로그인 <SortIcon col="lastLoginAt" />
+                                <I18nText i18nKey="common.label.last_login_at" display="tooltip">
+                                  마지막 로그인
+                                </I18nText>
+                                <SortIcon col="lastLoginAt" />
                               </button>
                               <button
                                 onClick={e => { const rect = e.currentTarget.getBoundingClientRect(); setFilterPopover({ col: 'lastLogin', rect }) }}
@@ -477,7 +517,11 @@ export function MembersPage() {
                         return (
                           <th className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}>
                             <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-semibold tracking-wide">법인</span>
+                              <span className="text-xs font-semibold tracking-wide">
+                                <I18nText i18nKey="common.label.branch" display="tooltip">
+                                  법인
+                                </I18nText>
+                              </span>
                               <button
                                 onClick={e => { const rect = e.currentTarget.getBoundingClientRect(); setFilterPopover({ col: 'branch', rect }) }}
                                 className={`flex-shrink-0 rounded p-0.5 transition-colors ${isFiltered ? 'text-blue-500' : 'text-gray-300 hover:text-gray-500'}`}
@@ -500,7 +544,11 @@ export function MembersPage() {
                         return (
                           <th className={`px-5 py-4 text-left text-xs font-semibold tracking-wide bg-gray-50/50 whitespace-nowrap ${isFiltered ? 'bg-blue-50 text-blue-700' : 'text-gray-500'}`}>
                             <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-semibold tracking-wide">스토어</span>
+                              <span className="text-xs font-semibold tracking-wide">
+                                <I18nText i18nKey="common.label.store" display="tooltip">
+                                  스토어
+                                </I18nText>
+                              </span>
                               <button
                                 onClick={e => { const rect = e.currentTarget.getBoundingClientRect(); setFilterPopover({ col: 'store', rect }) }}
                                 className={`flex-shrink-0 rounded p-0.5 transition-colors ${isFiltered ? 'text-blue-500' : 'text-gray-300 hover:text-gray-500'}`}
@@ -522,7 +570,9 @@ export function MembersPage() {
                     {paginated.length === 0 ? (
                       <tr>
                         <td colSpan={10} className="px-6 py-12 text-center text-sm text-gray-400">
-                          조건에 맞는 회원이 없습니다.
+                          <I18nText i18nKey="common.empty.no_results">
+                            조회 결과가 없습니다.
+                          </I18nText>
                         </td>
                       </tr>
                     ) : paginated.map(m => (
@@ -548,14 +598,18 @@ export function MembersPage() {
                         </td>
                         <td className="px-6 py-4">
                           {m.isTechnician
-                            ? <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-violet-50 text-violet-700">기술자</span>
+                            ? <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-violet-50 text-violet-700">
+                                <I18nText i18nKey="common.label.technician">기술자</I18nText>
+                              </span>
                             : <span className="text-gray-300 text-sm">—</span>}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${
                             m.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
                           }`}>
-                            {m.status === 'active' ? '활성' : '비활성'}
+                            <I18nText i18nKey={m.status === 'active' ? 'common.label.active' : 'common.label.inactive'}>
+                              {m.status === 'active' ? '활성' : '비활성'}
+                            </I18nText>
                           </span>
                         </td>
                         <td className="px-5 py-4 whitespace-nowrap text-sm font-mono text-gray-500">
@@ -644,17 +698,41 @@ export function MembersPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">처리 일시</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap w-[80px]">유형</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">대상 회원</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50">변경 내용</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">처리자</th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
+                        <I18nText i18nKey="common.label.processed_at" display="tooltip">
+                          처리 일시
+                        </I18nText>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap w-[80px]">
+                        <I18nText i18nKey="common.label.type" display="tooltip">
+                          유형
+                        </I18nText>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
+                        <I18nText i18nKey="common.label.target_member" display="tooltip">
+                          대상 회원
+                        </I18nText>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50">
+                        <I18nText i18nKey="common.label.change_summary" display="tooltip">
+                          변경 내용
+                        </I18nText>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
+                        <I18nText i18nKey="common.label.changed_by" display="tooltip">
+                          처리자
+                        </I18nText>
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {paginatedLogs.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">변경 이력이 없습니다.</td>
+                        <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">
+                          <I18nText i18nKey="common.empty.no_results">
+                            조회 결과가 없습니다.
+                          </I18nText>
+                        </td>
                       </tr>
                     ) : paginatedLogs.map(log => {
                       const style = CHANGE_TYPE_STYLES[log.changeType]
@@ -662,7 +740,11 @@ export function MembersPage() {
                         <tr key={log.id} className="hover:bg-gray-50/50 transition-colors">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">{log.changedAt} <span className="text-gray-400">(KST)</span></td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${style.bg}`}>{style.label}</span>
+                            <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold ${style.bg}`}>
+                              <I18nText i18nKey={style.i18nKey}>
+                                {style.label}
+                              </I18nText>
+                            </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-semibold text-gray-900">{maskName(log.targetName)}</div>

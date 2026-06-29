@@ -5,6 +5,7 @@ import { ROLES } from '@/lib/mock-data'
 import { OPTICAL_STORES, HQ_ROLES, FRANCHISE_ROLES, getBranchName, BranchMultiSelect, StoreMultiSelect } from '@/components/members/branch-store-select'
 import { useMembers } from '@/lib/members-context'
 import { formatDateTime, inputCls } from '@/lib/utils'
+import { I18nText, useI18nLabel } from '@/lib/i18n-inspector'
 import type { Member } from '@/lib/types'
 
 type EditForm = {
@@ -39,6 +40,7 @@ export function MemberDetailPage() {
   const { id, langCode } = useParams<{ id: string; langCode: string }>()
   const pfx = `/${langCode}`
   const navigate = useNavigate()
+  const i18nLabel = useI18nLabel()
 
   const { members, updateMember, deleteMember } = useMembers()
   const member = members.find(m => m.id === id)
@@ -50,6 +52,7 @@ export function MemberDetailPage() {
   })
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [toast, setToast] = useState<{ title: string; titleKey: string; message: string; messageKey: string } | null>(null)
 
   useEffect(() => {
     if (member) setForm(formFromMember(member))
@@ -77,7 +80,14 @@ export function MemberDetailPage() {
       assignedStores: form.assignedStores,
     })
     setSaved(true)
+    setToast({
+      title: '저장 완료',
+      titleKey: 'common.toast.saved.title',
+      message: '저장이 완료되었습니다.',
+      messageKey: 'common.toast.saved.description',
+    })
     setTimeout(() => setSaved(false), 2000)
+    setTimeout(() => navigate(`${pfx}/members`), 800)
   }
 
   function handleDelete() {
@@ -93,7 +103,11 @@ export function MemberDetailPage() {
         <button onClick={() => navigate(-1)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
           <ArrowLeft className="w-5 h-5 text-gray-600" />
         </button>
-        <span className="text-sm text-gray-400">회원 관리</span>
+        <span className="text-sm text-gray-400">
+          <I18nText i18nKey="nav.system_management.members" display="tooltip">
+            회원 관리
+          </I18nText>
+        </span>
         <span className="text-sm text-gray-300">/</span>
         <span className="text-sm text-gray-700 font-medium">{member.name}</span>
         <div className="flex items-center gap-2 ml-auto">
@@ -101,7 +115,10 @@ export function MemberDetailPage() {
             onClick={() => setShowDeleteConfirm(true)}
             className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-xl hover:bg-red-100 transition-colors text-sm font-medium"
           >
-            <Trash2 className="w-4 h-4" />삭제
+            <Trash2 className="w-4 h-4" />
+            <I18nText i18nKey="common.label.delete" display="tooltip">
+              삭제
+            </I18nText>
           </button>
           <button
             onClick={handleSave}
@@ -110,7 +127,15 @@ export function MemberDetailPage() {
             }`}
           >
             <Check className="w-4 h-4" />
-            {saved ? '저장됨' : '수정'}
+            {saved ? (
+              <I18nText i18nKey="common.label.saved" display="tooltip">
+                저장됨
+              </I18nText>
+            ) : (
+              <I18nText i18nKey="common.label.update" display="tooltip">
+                수정
+              </I18nText>
+            )}
           </button>
         </div>
       </div>
@@ -120,22 +145,30 @@ export function MemberDetailPage() {
 
         {/* 기본 정보 */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">기본 정보</h2>
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+            <I18nText i18nKey="members.section.basic" display="tooltip">
+              기본 정보
+            </I18nText>
+          </h2>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">이름</p>
+              <p className="text-xs text-gray-400 mb-1.5">
+                <I18nText i18nKey="common.label.name" display="tooltip">이름</I18nText>
+              </p>
               <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={inputCls} />
             </div>
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">로그인 ID</p>
+              <p className="text-xs text-gray-400 mb-1.5">ID</p>
               <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-mono text-gray-500">{member.loginId}</div>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">역할</p>
+              <p className="text-xs text-gray-400 mb-1.5">
+                <I18nText i18nKey="common.label.role" display="tooltip">역할</I18nText>
+              </p>
               <div className="relative">
                 <select
                   value={form.roleId}
@@ -155,11 +188,13 @@ export function MemberDetailPage() {
               </div>
             </div>
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">상태</p>
+              <p className="text-xs text-gray-400 mb-1.5">
+                <I18nText i18nKey="common.label.status" display="tooltip">상태</I18nText>
+              </p>
               <div className="relative">
                 <select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as 'active' | 'inactive' }))} className={inputCls + ' appearance-none pr-8 cursor-pointer'}>
-                  <option value="active">활성</option>
-                  <option value="inactive">비활성</option>
+                  <option value="active">{i18nLabel('common.label.active', '활성')}</option>
+                  <option value="inactive">{i18nLabel('common.label.inactive', '비활성')}</option>
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
               </div>
@@ -167,7 +202,7 @@ export function MemberDetailPage() {
           </div>
 
           <div>
-            <p className="text-xs text-gray-400 mb-1.5">이메일</p>
+            <p className="text-xs text-gray-400 mb-1.5">email</p>
             <div className="flex items-center gap-2">
               <Mail className="w-4 h-4 text-gray-400 flex-shrink-0" />
               <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className={inputCls} />
@@ -176,7 +211,11 @@ export function MemberDetailPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">서비스 기술자</p>
+              <p className="text-xs text-gray-400 mb-1.5">
+                <I18nText i18nKey="common.label.service_technician" display="tooltip">
+                  서비스 기술자
+                </I18nText>
+              </p>
               <button
                 type="button"
                 onClick={() => setForm(f => ({ ...f, isTechnician: !f.isTechnician }))}
@@ -188,7 +227,11 @@ export function MemberDetailPage() {
               </button>
             </div>
             <div>
-              <p className="text-xs text-gray-400 mb-1.5">계정 만료일</p>
+              <p className="text-xs text-gray-400 mb-1.5">
+                <I18nText i18nKey="common.label.account_expires_at" display="tooltip">
+                  계정 만료일
+                </I18nText>
+              </p>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
                 <input type="date" value={form.expiresAt} onChange={e => setForm(f => ({ ...f, expiresAt: e.target.value }))} className={inputCls} />
@@ -200,14 +243,22 @@ export function MemberDetailPage() {
             <div>
               <div className="flex items-center gap-1.5 mb-0.5">
                 <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                <p className="text-xs text-gray-400">생성 일시</p>
+                <p className="text-xs text-gray-400">
+                  <I18nText i18nKey="common.label.created_at" display="tooltip">
+                    생성 일시
+                  </I18nText>
+                </p>
               </div>
               <p className="text-sm font-mono text-gray-600">{formatMemberCreatedAt(member.createdAt)} <span className="font-sans text-gray-400">(KST)</span></p>
             </div>
             <div>
               <div className="flex items-center gap-1.5 mb-0.5">
                 <User className="w-3.5 h-3.5 text-gray-400" />
-                <p className="text-xs text-gray-400">마지막 로그인</p>
+                <p className="text-xs text-gray-400">
+                  <I18nText i18nKey="common.label.last_login_at" display="tooltip">
+                    마지막 로그인
+                  </I18nText>
+                </p>
               </div>
               <p className="text-sm font-mono text-gray-600">{formatDateTime(member.lastLoginAt)}{member.lastLoginAt ? ' (KST)' : ''}</p>
             </div>
@@ -216,14 +267,22 @@ export function MemberDetailPage() {
 
         {/* 담당 정보 */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">담당 정보</h2>
+          <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
+            <I18nText i18nKey="members.section.assignment" display="tooltip">
+              담당 정보
+            </I18nText>
+          </h2>
 
           {isStoreOwnerRole(form.roleId) ? (
             <>
               <div>
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Globe className="w-4 h-4 text-gray-400" />
-                  <p className="text-xs text-gray-400">법인</p>
+                  <p className="text-xs text-gray-400">
+                    <I18nText i18nKey="common.label.branch" display="tooltip">
+                      법인
+                    </I18nText>
+                  </p>
                 </div>
                 <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-500">
                   {form.managedBranches[0] ? getBranchName(form.managedBranches[0]) : '—'}
@@ -232,7 +291,11 @@ export function MemberDetailPage() {
               <div>
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Building2 className="w-4 h-4 text-gray-400" />
-                  <p className="text-xs text-gray-400">담당 매장</p>
+                  <p className="text-xs text-gray-400">
+                    <I18nText i18nKey="common.label.assigned_store" display="tooltip">
+                      담당 매장
+                    </I18nText>
+                  </p>
                 </div>
                 <div className="relative">
                   <select
@@ -262,7 +325,11 @@ export function MemberDetailPage() {
               <div>
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Globe className="w-4 h-4 text-gray-400" />
-                  <p className="text-xs text-gray-400">담당 법인</p>
+                  <p className="text-xs text-gray-400">
+                    <I18nText i18nKey="common.label.assigned_branch" display="tooltip">
+                      담당 법인
+                    </I18nText>
+                  </p>
                 </div>
                 <BranchMultiSelect
                   value={form.managedBranches}
@@ -272,7 +339,11 @@ export function MemberDetailPage() {
               <div>
                 <div className="flex items-center gap-1.5 mb-1.5">
                   <Building2 className="w-4 h-4 text-gray-400" />
-                  <p className="text-xs text-gray-400">담당 스토어</p>
+                  <p className="text-xs text-gray-400">
+                    <I18nText i18nKey="common.label.assigned_store" display="tooltip">
+                      담당 스토어
+                    </I18nText>
+                  </p>
                 </div>
                 <StoreMultiSelect
                   value={form.assignedStores}
@@ -291,17 +362,41 @@ export function MemberDetailPage() {
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-[24px] shadow-2xl max-w-sm w-full overflow-hidden">
             <div className="px-6 py-5">
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">회원 삭제</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                <I18nText i18nKey="members.delete.title">
+                  회원 삭제
+                </I18nText>
+              </h3>
               <p className="text-sm text-gray-500">
-                <span className="font-semibold text-gray-900">{member.name}</span>({member.loginId}) 계정을 삭제하시겠습니까?<br />
-                이 작업은 되돌릴 수 없습니다.
+                <I18nText i18nKey="members.delete.description">
+                  <span className="font-semibold text-gray-900">{member.name}</span>({member.loginId}) 계정을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                </I18nText>
               </p>
             </div>
             <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-end gap-3">
-              <button onClick={() => setShowDeleteConfirm(false)} className="px-5 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors text-sm font-medium">취소</button>
-              <button onClick={handleDelete} className="px-5 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors text-sm font-medium">삭제</button>
+              <button onClick={() => setShowDeleteConfirm(false)} className="px-5 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-100 transition-colors text-sm font-medium">
+                <I18nText i18nKey="common.button.cancel" display="tooltip">
+                  취소
+                </I18nText>
+              </button>
+              <button onClick={handleDelete} className="px-5 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors text-sm font-medium">
+                <I18nText i18nKey="common.label.delete" display="tooltip">
+                  삭제
+                </I18nText>
+              </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 rounded-xl bg-gray-900 px-5 py-3 text-white shadow-lg animate-in slide-in-from-bottom-2 fade-in duration-200">
+          <p className="text-sm font-semibold">
+            <I18nText i18nKey={toast.titleKey}>{toast.title}</I18nText>
+          </p>
+          <p className="mt-0.5 text-xs text-white/75">
+            <I18nText i18nKey={toast.messageKey}>{toast.message}</I18nText>
+          </p>
         </div>
       )}
     </div>
