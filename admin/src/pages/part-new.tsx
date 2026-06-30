@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, ChevronDown, Search, X } from 'lucide-react'
 import { useParts } from '@/lib/parts-context'
 import { generatePartCode } from '@/lib/part-code'
+import { I18nText, useI18nLabel } from '@/lib/i18n-inspector'
 import { useProducts } from '@/lib/products-context'
 import { inputCls } from '@/lib/utils'
 import type { Part, Product } from '@/lib/types'
@@ -27,15 +28,32 @@ const init: Form = {
 const DEFAULT_PART_NAMES = ['힌지 (좌)', '힌지 (우)', '노즈패드', '렌즈 (클리어)', '렌즈 (그레이)', '힌지 세트', '템플 (좌)', '템플 (우)', '나사 세트']
 const DEFAULT_COLORS = ['Black', 'Clear', 'Silver', 'Gray', 'Gold']
 
+const PART_NAME_KEYS: Record<string, string> = {
+  '힌지 (좌)': 'parts.option.part_name.hinge_left',
+  '힌지 (우)': 'parts.option.part_name.hinge_right',
+  노즈패드: 'parts.option.part_name.nose_pad',
+  '렌즈 (클리어)': 'parts.option.part_name.lens_clear',
+  '렌즈 (그레이)': 'parts.option.part_name.lens_gray',
+  '힌지 세트': 'parts.option.part_name.hinge_set',
+  '템플 (좌)': 'parts.option.part_name.temple_left',
+  '템플 (우)': 'parts.option.part_name.temple_right',
+  '나사 세트': 'parts.option.part_name.screw_set',
+}
+
 function uniqueOptions(values: string[]) {
   return Array.from(new Set(values.map(value => value.trim()).filter(Boolean)))
     .sort((a, b) => a.localeCompare(b, 'ko'))
 }
 
-function FieldLabel({ text, required }: { text: string; required?: boolean }) {
+function colorKey(color: string) {
+  return `common.color.${color.trim().toLowerCase()}`
+}
+
+function FieldLabel({ text, i18nKey, required }: { text: string; i18nKey?: string; required?: boolean }) {
   return (
     <p className="text-xs font-medium text-gray-600 mb-1.5">
-      {text}{required && <span className="text-red-400 ml-0.5">*</span>}
+      {i18nKey ? <I18nText i18nKey={i18nKey} display="tooltip">{text}</I18nText> : text}
+      {required && <span className="text-red-400 ml-0.5">*</span>}
     </p>
   )
 }
@@ -51,6 +69,7 @@ function ProductSearchCombo({
   onChange: (productCode: string) => void
   disabled?: boolean
 }) {
+  const i18nLabel = useI18nLabel()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [searchedQuery, setSearchedQuery] = useState('')
@@ -107,7 +126,7 @@ function ProductSearchCombo({
 
   return (
     <div>
-      <FieldLabel text="연결 제품" required />
+      <FieldLabel text="연결 제품" i18nKey="parts.label.connected_product" required />
       <div className="relative">
         <button
           ref={triggerRef}
@@ -119,7 +138,7 @@ function ProductSearchCombo({
           } ${open ? 'border-gray-400' : ''}`}
         >
           <span className={selected ? 'truncate text-gray-900' : 'text-gray-300'}>
-            {selected ? `${selected.productCode} / ${selected.name}` : '제품 검색'}
+            {selected ? `${selected.productCode} / ${selected.name}` : i18nLabel('parts.placeholder.product_search', '제품 검색')}
           </span>
           <span className="flex items-center gap-1">
             {selected && !disabled && (
@@ -146,7 +165,7 @@ function ProductSearchCombo({
                     value={query}
                     onChange={event => setQuery(event.target.value)}
                     onKeyDown={event => event.key === 'Enter' && setSearchedQuery(query)}
-                    placeholder="제품명, 코드, 바코드 입력"
+                    placeholder={i18nLabel('parts.placeholder.product_search_input', '제품명, 코드, 바코드 입력')}
                     className="flex-1 bg-transparent text-sm text-gray-800 placeholder:text-gray-300 focus:outline-none"
                   />
                   {query && (
@@ -160,15 +179,15 @@ function ProductSearchCombo({
                   onClick={() => setSearchedQuery(query)}
                   className="flex-shrink-0 rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700"
                 >
-                  검색
+                  <I18nText i18nKey="common.button.search" display="tooltip">검색</I18nText>
                 </button>
               </div>
             </div>
             <ul className="max-h-56 overflow-y-auto py-1">
               {!searchedQuery.trim()
-                ? <li className="px-3 py-4 text-center text-xs text-gray-400">제품명 또는 코드를 입력 후 검색해주세요</li>
+                ? <li className="px-3 py-4 text-center text-xs text-gray-400"><I18nText i18nKey="parts.empty.product_search_initial">제품명 또는 코드를 입력 후 검색해주세요.</I18nText></li>
                 : filtered.length === 0
-                  ? <li className="px-3 py-4 text-center text-xs text-gray-400">검색 결과가 없습니다</li>
+                  ? <li className="px-3 py-4 text-center text-xs text-gray-400"><I18nText i18nKey="common.empty.no_results">조회 결과가 없습니다.</I18nText></li>
                   : filtered.map(product => (
                     <li key={product.id}>
                       <button
@@ -199,6 +218,7 @@ function ProductSearchCombo({
 }
 
 export function PartNewPage() {
+  const i18nLabel = useI18nLabel()
   const navigate = useNavigate()
   const { langCode, id } = useParams()
   const pfx = `/${langCode}`
@@ -215,6 +235,7 @@ export function PartNewPage() {
 
   const [form, setForm] = useState<Form>(init)
   const [errors, setErrors] = useState<Partial<Record<keyof Form, string>>>({})
+  const [toast, setToast] = useState<{ title: string; message: string; titleKey: string; messageKey: string; tone: 'error' | 'success' } | null>(null)
   const partNameOptions = useMemo(
     () => uniqueOptions([...DEFAULT_PART_NAMES, ...parts.map(part => part.name), form.name]),
     [parts, form.name]
@@ -243,13 +264,23 @@ export function PartNewPage() {
 
   function validate() {
     const nextErrors: Partial<Record<keyof Form, string>> = {}
-    if (!isEdit && !form.productCode) nextErrors.productCode = '연결 제품을 선택하세요.'
-    if (!isEdit && !form.name.trim()) nextErrors.name = '필수 입력입니다.'
-    if (!isEdit && !form.specification.trim()) nextErrors.specification = '필수 입력입니다.'
-    if (!isEdit && !form.color.trim()) nextErrors.color = '필수 입력입니다.'
-    if (!form.storageLocation.trim()) nextErrors.storageLocation = '필수 입력입니다.'
+    if (!isEdit && !form.productCode) nextErrors.productCode = i18nLabel('parts.error.product_required', '연결 제품을 선택하세요.')
+    if (!isEdit && !form.name.trim()) nextErrors.name = i18nLabel('common.error.required', '필수 입력입니다.')
+    if (!isEdit && !form.specification.trim()) nextErrors.specification = i18nLabel('common.error.required', '필수 입력입니다.')
+    if (!isEdit && !form.color.trim()) nextErrors.color = i18nLabel('common.error.required', '필수 입력입니다.')
+    if (!form.storageLocation.trim()) nextErrors.storageLocation = i18nLabel('common.error.required', '필수 입력입니다.')
     setErrors(nextErrors)
-    return Object.keys(nextErrors).length === 0
+    const valid = Object.keys(nextErrors).length === 0
+    if (!valid) {
+      setToast({
+        title: '저장 실패',
+        message: '필수값을 입력해 주세요.',
+        titleKey: 'common.toast.validation_failed.title',
+        messageKey: 'parts.toast.required_missing',
+        tone: 'error',
+      })
+    }
+    return valid
   }
 
   function handleSave() {
@@ -269,6 +300,13 @@ export function PartNewPage() {
     }
     if (isEdit) updatePart(payload)
     else addPart(payload)
+    setToast({
+      title: '저장 완료',
+      message: '저장이 완료되었습니다.',
+      titleKey: 'common.toast.saved.title',
+      messageKey: 'common.toast.saved.description',
+      tone: 'success',
+    })
     navigate(`${pfx}/parts`)
   }
 
@@ -280,59 +318,59 @@ export function PartNewPage() {
           className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          부품 목록
+          <I18nText i18nKey="nav.master_management.parts" display="tooltip">부품 관리</I18nText>
         </button>
         <div className="flex gap-2">
           <button
             onClick={() => navigate(`${pfx}/parts`)}
             className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors"
           >
-            취소
+            <I18nText i18nKey="common.button.cancel" display="tooltip">취소</I18nText>
           </button>
           <button
             onClick={handleSave}
             className="px-5 py-2 text-sm font-medium text-white bg-black rounded-xl hover:bg-gray-800 transition-colors"
           >
-            저장
+            <I18nText i18nKey="common.label.saved" display="tooltip">저장</I18nText>
           </button>
         </div>
       </div>
 
       <div>
-        <h1 className="text-xl font-bold text-gray-900">{isEdit ? '부속품 수정' : '부속품 등록'}</h1>
+        <h1 className="text-xl font-bold text-gray-900">{isEdit ? '부품 수정' : <I18nText i18nKey="parts.create.title" display="tooltip">부품 등록</I18nText>}</h1>
         <p className="text-sm text-gray-500 mt-1">
-          제품 하위로 관리되는 부속품 정보를 입력하세요.
+          <I18nText i18nKey="parts.create.description">제품 하위로 관리되는 부품 정보를 입력하세요.</I18nText>
         </p>
       </div>
 
       <section className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
-        <h2 className="text-sm font-semibold text-gray-900">기본 정보</h2>
+        <h2 className="text-sm font-semibold text-gray-900"><I18nText i18nKey="parts.section.basic" display="tooltip">기본 정보</I18nText></h2>
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <FieldLabel text="부속품 ID" />
+            <FieldLabel text="부품 ID" i18nKey="parts.label.part_code" />
             <input
               type="text"
               value={isEdit ? (existing?.partCode ?? '') : nextPartCode}
               readOnly
               className={`${inputCls} w-full bg-gray-50 text-gray-500 cursor-default select-none`}
             />
-            <p className="text-[11px] text-gray-400 mt-1">PS에서 자동 생성됩니다.</p>
+            <p className="text-[11px] text-gray-400 mt-1"><I18nText i18nKey="parts.create.auto_code_hint">PS에서 자동 생성됩니다.</I18nText></p>
           </div>
           <div>
             <ProductSearchCombo products={products} value={form.productCode} onChange={set('productCode')} disabled={isEdit} />
             {errors.productCode && <p className="text-[11px] text-red-400 mt-1">{errors.productCode}</p>}
           </div>
           <div>
-            <FieldLabel text="부속품명" required />
+            <FieldLabel text="부품명" i18nKey="parts.label.part_name" required />
             <select
               value={form.name}
               disabled={isEdit}
               onChange={e => set('name')(e.target.value)}
               className={`${inputCls} w-full ${isEdit ? 'bg-gray-50 text-gray-500 cursor-default' : 'cursor-pointer'} ${errors.name ? 'border-red-300 focus:border-red-400' : ''}`}
             >
-              <option value="">부속품명 선택</option>
+              <option value="">{i18nLabel('parts.placeholder.part_name_select', '부품명 선택')}</option>
               {partNameOptions.map(option => (
-                <option key={option} value={option}>{option}</option>
+                <option key={option} value={option}>{i18nLabel(PART_NAME_KEYS[option] ?? `parts.option.part_name.${option}`, option)}</option>
               ))}
             </select>
             {errors.name && <p className="text-[11px] text-red-400 mt-1">{errors.name}</p>}
@@ -340,10 +378,10 @@ export function PartNewPage() {
         </div>
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <FieldLabel text="규격" required />
+            <FieldLabel text="규격" i18nKey="parts.label.specification" required />
             <input
               type="text"
-              placeholder="예: HNG-L"
+              placeholder={i18nLabel('parts.placeholder.specification', '예: HNG-L')}
               value={form.specification}
               disabled={isEdit}
               onChange={e => set('specification')(e.target.value)}
@@ -352,25 +390,25 @@ export function PartNewPage() {
             {errors.specification && <p className="text-[11px] text-red-400 mt-1">{errors.specification}</p>}
           </div>
           <div>
-            <FieldLabel text="컬러" required />
+            <FieldLabel text="컬러" i18nKey="common.label.color" required />
             <select
               value={form.color}
               disabled={isEdit}
               onChange={e => set('color')(e.target.value)}
               className={`${inputCls} w-full ${isEdit ? 'bg-gray-50 text-gray-500 cursor-default' : 'cursor-pointer'} ${errors.color ? 'border-red-300 focus:border-red-400' : ''}`}
             >
-              <option value="">컬러 선택</option>
+              <option value="">{i18nLabel('parts.placeholder.color_select', '컬러 선택')}</option>
               {colorOptions.map(option => (
-                <option key={option} value={option}>{option}</option>
+                <option key={option} value={option}>{i18nLabel(colorKey(option), option)}</option>
               ))}
             </select>
             {errors.color && <p className="text-[11px] text-red-400 mt-1">{errors.color}</p>}
           </div>
           <div>
-            <FieldLabel text="부속품 보관위치" required />
+            <FieldLabel text="부품 보관위치" i18nKey="parts.label.storage_location" required />
             <input
               type="text"
-              placeholder="예: P-A1-01"
+              placeholder={i18nLabel('parts.placeholder.storage_location', '예: P-A1-01')}
               value={form.storageLocation}
               onChange={e => set('storageLocation')(e.target.value)}
               className={`${inputCls} w-full ${errors.storageLocation ? 'border-red-300 focus:border-red-400' : ''}`}
@@ -379,6 +417,12 @@ export function PartNewPage() {
           </div>
         </div>
       </section>
+      {toast && (
+        <div className={`fixed bottom-6 right-6 z-[10000] w-[min(360px,calc(100vw-48px))] rounded-xl px-4 py-3 text-white shadow-lg ${toast.tone === 'success' ? 'bg-green-600' : 'bg-red-600'}`}>
+          <p className="text-sm font-semibold"><I18nText i18nKey={toast.titleKey} className="text-white">{toast.title}</I18nText></p>
+          <p className="mt-1 text-xs leading-relaxed text-white/90"><I18nText i18nKey={toast.messageKey} className="text-white">{toast.message}</I18nText></p>
+        </div>
+      )}
     </div>
   )
 }

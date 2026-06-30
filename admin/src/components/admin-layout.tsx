@@ -28,7 +28,7 @@ interface NavGroup {
 const NAV: NavGroup[] = [
   {
     label: '시스템 관리',
-    i18nKey: 'nav.system_management',
+    i18nKey: 'nav.system_management.title',
     icon: UserCog,
     children: [
       { to: '/members',                  label: '회원 관리',      i18nKey: 'nav.system_management.members', icon: UserCog },
@@ -38,7 +38,7 @@ const NAV: NavGroup[] = [
   },
   {
     label: '마스터 관리',
-    i18nKey: 'nav.master_management',
+    i18nKey: 'nav.master_management.title',
     icon: Package,
     children: [
       { to: '/products',           label: '제품 리스트',      i18nKey: 'nav.master_management.products', icon: Package },
@@ -49,7 +49,7 @@ const NAV: NavGroup[] = [
   },
   {
     label: '재고 관리',
-    i18nKey: 'nav.stock_management',
+    i18nKey: 'nav.stock_management.title',
     icon: ArchiveX,
     children: [
       { to: '/stock', label: '재고 현황', i18nKey: 'nav.stock_management.stock', icon: ArchiveX },
@@ -57,7 +57,7 @@ const NAV: NavGroup[] = [
   },
   {
     label: '고객 관리',
-    i18nKey: 'nav.customer_management',
+    i18nKey: 'nav.customer_management.title',
     icon: Users,
     children: [
       { to: '/customers', label: '고객', i18nKey: 'nav.customer_management.customers', icon: Users },
@@ -65,7 +65,7 @@ const NAV: NavGroup[] = [
   },
   {
     label: '티켓 관리',
-    i18nKey: 'nav.ticket_management',
+    i18nKey: 'nav.ticket_management.title',
     icon: Ticket,
     children: [
       { to: '/tickets',         label: '티켓 관리',             i18nKey: 'nav.ticket_management.tickets', icon: Ticket },
@@ -76,7 +76,7 @@ const NAV: NavGroup[] = [
   },
   {
     label: '로그 관리',
-    i18nKey: 'nav.log_management',
+    i18nKey: 'nav.log_management.title',
     icon: Download,
     children: [
       { to: '/download-logs', label: '다운로드 로그', i18nKey: 'nav.log_management.download_logs', icon: Download },

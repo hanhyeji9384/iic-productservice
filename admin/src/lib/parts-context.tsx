@@ -55,7 +55,7 @@ function buildPartManagementDiff(current: Part, updated: Part) {
   const diffs: string[] = []
   if (current.specification !== updated.specification) diffs.push(`규격: ${current.specification || '(없음)'} → ${updated.specification || '(없음)'}`)
   if (current.color !== updated.color) diffs.push(`컬러: ${current.color || '(없음)'} → ${updated.color || '(없음)'}`)
-  if (current.storageLocation !== updated.storageLocation) diffs.push(`부속품 보관위치: ${current.storageLocation || '(없음)'} → ${updated.storageLocation || '(없음)'}`)
+  if (current.storageLocation !== updated.storageLocation) diffs.push(`부품 보관위치: ${current.storageLocation || '(없음)'} → ${updated.storageLocation || '(없음)'}`)
   return diffs.join(' / ') || '변경 없음'
 }
 
@@ -123,7 +123,7 @@ export function PartsProvider({ children }: { children: ReactNode }) {
     const current = parts.find(part => part.id === id)
     if (current) {
       setPartChangeLogs(prev => [
-        buildPartLog(current, 'delete', `부속품 삭제: ${current.partCode} / ${current.name}`),
+        buildPartLog(current, 'delete', `부품 삭제: ${current.partCode} / ${current.name}`),
         ...prev,
       ])
     }

@@ -81,7 +81,7 @@ export function AuthOtpPage() {
       {toast && (
         <div
           className={`fixed bottom-6 right-6 z-[10000] rounded-xl px-4 py-3 text-sm font-medium shadow-lg ${
-            toast.ok ? 'bg-gray-900 text-white' : 'bg-red-600 text-white'
+            toast.ok ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
           }`}
         >
           {toast.i18nKey ? (
