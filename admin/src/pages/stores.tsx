@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { X, Download, ArrowUp, ArrowDown, ArrowUpDown, Filter } from 'lucide-react'
+import * as XLSX from 'xlsx'
 import { Pagination } from '@/components/pagination'
 import { STORES } from '@/lib/mock-data'
 import type { Store } from '@/lib/types'
@@ -156,16 +157,10 @@ export function StoresPage() {
       statusLabel(store),
       groupLabel(store.storeGroup),
     ])
-    const csv = [headers, ...rows]
-      .map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
-      .join('\n')
-    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `stores_${new Date().toISOString().slice(0, 10)}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
+    const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows])
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, '매장 거래처 관리')
+    XLSX.writeFile(workbook, `stores_${new Date().toISOString().slice(0, 10)}.xlsx`)
   }
 
   function renderFilterPopoverContent(col: string) {

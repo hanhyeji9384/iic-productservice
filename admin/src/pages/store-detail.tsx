@@ -1,7 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, ExternalLink, Home, Mail, Phone, User } from 'lucide-react'
-import { STORES } from '@/lib/mock-data'
+import { ArrowDown, ArrowLeft, ArrowUp, ArrowUpDown, Filter, Mail, X } from 'lucide-react'
+import { MEMBERS, PRODUCTS, STORES } from '@/lib/mock-data'
 import { getTicketsWithExtras } from '@/lib/prototype-storage'
 import type { Store, Ticket, TicketStatus } from '@/lib/types'
 
@@ -16,22 +16,88 @@ const STORE_GROUP_LABELS: Record<number, string> = {
   200: 'Distributor',
 }
 
-const STATUS_META: Record<TicketStatus, { label: string; className: string }> = {
-  RECEIVED: { label: '접수 완료', className: 'bg-blue-50 text-blue-700' },
-  JUDGEMENT_PENDING: { label: '판정 대기', className: 'bg-amber-50 text-amber-700' },
-  JUDGEMENT_DONE: { label: '판정 완료', className: 'bg-indigo-50 text-indigo-700' },
-  PAYMENT_REQUESTED: { label: '결제 요청', className: 'bg-purple-50 text-purple-700' },
-  PAYMENT_DONE: { label: '결제 완료', className: 'bg-emerald-50 text-emerald-700' },
-  PARTNER_SENT: { label: '협력업체 발송', className: 'bg-sky-50 text-sky-700' },
-  REPAIRING: { label: '수리 진행 중', className: 'bg-orange-50 text-orange-700' },
-  REPAIR_DONE: { label: '수리 완료', className: 'bg-green-50 text-green-700' },
-  READY_TO_SHIP: { label: '출고 대기', className: 'bg-cyan-50 text-cyan-700' },
-  SHIPPING: { label: '배송 중', className: 'bg-slate-100 text-slate-700' },
-  SHIPPED: { label: '배송 완료', className: 'bg-gray-100 text-gray-700' },
-  CLOSED: { label: '종결', className: 'bg-gray-900 text-white' },
-  CANCELED: { label: '취소', className: 'bg-red-50 text-red-700' },
-  PICKUP_WAITING: { label: '픽업 대기', className: 'bg-yellow-50 text-yellow-700' },
+const STATUS_LABELS: Record<TicketStatus, string> = {
+  RECEIVED: '접수',
+  JUDGEMENT_PENDING: '심사중',
+  JUDGEMENT_DONE: '심사완료',
+  PAYMENT_REQUESTED: '결제요청',
+  PAYMENT_DONE: '결제완료',
+  PARTNER_SENT: '협력사발송',
+  REPAIRING: '수리중',
+  REPAIR_DONE: '수리완료',
+  READY_TO_SHIP: '발송준비',
+  SHIPPING: '발송중',
+  SHIPPED: '발송완료',
+  CLOSED: '완료',
+  CANCELED: '취소',
+  PICKUP_WAITING: '회수 대기 중',
 }
+
+const STATUS_COLOR: Record<TicketStatus, string> = {
+  RECEIVED:           'bg-blue-50 text-blue-700',
+  JUDGEMENT_PENDING:  'bg-yellow-50 text-yellow-700',
+  JUDGEMENT_DONE:     'bg-orange-50 text-orange-700',
+  PAYMENT_REQUESTED:  'bg-purple-50 text-purple-700',
+  PAYMENT_DONE:       'bg-indigo-50 text-indigo-700',
+  PARTNER_SENT:       'bg-cyan-50 text-cyan-700',
+  REPAIRING:          'bg-blue-50 text-blue-700',
+  REPAIR_DONE:        'bg-teal-50 text-teal-700',
+  READY_TO_SHIP:      'bg-green-50 text-green-700',
+  SHIPPING:           'bg-emerald-50 text-emerald-700',
+  SHIPPED:            'bg-emerald-50 text-emerald-700',
+  CLOSED:             'bg-gray-100 text-gray-600',
+  CANCELED:           'bg-red-50 text-red-600',
+  PICKUP_WAITING:     'bg-violet-50 text-violet-700',
+}
+
+function todayStr() { return new Date().toISOString().slice(0, 10) }
+
+function monthsAgoStr(months: number) {
+  const date = new Date()
+  date.setMonth(date.getMonth() - months)
+  return date.toISOString().slice(0, 10)
+}
+
+type StoreTicketFilterKey =
+  | 'ticketNo'
+  | 'status'
+  | 'productCode'
+  | 'productName'
+  | 'purchaseDate'
+  | 'purchasePlace'
+  | 'receivedAt'
+  | 'symptom'
+  | 'repairDetail'
+  | 'technician'
+
+type StoreTicketFilters = Record<StoreTicketFilterKey, string>
+type StoreTicketSortKey = StoreTicketFilterKey
+
+const INIT_TICKET_FILTERS: StoreTicketFilters = {
+  ticketNo: '',
+  status: 'all',
+  productCode: '',
+  productName: '',
+  purchaseDate: '',
+  purchasePlace: '',
+  receivedAt: '',
+  symptom: 'all',
+  repairDetail: 'all',
+  technician: 'all',
+}
+
+const TICKET_COLUMNS: { key: StoreTicketFilterKey; label: string; sort: StoreTicketSortKey }[] = [
+  { key: 'ticketNo',      label: 'Ticket No.', sort: 'ticketNo' },
+  { key: 'status',        label: '상태',        sort: 'status' },
+  { key: 'productCode',   label: '제품코드',    sort: 'productCode' },
+  { key: 'productName',   label: '제품명',      sort: 'productName' },
+  { key: 'purchaseDate',  label: '구매일',      sort: 'purchaseDate' },
+  { key: 'purchasePlace', label: '구매처',      sort: 'purchasePlace' },
+  { key: 'receivedAt',    label: '접수일시',    sort: 'receivedAt' },
+  { key: 'symptom',       label: '현상',        sort: 'symptom' },
+  { key: 'repairDetail',  label: '수리내용',    sort: 'repairDetail' },
+  { key: 'technician',    label: '서비스기술자', sort: 'technician' },
+]
 
 function groupLabel(storeGroup: number) {
   return STORE_GROUP_LABELS[storeGroup] ?? '기타'
@@ -47,11 +113,7 @@ function displayValue(value?: string | null) {
 }
 
 function activeLabel(store: Store) {
-  return store.active === 'N' ? 'No Active' : 'Active'
-}
-
-function fullAddress(store: Store) {
-  return [store.address1, store.address2].filter(Boolean).join(' ')
+  return store.active === 'N' ? '비활성' : '활성'
 }
 
 function normalizeMatchText(value?: string | null) {
@@ -68,6 +130,91 @@ function isTicketForStore(ticket: Ticket, store: Store) {
   return Boolean(storeName && place && (storeName === place || storeName.includes(place) || place.includes(storeName)))
 }
 
+function getProductCode(ticket: Ticket) {
+  return PRODUCTS.find(product => product.name === ticket.productName)?.productCode ?? ticket.productName
+}
+
+function getPurchaseDate(ticket: Ticket) {
+  return ticket.purchaseDate ?? ''
+}
+
+function getPurchasePlace(ticket: Ticket) {
+  return ticket.purchasePlace ?? ''
+}
+
+function getSymptom(ticket: Ticket) {
+  return ticket.symptom ?? ''
+}
+
+function getTechnicianLabel(ticket: Ticket) {
+  const technician = ticket.technicianId ? MEMBERS.find(member => member.id === ticket.technicianId) : null
+  if (ticket.technicianName) return ticket.technicianName
+  if (technician) return `${technician.name} (${technician.loginId})`
+  return ''
+}
+
+function includesQuery(value: string | null | undefined, query: string) {
+  const q = query.trim().toLowerCase()
+  if (!q) return true
+  return (value ?? '').toLowerCase().includes(q)
+}
+
+function makeTextOptions(values: Array<string | null | undefined>) {
+  const seen = new Set<string>()
+  const options: { value: string; label: string }[] = []
+  values.forEach(value => {
+    const text = (value ?? '').trim()
+    if (!text || seen.has(text)) return
+    seen.add(text)
+    options.push({ value: text, label: text })
+  })
+  return options.sort((a, b) => a.label.localeCompare(b.label, 'ko'))
+}
+
+function getTicketSortValue(ticket: Ticket, key: StoreTicketSortKey) {
+  switch (key) {
+    case 'status':
+      return STATUS_LABELS[ticket.status]
+    case 'productCode':
+      return getProductCode(ticket)
+    case 'productName':
+      return ticket.productName
+    case 'purchaseDate':
+      return getPurchaseDate(ticket)
+    case 'purchasePlace':
+      return getPurchasePlace(ticket)
+    case 'receivedAt':
+      return ticket.receivedAt
+    case 'symptom':
+      return getSymptom(ticket)
+    case 'repairDetail':
+      return ticket.repairDetail
+    case 'technician':
+      return getTechnicianLabel(ticket)
+    default:
+      return ticket.ticketNo
+  }
+}
+
+function dateOnly(value?: string | null) {
+  return value ? value.slice(0, 10) : ''
+}
+
+function isWithinDateRange(value: string | null | undefined, from: string, to: string) {
+  const date = dateOnly(value)
+  if (!date) return false
+  return date >= from && date <= to
+}
+
+function dateTimeWithTimezone(value?: string | null) {
+  if (!value || !value.trim()) return <span>-</span>
+  return (
+    <>
+      {value} <span className="font-sans text-gray-400">(KST)</span>
+    </>
+  )
+}
+
 function InfoItem({ label, value, mono = false }: { label: string; value?: string | null; mono?: boolean }) {
   return (
     <div>
@@ -78,8 +225,11 @@ function InfoItem({ label, value, mono = false }: { label: string; value?: strin
 }
 
 function StatusBadge({ status }: { status: TicketStatus }) {
-  const meta = STATUS_META[status]
-  return <span className={`inline-flex rounded-lg px-2.5 py-1 text-xs font-semibold ${meta.className}`}>{meta.label}</span>
+  return (
+    <span className={`inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold ${STATUS_COLOR[status]}`}>
+      {STATUS_LABELS[status]}
+    </span>
+  )
 }
 
 export function StoreDetailPage() {
@@ -88,6 +238,12 @@ export function StoreDetailPage() {
   const pfx = `/${langCode}`
   const store = STORES.find(item => item.code === code)
   const tickets = useMemo(() => getTicketsWithExtras(), [])
+  const [dateRange, setDateRange] = useState({ from: monthsAgoStr(6), to: todayStr() })
+  const [ticketFilters, setTicketFilters] = useState<StoreTicketFilters>(INIT_TICKET_FILTERS)
+  const [appliedTicketFilters, setAppliedTicketFilters] = useState<StoreTicketFilters>(INIT_TICKET_FILTERS)
+  const [ticketFilterPopover, setTicketFilterPopover] = useState<{ col: StoreTicketFilterKey; rect: DOMRect } | null>(null)
+  const [ticketSortKey, setTicketSortKey] = useState<StoreTicketSortKey>('receivedAt')
+  const [ticketSortDir, setTicketSortDir] = useState<'asc' | 'desc'>('desc')
 
   if (!store) {
     return (
@@ -98,10 +254,193 @@ export function StoreDetailPage() {
     )
   }
 
-  const address = fullAddress(store)
-  const storeTickets = tickets
+  const baseStoreTickets = tickets
     .filter(ticket => isTicketForStore(ticket, store))
-    .sort((a, b) => b.receivedAt.localeCompare(a.receivedAt))
+    .filter(ticket => isWithinDateRange(ticket.receivedAt, dateRange.from, dateRange.to))
+
+  const symptomOptions = makeTextOptions(baseStoreTickets.map(ticket => getSymptom(ticket)))
+  const repairDetailOptions = makeTextOptions(baseStoreTickets.map(ticket => ticket.repairDetail))
+  const technicianOptions = MEMBERS
+    .filter(member => baseStoreTickets.some(ticket => ticket.technicianId === member.id || ticket.technicianName === member.name))
+    .map(member => ({ value: member.id, label: `${member.name} (${member.loginId})` }))
+
+  const filteredTickets = baseStoreTickets.filter(ticket => {
+    if (!includesQuery(ticket.ticketNo, appliedTicketFilters.ticketNo)) return false
+    if (appliedTicketFilters.status !== 'all' && ticket.status !== appliedTicketFilters.status) return false
+    if (!includesQuery(getProductCode(ticket), appliedTicketFilters.productCode)) return false
+    if (!includesQuery(ticket.productName, appliedTicketFilters.productName)) return false
+    if (!includesQuery(getPurchaseDate(ticket), appliedTicketFilters.purchaseDate)) return false
+    if (!includesQuery(getPurchasePlace(ticket), appliedTicketFilters.purchasePlace)) return false
+    if (!includesQuery(ticket.receivedAt, appliedTicketFilters.receivedAt)) return false
+    if (appliedTicketFilters.symptom !== 'all' && getSymptom(ticket) !== appliedTicketFilters.symptom) return false
+    if (appliedTicketFilters.repairDetail !== 'all' && ticket.repairDetail !== appliedTicketFilters.repairDetail) return false
+    if (appliedTicketFilters.technician !== 'all') {
+      const selectedTechnician = MEMBERS.find(member => member.id === appliedTicketFilters.technician)
+      if (selectedTechnician) {
+        if (ticket.technicianId !== selectedTechnician.id) return false
+      } else if (!includesQuery(getTechnicianLabel(ticket), appliedTicketFilters.technician)) {
+        return false
+      }
+    }
+    return true
+  })
+
+  const sortedTickets = [...filteredTickets].sort((a, b) => {
+    const av = getTicketSortValue(a, ticketSortKey)
+    const bv = getTicketSortValue(b, ticketSortKey)
+    const result = String(av).localeCompare(String(bv), 'ko')
+    return ticketSortDir === 'asc' ? result : -result
+  })
+
+  const hasTicketFilters =
+    Object.entries(appliedTicketFilters).some(([key, value]) => {
+      const initial = INIT_TICKET_FILTERS[key as StoreTicketFilterKey]
+      return value !== initial
+    }) ||
+    dateRange.from !== monthsAgoStr(6) ||
+    dateRange.to !== todayStr() ||
+    ticketSortKey !== 'receivedAt' ||
+    ticketSortDir !== 'desc'
+
+  function handleTicketSort(key: StoreTicketSortKey) {
+    if (ticketSortKey !== key) {
+      setTicketSortKey(key)
+      setTicketSortDir('asc')
+      return
+    }
+    setTicketSortDir(ticketSortDir === 'asc' ? 'desc' : 'asc')
+  }
+
+  function resetTicketFilters() {
+    setDateRange({ from: monthsAgoStr(6), to: todayStr() })
+    setTicketFilters(INIT_TICKET_FILTERS)
+    setAppliedTicketFilters(INIT_TICKET_FILTERS)
+    setTicketSortKey('receivedAt')
+    setTicketSortDir('desc')
+    setTicketFilterPopover(null)
+  }
+
+  function applyTicketFilters() {
+    setAppliedTicketFilters({ ...ticketFilters })
+    setTicketFilterPopover(null)
+  }
+
+  function applyTicketFilter(key: StoreTicketFilterKey, value: string) {
+    const next = { ...ticketFilters, [key]: value }
+    setTicketFilters(next)
+    setAppliedTicketFilters(next)
+    setTicketFilterPopover(null)
+  }
+
+  function SortIcon({ col }: { col: StoreTicketSortKey }) {
+    if (ticketSortKey !== col) return <ArrowUpDown className="h-3 w-3 text-gray-300" />
+    return ticketSortDir === 'asc'
+      ? <ArrowUp className="h-3 w-3 text-gray-700" />
+      : <ArrowDown className="h-3 w-3 text-gray-700" />
+  }
+
+  function filterSummary(key: StoreTicketFilterKey) {
+    const value = appliedTicketFilters[key]
+    if (!value || value === 'all') return null
+    if (key === 'status') return STATUS_LABELS[value as TicketStatus]
+    if (key === 'technician') return technicianOptions.find(option => option.value === value)?.label ?? value
+    return value
+  }
+
+  function renderTextFilter(key: StoreTicketFilterKey, placeholder: string) {
+    return (
+      <div className="w-48 space-y-1.5">
+        <input
+          type="text"
+          value={ticketFilters[key]}
+          onChange={event => setTicketFilters(prev => ({ ...prev, [key]: event.target.value }))}
+          onKeyDown={event => event.key === 'Enter' && applyTicketFilters()}
+          placeholder={placeholder}
+          className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs outline-none transition-colors focus:border-gray-300"
+        />
+        <div className="flex gap-1.5">
+          {ticketFilters[key] && (
+            <button
+              type="button"
+              onClick={() => applyTicketFilter(key, INIT_TICKET_FILTERS[key])}
+              className="flex-1 rounded-lg border border-gray-200 py-1.5 text-xs text-gray-400 transition-colors hover:text-gray-600"
+            >
+              지우기
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={applyTicketFilters}
+            className="flex-1 rounded-lg bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-800"
+          >
+            적용
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  function renderSelectFilter(
+    key: StoreTicketFilterKey,
+    options: Array<{ value: string; label: string }>,
+    allLabel = '전체'
+  ) {
+    return (
+      <div className="max-h-64 w-52 space-y-1 overflow-y-auto">
+        <button
+          type="button"
+          onClick={() => applyTicketFilter(key, INIT_TICKET_FILTERS[key])}
+          className={`w-full rounded-lg px-3 py-2 text-left text-xs transition-colors ${
+            ticketFilters[key] === INIT_TICKET_FILTERS[key] ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+          }`}
+        >
+          {allLabel}
+        </button>
+        {options.map(option => (
+          <button
+            key={option.value}
+            type="button"
+            onClick={() => applyTicketFilter(key, option.value)}
+            className={`w-full rounded-lg px-3 py-2 text-left text-xs transition-colors ${
+              ticketFilters[key] === option.value ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  function renderTicketFilterContent(key: StoreTicketFilterKey) {
+    switch (key) {
+      case 'ticketNo':
+        return renderTextFilter('ticketNo', '티켓번호 검색')
+      case 'productCode':
+        return renderTextFilter('productCode', '제품코드 검색')
+      case 'productName':
+        return renderTextFilter('productName', '제품명 검색')
+      case 'purchaseDate':
+        return renderTextFilter('purchaseDate', '구매일 검색')
+      case 'purchasePlace':
+        return renderTextFilter('purchasePlace', '구매처 검색')
+      case 'receivedAt':
+        return renderTextFilter('receivedAt', '접수일시 검색')
+      case 'status':
+        return renderSelectFilter(
+          'status',
+          Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label }))
+        )
+      case 'symptom':
+        return renderSelectFilter('symptom', symptomOptions)
+      case 'repairDetail':
+        return renderSelectFilter('repairDetail', repairDetailOptions)
+      case 'technician':
+        return renderSelectFilter('technician', technicianOptions)
+      default:
+        return null
+    }
+  }
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 space-y-4 duration-500">
@@ -112,7 +451,7 @@ export function StoreDetailPage() {
         <span className="text-gray-700">매장/거래처 관리</span>
       </nav>
 
-      <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div className="border-b border-gray-100 p-6">
           <div className="flex items-start justify-between gap-6">
             <div>
@@ -128,111 +467,152 @@ export function StoreDetailPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-8 p-6">
+        <div className="grid gap-8 p-6 lg:grid-cols-[1.2fr_1fr_1fr]">
           <div>
-            <div className="mb-3 flex items-center gap-2">
-              <Home className="h-4 w-4 text-gray-500" strokeWidth={2.5} />
-              <h2 className="text-sm font-semibold text-gray-900">주소 정보</h2>
-            </div>
+            <h2 className="mb-3 text-sm font-semibold text-gray-900">주소 정보</h2>
             <dl className="grid grid-cols-2 gap-x-6 gap-y-4">
-              <InfoItem label="국가/지역" value={store.country} />
+              <InfoItem label="국가 지역" value={store.country} />
               <InfoItem label="통화" value={store.currency} />
               <InfoItem label="시" value={store.address1} />
               <InfoItem label="우편번호" value={store.zipCode} mono />
-              <InfoItem label="번지" value={store.oldZipCode} />
               <div className="col-span-2">
-                <dt className="text-[11px] font-medium text-gray-400">상세 주소</dt>
-                {address ? (
-                  <button
-                    type="button"
-                    onClick={() => window.open(`https://google.co.kr/maps/place/${encodeURIComponent(address)}`, '_blank')}
-                    className="mt-1 inline-flex items-center gap-1 text-left text-sm font-medium text-gray-900 hover:underline"
-                  >
-                    {address}
-                    <ExternalLink className="h-3.5 w-3.5 text-gray-400" />
-                  </button>
-                ) : (
-                  <dd className="mt-1 text-sm font-medium text-gray-900">-</dd>
-                )}
+                <InfoItem label="상세 주소" value={store.address2} />
               </div>
             </dl>
           </div>
 
           <div>
-            <div className="mb-3 flex items-center gap-2">
-              <Phone className="h-4 w-4 text-gray-500" strokeWidth={2.5} />
-              <h2 className="text-sm font-semibold text-gray-900">통신</h2>
-            </div>
+            <h2 className="mb-3 text-sm font-semibold text-gray-900">통신</h2>
             <dl className="grid gap-4">
               <InfoItem label="전화번호" value={store.tel1} mono />
-              <InfoItem label="대표담당자 번호" value={store.tel2} mono />
+              <InfoItem label="대표담당자번호" value={store.tel2} mono />
               <InfoItem label="팩스" value={store.telFx} mono />
             </dl>
           </div>
 
           <div>
-            <div className="mb-3 flex items-center gap-2">
-              <User className="h-4 w-4 text-gray-500" strokeWidth={2.5} />
-              <h2 className="text-sm font-semibold text-gray-900">운영 정보</h2>
-            </div>
+            <h2 className="mb-3 text-sm font-semibold text-gray-900">운영 정보</h2>
             <dl className="grid gap-4">
               <InfoItem label="이름" value={store.name} />
-              <InfoItem label="계정 아이디" value={store.code} mono />
-              <InfoItem label="접수처" value={groupLabel(store.storeGroup)} />
+              <InfoItem label="계정 ID" value={store.code} mono />
+              <InfoItem label="접수처유형" value={groupLabel(store.storeGroup)} />
               <InfoItem label="상태" value={activeLabel(store)} />
             </dl>
           </div>
         </div>
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+      <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-6 py-4">
           <div className="flex items-center gap-2">
             <Mail className="h-4 w-4 text-gray-500" strokeWidth={2.5} />
             <h2 className="text-sm font-semibold text-gray-900">티켓</h2>
-            <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-500">{storeTickets.length}</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {hasTicketFilters && (
+              <button
+                type="button"
+                onClick={resetTicketFilters}
+                className="inline-flex h-9 items-center gap-1 rounded-lg border border-gray-200 px-3 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-50"
+              >
+                <X className="h-3 w-3" />
+                필터 초기화
+              </button>
+            )}
+            <input
+              type="date"
+              value={dateRange.from}
+              onChange={event => setDateRange(prev => ({ ...prev, from: event.target.value }))}
+              className="h-9 rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-gray-400"
+            />
+            <span className="text-xs text-gray-300">~</span>
+            <input
+              type="date"
+              value={dateRange.to}
+              onChange={event => setDateRange(prev => ({ ...prev, to: event.target.value }))}
+              className="h-9 rounded-lg border border-gray-200 px-3 text-xs text-gray-700 outline-none focus:border-gray-400"
+            />
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px]">
+          <table className="w-full min-w-[1320px]">
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50/50 text-left text-xs font-semibold tracking-wide text-gray-500">
-                <th className="px-5 py-4">Ticket No.</th>
-                <th className="px-5 py-4">상태</th>
-                <th className="px-5 py-4">접수 일시</th>
-                <th className="px-5 py-4">고객명</th>
-                <th className="px-5 py-4">제품명</th>
-                <th className="px-5 py-4">수리 내용</th>
-                <th className="px-5 py-4">출고 예정일</th>
-                <th className="px-5 py-4">배송 방식</th>
+                {TICKET_COLUMNS.map(column => {
+                  const summary = filterSummary(column.key)
+                  return (
+                    <th key={column.key} className={`px-4 py-3 align-top whitespace-nowrap ${summary ? 'bg-blue-50 text-blue-700' : ''}`}>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleTicketSort(column.sort)}
+                          className="group flex items-center gap-1 text-xs font-semibold tracking-wide transition-colors hover:text-gray-700"
+                        >
+                          {column.label}
+                          <SortIcon col={column.sort} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={event => {
+                            const rect = event.currentTarget.getBoundingClientRect()
+                            setTicketFilterPopover(prev => prev?.col === column.key ? null : { col: column.key, rect })
+                          }}
+                          className={`rounded p-0.5 transition-colors ${ticketFilterPopover?.col === column.key || summary ? 'text-blue-500' : 'text-gray-300 hover:text-gray-500'}`}
+                        >
+                          <Filter className="h-3 w-3" />
+                        </button>
+                      </div>
+                      {summary && <div className="mt-1 max-w-[140px] truncate text-[10px] font-medium normal-case tracking-normal text-blue-600">{summary}</div>}
+                    </th>
+                  )
+                })}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {storeTickets.length === 0 ? (
+              {sortedTickets.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-6 py-12 text-center text-sm text-gray-400">연결된 티켓이 없습니다.</td>
+                  <td colSpan={TICKET_COLUMNS.length} className="px-6 py-12 text-center text-sm text-gray-400">연결된 티켓이 없습니다.</td>
                 </tr>
-              ) : storeTickets.map(ticket => (
+              ) : sortedTickets.map(ticket => (
                 <tr
                   key={ticket.ticketNo}
                   onClick={() => navigate(`${pfx}/tickets/${ticket.ticketNo}`)}
                   className="cursor-pointer transition-colors hover:bg-gray-50"
                 >
-                  <td className="whitespace-nowrap px-5 py-3.5 font-mono text-xs font-semibold text-gray-900">{ticket.ticketNo}</td>
-                  <td className="whitespace-nowrap px-5 py-3.5"><StatusBadge status={ticket.status} /></td>
-                  <td className="whitespace-nowrap px-5 py-3.5 font-mono text-xs text-gray-600">{ticket.receivedAt}</td>
-                  <td className="whitespace-nowrap px-5 py-3.5 text-sm font-medium text-gray-900">{ticket.customerName}</td>
-                  <td className="whitespace-nowrap px-5 py-3.5 text-sm text-gray-700">{ticket.productName}</td>
-                  <td className="whitespace-nowrap px-5 py-3.5 text-sm text-gray-700">{ticket.repairDetail}</td>
-                  <td className="whitespace-nowrap px-5 py-3.5 font-mono text-xs text-gray-600">{displayValue(ticket.expectedShipAt)}</td>
-                  <td className="whitespace-nowrap px-5 py-3.5 text-sm text-gray-700">{ticket.shippingMethod}</td>
+                  <td className="whitespace-nowrap px-4 py-3 font-mono text-xs font-semibold text-gray-900">{ticket.ticketNo}</td>
+                  <td className="whitespace-nowrap px-4 py-3"><StatusBadge status={ticket.status} /></td>
+                  <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-gray-600">{getProductCode(ticket)}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-xs font-semibold text-gray-800">{ticket.productName}</td>
+                  <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-gray-600">{displayValue(getPurchaseDate(ticket))}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-xs text-gray-600">{displayValue(getPurchasePlace(ticket))}</td>
+                  <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-gray-600">{dateTimeWithTimezone(ticket.receivedAt)}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-xs text-gray-600">{displayValue(getSymptom(ticket))}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-xs text-gray-600">{ticket.repairDetail}</td>
+                  <td className="whitespace-nowrap px-4 py-3 text-xs text-gray-600">{displayValue(getTechnicianLabel(ticket))}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       </section>
+
+      {ticketFilterPopover && (
+        <>
+          <div className="fixed inset-0 z-[40]" onClick={() => setTicketFilterPopover(null)} />
+          <div
+            className="fixed z-[50] w-max rounded-xl border border-gray-200 bg-white p-3 shadow-lg"
+            style={{
+              top: ticketFilterPopover.rect.bottom + 6,
+              ...(ticketFilterPopover.rect.left + 260 > window.innerWidth
+                ? { right: Math.max(8, window.innerWidth - ticketFilterPopover.rect.right) }
+                : { left: ticketFilterPopover.rect.left }),
+            }}
+          >
+            {renderTicketFilterContent(ticketFilterPopover.col)}
+          </div>
+        </>
+      )}
     </div>
   )
 }
