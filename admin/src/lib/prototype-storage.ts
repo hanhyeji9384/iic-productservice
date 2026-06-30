@@ -136,6 +136,15 @@ export function addPrototypeTicket(ticket: Ticket) {
   writeJson(EXTRA_TICKETS_KEY, [ticket, ...extras])
 }
 
+export function updatePrototypeTicket(ticketNo: string, patch: Partial<Ticket>) {
+  const existing = getTicketsWithExtras().find(ticket => ticket.ticketNo === ticketNo)
+  if (!existing) return
+
+  const updatedTicket = { ...existing, ...patch }
+  const extras = getExtraTickets().filter(item => item.ticketNo !== ticketNo)
+  writeJson(EXTRA_TICKETS_KEY, [updatedTicket, ...extras])
+}
+
 function getStoredComponentReturns() {
   return readJson<ComponentReturn[]>(COMPONENT_RETURNS_KEY, [])
 }

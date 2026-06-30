@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { AlertTriangle, ArrowLeft, Barcode, CheckCircle2, ChevronDown, Circle, ExternalLink, History, Mail, MessageSquare, Package, RotateCcw, Search, Send } from 'lucide-react'
 import { BRANCHES, MEMBERS, STORES } from '@/lib/mock-data'
-import { createComponentReturnFromTicket, getComponentReturns, getCustomersWithOverrides, getTicketsWithExtras } from '@/lib/prototype-storage'
+import { createComponentReturnFromTicket, getComponentReturns, getCustomersWithOverrides, getTicketsWithExtras, updatePrototypeTicket } from '@/lib/prototype-storage'
 import { COMPONENT_TYPE_OPTIONS } from '@/lib/component-return'
 import { formatCurrency, formatRepairChargeType, getSoDocumentInfo } from '@/lib/ticket-so'
 import type { ComponentType, PaymentCompleted, Ticket, TicketReceptionTag, TicketStatus } from '@/lib/types'
@@ -24,7 +24,7 @@ const STATUS_META: Record<TicketStatus, { label: string; className: string }> = 
   SHIPPED:           { label: '출고 완료',        className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   CLOSED:            { label: '완료',             className: 'bg-gray-100 text-gray-600 border-gray-200' },
   CANCELED:          { label: '취소',             className: 'bg-red-50 text-red-600 border-red-200' },
-  PICKUP_WAITING:    { label: '수령 대기',        className: 'bg-violet-50 text-violet-700 border-violet-200' },
+  PICKUP_WAITING:    { label: '회수 대기 중',      className: 'bg-violet-50 text-violet-700 border-violet-200' },
 }
 
 const PAYMENT_META: Record<PaymentCompleted, string> = { Y: '완료', N: '미완료', C: '취소' }
@@ -47,10 +47,32 @@ type MessageLog = {
   status: string
 }
 
+type ReceptionEditForm = {
+  reRepairYn: 'Y' | 'N'
+  urgentRepairYn: 'Y' | 'N'
+  pickupTrackingNo: string
+  serviceCoupon: string
+  purchaseProofType: NonNullable<Ticket['purchaseProofType']>
+  componentType: string
+  purchaseDate: string
+  purchasePlace: string
+  customerRequest: string
+}
+
 const TEMPLATE_KIND_LABEL: Record<TemplateKind, string> = {
   AUTO: '자동',
   MANUAL: '수동',
 }
+
+const PURCHASE_PROOF_OPTIONS: Array<{ value: ReceptionEditForm['purchaseProofType']; label: string }> = [
+  { value: '-', label: '-' },
+  { value: 'MEMBERSHIP', label: '멤버십' },
+  { value: 'WARRANTY_CARD', label: '보증카드' },
+  { value: 'RECEIPT', label: '구매 영수증' },
+  { value: 'OTHER', label: '기타' },
+]
+
+const COMPONENT_EDIT_OPTIONS = ['-', '케이스', '보증카드', '렌즈', '안경닦이', '충전 케이스', '기타']
 
 const MESSAGE_TEMPLATES: MessageTemplate[] = [
   { id: '024040000393', channel: 'kakao', kind: 'AUTO',   title: '[판정] 무상 수리 안내',       stage: '판정' },
@@ -145,13 +167,23 @@ function isGlobalTicket(ticket: Ticket) {
   return ticket.branchCode === 'C1002' || /Global|US|DHL|FedEx/i.test(`${ticket.receptionPlace} ${ticket.shippingMethod}`)
 }
 
+function getAutoPickupTrackingNo(ticket: Ticket) {
+  const carrier = isGlobalTicket(ticket) ? 'DHL' : 'CJ'
+  const numericSeed = ticket.ticketNo.replace(/\D/g, '')
+  if (carrier === 'DHL') {
+    return `DHL JD${numericSeed.slice(-14).padStart(14, '0')}`
+  }
+  return `CJ ${numericSeed.slice(-12).padStart(12, '0')}`
+}
+
 function getPickupTrackingNo(ticket: Ticket) {
   if (ticket.pickupTrackingNo) return ticket.pickupTrackingNo
   const shouldHavePickup = ticket.reRepairYn === 'Y' || getReceptionMethod(ticket) === 'house' || ticket.status === 'PICKUP_WAITING'
   if (!shouldHavePickup) return null
-  const carrier = isGlobalTicket(ticket) ? 'DHL' : 'CJ'
-  const trackingNo = ticket.trackingNo || (carrier === 'DHL' ? 'JD014600012345678901' : '364892103341')
-  return `${carrier} ${trackingNo}`
+  if (ticket.trackingNo) {
+    return `${isGlobalTicket(ticket) ? 'DHL' : 'CJ'} ${ticket.trackingNo}`
+  }
+  return getAutoPickupTrackingNo(ticket)
 }
 
 function getUrgentRepairYn(ticket: Ticket) {
@@ -170,6 +202,13 @@ function getPurchaseProofType(ticket: Ticket) {
   if (ticket.purchaseProofType) return labelMap[ticket.purchaseProofType]
   return /온라인|online|my account/i.test(`${ticket.receptionTitle ?? ''} ${ticket.receptionPlace}`)
     ? '멤버십'
+    : '-'
+}
+
+function getPurchaseProofValue(ticket: Ticket): NonNullable<Ticket['purchaseProofType']> {
+  if (ticket.purchaseProofType) return ticket.purchaseProofType
+  return /온라인|online|my account/i.test(`${ticket.receptionTitle ?? ''} ${ticket.receptionPlace}`)
+    ? 'MEMBERSHIP'
     : '-'
 }
 
@@ -344,18 +383,24 @@ function SectionCard({
   children,
   editLabel = '수정',
   editable = true,
+  onEdit,
 }: {
   title: string
   children: React.ReactNode
   editLabel?: string
   editable?: boolean
+  onEdit?: () => void
 }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
         <h3 className="text-xs font-semibold text-gray-700">{title}</h3>
         {editable && (
-          <button className="text-xs text-gray-400 hover:text-gray-600 transition-colors px-2 py-1 rounded hover:bg-gray-50">
+          <button
+            type="button"
+            onClick={onEdit}
+            className="text-xs text-gray-400 hover:text-gray-600 transition-colors px-2 py-1 rounded hover:bg-gray-50"
+          >
             {editLabel}
           </button>
         )}
@@ -642,6 +687,9 @@ export function TicketDetailPage() {
   const [selectedComponentType, setSelectedComponentType] = useState<ComponentType>('NONE')
   const [toast, setToast] = useState<{ message: string; ok: boolean } | null>(null)
   const [componentReturnCreated, setComponentReturnCreated] = useState(false)
+  const [receptionEditOpen, setReceptionEditOpen] = useState(false)
+  const [receptionEditForm, setReceptionEditForm] = useState<ReceptionEditForm | null>(null)
+  const [, setTicketRevision] = useState(0)
   const toastTimerRef = useRef<number | null>(null)
   const ticket = getTicketsWithExtras().find(t => t.ticketNo === ticketNo)
   const autoPrintRequested = (location.state as { autoPrintBarcodeOnce?: boolean } | null)?.autoPrintBarcodeOnce === true
@@ -684,6 +732,7 @@ export function TicketDetailPage() {
     )
   }
 
+  const currentTicket = ticket
   const statusMeta = STATUS_META[ticket.status]
   const soInfo = getSoDocumentInfo(ticket)
   const branchLabel = BRANCHES.find(b => b.code === ticket.branchCode)?.name ?? ticket.branchCode
@@ -742,6 +791,61 @@ export function TicketDetailPage() {
     navigate(`/${langCode}/shipping/component-returns`, {
       state: { componentReturnId: record.id },
     })
+  }
+
+  function openReceptionEdit() {
+    setReceptionEditForm({
+      reRepairYn: currentTicket.reRepairYn ?? 'N',
+      urgentRepairYn: urgentRepairYn as 'Y' | 'N',
+      pickupTrackingNo: pickupTrackingNo ?? '',
+      serviceCoupon: currentTicket.serviceCoupon ?? '',
+      purchaseProofType: getPurchaseProofValue(currentTicket),
+      componentType: currentTicket.componentType ?? (componentType === '-' ? '' : componentType),
+      purchaseDate: currentTicket.purchaseDate ?? '2026-05-12',
+      purchasePlace: currentTicket.purchasePlace ?? 'GENTLE MONSTER 공식 온라인 스토어',
+      customerRequest,
+    })
+    setReceptionEditOpen(true)
+  }
+
+  function setReceptionFormValue<K extends keyof ReceptionEditForm>(key: K, value: ReceptionEditForm[K]) {
+    setReceptionEditForm(prev => {
+      if (!prev) return prev
+      const next = { ...prev, [key]: value }
+      if (key === 'reRepairYn' && value === 'Y') {
+        next.urgentRepairYn = 'Y'
+        if (!next.pickupTrackingNo.trim()) {
+          next.pickupTrackingNo = getAutoPickupTrackingNo(currentTicket)
+        }
+      }
+      return next
+    })
+  }
+
+  function saveReceptionEdit() {
+    if (!receptionEditForm) return
+    const isReRepair = receptionEditForm.reRepairYn === 'Y'
+    const pickupNo = receptionEditForm.pickupTrackingNo.trim() || (isReRepair ? getAutoPickupTrackingNo(currentTicket) : '')
+
+    updatePrototypeTicket(currentTicket.ticketNo, {
+      reRepairYn: receptionEditForm.reRepairYn,
+      urgentRepairYn: isReRepair ? 'Y' : receptionEditForm.urgentRepairYn,
+      pickupTrackingNo: pickupNo || null,
+      serviceCoupon: receptionEditForm.serviceCoupon.trim() || null,
+      purchaseProofType: receptionEditForm.purchaseProofType,
+      componentType: receptionEditForm.componentType.trim() || null,
+      purchaseDate: receptionEditForm.purchaseDate.trim() || null,
+      purchasePlace: receptionEditForm.purchasePlace.trim() || null,
+      customerRequest: receptionEditForm.customerRequest.trim() || null,
+      status: isReRepair ? 'PICKUP_WAITING' : currentTicket.status,
+    })
+
+    setReceptionEditOpen(false)
+    setTicketRevision(revision => revision + 1)
+    showToast(isReRepair
+      ? '재수리 접수 정보가 저장되었습니다. 회수 대기 중 상태와 픽업 운송장이 적용되었습니다.'
+      : '접수 정보가 저장되었습니다.'
+    )
   }
 
   const tabs: { id: Tab; label: string }[] = [
@@ -810,6 +914,157 @@ export function TicketDetailPage() {
                 className="inline-flex items-center justify-center rounded-lg bg-black px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-gray-800"
               >
                 생성
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+      {receptionEditOpen && receptionEditForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/35 px-4 py-6">
+          <button
+            type="button"
+            aria-label="모달 닫기"
+            className="absolute inset-0 cursor-default"
+            onClick={() => setReceptionEditOpen(false)}
+          />
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="접수 정보 수정"
+            className="relative z-10 flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl"
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-6 py-5">
+              <div>
+                <p className="text-[11px] font-medium text-gray-400">접수 정보</p>
+                <h2 className="mt-1 text-lg font-bold text-gray-900">접수 정보 수정</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReceptionEditOpen(false)}
+                className="rounded-full px-2 py-1 text-xl leading-none text-gray-300 transition-colors hover:bg-gray-50 hover:text-gray-600"
+                aria-label="닫기"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="overflow-y-auto px-6 py-5">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <label className="space-y-1.5">
+                  <span className="text-[11px] font-semibold text-gray-400">재수리 여부</span>
+                  <select
+                    value={receptionEditForm.reRepairYn}
+                    onChange={event => setReceptionFormValue('reRepairYn', event.target.value as 'Y' | 'N')}
+                    className="h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-800 outline-none transition-colors focus:border-gray-400"
+                  >
+                    <option value="N">N</option>
+                    <option value="Y">Y</option>
+                  </select>
+                </label>
+                <label className="space-y-1.5">
+                  <span className="text-[11px] font-semibold text-gray-400">긴급수리 여부</span>
+                  <select
+                    value={receptionEditForm.urgentRepairYn}
+                    disabled={receptionEditForm.reRepairYn === 'Y'}
+                    onChange={event => setReceptionFormValue('urgentRepairYn', event.target.value as 'Y' | 'N')}
+                    className="h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-800 outline-none transition-colors focus:border-gray-400 disabled:bg-gray-50 disabled:text-gray-400"
+                  >
+                    <option value="N">N</option>
+                    <option value="Y">Y</option>
+                  </select>
+                </label>
+                <label className="space-y-1.5">
+                  <span className="text-[11px] font-semibold text-gray-400">픽업 운송장 No.</span>
+                  <input
+                    value={receptionEditForm.pickupTrackingNo}
+                    onChange={event => setReceptionFormValue('pickupTrackingNo', event.target.value)}
+                    placeholder={getAutoPickupTrackingNo(currentTicket)}
+                    className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-300 focus:border-gray-400"
+                  />
+                </label>
+                <label className="space-y-1.5">
+                  <span className="text-[11px] font-semibold text-gray-400">서비스쿠폰</span>
+                  <input
+                    value={receptionEditForm.serviceCoupon}
+                    onChange={event => setReceptionFormValue('serviceCoupon', event.target.value)}
+                    placeholder="-"
+                    className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-300 focus:border-gray-400"
+                  />
+                </label>
+                <label className="space-y-1.5">
+                  <span className="text-[11px] font-semibold text-gray-400">구매증빙 유형</span>
+                  <select
+                    value={receptionEditForm.purchaseProofType}
+                    onChange={event => setReceptionFormValue('purchaseProofType', event.target.value as ReceptionEditForm['purchaseProofType'])}
+                    className="h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-800 outline-none transition-colors focus:border-gray-400"
+                  >
+                    {PURCHASE_PROOF_OPTIONS.map(option => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="space-y-1.5">
+                  <span className="text-[11px] font-semibold text-gray-400">구성품 유형</span>
+                  <select
+                    value={receptionEditForm.componentType || '-'}
+                    onChange={event => setReceptionFormValue('componentType', event.target.value === '-' ? '' : event.target.value)}
+                    className="h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-800 outline-none transition-colors focus:border-gray-400"
+                  >
+                    {COMPONENT_EDIT_OPTIONS.map(option => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="space-y-1.5">
+                  <span className="text-[11px] font-semibold text-gray-400">구매일</span>
+                  <input
+                    type="date"
+                    value={receptionEditForm.purchaseDate}
+                    onChange={event => setReceptionFormValue('purchaseDate', event.target.value)}
+                    className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm text-gray-800 outline-none transition-colors focus:border-gray-400"
+                  />
+                </label>
+                <label className="space-y-1.5">
+                  <span className="text-[11px] font-semibold text-gray-400">구매처</span>
+                  <input
+                    value={receptionEditForm.purchasePlace}
+                    onChange={event => setReceptionFormValue('purchasePlace', event.target.value)}
+                    className="h-11 w-full rounded-xl border border-gray-200 px-3 text-sm text-gray-800 outline-none transition-colors focus:border-gray-400"
+                  />
+                </label>
+                <label className="space-y-1.5 md:col-span-2">
+                  <span className="text-[11px] font-semibold text-gray-400">고객 요청사항</span>
+                  <textarea
+                    value={receptionEditForm.customerRequest}
+                    onChange={event => setReceptionFormValue('customerRequest', event.target.value)}
+                    rows={4}
+                    className="w-full resize-none rounded-xl border border-gray-200 px-3 py-3 text-sm text-gray-800 outline-none transition-colors focus:border-gray-400"
+                  />
+                </label>
+              </div>
+
+              {receptionEditForm.reRepairYn === 'Y' && (
+                <div className="mt-4 rounded-xl border border-violet-100 bg-violet-50 px-4 py-3 text-xs leading-5 text-violet-700">
+                  저장 시 상태는 <strong>회수 대기 중</strong>으로 변경되고, 긴급수리 여부는 <strong>Y</strong>로 자동 저장됩니다.
+                  KR 온라인은 CJ, 글로벌은 DHL 픽업 운송장 기준으로 적용됩니다.
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-gray-100 px-6 py-4">
+              <button
+                type="button"
+                onClick={() => setReceptionEditOpen(false)}
+                className="inline-flex h-10 items-center justify-center rounded-xl border border-gray-200 px-4 text-xs font-semibold text-gray-600 transition-colors hover:bg-gray-50"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={saveReceptionEdit}
+                className="inline-flex h-10 items-center justify-center rounded-xl bg-gray-900 px-5 text-xs font-semibold text-white transition-colors hover:bg-gray-700"
+              >
+                저장
               </button>
             </div>
           </section>
@@ -961,7 +1216,7 @@ export function TicketDetailPage() {
                 <div className="space-y-4">
 
                   {/* 접수 정보 카드 */}
-                  <SectionCard title="접수 정보">
+                  <SectionCard title="접수 정보" onEdit={openReceptionEdit}>
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
                       <Field label="접수일" value={`${ticket.receivedAt} (KST)`} />
                       <Field label="접수처 유형" value={receptionChannel} />
