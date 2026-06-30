@@ -187,6 +187,9 @@ export function PartsPage() {
   const [bulkRegisterOpen, setBulkRegisterOpen] = useState(false)
   const [bulkUpdateOpen, setBulkUpdateOpen] = useState(false)
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkSpec, setBulkSpec] = useState('')
+  const [bulkColor, setBulkColor] = useState('')
+  const [bulkStorageLocation, setBulkStorageLocation] = useState('')
   const [historyPage, setHistoryPage] = useState(1)
 
   useEffect(() => {
@@ -194,6 +197,13 @@ export function PartsPage() {
     if (activeBranch) return
     setActiveBranch(defaultBranchCode)
   }, [activeBranch, defaultBranchCode])
+
+  useEffect(() => {
+    if (selected.size > 0) return
+    setBulkSpec('')
+    setBulkColor('')
+    setBulkStorageLocation('')
+  }, [selected.size])
 
   const effectiveBranch = activeBranch || defaultBranchCode
   const branchParts = useMemo(() =>
@@ -248,6 +258,7 @@ export function PartsPage() {
   const paginatedLogs = partChangeLogs.slice((historyPage - 1) * HISTORY_PER_PAGE, historyPage * HISTORY_PER_PAGE)
   const allPageSelected = paginated.length > 0 && paginated.every(part => selected.has(part.id))
   const somePageSelected = paginated.some(part => selected.has(part.id)) && !allPageSelected
+  const hasBulkFieldChanges = Boolean(bulkSpec.trim() || bulkColor || bulkStorageLocation.trim())
 
   function toggleSelectAll() {
     if (allPageSelected) {
@@ -302,6 +313,7 @@ export function PartsPage() {
     setAppliedColumnFilters({})
     setPage(1)
     setSelected(new Set())
+    clearBulkEditFields()
     setActiveBranch(defaultBranchCode)
     setBulkRegisterOpen(false)
     setBulkUpdateOpen(false)
@@ -311,6 +323,13 @@ export function PartsPage() {
     setActiveBranch(branchCode)
     setPage(1)
     setSelected(new Set())
+    clearBulkEditFields()
+  }
+
+  function clearBulkEditFields() {
+    setBulkSpec('')
+    setBulkColor('')
+    setBulkStorageLocation('')
   }
 
   function handleExport() {
@@ -423,6 +442,23 @@ export function PartsPage() {
     selected.forEach(id => deletePart(id))
     setUploadResult(`${selected.size}개 부속품을 삭제했습니다.`)
     setSelected(new Set())
+    clearBulkEditFields()
+  }
+
+  function handleSelectedBulkUpdate() {
+    if (selected.size === 0 || !hasBulkFieldChanges) return
+    const updates = parts
+      .filter(part => selected.has(part.id))
+      .map(part => ({
+        partCode: part.partCode,
+        specification: bulkSpec.trim() || undefined,
+        color: bulkColor || undefined,
+        storageLocation: bulkStorageLocation.trim() || undefined,
+      }))
+    const changedCount = updatePartManagementFields(updates)
+    setUploadResult(`${changedCount}건 변경 완료`)
+    setSelected(new Set())
+    clearBulkEditFields()
   }
 
   const tabs = [
@@ -631,6 +667,7 @@ export function PartsPage() {
               onClick={() => {
                 setActiveTab(key)
                 setSelected(new Set())
+                clearBulkEditFields()
                 setBulkRegisterOpen(false)
                 setBulkUpdateOpen(false)
               }}
@@ -862,9 +899,49 @@ export function PartsPage() {
 
         {activeTab === 'list' && selected.size > 0 && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
-            <div className="flex items-center gap-4 bg-gray-900 text-white rounded-2xl px-5 py-3.5 shadow-2xl border border-gray-700">
+            <div className="flex items-center gap-3 bg-gray-900 text-white rounded-2xl px-4 py-3.5 shadow-2xl border border-gray-700">
               <span className="text-sm font-semibold whitespace-nowrap">{selected.size}개 선택</span>
               <div className="w-px h-5 bg-gray-600" />
+              <label className="flex items-center gap-2 text-xs text-gray-300">
+                규격
+                <input
+                  type="text"
+                  value={bulkSpec}
+                  onChange={event => setBulkSpec(event.target.value)}
+                  placeholder="유지"
+                  className="h-8 w-28 rounded-lg border border-gray-700 bg-white px-2.5 text-xs text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-white/30"
+                />
+              </label>
+              <label className="flex items-center gap-2 text-xs text-gray-300">
+                컬러
+                <select
+                  value={bulkColor}
+                  onChange={event => setBulkColor(event.target.value)}
+                  className="h-8 w-28 rounded-lg border border-gray-700 bg-white px-2.5 text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-white/30"
+                >
+                  <option value="">유지</option>
+                  {colors.map(color => (
+                    <option key={color} value={color}>{color}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex items-center gap-2 text-xs text-gray-300">
+                보관위치
+                <input
+                  type="text"
+                  value={bulkStorageLocation}
+                  onChange={event => setBulkStorageLocation(event.target.value)}
+                  placeholder="유지"
+                  className="h-8 w-32 rounded-lg border border-gray-700 bg-white px-2.5 text-xs text-gray-900 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-white/30"
+                />
+              </label>
+              <button
+                onClick={handleSelectedBulkUpdate}
+                disabled={!hasBulkFieldChanges}
+                className="px-4 py-1.5 bg-white text-gray-900 text-sm font-semibold rounded-xl hover:bg-gray-100 disabled:cursor-not-allowed disabled:bg-gray-700 disabled:text-gray-400 transition-colors whitespace-nowrap"
+              >
+                적용
+              </button>
               <button
                 onClick={handleBulkDelete}
                 className="flex items-center gap-1.5 px-4 py-1.5 bg-red-500/10 text-red-200 text-sm font-semibold rounded-xl hover:bg-red-500/20 hover:text-red-100 transition-colors whitespace-nowrap"
@@ -873,7 +950,10 @@ export function PartsPage() {
                 선택 삭제
               </button>
               <button
-                onClick={() => setSelected(new Set())}
+                onClick={() => {
+                  setSelected(new Set())
+                  clearBulkEditFields()
+                }}
                 className="p-1.5 text-gray-400 hover:text-white transition-colors"
               >
                 <X className="w-4 h-4" />
