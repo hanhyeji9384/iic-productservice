@@ -10,7 +10,6 @@ import { RolesPage } from '@/pages/roles'
 import { RolesTbdPage } from '@/pages/roles-tbd'
 import { PlaceholderPage } from '@/pages/placeholder'
 import { ProductsPage } from '@/pages/products'
-import { ProductNewPage } from '@/pages/product-new'
 import { PartsPage } from '@/pages/parts'
 import { PartNewPage } from '@/pages/part-new'
 import { StockPage } from '@/pages/stock'
@@ -78,10 +77,6 @@ export default function App() {
           {/* 마스터 관리 */}
           <Route path="products" element={<ProductsPage mode="list" />} />
           <Route path="product-management" element={<ProductsPage mode="management" />} />
-          <Route path="product-management/new" element={<ProductNewPage />} />
-          <Route path="product-management/:id/edit" element={<ProductNewPage />} />
-          <Route path="products/new" element={<ProductNewPage />} />
-          <Route path="products/:id/edit" element={<ProductNewPage />} />
           <Route path="parts" element={<PartsPage />} />
           <Route path="parts/new" element={<PartNewPage />} />
           <Route path="parts/:id/edit" element={<PartsEditRedirect />} />

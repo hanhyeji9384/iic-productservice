@@ -1,11 +1,11 @@
 import { useEffect, useState, useMemo, useRef, type ChangeEvent } from 'react'
-import { Link, useParams } from 'react-router-dom'
 import { X, ArrowUp, ArrowDown, ArrowUpDown, Download, Check, Clock, List, Filter, FileDown, Upload, RefreshCw } from 'lucide-react'
 import { Pagination } from '@/components/pagination'
 import { SummaryCell } from '@/components/summary-cell'
 import { downloadCsv } from '@/lib/csv'
 import { useProducts } from '@/lib/products-context'
 import { BRANCHES } from '@/lib/mock-data'
+import { I18nText, useI18nLabel } from '@/lib/i18n-inspector'
 import type { Product, ProductChangeLog, SalesStatus } from '@/lib/types'
 
 function fmtRetention(dateStr: string): string {
@@ -25,8 +25,38 @@ const ITEMS_PER_PAGE = 15
 const HISTORY_PER_PAGE = 15
 const SALES_STATUSES: SalesStatus[] = ['사용중', '종료 예정', '판매 종료 (P)', '판매 종료 (C)']
 
+const SALES_STATUS_KEYS: Record<SalesStatus, string> = {
+  '사용중': 'products.sales_status.active',
+  '종료 예정': 'products.sales_status.ending_soon',
+  '판매 종료 (P)': 'products.sales_status.discontinued_p',
+  '판매 종료 (C)': 'products.sales_status.discontinued_c',
+}
+
 const CHANGE_TYPE_STYLES: Record<ProductChangeLog['changeType'], { bg: string; label: string }> = {
   update: { bg: 'bg-blue-50 text-blue-700', label: '수정' },
+}
+
+const COMMON_COL_KEYS: Record<string, string> = {
+  brandCategory: 'common.label.brand',
+  barcode: 'common.label.barcode',
+  productCode: 'common.label.product_code',
+  name: 'common.label.product_name',
+  midCategory: 'common.label.middle_category',
+  subCategory: 'common.label.sub_category',
+  releaseDate: 'common.label.release_date',
+  salesStatus: 'common.label.sales_status',
+  stockAvailable: 'common.label.stock_available',
+  isRestorationRepair: 'products.label.restoration_repair',
+  hasDecoration: 'products.label.has_decoration',
+  factory1: 'products.label.factory_1',
+  factory2: 'products.label.factory_2',
+  factory3: 'products.label.factory_3',
+  partsRetentionPeriod: 'products.label.parts_retention_period',
+  psOfficeQuantity: 'products.label.ps_office_quantity',
+  threePlQuantity: 'products.label.three_pl_quantity',
+  isSafetyStock: 'products.label.safety_stock_status',
+  netWeight: 'products.label.net_weight',
+  netWeightUnit: 'products.label.net_weight_unit',
 }
 
 function isRestorationRepairProduct(product: Product) {
@@ -177,8 +207,7 @@ function parseProductManagementUpdates(text: string) {
 }
 
 export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
-  const { langCode } = useParams()
-  const pfx = `/${langCode}`
+  const i18nLabel = useI18nLabel()
   const isManagementMode = mode === 'management'
   const uploadInputRef = useRef<HTMLInputElement>(null)
   const { products, productChangeLogs, updateProductManagementFields } = useProducts()
@@ -525,7 +554,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           <div className="space-y-1 max-h-64 overflow-y-auto">
             <button onClick={() => applyFilter({ [col]: undefined })}
               className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters[col] ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >전체</button>
+            >
+              <I18nText i18nKey="common.option.all" display="tooltip">전체</I18nText>
+            </button>
             {options.map(option => (
               <button key={option} onClick={() => applyFilter({ [col]: option })}
                 className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters[col] === option ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
@@ -545,13 +576,25 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           <div className="space-y-1">
             <button onClick={() => applyFilter({ [labelKey]: undefined })}
               className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters[labelKey] ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >전체</button>
+            >
+              <I18nText i18nKey="common.option.all" display="tooltip">전체</I18nText>
+            </button>
             <button onClick={() => applyFilter({ [labelKey]: 'true' })}
               className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters[labelKey] === 'true' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >{trueLabel}</button>
+            >
+              {col === 'isSafetyStock' ? (
+                <I18nText i18nKey="products.value.shortage" display="tooltip">{trueLabel}</I18nText>
+              ) : (
+                <I18nText i18nKey="common.value.y" display="tooltip">{trueLabel}</I18nText>
+              )}
+            </button>
             <button onClick={() => applyFilter({ [labelKey]: 'false' })}
               className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters[labelKey] === 'false' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >{falseLabel}</button>
+            >
+              {col === 'isSafetyStock' ? falseLabel : (
+                <I18nText i18nKey="common.value.n" display="tooltip">{falseLabel}</I18nText>
+              )}
+            </button>
           </div>
         )
       }
@@ -560,11 +603,15 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           <div className="space-y-1">
             <button onClick={() => applyFilter({ salesStatus: undefined })}
               className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.salesStatus ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >전체</button>
+            >
+              <I18nText i18nKey="common.option.all" display="tooltip">전체</I18nText>
+            </button>
             {SALES_STATUSES.map(status => (
               <button key={status} onClick={() => applyFilter({ salesStatus: status })}
                 className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.salesStatus === status ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-              >{status}</button>
+              >
+                <I18nText i18nKey={SALES_STATUS_KEYS[status]} display="tooltip">{status}</I18nText>
+              </button>
             ))}
           </div>
         )
@@ -576,7 +623,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           <div className="space-y-1">
             <button onClick={() => applyFilter({ [col]: undefined })}
               className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters[col] ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >전체</button>
+            >
+              <I18nText i18nKey="common.option.all" display="tooltip">전체</I18nText>
+            </button>
             {options.map(f => (
               <button key={f} onClick={() => applyFilter({ [col]: f })}
                 className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters[col] === f ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
@@ -588,27 +637,33 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
       case 'releaseDate':
         return (
           <div className="space-y-2">
-            <p className="text-xs text-gray-500 font-medium">출시일 범위</p>
+            <p className="text-xs text-gray-500 font-medium">
+              <I18nText i18nKey="common.label.release_date" display="tooltip">출시일</I18nText>
+            </p>
             <div className="space-y-1.5">
               <input type="date" value={columnFilters.releaseDateFrom ?? ''}
                 onChange={e => setColumnFilters(prev => ({ ...prev, releaseDateFrom: e.target.value }))}
                 className="w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-400"
-                placeholder="시작" />
+                placeholder={i18nLabel('common.label.start_date', '시작일')} />
               <span className="block text-center text-gray-300 text-xs">~</span>
               <input type="date" value={columnFilters.releaseDateTo ?? ''}
                 onChange={e => setColumnFilters(prev => ({ ...prev, releaseDateTo: e.target.value }))}
                 className="w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-400"
-                placeholder="종료" />
+                placeholder={i18nLabel('common.label.end_date', '종료일')} />
             </div>
             <div className="flex gap-1.5 pt-1">
               {(columnFilters.releaseDateFrom || columnFilters.releaseDateTo) && (
                 <button onClick={() => applyFilter({ releaseDateFrom: undefined, releaseDateTo: undefined })}
                   className="flex-1 text-center text-xs text-gray-400 hover:text-gray-600 transition-colors py-1.5 border border-gray-200 rounded-lg"
-                >초기화</button>
+                >
+                  <I18nText i18nKey="common.button.reset" display="tooltip">초기화</I18nText>
+                </button>
               )}
               <button onClick={applyCurrentFilters}
                 className="flex-1 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors"
-              >적용</button>
+              >
+                <I18nText i18nKey="common.button.apply" display="tooltip">적용</I18nText>
+              </button>
             </div>
           </div>
         )
@@ -617,7 +672,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           <div className="space-y-1 max-h-64 overflow-y-auto">
             <button onClick={() => applyFilter({ partsRetention: undefined })}
               className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.partsRetention ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >전체</button>
+            >
+              <I18nText i18nKey="common.option.all" display="tooltip">전체</I18nText>
+            </button>
             {partsRetentionOptions.map(v => (
               <button key={v} onClick={() => applyFilter({ partsRetention: v })}
                 className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.partsRetention === v ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
@@ -628,7 +685,12 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
       case 'productCode':
       case 'barcode':
       case 'name': {
-        const placeholder = col === 'productCode' ? '제품 코드 검색...' : col === 'barcode' ? '바코드 검색...' : '제품명 검색...'
+        const placeholder =
+          col === 'productCode'
+            ? i18nLabel('products.placeholder.product_code_search', '제품 코드 검색...')
+            : col === 'barcode'
+              ? i18nLabel('products.placeholder.barcode_search', '바코드 검색...')
+              : i18nLabel('products.placeholder.product_name_search', '제품명 검색...')
         return (
           <div className="w-44 space-y-1.5">
             <input type="text" value={columnFilters[col] ?? ''}
@@ -639,10 +701,14 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
             <div className="flex gap-1.5">
               {columnFilters[col] && (
                 <button onClick={() => applyFilter({ [col]: undefined })}
-                  className="flex-1 text-xs text-gray-400 hover:text-gray-600 py-1.5 border border-gray-200 rounded-lg transition-colors">지우기</button>
+                  className="flex-1 text-xs text-gray-400 hover:text-gray-600 py-1.5 border border-gray-200 rounded-lg transition-colors">
+                  <I18nText i18nKey="common.button.clear" display="tooltip">지우기</I18nText>
+                </button>
               )}
               <button onClick={applyCurrentFilters}
-                className="flex-1 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors">적용</button>
+                className="flex-1 px-3 py-1.5 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors">
+                <I18nText i18nKey="common.button.apply" display="tooltip">적용</I18nText>
+              </button>
             </div>
           </div>
         )
@@ -731,7 +797,20 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
 
         {/* 헤더 */}
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold text-gray-900">{isManagementMode ? '제품 관리' : '제품 리스트'}</h1>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">
+              <I18nText i18nKey={isManagementMode ? 'nav.master_management.product_management' : 'nav.master_management.products'} display="tooltip">
+                {isManagementMode ? '제품 관리' : '제품 리스트'}
+              </I18nText>
+            </h1>
+            {isManagementMode && (
+              <p className="mt-1 text-sm text-gray-500">
+                <I18nText i18nKey="products.management.description">
+                  제품 관리 항목을 조회하고 변경합니다.
+                </I18nText>
+              </p>
+            )}
+          </div>
           {activeTab === 'list' && (
           <div className="flex items-center gap-2">
             <button
@@ -739,14 +818,14 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
               className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors text-sm font-medium"
             >
               <RefreshCw className="w-4 h-4" />
-              새로고침
+              <I18nText i18nKey="common.button.refresh" display="tooltip">새로고침</I18nText>
             </button>
             <button
               onClick={handleExport}
               className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors text-sm font-medium"
             >
               <Download className="w-4 h-4" />
-              Excel 다운로드
+              <I18nText i18nKey="common.button.excel_download" display="tooltip">Excel 다운로드</I18nText>
             </button>
             {isManagementMode && (
               <>
@@ -759,14 +838,18 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                     }`}
                   >
                     <Upload className="w-4 h-4" />
-                    일괄 변경
+                    <I18nText i18nKey="common.button.bulk_update" display="tooltip">일괄 변경</I18nText>
                   </button>
                   {uploadOpen && (
                     <div className="absolute right-0 top-full z-50 mt-2 w-72 rounded-2xl border border-gray-200 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.16)]">
                       <div className="flex items-start justify-between gap-4 border-b border-gray-100 px-4 py-4">
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">제품 변경사항 일괄 변경</p>
-                          <p className="mt-0.5 text-xs text-gray-400">복원 가능 여부, 장식 보유 여부만 수정</p>
+                          <p className="text-sm font-semibold text-gray-900">
+                            <I18nText i18nKey="products.bulk.title" display="tooltip">제품 변경사항 일괄 변경</I18nText>
+                          </p>
+                          <p className="mt-0.5 text-xs text-gray-400">
+                            <I18nText i18nKey="products.bulk.description">복원 가능 여부, 장식 보유 여부만 수정</I18nText>
+                          </p>
                         </div>
                         <button onClick={() => setUploadOpen(false)} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition-colors">
                           <X className="w-4 h-4" />
@@ -781,7 +864,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                             <FileDown className="w-4 h-4" />
                           </span>
                           <span className="min-w-0">
-                            <span className="block text-sm font-semibold text-gray-900">업로드 템플릿 다운로드</span>
+                            <span className="block text-sm font-semibold text-gray-900">
+                              <I18nText i18nKey="common.button.template_download" display="tooltip">업로드 템플릿 다운로드</I18nText>
+                            </span>
                           </span>
                         </button>
                         <button
@@ -792,7 +877,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                             <Upload className="w-4 h-4" />
                           </span>
                           <span className="min-w-0">
-                            <span className="block text-sm font-semibold">파일 선택</span>
+                            <span className="block text-sm font-semibold">
+                              <I18nText i18nKey="common.button.file_select" display="tooltip">파일 선택</I18nText>
+                            </span>
                           </span>
                         </button>
                       </div>
@@ -820,7 +907,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
               }`}
             >
               <Icon className="w-4 h-4" />
-              {label}
+              <I18nText i18nKey={key === 'list' ? 'nav.master_management.product_management' : 'common.label.history'} display="tooltip">
+                {label}
+              </I18nText>
             </button>
           ))}
         </div>
@@ -849,7 +938,8 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
             </select>
             {hasAnyFilter && (
               <button onClick={handleReset} className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
-                <X className="w-3 h-3" />초기화
+                <X className="w-3 h-3" />
+                <I18nText i18nKey="common.button.reset" display="tooltip">초기화</I18nText>
               </button>
             )}
           </div>
@@ -892,10 +982,17 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                               onClick={() => handleSort(col.sort!)}
                               className="group flex items-center gap-1 hover:text-gray-700 transition-colors text-xs font-semibold tracking-wide"
                             >
-                              {col.label} <SortIcon col={col.sort} />
+                              <I18nText i18nKey={COMMON_COL_KEYS[col.key] ?? `products.column.${col.key}`} display="tooltip">
+                                {col.label}
+                              </I18nText>
+                              <SortIcon col={col.sort} />
                             </button>
                           ) : (
-                            <span>{col.label}</span>
+                            <span>
+                              <I18nText i18nKey={COMMON_COL_KEYS[col.key] ?? `products.column.${col.key}`} display="tooltip">
+                                {col.label}
+                              </I18nText>
+                            </span>
                           )}
                           {isFilterable && (
                             <button
@@ -923,7 +1020,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
               <tbody className="divide-y divide-gray-100">
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={tableColumns.length + (isManagementMode ? 1 : 0)} className="px-6 py-12 text-center text-sm text-gray-400">검색 결과가 없습니다.</td>
+                    <td colSpan={tableColumns.length + (isManagementMode ? 1 : 0)} className="px-6 py-12 text-center text-sm text-gray-400">
+                      <I18nText i18nKey="common.empty.no_results">조회 결과가 없습니다.</I18nText>
+                    </td>
                   </tr>
                 ) : paginated.map(p => {
                   const isSelected = selected.has(p.id)
@@ -948,21 +1047,23 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono text-gray-600">{p.barcode}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
-                          <Link to={`${pfx}/product-management/${p.id}/edit`} className="font-mono text-sm font-normal text-gray-600 underline-offset-4 hover:text-gray-950 hover:underline">
-                            {p.productCode}
-                          </Link>
+                          <span className="font-mono text-sm font-normal text-gray-600">{p.productCode}</span>
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm font-semibold text-gray-900">{p.name}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.midCategory}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.subCategory}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(isRestorationRepairProduct(p))}`}>
-                            {ynLabel(isRestorationRepairProduct(p))}
+                            <I18nText i18nKey={isRestorationRepairProduct(p) ? 'common.value.y' : 'common.value.n'} display="tooltip">
+                              {ynLabel(isRestorationRepairProduct(p))}
+                            </I18nText>
                           </span>
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(p.hasDecoration)}`}>
-                            {ynLabel(p.hasDecoration)}
+                            <I18nText i18nKey={p.hasDecoration ? 'common.value.y' : 'common.value.n'} display="tooltip">
+                              {ynLabel(p.hasDecoration)}
+                            </I18nText>
                           </span>
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.factory1}</td>
@@ -971,7 +1072,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.releaseDate}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${salesStatusBadgeClass(p.salesStatus)}`}>
-                            {p.salesStatus}
+                            <I18nText i18nKey={SALES_STATUS_KEYS[p.salesStatus]} display="tooltip">
+                              {p.salesStatus}
+                            </I18nText>
                           </span>
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{fmtRetention(p.partsRetentionPeriod)}</td>
@@ -979,7 +1082,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                         <td className="px-5 py-3.5 whitespace-nowrap text-right font-mono text-sm text-gray-700">{getThreePlQuantity(p).toLocaleString()}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
                           {hasSafetyStockShortage(p) ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-red-50 text-red-700">부족</span>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-red-50 text-red-700">
+                              <I18nText i18nKey="products.value.shortage" display="tooltip">부족</I18nText>
+                            </span>
                           ) : (
                             <span className="text-sm text-gray-300">—</span>
                           )}
@@ -998,12 +1103,16 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-700">{p.subCategory}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(isRestorationRepairProduct(p))}`}>
-                            {ynLabel(isRestorationRepairProduct(p))}
+                            <I18nText i18nKey={isRestorationRepairProduct(p) ? 'common.value.y' : 'common.value.n'} display="tooltip">
+                              {ynLabel(isRestorationRepairProduct(p))}
+                            </I18nText>
                           </span>
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(p.hasDecoration)}`}>
-                            {ynLabel(p.hasDecoration)}
+                            <I18nText i18nKey={p.hasDecoration ? 'common.value.y' : 'common.value.n'} display="tooltip">
+                              {ynLabel(p.hasDecoration)}
+                            </I18nText>
                           </span>
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.factory1}</td>
@@ -1013,7 +1122,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{fmtRetention(p.partsRetentionPeriod)}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(hasAvailableStock(p), true)}`}>
-                            {ynLabel(hasAvailableStock(p))}
+                            <I18nText i18nKey={hasAvailableStock(p) ? 'common.value.y' : 'common.value.n'} display="tooltip">
+                              {ynLabel(hasAvailableStock(p))}
+                            </I18nText>
                           </span>
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono text-gray-600">{netWeightLabel(p)}</td>
@@ -1037,17 +1148,29 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
               <table className="min-w-max w-full">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">처리 일시</th>
-                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap w-[80px]">유형</th>
-                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">대상 제품</th>
-                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50">변경 내용</th>
-                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">처리자</th>
+                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
+                      <I18nText i18nKey="common.label.processed_at" display="tooltip">처리 일시</I18nText>
+                    </th>
+                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap w-[80px]">
+                      <I18nText i18nKey="common.label.type" display="tooltip">유형</I18nText>
+                    </th>
+                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
+                      <I18nText i18nKey="common.label.target_product" display="tooltip">대상 제품</I18nText>
+                    </th>
+                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50">
+                      <I18nText i18nKey="common.label.change_summary" display="tooltip">변경 내용</I18nText>
+                    </th>
+                    <th className="px-5 py-4 text-left text-xs font-semibold text-gray-500 tracking-wide bg-gray-50/50 whitespace-nowrap">
+                      <I18nText i18nKey="common.label.changed_by" display="tooltip">처리자</I18nText>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {paginatedLogs.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">변경 이력이 없습니다.</td>
+                      <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-400">
+                        <I18nText i18nKey="common.empty.no_results">조회 결과가 없습니다.</I18nText>
+                      </td>
                     </tr>
                   ) : paginatedLogs.map(log => {
                     const style = CHANGE_TYPE_STYLES[log.changeType]
@@ -1079,38 +1202,46 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
         {isManagementMode && activeTab === 'list' && selected.size > 0 && (
           <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
             <div className="flex items-center gap-4 bg-gray-900 text-white rounded-2xl px-5 py-3.5 shadow-2xl border border-gray-700">
-              <span className="text-sm font-semibold whitespace-nowrap">{selected.size}개 선택</span>
+              <span className="text-sm font-semibold whitespace-nowrap">
+                <I18nText i18nKey="common.bulk.selected_count" display="tooltip">
+                  {selected.size}개 선택
+                </I18nText>
+              </span>
               <div className="w-px h-5 bg-gray-600" />
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400 whitespace-nowrap">장식보유여부</span>
+                <span className="text-xs text-gray-400 whitespace-nowrap">
+                  <I18nText i18nKey="products.label.has_decoration" display="tooltip">장식 보유 여부</I18nText>
+                </span>
                 <select
                   value={decorationValue}
                   onChange={e => setDecorationValue(e.target.value as BulkYnValue)}
                   className="w-24 px-2.5 py-1.5 text-sm bg-gray-800 border border-gray-600 rounded-lg outline-none focus:border-gray-400 text-white"
                 >
-                  <option value="keep">유지</option>
-                  <option value="true">Y</option>
-                  <option value="false">N</option>
+                  <option value="keep">{i18nLabel('common.value.keep', '유지')}</option>
+                  <option value="true">{i18nLabel('common.value.y', 'Y')}</option>
+                  <option value="false">{i18nLabel('common.value.n', 'N')}</option>
                 </select>
               </div>
               <div className="w-px h-5 bg-gray-600" />
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400 whitespace-nowrap">복원 가능 여부</span>
+                <span className="text-xs text-gray-400 whitespace-nowrap">
+                  <I18nText i18nKey="products.label.restoration_repair" display="tooltip">복원 가능 여부</I18nText>
+                </span>
                 <select
                   value={restorationRepairValue}
                   onChange={e => setRestorationRepairValue(e.target.value as BulkYnValue)}
                   className="w-24 px-2.5 py-1.5 text-sm bg-gray-800 border border-gray-600 rounded-lg outline-none focus:border-gray-400 text-white"
                 >
-                  <option value="keep">유지</option>
-                  <option value="true">Y</option>
-                  <option value="false">N</option>
+                  <option value="keep">{i18nLabel('common.value.keep', '유지')}</option>
+                  <option value="true">{i18nLabel('common.value.y', 'Y')}</option>
+                  <option value="false">{i18nLabel('common.value.n', 'N')}</option>
                 </select>
               </div>
               <button
                 onClick={handleBulkManagementApply}
                 className="px-4 py-1.5 bg-white text-gray-900 text-sm font-semibold rounded-xl hover:bg-gray-100 transition-colors whitespace-nowrap"
               >
-                적용
+                <I18nText i18nKey="common.button.apply" display="tooltip">적용</I18nText>
               </button>
               <button
                 onClick={() => {
@@ -1121,6 +1252,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                 className="p-1.5 text-gray-400 hover:text-white transition-colors"
               >
                 <X className="w-4 h-4" />
+                <span className="sr-only">
+                  <I18nText i18nKey="common.button.clear" display="tooltip">지우기</I18nText>
+                </span>
               </button>
             </div>
           </div>

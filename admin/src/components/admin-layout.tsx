@@ -41,7 +41,7 @@ const NAV: NavGroup[] = [
     i18nKey: 'nav.master_management',
     icon: Package,
     children: [
-      { to: '/products',           label: '제품 리스트',      i18nKey: 'nav.master_management.product_list', icon: Package },
+      { to: '/products',           label: '제품 리스트',      i18nKey: 'nav.master_management.products', icon: Package },
       { to: '/product-management', label: '제품 관리',        i18nKey: 'nav.master_management.product_management', icon: Package },
       { to: '/parts',              label: '부품 관리',        i18nKey: 'nav.master_management.parts', icon: Wrench },
       { to: '/stores',             label: '매장/거래처 관리', i18nKey: 'nav.master_management.stores', icon: Store },

@@ -25,23 +25,8 @@ type StockPatch = Partial<Pick<Product,
 
 type ProductManagementUpdate = {
   productCode: string
-  name?: string
-  barcode?: string
-  brandCategory?: string
-  midCategory?: string
-  subCategory?: string
-  factory1?: string
-  factory2?: string | null
-  factory3?: string | null
-  releaseDate?: string
-  partsRetentionPeriod?: string
   hasDecoration?: boolean
-  salesStatus?: Product['salesStatus']
-  psQuantity?: number
-  threePlQuantity?: number
   isRestorationRepair?: boolean
-  netWeight?: string
-  netWeightUnit?: string
 }
 
 type ProductsContextValue = {
@@ -166,26 +151,8 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       if (!current) return
 
       const patch: StockPatch = {}
-      if (typeof update.name === 'string') patch.name = update.name
-      if (typeof update.barcode === 'string') patch.barcode = update.barcode
-      if (typeof update.brandCategory === 'string') patch.brandCategory = update.brandCategory
-      if (typeof update.midCategory === 'string') patch.midCategory = update.midCategory
-      if (typeof update.subCategory === 'string') patch.subCategory = update.subCategory
-      if (typeof update.factory1 === 'string') patch.factory1 = update.factory1
-      if (update.factory2 !== undefined) patch.factory2 = update.factory2
-      if (update.factory3 !== undefined) patch.factory3 = update.factory3
-      if (typeof update.releaseDate === 'string') patch.releaseDate = update.releaseDate
-      if (typeof update.partsRetentionPeriod === 'string') patch.partsRetentionPeriod = update.partsRetentionPeriod
       if (typeof update.hasDecoration === 'boolean') patch.hasDecoration = update.hasDecoration
-      if (typeof update.salesStatus === 'string') patch.salesStatus = update.salesStatus
-      if (typeof update.psQuantity === 'number') {
-        patch.psQuantity = update.psQuantity
-        patch.quantity = update.psQuantity
-      }
-      if (typeof update.threePlQuantity === 'number') patch.threePlQuantity = update.threePlQuantity
       if (typeof update.isRestorationRepair === 'boolean') patch.isRestorationRepair = update.isRestorationRepair
-      if (typeof update.netWeight === 'string') patch.netWeight = update.netWeight
-      if (typeof update.netWeightUnit === 'string') patch.netWeightUnit = update.netWeightUnit
       if (Object.keys(patch).length === 0) return
 
       const updated = { ...current, ...patch }
