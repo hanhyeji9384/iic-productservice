@@ -6,6 +6,7 @@ import { downloadCsv } from '@/lib/csv'
 import { useProducts } from '@/lib/products-context'
 import { BRANCHES } from '@/lib/mock-data'
 import { I18nText, useI18nLabel } from '@/lib/i18n-inspector'
+import { PRODUCT_FACTORY_OPTIONS, PRODUCT_FACTORY_VALUES, displayProductFactory, normalizeProductFactory } from '@/lib/product-factories'
 import type { Product, ProductChangeLog, SalesStatus } from '@/lib/types'
 
 function fmtRetention(dateStr: string): string {
@@ -109,6 +110,26 @@ function netWeightUnitLabel(product: Product) {
   return product.netWeightUnit || parsed.unit || 'kg'
 }
 
+function ProductFactorySelect({
+  value,
+  onChange,
+}: {
+  value?: string | null
+  onChange: (value: string) => void
+}) {
+  return (
+    <select
+      value={normalizeProductFactory(value)}
+      onChange={event => onChange(event.target.value)}
+      className="h-8 min-w-24 rounded-lg border border-gray-200 bg-white px-2 text-xs text-gray-700 outline-none transition-colors hover:border-gray-300 focus:border-gray-500"
+    >
+      {PRODUCT_FACTORY_OPTIONS.map(option => (
+        <option key={option.value} value={option.value}>{option.label}</option>
+      ))}
+    </select>
+  )
+}
+
 function parseCsvLine(line: string) {
   const cells: string[] = []
   let current = ''
@@ -210,7 +231,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
   const i18nLabel = useI18nLabel()
   const isManagementMode = mode === 'management'
   const uploadInputRef = useRef<HTMLInputElement>(null)
-  const { products, productChangeLogs, updateProductManagementFields } = useProducts()
+  const { products, productChangeLogs, updateStockFields, updateProductManagementFields } = useProducts()
 
   const branchOptions = useMemo(() => {
     const codes = [...new Set(products.map(p => p.branchCode).filter(Boolean))] as string[]
@@ -262,9 +283,6 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
   const brandCategories = useMemo(() => [...new Set(products.map(p => p.brandCategory))].sort(), [products])
   const midCategories = useMemo(() => [...new Set(products.map(p => p.midCategory))].sort(), [products])
   const subCategories = useMemo(() => [...new Set(products.map(p => p.subCategory))].sort(), [products])
-  const factories1 = useMemo(() => [...new Set(products.map(p => p.factory1))], [products])
-  const factories2 = useMemo(() => [...new Set(products.map(p => p.factory2).filter(Boolean) as string[])], [products])
-  const factories3 = useMemo(() => [...new Set(products.map(p => p.factory3).filter(Boolean) as string[])], [products])
   const partsRetentionOptions = useMemo(() =>
     [...new Set(products.map(p => p.partsRetentionPeriod).filter(Boolean) as string[])].sort(),
     [products]
@@ -279,9 +297,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
       if (appliedColumnFilters.brandCategory && p.brandCategory !== appliedColumnFilters.brandCategory) return false
       if (appliedColumnFilters.midCategory && p.midCategory !== appliedColumnFilters.midCategory) return false
       if (appliedColumnFilters.subCategory && p.subCategory !== appliedColumnFilters.subCategory) return false
-      if (appliedColumnFilters.factory1 && p.factory1 !== appliedColumnFilters.factory1) return false
-      if (appliedColumnFilters.factory2 && p.factory2 !== appliedColumnFilters.factory2) return false
-      if (appliedColumnFilters.factory3 && p.factory3 !== appliedColumnFilters.factory3) return false
+      if (appliedColumnFilters.factory1 && normalizeProductFactory(p.factory1) !== appliedColumnFilters.factory1) return false
+      if (appliedColumnFilters.factory2 && normalizeProductFactory(p.factory2) !== appliedColumnFilters.factory2) return false
+      if (appliedColumnFilters.factory3 && normalizeProductFactory(p.factory3) !== appliedColumnFilters.factory3) return false
       if (appliedColumnFilters.isSafetyStock && hasSafetyStockShortage(p) !== (appliedColumnFilters.isSafetyStock === 'true')) return false
       if (appliedColumnFilters.hasDecoration && (p.hasDecoration ?? false) !== (appliedColumnFilters.hasDecoration === 'true')) return false
       if (appliedColumnFilters.salesStatus && p.salesStatus !== appliedColumnFilters.salesStatus) return false
@@ -304,6 +322,12 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
             ? getPsOfficeQuantity(a)
             : sortKey === 'threePlQuantity'
               ? getThreePlQuantity(a)
+            : sortKey === 'factory1'
+              ? displayProductFactory(a.factory1)
+            : sortKey === 'factory2'
+              ? displayProductFactory(a.factory2)
+            : sortKey === 'factory3'
+              ? displayProductFactory(a.factory3)
             : sortKey === 'netWeight'
               ? netWeightLabel(a)
             : sortKey === 'netWeightUnit'
@@ -321,6 +345,12 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
             ? getPsOfficeQuantity(b)
             : sortKey === 'threePlQuantity'
               ? getThreePlQuantity(b)
+            : sortKey === 'factory1'
+              ? displayProductFactory(b.factory1)
+            : sortKey === 'factory2'
+              ? displayProductFactory(b.factory2)
+            : sortKey === 'factory3'
+              ? displayProductFactory(b.factory3)
             : sortKey === 'netWeight'
               ? netWeightLabel(b)
             : sortKey === 'netWeightUnit'
@@ -375,9 +405,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           p.subCategory,
           isRestorationRepairProduct(p) ? 'Y' : 'N',
           ynLabel(p.hasDecoration),
-          p.factory1,
-          p.factory2 ?? '',
-          p.factory3 ?? '',
+          displayProductFactory(p.factory1),
+          displayProductFactory(p.factory2),
+          displayProductFactory(p.factory3),
           p.releaseDate,
           p.salesStatus,
           p.partsRetentionPeriod,
@@ -395,9 +425,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           p.subCategory,
           isRestorationRepairProduct(p) ? 'Y' : 'N',
           ynLabel(p.hasDecoration),
-          p.factory1,
-          p.factory2 ?? '',
-          p.factory3 ?? '',
+          displayProductFactory(p.factory1),
+          displayProductFactory(p.factory2),
+          displayProductFactory(p.factory3),
           p.releaseDate,
           p.partsRetentionPeriod,
           hasAvailableStock(p) ? 'Y' : 'N',
@@ -618,7 +648,6 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
       case 'factory1':
       case 'factory2':
       case 'factory3': {
-        const options = col === 'factory1' ? factories1 : col === 'factory2' ? factories2 : factories3
         return (
           <div className="space-y-1">
             <button onClick={() => applyFilter({ [col]: undefined })}
@@ -626,7 +655,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
             >
               <I18nText i18nKey="common.option.all" display="tooltip">전체</I18nText>
             </button>
-            {options.map(f => (
+            {PRODUCT_FACTORY_VALUES.map(f => (
               <button key={f} onClick={() => applyFilter({ [col]: f })}
                 className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters[col] === f ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
               >{f}</button>
@@ -1066,9 +1095,24 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                             </I18nText>
                           </span>
                         </td>
-                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.factory1}</td>
-                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{p.factory2 ?? '—'}</td>
-                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{p.factory3 ?? '—'}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
+                          <ProductFactorySelect
+                            value={p.factory1}
+                            onChange={value => updateStockFields(p.id, { factory1: value })}
+                          />
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
+                          <ProductFactorySelect
+                            value={p.factory2}
+                            onChange={value => updateStockFields(p.id, { factory2: value })}
+                          />
+                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap">
+                          <ProductFactorySelect
+                            value={p.factory3}
+                            onChange={value => updateStockFields(p.id, { factory3: value })}
+                          />
+                        </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.releaseDate}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${salesStatusBadgeClass(p.salesStatus)}`}>
@@ -1115,9 +1159,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                             </I18nText>
                           </span>
                         </td>
-                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.factory1}</td>
-                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{p.factory2 ?? '—'}</td>
-                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{p.factory3 ?? '—'}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{displayProductFactory(p.factory1)}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{displayProductFactory(p.factory2)}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{displayProductFactory(p.factory3)}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.releaseDate}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{fmtRetention(p.partsRetentionPeriod)}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap">

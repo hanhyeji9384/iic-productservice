@@ -924,13 +924,13 @@ function buildCustomerId(form: Form) {
 
 function shippingMethodLabel(form: Form, branchCode = form.branchCode) {
   if (form.receptionType === 'STORE') return '자체수령'
-  if (form.receptionType === 'HOME' && branchCode === 'C1002') return '해외택배(DHL)'
+  if (form.receptionType === 'HOME' && branchCode === 'C1002') return '해외택배(FedEx)'
   if (form.receptionType === 'HOME') return '택배(HQ)'
   return '-'
 }
 
 function pickupTrackingNo(branchCode: string, ticketNo: string) {
-  if (branchCode === 'C1002') return `DHL JD${ticketNo.replace(/\D/g, '').slice(-14).padStart(14, '0')}`
+  if (branchCode === 'C1002') return `FedEx ${ticketNo.replace(/\D/g, '').slice(-12).padStart(12, '0')}`
   return `CJ ${ticketNo.replace(/\D/g, '').slice(-12).padStart(12, '0')}`
 }
 
@@ -1220,6 +1220,7 @@ export function TicketNewPage() {
       serviceCoupon: null,
       urgentRepairYn: isReRepair ? 'Y' : 'N',
       purchaseProofType: isNewCustomer ? '-' : 'MEMBERSHIP',
+      purchaseInfoSource: 'ADMIN',
       componentType: null,
       customerRequest: null,
       attachments: [],

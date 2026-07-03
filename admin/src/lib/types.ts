@@ -88,6 +88,7 @@ export type Ticket = {
   serviceCoupon?: string | null
   urgentRepairYn?: 'Y' | 'N'
   purchaseProofType?: '-' | 'MEMBERSHIP' | 'WARRANTY_CARD' | 'RECEIPT' | 'OTHER'
+  purchaseInfoSource?: 'ORDER_HISTORY' | 'ADMIN'
   componentType?: string | null
   customerRequest?: string | null
   attachments?: string[]
@@ -103,17 +104,53 @@ export type Ticket = {
   judgementManagerId?: string
   judgementManagerName?: string
   judgementCompletedAt?: string | null
+  productCode?: string | null
+  productSerialNumber?: string | null
+  serialNumber?: string | null
   productName: string
+  productFactory?: string | null
+  productFactory1?: string | null
+  productFactory2?: string | null
+  productFactory3?: string | null
+  productMidCategory?: string | null
+  productSubCategory?: string | null
+  productLaunchDate?: string | null
+  productStockAvailableYn?: 'Y' | 'N'
+  productRestorationRepairYn?: 'Y' | 'N'
+  productDecorationYn?: 'Y' | 'N'
   purchaseDate?: string | null
   purchasePlace?: string | null
   symptom?: string | null
+  repairPartTags?: string[]
+  repairIssueAreaTags?: string[]
+  repairIssueTypeTags?: string[]
+  careRequest?: string | null
+  lensType?: string | null
   repairDepartment: string
   repairDetail: string
   repairChargeType?: RepairChargeType
   repairCost?: number | null
+  repairReference?: string | null
+  repairBeginDate?: string | null
+  factoryForwardingDate?: string | null
+  factoryReceivingDate?: string | null
+  repairAgainReason?: string | null
+  productProblemYn?: 'Y' | 'N'
+  repairSpecialNote?: string | null
   technicianId?: string
   technicianName?: string
   trackingNo: string | null
+  shipmentCompletedYn?: 'Y' | 'N'
+  shipmentCompletedAt?: string | null
+  deliveryCompletedYn?: 'Y' | 'N'
+  deliveredAt?: string | null
+  storePickupCompletedYn?: 'Y' | 'N'
+  storePickupCompletedAt?: string | null
+  hqTrackingNo?: string | null
+  hqInvoiceNo?: string | null
+  corporateShippedAt?: string | null
+  corporateTrackingNo?: string | null
+  corporateInvoiceNo?: string | null
   paymentCompleted: PaymentCompleted
   paymentDate: string | null
   paymentExpiresAt?: string | null
@@ -125,6 +162,14 @@ export type Ticket = {
   soDocumentNo: string | null
   sapSendFlag?: SapSendFlag
   sapSentAt?: string | null
+  consultationRequestedYn?: 'Y' | 'N'
+  outboundType?: string | null
+  consultationManager?: string | null
+  consultationStatus?: string | null
+  consultationCompletedAt?: string | null
+  consultationTicketNo?: string | null
+  consultationExceptionCategory?: string | null
+  consultationRepairMemo?: string | null
 }
 
 export type ComponentType =
