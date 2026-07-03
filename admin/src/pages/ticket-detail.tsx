@@ -146,6 +146,10 @@ const LENS_TYPE_OPTIONS: EditableFieldOption[] = [
   { value: '제품의 기존 렌즈', label: '제품의 기존 렌즈' },
   { value: '별도로 제작한 렌즈', label: '별도로 제작한 렌즈' },
 ]
+const TOTAL_CARE_FITTING_OPTIONS: EditableFieldOption[] = [
+  { value: '기본 피팅', label: '기본 피팅' },
+  { value: '기존 피팅 유지', label: '기존 피팅 유지' },
+]
 const RE_REPAIR_REASON_OPTIONS: EditableFieldOption[] = [
   { value: '-', label: '-' },
   { value: '요청사항 누락', label: '요청사항 누락' },
@@ -912,7 +916,7 @@ function SectionCard({
   title,
   children,
   editLabel = '수정',
-  editable = true,
+  editable = false,
   onEdit,
 }: {
   title: string
@@ -1319,7 +1323,13 @@ export function TicketDetailPage() {
   const repairIssueTypeTags = ticket.repairIssueTypeTags ?? defaultIssueTypes(ticket)
   const productProblemYn = ticket.productProblemYn ?? (repairIssueTypeTags.length > 0 ? 'Y' : 'N')
   const lensType = getLensType(ticket)
-  const careRequest = ticket.careRequest || (repairDetailValue.includes('케어') ? repairDetailValue : null)
+  const isTotalCareTicket = repairDetailValue === '토탈케어'
+    || repairSymptomTags.includes('토탈 케어 요청')
+    || TOTAL_CARE_FITTING_OPTIONS.some(option => option.value === ticket.careRequest)
+  const careRequest = ticket.careRequest || null
+  const totalCareFittingOptions = careRequest && !TOTAL_CARE_FITTING_OPTIONS.some(option => option.value === careRequest)
+    ? [{ value: careRequest, label: careRequest }, ...TOTAL_CARE_FITTING_OPTIONS]
+    : TOTAL_CARE_FITTING_OPTIONS
   const repairAgainReason = ticket.repairAgainReason || '-'
 
   function showToast(message: string, ok = true) {
@@ -1915,7 +1925,7 @@ export function TicketDetailPage() {
                   <SectionCard title="제품 정보" editable={false}>
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
                       <Field label="제품명" value={matchedProduct?.name ?? ticket.productName} />
-                      <Field label="제품 ID" value={matchedProduct?.productCode} />
+                      <Field label="제품 코드" value={matchedProduct?.productCode} />
                       {productSerialNumber ? <Field label="시리얼 번호" value={productSerialNumber} /> : null}
                       <Field label="중분류" value={productMidCategory} />
                       <Field label="소분류" value={productSubCategory} />
@@ -1987,22 +1997,16 @@ export function TicketDetailPage() {
                       <Field label="본사 입고일" value={ticket.hqReceivedAt} />
                       <Field label="출고 예정일" value={ticket.expectedShipAt} />
                       <EditableTagField
-                        label="현상 부위"
-                        values={repairPartTags}
-                        options={REPAIR_PART_OPTIONS}
-                        onChange={values => saveRepairPatch({ repairPartTags: values })}
-                      />
-                      <EditableTagField
                         label="현상"
                         values={repairSymptomTags}
                         options={REPAIR_SYMPTOM_OPTIONS}
                         onChange={values => saveRepairPatch({ symptom: values.join(', ') || null })}
                       />
                       <EditableTagField
-                        label="문제 부위"
-                        values={repairIssueAreaTags}
-                        options={REPAIR_ISSUE_AREA_OPTIONS}
-                        onChange={values => saveRepairPatch({ repairIssueAreaTags: values })}
+                        label="현상 부위"
+                        values={repairPartTags}
+                        options={REPAIR_PART_OPTIONS}
+                        onChange={values => saveRepairPatch({ repairPartTags: values })}
                       />
                       <EditableTagField
                         label="문제 유형"
@@ -2010,10 +2014,17 @@ export function TicketDetailPage() {
                         options={REPAIR_ISSUE_TYPE_OPTIONS}
                         onChange={values => saveRepairPatch({ repairIssueTypeTags: values })}
                       />
+                      <EditableTagField
+                        label="문제 부위"
+                        values={repairIssueAreaTags}
+                        options={REPAIR_ISSUE_AREA_OPTIONS}
+                        onChange={values => saveRepairPatch({ repairIssueAreaTags: values })}
+                      />
                       <EditableReceptionField
                         label="케어요청사항"
                         value={careRequest}
-                        type="text"
+                        type={isTotalCareTicket ? 'select' : 'text'}
+                        options={isTotalCareTicket ? totalCareFittingOptions : undefined}
                         onSave={value => saveRepairPatch({ careRequest: value || null })}
                       />
                       <EditableReceptionField
