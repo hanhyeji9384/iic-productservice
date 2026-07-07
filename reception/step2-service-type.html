@@ -80,7 +80,7 @@
 
     <!-- IE 이상 유형 선택 (기존 정책 보관용: 현재 AI 플로우에서는 미노출) -->
     <div id="ai-issue-section" style="display:none;margin-bottom:32px;">
-      <p class="form-label" id="txt-ai-issue-label">IE 이상 유형</p>
+      <p class="form-label" id="txt-ai-issue-label">이상 유형</p>
       <p style="font-size:12px;color:#777;margin-bottom:12px;" id="txt-ai-issue-desc">해당되는 이상 유형을 모두 선택해 주세요. (중복 선택 가능)</p>
       <div style="display:flex;gap:8px;">
         <button type="button" class="issue-toggle-btn" id="btn-ai-func" onclick="toggleAiIssue('func')" style="flex:1;">기능 이상</button>
@@ -98,7 +98,7 @@
       <a href="step2-total-care.html" class="option-card" id="card-tc" onclick="saveServiceType('total-care')">
         <div class="option-card-body">
           <p class="option-card-title" id="txt-tc-title">토탈 케어</p>
-          <p class="option-card-desc" id="txt-tc-desc">클리닝 · 폴리싱 · 피팅 — 제품 전체를 처음처럼 케어해 드립니다.</p>
+          <p class="option-card-desc" id="txt-tc-desc">클리닝 · 폴리싱 · 피팅 — 제품 전체를 케어해 드립니다.</p>
         </div>
         <span class="option-card-arrow" id="card-tc-arrow">→</span>
       </a>
@@ -152,20 +152,30 @@
 </footer>
 
 <script>
+var currentLang = 'ko';
+
 const STRINGS = {
   ko: {
     sp1: '기본 정보', sp2: '서비스 유형', sp3: '서비스 상세', sp4: '사진·렌즈', sp5: '배송 정보', sp6: '안내 확인',
     eyebrow: '수리 서비스 접수',
     title: '서비스 유형 선택',
     desc: '원하시는 서비스 유형을 선택해주세요.',
-    aiIssueLabel: 'IE 이상 유형',
+    aiIssueLabel: '이상 유형',
     aiIssueDesc: '해당되는 이상 유형을 모두 선택해 주세요. (중복 선택 가능)',
+    aiIssueFunc: '기능 이상',
+    aiIssueProd: '제품 이상',
+    aiBtnNext: '다음',
     tcTitle: '토탈 케어',
-    tcDesc: '클리닝 · 폴리싱 · 피팅 — 제품 전체를 처음처럼 케어해 드립니다.',
+    tcDesc: '클리닝 · 폴리싱 · 피팅 — 제품 전체를 케어해 드립니다.',
     rpTitle: '제품 수리',
     rpDesc: '파손 · 변형 · 장식 문제 등 특정 부위의 수리를 진행합니다.',
     csTitle: '상담 & 기타',
     csDesc: '제품 결함 문의 · 부속품 요청 · 상담원 연결',
+    aiRepairDesc: '제품 상태를 점검한 뒤 수리 가능 여부와 비용을 안내합니다.',
+    aiQualityExpiredNotice: '품질 보증 기간이 만료된 제품으로, 유상 수리가 적용될 수 있습니다.\n실물 점검 후 수리 가능 여부와 정확한 비용을 안내드립니다.',
+    aiServiceExpiredNotice: '부품 보유 기간이 경과하여 수리 서비스 진행이 어렵습니다.\n자세한 안내가 필요하시면 상담원 연결을 이용해 주세요.',
+    aiContactTitle: '상담원 연결하기',
+    aiContactDesc: '자세한 안내가 필요하시면 상담원 연결을 이용해 주세요.',
     btnPrev: '이전',
   },
   en: {
@@ -173,14 +183,22 @@ const STRINGS = {
     eyebrow: 'Repair Service Request',
     title: 'Select Service Type',
     desc: 'Please select the type of service you need.',
-    aiIssueLabel: 'IE Issue Type',
+    aiIssueLabel: 'Issue Type',
     aiIssueDesc: 'Select all issue types that apply. Multiple selections are allowed.',
+    aiIssueFunc: 'Functional Issue',
+    aiIssueProd: 'Product Issue',
+    aiBtnNext: 'Next',
     tcTitle: 'Total Care',
     tcDesc: 'Cleaning · Polishing · Fitting — Complete care to restore your product.',
     rpTitle: 'Product Repair',
     rpDesc: 'Damage · deformation · decoration issues — Repair of specific areas.',
     csTitle: 'Consultation & Other',
     csDesc: 'Product defect inquiry · Accessory request · Customer service',
+    aiRepairDesc: 'We will inspect the product and guide repair availability and cost.',
+    aiQualityExpiredNotice: 'The quality warranty has expired, so paid repair may apply.\nWe will confirm repair availability and the exact cost after inspection.',
+    aiServiceExpiredNotice: 'The parts retention period has expired, so repair service may not be available.\nPlease contact customer service for detailed guidance.',
+    aiContactTitle: 'Contact Customer Service',
+    aiContactDesc: 'Please contact customer service for detailed guidance.',
     btnPrev: 'Previous',
   }
 };
@@ -191,9 +209,10 @@ function setText(id, html) {
 }
 
 function setLang(lang) {
+  currentLang = STRINGS[lang] ? lang : 'ko';
   try { localStorage.setItem('ps-lang', lang); } catch(e) {}
   ['ko','en'].forEach(function(l) { var el = document.getElementById('footer-lang-' + l); if (el) { el.style.fontWeight = l === lang ? '500' : '400'; el.style.color = l === lang ? '#111' : ''; } });
-  const s = STRINGS[lang];
+  const s = STRINGS[currentLang];
   ['ko','en'].forEach(l => {
     const b = document.getElementById('pb-lang-' + l);
     if (!b) return;
@@ -208,10 +227,14 @@ function setLang(lang) {
   setText('txt-desc', s.desc);
   setText('txt-ai-issue-label', s.aiIssueLabel);
   setText('txt-ai-issue-desc', s.aiIssueDesc);
+  setText('btn-ai-func', s.aiIssueFunc);
+  setText('btn-ai-prod', s.aiIssueProd);
+  setText('btn-ai-next', s.aiBtnNext);
   setText('txt-tc-title', s.tcTitle); setText('txt-tc-desc', s.tcDesc);
   setText('txt-rp-title', s.rpTitle); setText('txt-rp-desc', s.rpDesc);
   setText('txt-cs-title', s.csTitle); setText('txt-cs-desc', s.csDesc);
   setText('txt-btn-prev', s.btnPrev);
+  if (aiMode !== 'off') applyAiWarrantyUi();
 }
 
 window.setCountry = function(country) {
@@ -428,15 +451,17 @@ function showAiNotice(type) {
   if (!box || !title || !copy) return;
 
   if (type === 'service-expired') {
+    var serviceStrings = STRINGS[currentLang] || STRINGS.ko;
     box.style.display = 'block';
     title.textContent = '';
-    copy.textContent = '부품 보유 기간이 경과하여 수리 서비스 진행이 어렵습니다.\n자세한 안내가 필요하시면 상담원 연결을 이용해 주세요.';
+    copy.textContent = serviceStrings.aiServiceExpiredNotice;
     return;
   }
   if (type === 'quality-expired') {
+    var qualityStrings = STRINGS[currentLang] || STRINGS.ko;
     box.style.display = 'block';
     title.textContent = '';
-    copy.textContent = '품질 보증 기간이 만료된 제품으로, 유상 수리가 적용될 수 있습니다.\n실물 점검 후 수리 가능 여부와 정확한 비용을 안내드립니다.';
+    copy.textContent = qualityStrings.aiQualityExpiredNotice;
     return;
   }
   box.style.display = 'none';
@@ -452,13 +477,14 @@ function applyAiWarrantyUi() {
   var csArrow = document.getElementById('card-cs-arrow');
   var rpTitle = document.getElementById('txt-rp-title');
   var rpDesc = document.getElementById('txt-rp-desc');
+  var s = STRINGS[currentLang] || STRINGS.ko;
 
-  if (rpTitle) rpTitle.textContent = '제품 수리';
-  if (rpDesc) rpDesc.textContent = '제품 상태를 점검한 뒤 수리 가능 여부와 비용을 안내합니다.';
-  if (csTitle) csTitle.textContent = aiWarrantyState === 'service-expired' ? '상담원 연결하기' : '상담 & 기타';
+  if (rpTitle) rpTitle.textContent = s.rpTitle;
+  if (rpDesc) rpDesc.textContent = s.aiRepairDesc;
+  if (csTitle) csTitle.textContent = aiWarrantyState === 'service-expired' ? s.aiContactTitle : s.csTitle;
   if (csDesc) csDesc.textContent = aiWarrantyState === 'service-expired'
-    ? '자세한 안내가 필요하시면 상담원 연결을 이용해 주세요.'
-    : '제품 문의 · 접수 관련 상담 · 상담원 연결';
+    ? s.aiContactDesc
+    : s.csDesc;
   if (csArrow) csArrow.innerHTML = '→';
 
   showAiNotice(aiWarrantyState);

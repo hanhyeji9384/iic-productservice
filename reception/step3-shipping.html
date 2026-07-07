@@ -74,7 +74,7 @@
         <input type="radio" name="send" value="self">
         <div>
           <p id="title-self" class="check-item-title">직접 발송</p>
-          <p id="desc-self" class="check-item-desc">원하시는 운송사로 직접 보내주세요.<br>발송 주소와 방법은 이메일로 안내드립니다.</p>
+          <p id="desc-self" class="check-item-desc">원하시는 택배사를 이용해 직접 보내주셔도 됩니다.<br>발송 주소와 방법은 이메일로 안내드립니다</p>
         </div>
       </label>
       <label id="send-store-opt" class="check-item" onclick="selectSend(this,'store')">
@@ -186,8 +186,8 @@
     <!-- 직접 발송 안내 (US 기타) -->
     <div id="self-ship-section" style="display:none;margin-bottom:32px;">
       <div class="notice-box" id="self-notice-box">
-        <p>원하시는 운송사로 직접 보내주세요.</p>
-        <p>발송 주소와 방법은 이메일로 안내드립니다.</p>
+        <p>원하시는 택배사를 이용해 직접 보내주셔도 됩니다.</p>
+        <p>발송 주소와 방법은 이메일로 안내드립니다</p>
       </div>
     </div>
 
@@ -196,7 +196,7 @@
     <!-- TOTAL CARE SCHEDULE -->
     <div id="total-care-schedule" class="shipping-schedule">
       <p id="schedule-title" class="shipping-schedule-title">서비스 일정</p>
-      <p id="schedule-desc" class="shipping-schedule-desc">토탈 케어 접수 시 긴급 수리 여부와 출고 희망일을 선택해 주세요.</p>
+      <p id="schedule-desc" class="shipping-schedule-desc">토탈 케어 접수 시 긴급 서비스 여부와 출고 희망일을 선택해 주세요.</p>
 
       <p id="lbl-urgent" class="section-label">긴급 서비스 <span style="font-size:10px;color:#999;text-transform:none;letter-spacing:0;">(선택)</span></p>
       <label class="check-item" id="urgent-check-item" style="margin-bottom:8px;">
@@ -292,7 +292,7 @@
 
       <!-- 편집 뷰 -->
       <div id="addr-edit-view" style="display:none;">
-        <p style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-align:center;margin-bottom:24px;">EDIT AN ADDRESS</p>
+        <p style="font-size:13px;font-weight:500;letter-spacing:0.08em;text-align:center;margin-bottom:24px;">주소 편집</p>
         <p style="font-size:11px;color:var(--gray-400);text-align:right;margin-bottom:12px;" id="lbl-required">*필수 입력 항목</p>
         <div style="display:flex;gap:8px;margin-bottom:8px;">
           <div style="flex:1;background:#fff;border:1px solid #e8e8e8;border-radius:12px;padding:12px 16px;">
@@ -450,7 +450,7 @@ const STRINGS = {
     lblDropoffStore: 'Drop Off 매장 선택', lblRecvStore: '수령 매장 선택',
     titlePickup: '무료 택배 픽업', descPickup: '접수 완료 후 영업일 3일 이내 방문합니다.',
     titleDropoff: '스토어 방문', descDropoff: '접수 후 5일 이내에 선택하신 매장으로 제품을 맡겨 주세요.',
-    titleSelf: '직접 발송', descSelf: '원하시는 운송사로 직접 보내주세요.<br>발송 주소와 방법은 이메일로 안내드립니다.',
+    titleSelf: '직접 발송', descSelf: '원하시는 택배사를 이용해 직접 보내주셔도 됩니다.<br>발송 주소와 방법은 이메일로 안내드립니다',
     titleHomeDelivery: '자택 배송', descHomeDelivery: '수리 완료 후 자택으로 배송해 드립니다.',
     titleStorePickup: '매장 픽업', descStorePickup: '수리 완료 후 선택한 매장에서 수령합니다.',
     btnLocDrop: '현재 위치', btnLocRecv: '현재 위치',
@@ -469,7 +469,7 @@ const STRINGS = {
     btnPrev: '이전', btnNext: '다음',
     searchPlaceholder: '매장명 또는 지역 검색',
     scheduleTitle: '서비스 일정',
-    scheduleDesc: '토탈 케어 접수 시 긴급 수리 여부와 출고 희망일을 선택해 주세요.',
+    scheduleDesc: '토탈 케어 접수 시 긴급 서비스 여부와 출고 희망일을 선택해 주세요.',
     lblUrgent: '긴급 서비스',
     titleUrgent: '입고 후 5영업일 이내 출고 +n만원',
     descUrgent: '',
@@ -485,7 +485,7 @@ const STRINGS = {
     lensDropoffDesc: '접수 후 5일 이내에 선택하신 매장으로 제품을 맡겨 주세요.',
     lensDropoffStoreLabel: 'Drop Off 매장 선택',
     lensPickupAddrLabel: '회수 주소',
-    lensPickupNotice: '<p>접수 완료 후 영업일 3일 이내 방문합니다.</p><p>방문 전 기사님이 미리 연락드리며, 기한 내 픽업되지 않으면 접수가 자동 취소됩니다.</p>',
+    lensPickupNotice: '<p>· 별도 제작 렌즈는 접수 전 반드시 분리해 주세요.</p><p>· 렌즈가 삽입된 상태로 접수되면 수리가 지연되거나 반송될 수 있습니다.</p>',
     lensStoreNotice: '<p>접수 후 5일 이내에 선택하신 매장으로 제품을 맡겨 주세요.</p><p>기한 내 방문하지 않으면 접수가 자동 취소됩니다.</p>',
     lensDisclaimerTitle: '꼭 확인해 주세요.',
     lensDisclaimerP1: '별도로 제작한 렌즈(도수·블루라이트 등)가 장착된 경우,<br>안전한 진행을 위해 렌즈 분리가 반드시 필요합니다.',
@@ -562,7 +562,7 @@ var KR_PICKUP_NOTICE = '<p>접수 완료 후 영업일 3일 이내 방문합니�
 var KR_STORE_NOTICE = '<p>접수 후 5일 이내에 선택하신 매장으로 제품을 맡겨 주세요.</p><p>기한 내 방문하지 않으면 접수가 자동 취소됩니다.</p>';
 var INT_STORE_NOTICE = '<p>접수 후 5일 이내에 선택하신 매장으로 제품을 맡겨 주세요.</p><p>› 기한 내 방문하지 않으면 접수가 자동 취소됩니다.</p>';
 var INT_DHL_NOTICE = '<p>DHL이 픽업 일정과 배송 서류를 이메일로 보내드립니다. (스팸함도 확인해 주세요)</p><p>DHL 기사 방문 시, 제품과 배송 서류를 함께 전달해 주세요.</p><p>제품이 도착하면 서비스 비용·운송비 결제 링크를 이메일로 보내드립니다.</p>';
-var INT_SELF_NOTICE = '<p>원하시는 운송사로 직접 보내주세요.</p><p>발송 주소와 방법은 이메일로 안내드립니다.</p>';
+var INT_SELF_NOTICE = '<p>원하시는 택배사를 이용해 직접 보내주셔도 됩니다.</p><p>발송 주소와 방법은 이메일로 안내드립니다</p>';
 
 function setText(id, text) {
   const el = document.getElementById(id);
@@ -1061,7 +1061,7 @@ function setInternationalShippingCopy() {
   setText('title-pickup', '택배 픽업 신청 — 내년 개발 항목');
   setHtml('desc-pickup', '운송사 : DHL · 예상 운송비 : USD 50');
   setText('title-self', '직접 발송');
-  setHtml('desc-self', '원하시는 운송사로 직접 보내주세요.<br>발송 주소와 방법은 이메일로 안내드립니다.');
+  setHtml('desc-self', '원하시는 택배사를 이용해 직접 보내주셔도 됩니다.<br>발송 주소와 방법은 이메일로 안내드립니다');
   setHtml('lbl-dropoff-store', '방문 스토어 선택 <span style="color:#000">*</span>');
 
   var pickupAddrLabel = document.getElementById('lbl-pickup-addr');

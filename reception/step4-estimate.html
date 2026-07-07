@@ -44,10 +44,6 @@
     <div class="summary-card">
       <p id="summary-info-title" style="font-size:13px;font-weight:500;margin-bottom:16px;">접수 정보</p>
       <div class="summary-row">
-        <span id="key-ticket" class="summary-key">티켓 번호</span>
-        <span id="val-ticket" class="summary-val">555555</span>
-      </div>
-      <div class="summary-row">
         <span id="key-product" class="summary-key">제품</span>
         <span id="val-product" class="summary-val">ALIO-01</span>
       </div>
@@ -78,7 +74,7 @@
           <div>
             <span id="est-cost" class="summary-val" style="font-size:16px;">₩49,800</span>
             <div id="est-urgent-fee" style="display:none;margin-top:4px;">
-              <span id="val-urgent-fee" style="font-size:12px;color:#c8491a;">+ 긴급 서비스 50,000원</span>
+              <span id="val-urgent-fee" style="font-size:12px;color:#c8491a;">+ 긴급 서비스 +n만원</span>
             </div>
           </div>
         </div>
@@ -120,7 +116,7 @@
           </div>
         </div>
         <div id="ie-protection-plan" style="display:none;border-top:1px solid var(--gray-100);margin-top:16px;padding-top:16px;">
-          <p style="font-size:13px;font-weight:500;margin-bottom:12px;">✦ Protection Plan 적용</p>
+          <p style="font-size:13px;font-weight:500;margin-bottom:12px;">Protection Plan 적용</p>
           <div class="summary-row">
             <span class="summary-key">원래 수리 비용</span>
             <span id="ie-plan-original-cost" class="summary-val">150,000원</span>
@@ -243,7 +239,6 @@ var STRINGS = {
     desc: '접수 정보와 예상 수리 안내를 확인해 주세요.',
     lblReception: '접수 요약',
     summaryInfoTitle: '접수 정보',
-    keyTicket: '티켓 번호',
     keyProduct: '제품',
     keyLens: '렌즈 유형',
     keyIssue: '문제 증상',
@@ -252,7 +247,7 @@ var STRINGS = {
     keySvcDetail: '서비스 상세',
     keyUrgentOpt: '추가 옵션',
     valUrgent: '긴급 서비스',
-    urgentFeeLabel: '+ 긴급 서비스 50,000원',
+    urgentFeeLabel: '+ 긴급 서비스 +n만원',
     keySend: '발송 방법',
     keyRecv: '수령 방법',
     keyAddr: '수령 주소',
@@ -273,7 +268,6 @@ var STRINGS = {
     desc: 'Please review your service details and estimated repair information.',
     lblReception: 'Request Summary',
     summaryInfoTitle: 'Request Details',
-    keyTicket: 'Ticket No.',
     keyProduct: 'Product',
     keyLens: 'Lens Type',
     keyIssue: 'Issue',
@@ -282,7 +276,7 @@ var STRINGS = {
     keySvcDetail: 'Detail',
     keyUrgentOpt: 'Add-on',
     valUrgent: '',
-    urgentFeeLabel: '+ Urgent service KRW 50,000',
+    urgentFeeLabel: '+ Urgent service +n',
     keySend: 'Shipping',
     keyRecv: 'Return',
     keyAddr: 'Address',
@@ -592,7 +586,6 @@ function renderIeRepairSummary(state) {
 
 function renderReceptionSummary(state, scenario) {
   state = state || {};
-  setText('val-ticket', state.ticketId || state.ticketNo || state.ticketNumber || '555555');
   setText('val-product', state.productName || 'ALIO-01');
   setText('val-lens', getLensLabel(state));
   setText('val-issue', getIssueLabel(state));
@@ -663,7 +656,6 @@ function applyStrings(state) {
   setText('pg-desc', st.desc);
   setText('lbl-reception', st.lblReception);
   setText('summary-info-title', st.summaryInfoTitle);
-  setText('key-ticket', st.keyTicket);
   setText('key-product', st.keyProduct);
   setText('key-lens', st.keyLens);
   setText('key-issue', st.keyIssue);
@@ -773,9 +765,18 @@ function getElapsedYears(purchaseDate) {
   return (new Date() - purchasedAt) / (1000 * 60 * 60 * 24 * 365.25);
 }
 
+function getRepairPurchaseDate(state) {
+  state = state || {};
+  var keys = ['purchaseDate', 'productPurchaseDate', 'selectedPurchaseDate', 'purchase_date', 'purchaseDt', 'purchaseAt', 'purchasedAt', 'purchasedDate'];
+  for (var i = 0; i < keys.length; i += 1) {
+    if (state[keys[i]]) return state[keys[i]];
+  }
+  return '';
+}
+
 function getScenarioFromState(state) {
   state = state || {};
-  var years = getElapsedYears(state.purchaseDate);
+  var years = getElapsedYears(getRepairPurchaseDate(state));
   var st = state.serviceType;
 
   if (st === 'ai-func-only') return 'ai-func-only';
@@ -788,6 +789,8 @@ function getScenarioFromState(state) {
 
   if (st === 'repair') {
     if (state.repairDetail === 'damage') {
+      if (state.repairYearMode === 'normal') return 'repair-break3';
+      if (state.repairYearMode === 'restoration') return 'repair-break7';
       if (years > 3) return 'repair-break7';
       return 'repair-break3';
     }

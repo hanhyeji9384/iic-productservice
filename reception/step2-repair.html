@@ -1155,16 +1155,42 @@ function getRepairSubCategory(state) {
   return subCategory || '';
 }
 
+function normalizeRepairDate(value) {
+  if (!value) return '';
+  var text = String(value).trim();
+  var dotDate = text.match(/^(\d{4})[.\-/년\s]+(\d{1,2})[.\-/월\s]+(\d{1,2})/);
+  if (dotDate) {
+    return dotDate[1] + '-' + String(dotDate[2]).padStart(2, '0') + '-' + String(dotDate[3]).padStart(2, '0');
+  }
+  return text;
+}
+
+function getRepairPurchaseDate(state) {
+  state = state || {};
+  var keys = ['purchaseDate', 'productPurchaseDate', 'selectedPurchaseDate', 'purchase_date', 'purchaseDt', 'purchaseAt', 'purchasedAt', 'purchasedDate'];
+  for (var i = 0; i < keys.length; i += 1) {
+    if (state[keys[i]]) return normalizeRepairDate(state[keys[i]]);
+  }
+  return '';
+}
+
+function getRepairElapsedYears(purchaseDate) {
+  if (!purchaseDate) return 0;
+  var purchasedAt = new Date(normalizeRepairDate(purchaseDate));
+  if (isNaN(purchasedAt.getTime())) return 0;
+  return (new Date() - purchasedAt) / (1000 * 60 * 60 * 24 * 365.25);
+}
+
 function isRestorationEligibleSubCategory(subCategory) {
   if (typeof psIsRestorationCategory === 'function') return psIsRestorationCategory(subCategory);
   return /\b(METAL|COMBI)\b/i.test(subCategory || '');
 }
 
 function resolveRepairYearMode(state) {
-  var pd = state.purchaseDate;
+  var pd = getRepairPurchaseDate(state);
   if (!pd) return 'normal';
 
-  var years = (new Date() - new Date(pd)) / (1000 * 60 * 60 * 24 * 365.25);
+  var years = getRepairElapsedYears(pd);
   if (years > 7) return 'unavailable';
   if (years > 3) {
     return isRestorationEligibleSubCategory(getRepairSubCategory(state)) ? 'restoration' : 'restoration-nonmetal';

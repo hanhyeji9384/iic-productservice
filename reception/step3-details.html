@@ -118,7 +118,7 @@
     <!-- PACKAGE DISCLAIMER -->
     <p class="section-label" id="txt-pkg-label">패키지 동봉 금지 확인 <span style="color:#000">*</span></p>
     <div style="border:1px solid #e0e0e0;padding:16px 20px;margin-bottom:40px;">
-      <p id="txt-pkg-desc" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:12px;">제품 본체만 보내주세요.<br><br>보증 카드·케이스 등은 분실 우려가 있어, 함께 보내지 말아 주세요.</p>
+      <p id="txt-pkg-desc" style="font-size:13px;color:#555;line-height:1.8;margin-bottom:12px;">제품 본체만 보내주세요. 보증카드, 케이스 등 부속품은 분실 우려가 있으니 함께 보내지 마세요.</p>
       <label class="inline-check">
         <input type="checkbox" id="chk-pkg" onchange="savePkgLensState();checkNextBtn()">
         <span id="txt-pkg-chk">확인했습니다.</span>
@@ -181,7 +181,8 @@ const STRINGS = {
     lensCustomTitle: '별도로 제작한 렌즈 (도수·블루라이트 등)', lensCustomDesc: '',
     lensOrigTitle: '제품 기존 렌즈', lensOrigDesc: '',
     pkgLabel: '패키지 동봉 금지 확인 <span style="color:#000">*</span>',
-    pkgDesc: '제품 본체만 보내주세요.<br><br>보증 카드·케이스 등은 분실 우려가 있어, 함께 보내지 말아 주세요.',
+    pkgDesc: '제품 본체만 보내주세요. 보증카드, 케이스 등 부속품은 분실 우려가 있으니 함께 보내지 마세요.',
+    aiPkgDesc: '접수 시 선택한 제품 또는 충전 케이스의 본품만 보내주세요. 그 외 충전 케이블, 안경닦이 등의 부속품은 분실 우려가 있으니 함께 보내지 마세요.',
     pkgChk: '확인했습니다.',
     btnPrev: '이전',
     btnNext: '다음',
@@ -206,7 +207,8 @@ const STRINGS = {
     lensCustomTitle: 'Custom Lens (prescription, blue light filter, etc.)', lensCustomDesc: '',
     lensOrigTitle: 'Original Product Lens', lensOrigDesc: '',
     pkgLabel: 'Package Exclusion Confirmation <span style="color:#000">*</span>',
-    pkgDesc: 'Please send only the product frame.<br><br>Warranty cards, cases, and other accessories may be lost, so please do not include them.',
+    pkgDesc: 'Please send only the product itself. Warranty cards, cases, and other accessories may be lost, so please do not include them.',
+    aiPkgDesc: 'Please send only the selected product or charging case itself. Do not include accessories such as charging cables or cleaning cloths, as they may be lost.',
     pkgChk: 'I understand.',
     btnPrev: 'Previous',
     btnNext: 'Next',
@@ -378,6 +380,12 @@ function isIeState(state) {
   return state.productLine === 'ie' || state.isAi === true || state.aiProduct === true || subCategory.indexOf('AI EYEWEAR') >= 0 || productName.indexOf('스마트') >= 0;
 }
 
+function updatePackageCopyForState(state, params) {
+  var strings = STRINGS[currentLang] || STRINGS.ko;
+  var isAi = isIeState(state || {}) || (params && params.get('ai') === 'true');
+  setText('txt-pkg-desc', isAi ? strings.aiPkgDesc : strings.pkgDesc);
+}
+
 function renderMockFile(id, name) {
   const item = document.createElement('div');
   item.id = 'file-' + id;
@@ -478,6 +486,7 @@ window.addEventListener('load', function() {
     var diagnosisSection = document.getElementById('diagnosis-section');
     var params = new URLSearchParams(window.location.search);
     if (diagnosisSection) diagnosisSection.style.display = (isIeState(state) || params.get('ai') === 'true') ? 'block' : 'none';
+    updatePackageCopyForState(state, params);
 
     // 렌즈 유형 복원
     if (state.lensType && state.lensType !== 'none') {
