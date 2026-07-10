@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Service Design Prototype — GENTLE MONSTER</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="start-page request-page detail-step-active" data-route="return">
+  <header class="landing-header start-header">
+    <nav class="landing-nav">
+      <a href="#">Sunglasses</a>
+      <a href="#">Glasses</a>
+      <a href="#">Collections</a>
+      <a href="#">Stores</a>
+      <a href="#">Explore</a>
+    </nav>
+    <a class="landing-brand" href="./index.html" aria-label="GENTLE MONSTER"><img src="./assets/gentle-monster-logo.svg" alt="GENTLE MONSTER"></a>
+    <div class="landing-actions">
+      <a href="#">DISCOVER TOGA 01</a>
+      <button type="button" aria-label="Search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M16 16l5 5"></path></svg>
+      </button>
+      <button type="button" aria-label="Account">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.6-4 4.2-6 8-6s6.4 2 8 6"></path></svg>
+      </button>
+      <button type="button" aria-label="Bag">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8h10l1 13H6L7 8z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="prototype-shell">
+    <section class="request-frame" aria-live="polite">
+      <div class="screen detail-screen">
+        <section class="service-product-hero" aria-label="선택한 제품">
+          <span class="service-product-visual" aria-hidden="true">
+            <img id="service-product-image" src="./assets/product-gelati.png" alt="">
+          </span>
+          <span class="service-product-info">
+            <span class="service-product-title">
+              <strong id="service-product-name">Gelati 01</strong>
+              <span id="service-product-tag" class="product-history-tag hidden">Protection Plan</span>
+            </span>
+            <span id="service-product-purchase">Purchased on June 12, 2024</span>
+            <span id="service-product-store">at Haus Dosan</span>
+            <span id="service-product-warranty" class="muted">Limited warranty, expires June 30, 2026</span>
+            <span id="service-product-warranty-secondary" class="muted">Product service warranty, expires June 30, 2027</span>
+            <small id="service-product-serial">Serial No. GE240612-00003821</small>
+          </span>
+        </section>
+
+        <section id="shipping-detail-panel" class="shipping-detail-panel">
+          <div class="repair-detail-intro">
+            <h1 id="shipping-title">5 Receiving</h1>
+          </div>
+
+          <div class="shipping-section">
+            <h2>수령 방법</h2>
+            <div id="shipping-return-list" class="shipping-option-grid" aria-label="수령 방법">
+              <button class="shipping-option shipping-method-option" type="button" data-shipping-group="return" data-shipping-value="home" aria-pressed="false">
+                <strong>SHIP TO ADDRESS</strong>
+              </button>
+              <button class="shipping-option shipping-method-option" type="button" data-shipping-group="return" data-shipping-value="store" aria-pressed="false">
+                <strong>PICK UP AT STORE</strong>
+              </button>
+            </div>
+
+            <div id="return-address-section" class="shipping-address-section hidden">
+              <h3>Select an address</h3>
+              <button class="shipping-address-card return-address-card selected" type="button" data-return-address-name="SUYEOL YANG" aria-pressed="true">
+                <span>
+                  <strong>SUYEOL YANG</strong>
+                  <small>101-ho, 41, Eoulmadang-ro 5-gil, Mapo-gu, Seoul, Republic of Korea, 04047<br>01012349876</small>
+                </span>
+                <em>EDIT</em>
+              </button>
+              <button class="shipping-address-card return-address-card" type="button" data-return-address-name="ANDRE SEO" aria-pressed="false">
+                <span>
+                  <strong>ANDRE SEO</strong>
+                  <small>101-ho, 41, Eoulmadang-ro 5-gil, Mapo-gu, Seoul, Republic of Korea, 04047<br>01012349876</small>
+                </span>
+                <em>EDIT</em>
+              </button>
+              <button class="shipping-address-card shipping-address-add" type="button">
+                <strong>ADD A NEW ADDRESS</strong>
+              </button>
+            </div>
+
+            <div id="return-store-section" class="shipping-store-section hidden">
+              <p id="return-store-intro" class="shipping-store-intro">We'll check the nearest stores where you can pick up your product.</p>
+              <div id="return-store-city-picker" class="shipping-city-picker">
+                <button id="return-store-city-button" class="shipping-city-select" type="button" data-city="" aria-expanded="false">
+                  <span>City</span>
+                  <span class="shipping-city-arrow" aria-hidden="true"></span>
+                </button>
+                <div id="return-store-city-options" class="shipping-city-options hidden">
+                  <button class="return-city-option shipping-city-option" type="button" data-city="seoul">Seoul, South Korea</button>
+                </div>
+              </div>
+              <div id="return-store-list" class="shipping-store-list hidden">
+                <p class="shipping-store-selection-copy">Select your pick up store in <button id="return-store-city-change" type="button">Seoul, South Korea</button></p>
+                <div id="return-store-results">
+                  <button class="shipping-store-card return-store-card" type="button" data-store-name="HAUS DOSAN" aria-pressed="false">
+                    <span class="shipping-store-main">
+                      <strong>HAUS DOSAN</strong>
+                      <small>50, Apgujeong-ro 46-gil, Gangnam-gu, Seoul</small>
+                      <span class="shipping-store-hours">Store Hours <span aria-hidden="true"></span></span>
+                    </span>
+                    <span class="shipping-store-side">
+                      <em>4.0km</em>
+                      <span class="shipping-store-view">View in Store</span>
+                    </span>
+                  </button>
+                  <button class="shipping-store-card return-store-card" type="button" data-store-name="GENTLE MONSTER STARFIELD HANAM" aria-pressed="false">
+                    <span class="shipping-store-main">
+                      <strong>GENTLE MONSTER STARFIELD HANAM</strong>
+                      <small>1F Starfield Hanam, 750, Misa-daero, Hanam-si, Gyeonggi-do</small>
+                      <span class="shipping-store-hours">Store Hours <span aria-hidden="true"></span></span>
+                    </span>
+                    <span class="shipping-store-side">
+                      <em>8.0km</em>
+                      <span class="shipping-store-view">View in Store</span>
+                    </span>
+                  </button>
+                  <button class="shipping-store-card return-store-card" type="button" data-store-name="GENTLE MONSTER STARFIELD HANAM 2" aria-pressed="false">
+                    <span class="shipping-store-main">
+                      <strong>GENTLE MONSTER STARFIELD HANAM</strong>
+                      <small>1F Starfield Hanam, 750, Misa-daero, Hanam-si, Gyeonggi-do</small>
+                      <span class="shipping-store-hours">Store Hours <span aria-hidden="true"></span></span>
+                    </span>
+                    <span class="shipping-store-side">
+                      <em>8.0km</em>
+                      <span class="shipping-store-view">View in Store</span>
+                    </span>
+                  </button>
+                  <button class="shipping-show-more" type="button">
+                    <span>SHOW MORE</span>
+                    <span aria-hidden="true"></span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="request-actions">
+        <button class="button secondary" type="button" id="prev-button">GO BACK</button>
+        <button class="button primary" type="button" id="next-button">CONTINUE</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <nav>
+      <a href="#">문의하기</a>
+      <a href="#">고객 서비스</a>
+      <a href="#">스토어 찾기</a>
+      <a href="#">법적 고지</a>
+      <a href="#">개인정보 처리방침</a>
+      <a href="#">국가: South Korea</a>
+    </nav>
+    <p>© 2026 GENTLE MONSTER</p>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Service Design Prototype — GENTLE MONSTER</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="start-page request-page detail-step-active" data-route="shipping">
+  <header class="landing-header start-header">
+    <nav class="landing-nav">
+      <a href="#">Sunglasses</a>
+      <a href="#">Glasses</a>
+      <a href="#">Collections</a>
+      <a href="#">Stores</a>
+      <a href="#">Explore</a>
+    </nav>
+    <a class="landing-brand" href="./index.html" aria-label="GENTLE MONSTER"><img src="./assets/gentle-monster-logo.svg" alt="GENTLE MONSTER"></a>
+    <div class="landing-actions">
+      <a href="#">DISCOVER TOGA 01</a>
+      <button type="button" aria-label="Search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M16 16l5 5"></path></svg>
+      </button>
+      <button type="button" aria-label="Account">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.6-4 4.2-6 8-6s6.4 2 8 6"></path></svg>
+      </button>
+      <button type="button" aria-label="Bag">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8h10l1 13H6L7 8z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="prototype-shell">
+    <section class="request-frame" aria-live="polite">
+      <div class="screen detail-screen">
+        <section class="service-product-hero" aria-label="선택한 제품">
+          <span class="service-product-visual" aria-hidden="true">
+            <img id="service-product-image" src="./assets/product-gelati.png" alt="">
+          </span>
+          <span class="service-product-info">
+            <span class="service-product-title">
+              <strong id="service-product-name">Gelati 01</strong>
+              <span id="service-product-tag" class="product-history-tag hidden">Protection Plan</span>
+            </span>
+            <span id="service-product-purchase">Purchased on June 12, 2024</span>
+            <span id="service-product-store">at Haus Dosan</span>
+            <span id="service-product-warranty" class="muted">Limited warranty, expires June 30, 2026</span>
+            <span id="service-product-warranty-secondary" class="muted">Product service warranty, expires June 30, 2027</span>
+            <small id="service-product-serial">Serial No. GE240612-00003821</small>
+          </span>
+        </section>
+
+        <section id="shipping-detail-panel" class="shipping-detail-panel">
+          <div class="repair-detail-intro">
+            <h1 id="shipping-title">4 Shipping</h1>
+          </div>
+
+          <div id="shipping-collection-section" class="shipping-section">
+            <h2>발송 방법</h2>
+            <div class="shipping-option-grid" aria-label="발송 방법">
+              <button class="shipping-option shipping-method-option" type="button" data-shipping-group="collection" data-shipping-value="store" aria-pressed="false">
+                <strong>DROP-OFF AT STORE</strong>
+              </button>
+              <button class="shipping-option shipping-method-option" type="button" data-shipping-group="collection" data-shipping-value="pickup" aria-pressed="false">
+                <strong>PICK UP AT HOME</strong>
+              </button>
+            </div>
+
+            <div id="shipping-collection-alert" class="shipping-inline-notice hidden">
+              <p>접수 완료 후 영업일 3일 이내 방문합니다.</p>
+              <p>방문 전 기사님이 미리 연락드리며, 기한 내 픽업되지 않으면 접수가 자동 취소됩니다.</p>
+            </div>
+
+            <div id="shipping-address-section" class="shipping-address-section hidden">
+              <h3>Select an address</h3>
+              <button class="shipping-address-card selected" type="button" aria-pressed="true">
+                <span>
+                  <strong>SUYEOL YANG</strong>
+                  <small>101-ho, 41, Eoulmadang-ro 5-gil, Mapo-gu, Seoul, Republic of Korea, 04047<br>01012349876</small>
+                </span>
+                <em>EDIT</em>
+              </button>
+              <button class="shipping-address-card" type="button" aria-pressed="false">
+                <span>
+                  <strong>ANDRE SEO</strong>
+                  <small>101-ho, 41, Eoulmadang-ro 5-gil, Mapo-gu, Seoul, Republic of Korea, 04047<br>01012349876</small>
+                </span>
+                <em>EDIT</em>
+              </button>
+              <button class="shipping-address-card shipping-address-add" type="button">
+                <strong>ADD A NEW ADDRESS</strong>
+              </button>
+            </div>
+
+            <div id="custom-lens-store-guide" class="shipping-info-box shipping-optical-guide hidden">
+              <h2>렌즈 분리 서비스 이용하기</h2>
+            <p>별도로 제작하신 렌즈(도수·블루라이트 등)가 삽입된 경우, 서비스 전 렌즈 분리가 필요합니다.</p>
+            <p>가까운 공식 안경원을 방문하시면 전문 안경사가 안전하게 분리해 드려요. 서비스 접수 후, 가까운 안경원에 방문해 진행해 주세요.</p>
+            <p>› 젠틀몬스터 제품의 기존 렌즈는 분리 없이 바로 접수하실 수 있어요.</p>
+          </div>
+
+            <div id="shipping-store-section" class="shipping-store-section hidden">
+              <p id="shipping-store-intro" class="shipping-store-intro">We'll check the nearest stores you can pick your order.</p>
+              <div id="shipping-store-city-picker" class="shipping-city-picker">
+                <button id="shipping-store-city-button" class="shipping-city-select" type="button" data-city="" aria-expanded="false">
+                  <span>City</span>
+                  <span class="shipping-city-arrow" aria-hidden="true"></span>
+                </button>
+                <div id="shipping-store-city-options" class="shipping-city-options hidden">
+                  <button class="shipping-city-option" type="button" data-city="seoul">Seoul, South Korea</button>
+                </div>
+              </div>
+              <div id="shipping-store-list" class="shipping-store-list hidden">
+                <p class="shipping-store-selection-copy"><span id="shipping-store-selection-label">Select your pick up store in</span> <button id="shipping-store-city-change" type="button">Seoul, South Korea</button></p>
+                <div id="shipping-store-results">
+                  <button class="shipping-store-card" type="button" data-store-name="HAUS DOSAN" aria-pressed="false">
+                    <span class="shipping-store-main">
+                      <strong>HAUS DOSAN</strong>
+                      <small>50, Apgujeong-ro 46-gil, Gangnam-gu, Seoul</small>
+                      <span class="shipping-store-hours">Store Hours <span aria-hidden="true"></span></span>
+                    </span>
+                    <span class="shipping-store-side">
+                      <em>4.0km</em>
+                      <span class="shipping-store-view">View in Store</span>
+                    </span>
+                  </button>
+                  <button class="shipping-store-card" type="button" data-store-name="GENTLE MONSTER STARFIELD HANAM" aria-pressed="false">
+                    <span class="shipping-store-main">
+                      <strong>GENTLE MONSTER STARFIELD HANAM</strong>
+                      <small>1F Starfield Hanam, 750, Misa-daero, Hanam-si, Gyeonggi-do</small>
+                      <span class="shipping-store-hours">Store Hours <span aria-hidden="true"></span></span>
+                    </span>
+                    <span class="shipping-store-side">
+                      <em>8.0km</em>
+                      <span class="shipping-store-view">View in Store</span>
+                    </span>
+                  </button>
+                  <button class="shipping-store-card" type="button" data-store-name="GENTLE MONSTER STARFIELD HANAM 2" aria-pressed="false">
+                    <span class="shipping-store-main">
+                      <strong>GENTLE MONSTER STARFIELD HANAM</strong>
+                      <small>1F Starfield Hanam, 750, Misa-daero, Hanam-si, Gyeonggi-do</small>
+                      <span class="shipping-store-hours">Store Hours <span aria-hidden="true"></span></span>
+                    </span>
+                    <span class="shipping-store-side">
+                      <em>8.0km</em>
+                      <span class="shipping-store-view">View in Store</span>
+                    </span>
+                  </button>
+                  <button class="shipping-show-more" type="button">
+                    <span>SHOW MORE</span>
+                    <span aria-hidden="true"></span>
+                  </button>
+                </div>
+                <div id="shipping-partner-results" class="shipping-partner-list hidden">
+                  <button class="shipping-partner-card" type="button" data-store-name="아이닥 안경원 강남점" aria-pressed="false">
+                    <span>
+                      <strong>아이닥 안경원 강남점</strong>
+                      <small>서울 강남구 강남대로 442</small>
+                    </span>
+                    <em>2.1km</em>
+                  </button>
+                  <button class="shipping-partner-card" type="button" data-store-name="룩옵티컬 홍대입구점" aria-pressed="false">
+                    <span>
+                      <strong>룩옵티컬 홍대입구점</strong>
+                      <small>서울 마포구 양화로 161</small>
+                    </span>
+                    <em>5.4km</em>
+                  </button>
+                  <button class="shipping-partner-card" type="button" data-store-name="서울 안경원 성수점" aria-pressed="false">
+                    <span>
+                      <strong>서울 안경원 성수점</strong>
+                      <small>서울 성동구 성수이로 88</small>
+                    </span>
+                    <em>6.2km</em>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="custom-lens-pickup-notice" class="shipping-warning-box hidden">
+            <h2>꼭 확인해 주세요.</h2>
+            <p>별도로 제작한 렌즈(도수·블루라이트 등)가 장착된 경우, 안전한 진행을 위해 렌즈 분리가 반드시 필요합니다.</p>
+            <p>렌즈가 삽입된 상태로 접수되면 진행이 지연되거나 렌즈만 반송될 수 있으며, 작업·운송 과정에서 렌즈가 손상·분실되어도 보상이 어렵습니다.</p>
+            <p>별도 제작 렌즈는 분리하시고, 제품 본체만 보내주세요.</p>
+            <a href="https://pm-prototype-sys.innergm.com/workflow/projects/5934e871-f49d-4e75-ae42-e36639286c21/screens/reception-step5-shipping#" target="_blank" rel="noreferrer">면책동의 원문 확인하기 →</a>
+            <label class="shipping-check">
+              <input id="custom-lens-consent-check" type="checkbox">
+              <span>내용을 확인했으며, 렌즈를 분리하여 제품만 발송합니다.</span>
+            </label>
+          </div>
+
+          <div id="total-care-schedule-section" class="shipping-section hidden">
+            <h2>서비스 일정</h2>
+            <div id="shipping-date-panel" class="shipping-date-panel">
+              <h3>출고 희망일</h3>
+              <div id="shipping-date-list" class="shipping-date-list" aria-label="출고 희망일"></div>
+              <p>선택하신 날짜는 희망일로, 진행 내용에 따라 실제 출고일은 달라질 수 있습니다.</p>
+              <p>정확한 출고일은 알림톡 또는 이메일로 안내드릴게요.</p>
+            </div>
+            <button class="shipping-option shipping-urgent-option" type="button" data-schedule-mode="urgent" aria-pressed="false">
+              <strong>긴급 서비스</strong>
+              <span>입고 후 5영업일 이내 출고 +n만원</span>
+            </button>
+          </div>
+
+          <div id="shipping-package-consent" class="shipping-consent-box">
+            <p>제품 본체만 보내주세요. 보증카드, 케이스 등 부속품은 분실 우려가 있으니 함께 보내지 마세요.</p>
+            <label class="shipping-check">
+              <input id="shipping-package-consent-check" type="checkbox">
+              <span>확인했습니다.</span>
+            </label>
+          </div>
+
+        </section>
+      </div>
+
+      <div class="request-actions">
+        <button class="button secondary" type="button" id="prev-button">GO BACK</button>
+        <button class="button primary" type="button" id="next-button">CONTINUE</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <nav>
+      <a href="#">문의하기</a>
+      <a href="#">고객 서비스</a>
+      <a href="#">스토어 찾기</a>
+      <a href="#">법적 고지</a>
+      <a href="#">개인정보 처리방침</a>
+      <a href="#">국가: South Korea</a>
+    </nav>
+    <p>© 2026 GENTLE MONSTER</p>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>

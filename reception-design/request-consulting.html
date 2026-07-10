@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Service Design Prototype — GENTLE MONSTER</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="start-page request-page detail-step-active" data-route="consulting">
+  <header class="landing-header start-header">
+    <nav class="landing-nav">
+      <a href="#">Sunglasses</a>
+      <a href="#">Glasses</a>
+      <a href="#">Collections</a>
+      <a href="#">Stores</a>
+      <a href="#">Explore</a>
+    </nav>
+    <a class="landing-brand" href="./index.html" aria-label="GENTLE MONSTER"><img src="./assets/gentle-monster-logo.svg" alt="GENTLE MONSTER"></a>
+    <div class="landing-actions">
+      <a href="#">DISCOVER TOGA 01</a>
+      <button type="button" aria-label="Search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M16 16l5 5"></path></svg>
+      </button>
+      <button type="button" aria-label="Account">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.6-4 4.2-6 8-6s6.4 2 8 6"></path></svg>
+      </button>
+      <button type="button" aria-label="Bag">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8h10l1 13H6L7 8z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="prototype-shell">
+    <section class="request-frame" aria-live="polite">
+      <div class="screen detail-screen">
+        <section class="service-product-hero" aria-label="선택한 제품">
+          <span class="service-product-visual" aria-hidden="true">
+            <img id="service-product-image" src="./assets/product-gelati.png" alt="">
+          </span>
+          <span class="service-product-info">
+            <span class="service-product-title">
+              <strong id="service-product-name">Gelati 01</strong>
+              <span id="service-product-tag" class="product-history-tag hidden">Protection Plan</span>
+            </span>
+            <span id="service-product-purchase">Purchased on June 12, 2024</span>
+            <span id="service-product-store">at Haus Dosan</span>
+            <span id="service-product-warranty" class="muted">Limited warranty, expires June 30, 2026</span>
+            <span id="service-product-warranty-secondary" class="muted">Product service warranty, expires June 30, 2027</span>
+            <small id="service-product-serial">Serial No. GE240612-00003821</small>
+          </span>
+        </section>
+
+        <section id="consulting-detail-panel" class="consulting-detail-panel">
+          <div class="repair-detail-intro">
+            <h1>2 Consultation &amp; other</h1>
+            <p>상담이 필요한 내용을 선택해 주세요.</p>
+          </div>
+
+          <div class="repair-select-group">
+            <h2>문의 유형</h2>
+            <div class="repair-issue-list" aria-label="문의 유형">
+              <button class="consulting-option repair-issue-option" type="button" data-consulting-type="defect">
+                <strong>제품 결함 &amp; 이상 문의</strong>
+                <span>구매일로부터 2년 이내 제품에 한해 제조 결함 여부를 확인해 드립니다.</span>
+              </button>
+              <button class="consulting-option repair-issue-option" type="button" data-consulting-type="parts-request">
+                <strong>부속품 요청</strong>
+                <span>코패드, 나사 등 소모성 부품을 무상으로 보내드립니다.</span>
+              </button>
+              <button class="consulting-option repair-issue-option" type="button" data-consulting-type="agent">
+                <strong>상담원 연결</strong>
+                <span>전문 상담원이 도움을 드립니다.</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="consulting-part-group" class="repair-select-group consulting-part-group hidden">
+            <h2>문제 부위</h2>
+            <div class="repair-part-list" aria-label="문제 부위">
+              <button class="repair-part-option consulting-part-option" type="button" data-repair-part="front">프론트</button>
+              <button class="repair-part-option consulting-part-option" type="button" data-repair-part="left-temple">좌템플</button>
+              <button class="repair-part-option consulting-part-option" type="button" data-repair-part="bridge">브릿지</button>
+              <button class="repair-part-option consulting-part-option" type="button" data-repair-part="right-temple">우템플</button>
+              <button class="repair-part-option consulting-part-option" type="button" data-repair-part="left-lens">좌렌즈</button>
+              <button class="repair-part-option consulting-part-option" type="button" data-repair-part="right-lens">우렌즈</button>
+            </div>
+          </div>
+
+          <div id="consulting-defect-expired" class="consulting-defect-expired hidden">
+            <p>품질 보증 기간(2년)이 만료된 제품은 결함 문의를 접수하기 어렵습니다.</p>
+            <p>다른 메뉴를 선택하시거나 상담원 연결을 이용해 주세요.</p>
+          </div>
+
+          <div id="consulting-accessory-group" class="repair-select-group consulting-accessory-group hidden">
+            <h2>부속품 선택</h2>
+            <div class="consulting-accessory-list" aria-label="부속품 선택">
+              <label class="consulting-accessory-item">
+                <input type="checkbox" data-accessory-key="nose-pad-screw">
+                <span class="consulting-accessory-copy">
+                  <strong>코패드 및 코패드 나사</strong>
+                  <span>코패드와 코패드 고정 나사를 함께 요청합니다.</span>
+                </span>
+                <select data-accessory-quantity="nose-pad-screw" aria-label="코패드 및 코패드 나사 수량">
+                  <option value="1">1쌍</option>
+                  <option value="2">2쌍</option>
+                  <option value="3">3쌍</option>
+                </select>
+              </label>
+              <label class="consulting-accessory-item">
+                <input type="checkbox" data-accessory-key="hinge-screw">
+                <span class="consulting-accessory-copy">
+                  <strong>경첩 나사</strong>
+                  <span>템플 경첩 부위에 사용하는 나사입니다.</span>
+                </span>
+                <select data-accessory-quantity="hinge-screw" aria-label="경첩 나사 수량">
+                  <option value="1">1쌍</option>
+                  <option value="2">2쌍</option>
+                  <option value="3">3쌍</option>
+                </select>
+              </label>
+              <label class="consulting-accessory-item">
+                <input type="checkbox" data-accessory-key="ring-screw">
+                <span class="consulting-accessory-copy">
+                  <strong>고리 나사</strong>
+                  <span>고리 장식 부위에 사용하는 나사입니다.</span>
+                </span>
+                <select data-accessory-quantity="ring-screw" aria-label="고리 나사 수량">
+                  <option value="1">1쌍</option>
+                  <option value="2">2쌍</option>
+                  <option value="3">3쌍</option>
+                </select>
+              </label>
+            </div>
+            <p class="consulting-notice">자가 수리 중 발생한 제품 손상에 대해서는 보증 서비스 적용이 어려울 수 있습니다.</p>
+          </div>
+
+          <div id="consulting-agent-panel" class="consulting-agent-panel hidden">
+            <div class="consulting-channel-list" aria-label="상담 채널">
+              <button class="consulting-contact-option consulting-channel-option" type="button" data-contact-method="email" aria-pressed="false">
+                이메일 문의하기
+              </button>
+              <button class="consulting-contact-option consulting-channel-option" type="button" data-contact-method="chat" aria-pressed="false">
+                채팅 상담
+              </button>
+              <button class="consulting-contact-option consulting-channel-option" type="button" data-contact-method="phone" aria-pressed="false">
+                전화 문의
+              </button>
+            </div>
+
+            <div class="consulting-channel-details">
+              <section class="consulting-contact-detail hidden" data-contact-detail="email">
+                <h2>이메일 문의하기</h2>
+                <p>연락처와 세부 정보를 보내주시면 영업일 기준 48시간 이내에 연락드리겠습니다.</p>
+                <div class="consulting-email-entry">
+                  <label class="consulting-email-field wide">
+                    <span>이메일 주소 *</span>
+                    <input type="email" value="hhj3489@naver.com" placeholder="이메일 주소" aria-label="이메일 주소">
+                  </label>
+                  <label class="consulting-email-field half">
+                    <span>이름 *</span>
+                    <input type="text" value="혜지" placeholder="이름" aria-label="이름">
+                  </label>
+                  <label class="consulting-email-field half">
+                    <span>성 *</span>
+                    <input type="text" value="한" placeholder="성" aria-label="성">
+                  </label>
+                  <label class="consulting-email-field">
+                    <span>국가 *</span>
+                    <select aria-label="국가">
+                      <option value="" disabled>국가</option>
+                      <option value="대한민국" selected>대한민국</option>
+                    </select>
+                  </label>
+                  <label class="consulting-email-field">
+                    <span>문의 주제 *</span>
+                    <select aria-label="문의 주제">
+                      <option value="" disabled>문의 주제</option>
+                      <option value="프로덕트 서비스 & A/S" selected>프로덕트 서비스 &amp; A/S</option>
+                      <option value="제품 결함 문의">제품 결함 문의</option>
+                      <option value="부속품 요청">부속품 요청</option>
+                      <option value="기타">기타</option>
+                    </select>
+                  </label>
+                  <label class="consulting-email-field wide">
+                    <span>메시지 *</span>
+                    <textarea placeholder="메시지를 입력해 주세요." aria-label="메시지"></textarea>
+                  </label>
+                  <div class="consulting-email-upload-field manual-upload-field wide">
+                    <p>이미지를 첨부해 주세요.</p>
+                    <input id="consulting-image-upload" type="file" accept="image/*" multiple>
+                    <button id="consulting-image-upload-button" type="button">이미지 업로드하기</button>
+                    <div id="consulting-image-upload-list" class="manual-upload-list" aria-label="첨부된 문의 이미지"></div>
+                  </div>
+                  <label class="consulting-email-consent wide">
+                    <input type="checkbox">
+                    <span>고객 서비스에 연락하기 위해 입력한 데이터를 국외로 전송하는 데 동의합니다.</span>
+                  </label>
+                  <button class="consulting-email-submit wide" type="button">제출하기</button>
+                </div>
+              </section>
+
+              <section class="consulting-contact-detail hidden" data-contact-detail="chat">
+                <h2>채팅 상담</h2>
+                <p>라이브 챗 상담 운영 시간:<br>월요일~금요일, 오전 9시 30분~오후 5시 (GMT+9)</p>
+                <button id="consulting-live-chat-open" class="consulting-contact-action" type="button">
+                  실시간 채팅 시작하기
+                </button>
+                <div id="consulting-live-chat" class="consulting-live-chat hidden">
+                  <div class="consulting-live-chat-header">
+                    <h3>라이브 챗</h3>
+                    <div class="consulting-live-chat-controls">
+                      <button class="consulting-live-chat-control" type="button" data-live-chat-close aria-label="라이브 챗 최소화"></button>
+                      <button class="consulting-live-chat-control close" type="button" data-live-chat-close aria-label="라이브 챗 닫기"></button>
+                    </div>
+                  </div>
+                  <div class="consulting-live-chat-spacer"></div>
+                  <div class="consulting-live-chat-message">
+                    <strong>G</strong>
+                    <div>
+                      <p>젠틀몬스터에 오신 것을 환영합니다.<br>무엇을 도와드릴까요?</p>
+                      <small>GENTLE MONSTER</small>
+                    </div>
+                    <time>11:55</time>
+                  </div>
+                  <button class="consulting-live-chat-start" type="button">새로운 채팅을 시작하세요</button>
+                </div>
+              </section>
+
+              <section class="consulting-contact-detail hidden" data-contact-detail="phone">
+                <h2>전화 문의</h2>
+                <p>서비스 팀 (+82) 1600-2126으로 전화 주시기 바랍니다.<br>월요일~금요일, 오전 9시 30분~오후 5시 (GMT+9)</p>
+                <p class="consulting-contact-note">통화 내용은 품질 및 모니터링 목적으로 녹음될 수 있습니다.</p>
+                <button class="consulting-contact-action" type="button">
+                  (+82) 1600-2126으로 전화하기
+                </button>
+              </section>
+            </div>
+          </div>
+
+          <div class="total-care-request-field consulting-request-field hidden">
+            <label for="consulting-request-textarea">서비스 요청 사항을 적어주세요</label>
+            <textarea id="consulting-request-textarea" placeholder="구체적으로 작성해 주시면 더 정확한 상담이 가능해요."></textarea>
+          </div>
+        </section>
+
+      </div>
+
+      <div class="request-actions">
+        <button class="button secondary" type="button" id="prev-button">GO BACK</button>
+        <button class="button primary" type="button" id="next-button">CONTINUE</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <nav>
+      <a href="#">문의하기</a>
+      <a href="#">고객 서비스</a>
+      <a href="#">스토어 찾기</a>
+      <a href="#">법적 고지</a>
+      <a href="#">개인정보 처리방침</a>
+      <a href="#">국가: South Korea</a>
+    </nav>
+    <p>© 2026 GENTLE MONSTER</p>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>

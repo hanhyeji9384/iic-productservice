@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Service Design Prototype — GENTLE MONSTER</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="start-page request-page terms-step-active" data-route="terms">
+  <header class="landing-header start-header">
+    <nav class="landing-nav">
+      <a href="#">Sunglasses</a>
+      <a href="#">Glasses</a>
+      <a href="#">Collections</a>
+      <a href="#">Stores</a>
+      <a href="#">Explore</a>
+    </nav>
+    <a class="landing-brand" href="./index.html" aria-label="GENTLE MONSTER"><img src="./assets/gentle-monster-logo.svg" alt="GENTLE MONSTER"></a>
+    <div class="landing-actions">
+      <a href="#">DISCOVER TOGA 01</a>
+      <button type="button" aria-label="Search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M16 16l5 5"></path></svg>
+      </button>
+      <button type="button" aria-label="Account">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.6-4 4.2-6 8-6s6.4 2 8 6"></path></svg>
+      </button>
+      <button type="button" aria-label="Bag">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8h10l1 13H6L7 8z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="prototype-shell">
+    <section class="request-frame" aria-live="polite">
+      <div class="screen terms-screen">
+        <section class="terms-product-hero" aria-label="선택한 제품">
+          <h1>REPAIR REQUEST</h1>
+          <div class="terms-product-summary">
+            <span class="terms-product-visual" aria-hidden="true">
+              <img id="terms-product-image" src="./assets/product-gelati.png" alt="">
+            </span>
+            <span class="terms-product-info">
+              <span class="terms-product-title">
+                <strong id="terms-product-name">Gelati 01</strong>
+                <span id="terms-product-tag" class="product-history-tag hidden">Protection Plan</span>
+              </span>
+              <span id="terms-product-purchase">Purchased on June 12, 2024</span>
+              <span id="terms-product-store">at Haus Dosan</span>
+              <span id="terms-product-warranty" class="muted">Limited warranty, expires June 30, 2026</span>
+              <span id="terms-product-warranty-secondary" class="muted">Product service warranty, expires June 30, 2027</span>
+              <small id="terms-product-serial">Serial No. GE240612-00003821</small>
+            </span>
+          </div>
+        </section>
+
+        <section class="terms-confirm-panel" aria-labelledby="terms-title">
+          <h2 id="terms-title">수리 신청 전, 꼭 확인해 주세요.</h2>
+          <div id="terms-body" class="terms-body"></div>
+          <div id="agreement-list" class="agreement-list" aria-label="필수 동의"></div>
+          <p id="agreement-error" class="agreement-error">필수 확인사항을 확인하고 동의해 주세요.</p>
+        </section>
+      </div>
+
+      <div class="request-actions">
+        <button class="button secondary" type="button" id="prev-button">GO BACK</button>
+        <button class="button primary" type="button" id="next-button">CONTINUE</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <nav>
+      <a href="#">문의하기</a>
+      <a href="#">고객 서비스</a>
+      <a href="#">스토어 찾기</a>
+      <a href="#">법적 고지</a>
+      <a href="#">개인정보 처리방침</a>
+      <a href="#">국가: South Korea</a>
+    </nav>
+    <p>© 2026 GENTLE MONSTER</p>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>

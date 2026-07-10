@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Service Design Prototype — GENTLE MONSTER</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="start-page request-page detail-step-active" data-route="detail">
+  <header class="landing-header start-header">
+    <nav class="landing-nav">
+      <a href="#">Sunglasses</a>
+      <a href="#">Glasses</a>
+      <a href="#">Collections</a>
+      <a href="#">Stores</a>
+      <a href="#">Explore</a>
+    </nav>
+    <a class="landing-brand" href="./index.html" aria-label="GENTLE MONSTER"><img src="./assets/gentle-monster-logo.svg" alt="GENTLE MONSTER"></a>
+    <div class="landing-actions">
+      <a href="#">DISCOVER TOGA 01</a>
+      <button type="button" aria-label="Search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M16 16l5 5"></path></svg>
+      </button>
+      <button type="button" aria-label="Account">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.6-4 4.2-6 8-6s6.4 2 8 6"></path></svg>
+      </button>
+      <button type="button" aria-label="Bag">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8h10l1 13H6L7 8z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="prototype-shell">
+    <section class="request-frame" aria-live="polite">
+      <div class="screen detail-screen">
+        <section class="service-product-hero" aria-label="선택한 제품">
+          <span class="service-product-visual" aria-hidden="true">
+            <img id="service-product-image" src="./assets/product-gelati.png" alt="">
+          </span>
+          <span class="service-product-info">
+            <span class="service-product-title">
+              <strong id="service-product-name">Gelati 01</strong>
+              <span id="service-product-tag" class="product-history-tag hidden">Protection Plan</span>
+            </span>
+            <span id="service-product-purchase">Purchased on June 12, 2024</span>
+            <span id="service-product-store">at Haus Dosan</span>
+            <span id="service-product-warranty" class="muted">Limited warranty, expires June 30, 2026</span>
+            <span id="service-product-warranty-secondary" class="muted">Product service warranty, expires June 30, 2027</span>
+            <small id="service-product-serial">Serial No. GE240612-00003821</small>
+          </span>
+        </section>
+
+        <section id="total-care-detail-panel" class="total-care-detail-panel">
+          <div class="total-care-intro">
+            <h1>2 Total care</h1>
+            <p>오래 함께할 수 있도록, 세심하게 관리해 드립니다.</p>
+          </div>
+
+          <div id="expired-warranty-consent" class="total-care-expiry-card hidden">
+            <h1>서비스 신청 전 확인해 주세요 <span>*</span></h1>
+            <p>보증 기간이 만료된 제품입니다.</p>
+            <p>오래 사용한 제품은 소재가 굳거나 약해져, 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
+            <label class="expiry-consent-check">
+              <input id="expiry-consent-check" type="checkbox">
+              <span>내용을 확인했으며, 손상 가능성을 이해하고 서비스를 신청합니다.</span>
+            </label>
+          </div>
+
+          <div class="total-care-fitting-card">
+            <h1>Fitting</h1>
+            <p>서비스 후 제품의 피팅 상태를 선택해 주세요.</p>
+            <div class="fitting-option-list" role="radiogroup" aria-label="Fitting">
+              <label class="fitting-option selected">
+                <input type="radio" name="fitting-option" value="restore" checked>
+                <span class="fitting-option-copy">
+                  <strong>기본 피팅</strong>
+                  <small>제품 자체의 균형에 맞게 조정합니다.</small>
+                </span>
+              </label>
+              <label class="fitting-option">
+                <input type="radio" name="fitting-option" value="keep">
+                <span class="fitting-option-copy">
+                  <strong>기존 피팅 유지</strong>
+                  <small>발송 시 피팅된 형태를 최대한 유지합니다.</small>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="total-care-request-field">
+            <label for="service-request-textarea">불편하신 점이나 요청 사항을 적어주세요</label>
+            <textarea id="service-request-textarea" placeholder="구체적으로 작성해 주시면 더 정확한 점검이 가능해요."></textarea>
+          </div>
+        </section>
+
+        <section id="repair-detail-panel" class="repair-detail-panel hidden">
+          <div class="repair-detail-intro">
+            <h1>2 Product repair</h1>
+            <p>문제가 있는 부위와 현상을 선택해 주세요.</p>
+          </div>
+
+          <div class="repair-select-group">
+            <h2>문제 부위</h2>
+            <div class="repair-part-list" aria-label="문제 부위">
+              <button class="repair-part-option" type="button" data-repair-part="front">프론트</button>
+              <button class="repair-part-option" type="button" data-repair-part="left-temple">좌템플</button>
+              <button class="repair-part-option" type="button" data-repair-part="bridge">브릿지</button>
+              <button class="repair-part-option" type="button" data-repair-part="right-temple">우템플</button>
+              <button class="repair-part-option" type="button" data-repair-part="left-lens">좌렌즈</button>
+              <button class="repair-part-option" type="button" data-repair-part="right-lens">우렌즈</button>
+            </div>
+          </div>
+
+          <div class="repair-select-group">
+            <h2>문제 현상</h2>
+            <div class="repair-issue-list" aria-label="문제 현상">
+              <button class="repair-issue-option" type="button" data-repair-issue="damage">
+                <strong>파손/손상</strong>
+                <span>프레임 파손, 경첩 변형·변색, 렌즈 스크래치·균열</span>
+              </button>
+              <button class="repair-issue-option" type="button" data-repair-issue="ornament">
+                <strong>장식 문제</strong>
+                <span>장식 탈락·파손·변색</span>
+              </button>
+              <button class="repair-issue-option" type="button" data-repair-issue="parts">
+                <strong>부속품 문제</strong>
+                <span>코받침·나사 등 소모성 부품 손상·분실</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="repair-guidance-empty" class="repair-guidance-card repair-guidance-muted hidden"></div>
+
+          <div id="repair-guide-damage-standard" class="repair-guidance-card repair-cost-card hidden">
+            <h2>수리 안내</h2>
+            <div class="repair-cost-summary">
+              <dl>
+                <div>
+                  <dt>예상 수리 방식</dt>
+                  <dd>부품 교체</dd>
+                </div>
+                <div>
+                  <dt>예상 비용</dt>
+                  <dd>소비자가의 20%</dd>
+                </div>
+              </dl>
+            </div>
+            <p class="repair-guide-note">실제 비용은 입고 후 정밀 점검을 통해 결정됩니다.</p>
+          </div>
+
+          <div id="repair-guide-total-care" class="repair-guidance-card hidden">
+            <h2>선택하신 부위만 빠르게 서비스해 드립니다.</h2>
+            <p>제품 전체를 케어하고 싶으시다면, 토탈 케어로 클리닝 · 폴리싱 · 피팅까지 한 번에 받아보세요.</p>
+            <button class="repair-inline-button" type="button" data-switch-total-care>토탈케어로 변경하기</button>
+          </div>
+
+          <div id="repair-guide-restoration" class="repair-guidance-card hidden">
+            <h2>복원 수리를 의뢰하시겠습니까?</h2>
+            <p>프레임을 용접·도금 방식으로 원형에 가깝게 되살리는 수리입니다.</p>
+            <p>메탈 소재에만 가능하며, 손상 상태에 따라 복원 범위가 달라질 수 있습니다.</p>
+            <p>실물 확인 후 진행 가능 여부를 안내드립니다.</p>
+            <dl class="repair-guide-table compact">
+              <div>
+                <dt>예상 비용</dt>
+                <dd>3만 원</dd>
+              </div>
+              <div>
+                <dt>예상 소요 기간</dt>
+                <dd>입고일로부터 약 15영업일</dd>
+              </div>
+            </dl>
+            <label class="expiry-consent-check">
+              <input id="restoration-consent-check" type="checkbox">
+              <span>복원 수리 안내를 확인했으며, 입고 후 진행 가능 여부 안내에 동의합니다.</span>
+            </label>
+          </div>
+
+          <div id="repair-guide-expired" class="repair-guidance-card hidden">
+            <h2>서비스 신청 전 확인해 주세요 <span>*</span></h2>
+            <p>보증 기간이 만료된 제품입니다.</p>
+            <p>오래 사용한 제품은 소재가 굳거나 약해져, 분해·조립 과정에서 미세한 균열이나 파손이 생길 수 있습니다.</p>
+            <label class="expiry-consent-check">
+              <input id="repair-expired-consent-check" type="checkbox">
+              <span>내용을 확인했으며, 손상 가능성을 이해하고 서비스를 신청합니다.</span>
+            </label>
+          </div>
+
+          <div id="repair-guide-expired-total-care" class="repair-guidance-card repair-total-care-nudge hidden">
+            <h2>선택하신 부위만 빠르게 서비스해 드립니다.</h2>
+            <p>제품 전체를 케어하고 싶으시다면, 토탈 케어로 클리닝 · 폴리싱 · 피팅까지 한 번에 받아보세요.</p>
+            <button class="repair-inline-button" type="button" data-switch-total-care>토탈케어로 변경하기</button>
+          </div>
+
+          <div id="repair-guide-unavailable" class="repair-guidance-card hidden">
+            <h2>해당 수리는 진행이 어렵습니다.</h2>
+            <p>서비스 보증 기간이 경과한 제품은 교체 부품 및 장식 부품 제공이 어렵습니다.</p>
+            <p>다만, 아래 서비스는 계속 이용하실 수 있어요.</p>
+            <div class="repair-available-list">
+              <button type="button" data-switch-total-care>
+                <strong>토탈 케어</strong>
+                <span>클리닝 · 폴리싱 · 피팅 등 전체 케어</span>
+              </button>
+              <button type="button" data-select-parts-issue>
+                <strong>부속품 교체</strong>
+                <span>코받침 · 나사 등 소모성 부품 교체</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="total-care-request-field repair-request-field">
+            <label for="repair-request-textarea">불편하신 점이나 요청 사항을 적어주세요</label>
+            <textarea id="repair-request-textarea" placeholder="구체적으로 작성해 주시면 더 정확한 점검이 가능해요."></textarea>
+          </div>
+        </section>
+      </div>
+
+      <div class="request-actions">
+        <button class="button secondary" type="button" id="prev-button">GO BACK</button>
+        <button class="button primary" type="button" id="next-button">CONTINUE</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <nav>
+      <a href="#">문의하기</a>
+      <a href="#">고객 서비스</a>
+      <a href="#">스토어 찾기</a>
+      <a href="#">법적 고지</a>
+      <a href="#">개인정보 처리방침</a>
+      <a href="#">국가: South Korea</a>
+    </nav>
+    <p>© 2026 GENTLE MONSTER</p>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>

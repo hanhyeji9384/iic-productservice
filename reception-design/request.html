@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Service Design Prototype — GENTLE MONSTER</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="start-page request-page" data-route="products">
+  <header class="landing-header start-header">
+    <nav class="landing-nav">
+      <a href="#">Sunglasses</a>
+      <a href="#">Glasses</a>
+      <a href="#">Collections</a>
+      <a href="#">Stores</a>
+      <a href="#">Explore</a>
+    </nav>
+    <a class="landing-brand" href="./index.html" aria-label="GENTLE MONSTER"><img src="./assets/gentle-monster-logo.svg" alt="GENTLE MONSTER"></a>
+    <div class="landing-actions">
+      <a href="#">DISCOVER TOGA 01</a>
+      <button type="button" aria-label="Search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"></circle><path d="M16 16l5 5"></path></svg>
+      </button>
+      <button type="button" aria-label="Account">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1.6-4 4.2-6 8-6s6.4 2 8 6"></path></svg>
+      </button>
+      <button type="button" aria-label="Bag">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 8h10l1 13H6L7 8z"></path><path d="M9 8a3 3 0 0 1 6 0"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="prototype-shell">
+    <section class="request-frame" aria-live="polite">
+      <div class="screen">
+        <div class="my-products-head">
+          <h1>REPAIR REQUEST</h1>
+        </div>
+
+        <div class="product-selection-list">
+          <button class="product-history-item selected product-selectable" type="button">
+            <span class="product-history-visual" aria-hidden="true">
+              <img src="./assets/product-gelati.png" alt="">
+            </span>
+            <span class="product-history-info">
+              <strong>Gelati 01</strong>
+              <span class="product-history-copy">
+                <span>Purchased on June 12, 2024</span>
+                <span>at Haus Dosan</span>
+                <span class="muted">Limited warranty, expires June 30, 2026</span>
+                <span class="muted">Product service warranty, expires June 30, 2027</span>
+                <small>Serial No. GE240612-00003821</small>
+              </span>
+            </span>
+          </button>
+          <button class="product-history-item product-selectable" type="button">
+            <span class="product-history-visual" aria-hidden="true">
+              <img src="./assets/product-hypeob.png" alt="">
+            </span>
+            <span class="product-history-info">
+              <strong>HYPEOB-01</strong>
+              <span class="product-history-copy">
+                <span>Purchased on October 31, 2025</span>
+                <span>at GENTLE MONSTER Official Online Store</span>
+                <span class="muted">Limited warranty, expires October 31, 2027</span>
+                <span class="muted">Product service warranty, expires October 31, 2028</span>
+                <small>Serial No. HY251031-00009123</small>
+              </span>
+            </span>
+          </button>
+          <button class="product-history-item product-selectable" type="button">
+            <span class="product-history-visual" aria-hidden="true">
+              <img src="./assets/product-smart.png" alt="">
+            </span>
+            <span class="product-history-info">
+              <span class="product-history-title">
+                <strong>Smart Breezeby 01</strong>
+                <span class="product-history-tag">Protection Plan</span>
+              </span>
+              <span class="product-history-copy">
+                <span>Purchased on September 5, 2025</span>
+                <span>at Samsung.com</span>
+                <span class="muted">Limited warranty, expires September 30, 2027</span>
+                <span class="muted">Parts retention period, expires August 31, 2029</span>
+                <small>Serial No. R4AC9001K85</small>
+              </span>
+            </span>
+          </button>
+          <button class="product-history-item product-selectable" type="button">
+            <span class="product-history-visual" aria-hidden="true">
+              <img src="./assets/product-hypeob.png" alt="">
+            </span>
+            <span class="product-history-info">
+              <strong>NORSA-01</strong>
+              <span class="product-history-copy">
+                <span>Purchased on March 18, 2023</span>
+                <span>at GENTLE MONSTER Seongsu</span>
+                <span class="muted">Limited warranty, expired March 31, 2025</span>
+                <span class="muted">Product service warranty, expires March 31, 2026</span>
+                <small>Serial No. NR230318-00004720</small>
+              </span>
+            </span>
+          </button>
+          <button class="product-history-item product-selectable" type="button">
+            <span class="product-history-visual" aria-hidden="true">
+              <img src="./assets/product-gelati.png" alt="">
+            </span>
+            <span class="product-history-info">
+              <strong>Rococo 02</strong>
+              <span class="product-history-copy">
+                <span>Purchased on July 9, 2026</span>
+                <span>at GENTLE MONSTER Hongdae</span>
+                <span class="muted">Limited warranty, expires July 31, 2028</span>
+                <span class="muted">Product service warranty, expires July 31, 2029</span>
+                <small>Serial No. RC260709-00001844</small>
+              </span>
+            </span>
+          </button>
+          <button class="product-history-item product-selectable" type="button">
+            <span class="product-history-visual" aria-hidden="true">
+              <img src="./assets/product-smart.png" alt="">
+            </span>
+            <span class="product-history-info">
+              <strong>JINJU 01</strong>
+              <span class="product-history-copy">
+                <span>Purchased on May 12, 2026</span>
+                <span>at GENTLE MONSTER Official Online Store</span>
+                <span class="muted">Limited warranty, expires May 31, 2028</span>
+                <span class="muted">Parts retention period, expires May 31, 2030</span>
+                <small>Serial No. R4AL5003P17</small>
+              </span>
+            </span>
+          </button>
+          <button class="product-history-item product-selectable" type="button">
+            <span class="product-history-visual" aria-hidden="true">
+              <img src="./assets/product-hypeob.png" alt="">
+            </span>
+            <span class="product-history-info">
+              <strong>Maison Margiela MM114</strong>
+              <span class="product-history-copy">
+                <span>Purchased on November 22, 2024</span>
+                <span>at Haus Nowhere Seoul</span>
+                <span class="muted">Limited warranty, expires November 30, 2026</span>
+                <span class="muted">Product service warranty, expires November 30, 2027</span>
+                <small>Serial No. MM241122-00007681</small>
+              </span>
+            </span>
+          </button>
+          <button class="product-history-item product-selectable" type="button">
+            <span class="product-history-visual" aria-hidden="true">
+              <img src="./assets/product-gelati.png" alt="">
+            </span>
+            <span class="product-history-info">
+              <strong>Atomic 02</strong>
+              <span class="product-history-copy">
+                <span>Purchased on January 14, 2022</span>
+                <span>at GENTLE MONSTER LA</span>
+                <span class="muted">Limited warranty, expired January 31, 2024</span>
+                <span class="muted">Product service warranty, expired January 31, 2025</span>
+                <small>Serial No. AT220114-00002456</small>
+              </span>
+            </span>
+          </button>
+          <button class="product-history-item product-selectable" type="button">
+            <span class="product-history-visual" aria-hidden="true">
+              <img src="./assets/product-hypeob.png" alt="">
+            </span>
+            <span class="product-history-info">
+              <strong>DIDI D 01</strong>
+              <span class="product-history-copy">
+                <span>Purchased on April 12, 2018</span>
+                <span>at GENTLE MONSTER Garosu-gil</span>
+                <span class="muted">Limited warranty, expired April 30, 2020</span>
+                <span class="muted">Product service warranty, expired April 30, 2021</span>
+                <small>Serial No. DD180412-00001037</small>
+              </span>
+            </span>
+          </button>
+        </div>
+
+        <section class="manual-entry-prompt" aria-label="구매 이력 직접 입력 안내">
+          <h2>구매 이력이 조회되지 않나요?</h2>
+          <p>제품명, 구매 정보를 직접 입력하고 구매 증빙 이미지를 필수 첨부해 주세요.</p>
+          <button id="manual-entry-open" type="button">직접 입력하기</button>
+        </section>
+
+        <section class="manual-entry-panel hidden" aria-label="구매 이력 직접 입력">
+          <div class="manual-entry-header">
+            <h2>구매 이력이 조회되지 않는 경우, 제품 정보를 직접 입력해 주세요.</h2>
+            <button id="manual-entry-close" type="button">직접 입력 닫기</button>
+          </div>
+          <div class="manual-entry-form">
+            <div class="manual-entry-field wide searchable-field">
+              <label for="manual-product-name">제품명*</label>
+              <input id="manual-product-name" type="text" placeholder="제품명을 검색하세요" autocomplete="off">
+              <div class="manual-suggestion-list" aria-label="제품명 검색 결과">
+                <button type="button">Gelati 01</button>
+                <button type="button">HYPEOB-01</button>
+                <button type="button">Smart Breezeby 01</button>
+              </div>
+            </div>
+            <label class="manual-entry-field">
+              <span>시리얼 넘버</span>
+              <input id="manual-serial-number" type="text" placeholder="ex) GE240612-00003821">
+            </label>
+            <label class="manual-entry-field">
+              <span>구매일*</span>
+              <input class="manual-date-input" type="date" required>
+            </label>
+            <div class="manual-entry-field wide searchable-field">
+              <label for="manual-purchase-store">구매처*</label>
+              <input id="manual-purchase-store" type="text" placeholder="구매처를 검색하세요" autocomplete="off">
+              <div class="manual-suggestion-list" aria-label="구매처 검색 결과">
+                <button type="button">하우스 도산 · 서울</button>
+                <button type="button">젠틀몬스터 홍대 · 서울</button>
+                <button type="button">젠틀몬스터 부산 신세계 · 부산</button>
+              </div>
+            </div>
+            <div class="manual-entry-field wide manual-upload-field">
+              <p>구매 증빙 이미지를 첨부해 주세요.</p>
+              <input id="manual-proof-upload" type="file" accept="image/*" multiple>
+              <button id="manual-proof-upload-button" type="button">UPLOAD AN IMAGE</button>
+              <div id="manual-proof-upload-list" class="manual-upload-list" aria-label="첨부된 구매 증빙"></div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <div class="request-actions">
+        <button class="button secondary" type="button" id="prev-button">GO BACK</button>
+        <button class="button primary" type="button" id="next-button">CONTINUE</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <nav>
+      <a href="#">문의하기</a>
+      <a href="#">고객 서비스</a>
+      <a href="#">스토어 찾기</a>
+      <a href="#">법적 고지</a>
+      <a href="#">개인정보 처리방침</a>
+      <a href="#">국가: South Korea</a>
+    </nav>
+    <p>© 2026 GENTLE MONSTER</p>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
