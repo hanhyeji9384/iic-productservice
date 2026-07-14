@@ -1,10 +1,11 @@
 import { COMPONENT_RETURNS, CUSTOMERS, TICKETS } from './mock-data'
-import type { ComponentReturn, ComponentType, Customer, CustomerAddress, Ticket } from './types'
+import type { ComponentReturn, ComponentType, Customer, CustomerAddress, Ticket, TicketChangeLog } from './types'
 
 const CUSTOMER_OVERRIDES_KEY = 'ps-admin-customer-overrides'
 const EXTRA_TICKETS_KEY = 'ps-admin-extra-tickets'
 const CUSTOMER_CANCELLED_TICKETS_KEY = 'ps-customer-cancelled-tickets'
 const COMPONENT_RETURNS_KEY = 'ps-admin-component-returns'
+const TICKET_CHANGE_LOGS_KEY = 'ps-admin-ticket-change-logs'
 
 type CustomerOverride = Partial<Omit<Customer, 'id'>>
 
@@ -28,6 +29,12 @@ export function localTimestamp() {
   const now = new Date()
   const pad = (value: number) => String(value).padStart(2, '0')
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
+}
+
+function normalizeTicketWording(ticket: Ticket): Ticket {
+  const legacyTotalCareLabel = '\uC820\uD2C0\uCF00\uC5B4'
+  if (ticket.repairDetail !== legacyTotalCareLabel) return ticket
+  return { ...ticket, repairDetail: '토탈케어' }
 }
 
 function getCustomerOverrides() {
@@ -119,16 +126,18 @@ export function getTicketsWithExtras(): Ticket[] {
     ...TICKETS.filter(ticket => !extraNos.has(ticket.ticketNo)),
   ]
 
-  return merged.map(ticket => cancelledTickets[ticket.ticketNo]
-    ? {
-        ...ticket,
+  return merged.map(ticket => {
+    const normalizedTicket = normalizeTicketWording(ticket)
+    return cancelledTickets[normalizedTicket.ticketNo]
+      ? {
+        ...normalizedTicket,
         status: 'CANCELED' as const,
         paymentCompleted: 'C' as const,
         paymentDate: null,
-        repairDetail: ticket.repairDetail || '수리취소',
+        repairDetail: normalizedTicket.repairDetail || '수리취소',
       }
-    : ticket
-  )
+      : normalizedTicket
+  })
 }
 
 export function addPrototypeTicket(ticket: Ticket) {
@@ -143,6 +152,23 @@ export function updatePrototypeTicket(ticketNo: string, patch: Partial<Ticket>) 
   const updatedTicket = { ...existing, ...patch }
   const extras = getExtraTickets().filter(item => item.ticketNo !== ticketNo)
   writeJson(EXTRA_TICKETS_KEY, [updatedTicket, ...extras])
+}
+
+export function getTicketChangeLogs(ticketNo: string): TicketChangeLog[] {
+  return readJson<TicketChangeLog[]>(TICKET_CHANGE_LOGS_KEY, [])
+    .filter(log => log.ticketNo === ticketNo)
+    .sort((a, b) => b.changedAt.localeCompare(a.changedAt))
+}
+
+export function appendTicketChangeLog(log: Omit<TicketChangeLog, 'id' | 'changedAt'> & { changedAt?: string }) {
+  const savedLogs = readJson<TicketChangeLog[]>(TICKET_CHANGE_LOGS_KEY, [])
+  const nextLog: TicketChangeLog = {
+    ...log,
+    id: `ticket-log-${log.ticketNo}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    changedAt: log.changedAt ?? localTimestamp(),
+  }
+  writeJson(TICKET_CHANGE_LOGS_KEY, [nextLog, ...savedLogs])
+  return nextLog
 }
 
 function getStoredComponentReturns() {

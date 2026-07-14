@@ -354,7 +354,7 @@ export function PartNewPage() {
               readOnly
               className={`${inputCls} w-full bg-gray-50 text-gray-500 cursor-default select-none`}
             />
-            <p className="text-[11px] text-gray-400 mt-1"><I18nText i18nKey="parts.create.auto_code_hint">PS에서 자동 생성됩니다.</I18nText></p>
+            <p className="text-[11px] text-gray-400 mt-1"><I18nText i18nKey="parts.create.auto_code_hint">영문 포함 8자리로 자동 생성됩니다.</I18nText></p>
           </div>
           <div>
             <ProductSearchCombo products={products} value={form.productCode} onChange={set('productCode')} disabled={isEdit} />

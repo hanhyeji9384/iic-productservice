@@ -2,15 +2,17 @@ import { useState, useEffect, useRef } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Barcode, ChevronDown, ExternalLink, History, Mail, MessageSquare, Package, RotateCcw, ScanLine, Search, Send, X } from 'lucide-react'
 import { BRANCHES, MEMBERS, PRODUCTS as PRODUCT_SNAPSHOTS, STORES } from '@/lib/mock-data'
-import { createComponentReturnFromTicket, getComponentReturns, getCustomersWithOverrides, getTicketsWithExtras, updatePrototypeTicket } from '@/lib/prototype-storage'
+import { appendTicketChangeLog, createComponentReturnFromTicket, getComponentReturns, getCustomersWithOverrides, getTicketChangeLogs, getTicketsWithExtras, updatePrototypeTicket } from '@/lib/prototype-storage'
 import { COMPONENT_TYPE_OPTIONS } from '@/lib/component-return'
 import { getSoDocumentInfo } from '@/lib/ticket-so'
 import { useParts } from '@/lib/parts-context'
+import { useMembers } from '@/lib/members-context'
 import { PRODUCT_FACTORY_SELECT_OPTIONS, normalizeProductFactory } from '@/lib/product-factories'
-import type { ComponentType, PaymentCompleted, Product, Ticket, TicketReceptionTag, TicketStatus } from '@/lib/types'
+import type { ComponentType, Member, PaymentCompleted, Product, Ticket, TicketChangeLog, TicketChangeType, TicketReceptionTag, TicketStatus } from '@/lib/types'
 import { BarcodePrintModal } from '@/components/barcode-print-modal'
 import { I18nText } from '@/lib/i18n-inspector'
 import { ticketStatusI18nKey } from '@/lib/ticket-status-i18n'
+import { MESSAGE_TEMPLATES, TEMPLATE_KIND_LABEL, type MessageChannel, type MessageTemplate, type TemplateKind } from '@/lib/message-templates'
 
 const STATUS_META: Record<TicketStatus, { label: string; className: string }> = {
   RECEIVED:          { label: '접수',            className: 'bg-blue-50 text-blue-700 border-blue-200' },
@@ -22,24 +24,15 @@ const STATUS_META: Record<TicketStatus, { label: string; className: string }> = 
   REPAIRING:         { label: '수리 진행 중',     className: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
   REPAIR_DONE:       { label: '수리 완료',        className: 'bg-teal-50 text-teal-700 border-teal-200' },
   READY_TO_SHIP:     { label: '출고 준비',        className: 'bg-lime-50 text-lime-700 border-lime-200' },
-  SHIPPING:          { label: '배송 중',          className: 'bg-sky-50 text-sky-700 border-sky-200' },
-  SHIPPED:           { label: '출고 완료',        className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-  CLOSED:            { label: '완료',             className: 'bg-gray-100 text-gray-600 border-gray-200' },
+  SHIPPING:          { label: '배송 시작',        className: 'bg-sky-50 text-sky-700 border-sky-200' },
+  SHIPPED:           { label: '배송 완료',        className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  CLOSED:            { label: '서비스 완료',      className: 'bg-gray-100 text-gray-600 border-gray-200' },
   CANCELED:          { label: '취소',             className: 'bg-red-50 text-red-600 border-red-200' },
   PICKUP_WAITING:    { label: '회수 대기 중',      className: 'bg-violet-50 text-violet-700 border-violet-200' },
+  PARTS_READY:       { label: '부품 준비 완료',    className: 'bg-pink-50 text-pink-700 border-pink-200' },
 }
 
 const PAYMENT_META: Record<PaymentCompleted, string> = { Y: '완료', N: '미완료', C: '취소' }
-
-type TemplateKind = 'AUTO' | 'MANUAL'
-type MessageChannel = 'kakao' | 'email'
-type MessageTemplate = {
-  id: string
-  channel: MessageChannel
-  kind: TemplateKind
-  title: string
-  stage: string
-}
 
 type MessageLog = {
   id: string
@@ -52,10 +45,10 @@ type MessageLog = {
 type PurchaseProofValue = NonNullable<Ticket['purchaseProofType']>
 type EditableFieldOption = { value: string; label: string }
 
-const TEMPLATE_KIND_LABEL: Record<TemplateKind, string> = {
-  AUTO: '자동',
-  MANUAL: '수동',
-}
+const TICKET_STATUS_OPTIONS: EditableFieldOption[] = Object.entries(STATUS_META).map(([value, meta]) => ({
+  value,
+  label: meta.label,
+}))
 
 const PURCHASE_PROOF_OPTIONS: Array<{ value: PurchaseProofValue; label: string }> = [
   { value: '-', label: '-' },
@@ -64,9 +57,13 @@ const PURCHASE_PROOF_OPTIONS: Array<{ value: PurchaseProofValue; label: string }
   { value: 'RECEIPT', label: '구매 영수증' },
   { value: 'OTHER', label: '기타' },
 ]
+const YN_OPTIONS: EditableFieldOption[] = [
+  { value: 'Y', label: 'Y' },
+  { value: 'N', label: 'N' },
+]
 
 const PICKUP_CARRIER_OPTIONS: EditableFieldOption[] = [
-  { value: 'CJ', label: 'CJ대한통운' },
+  { value: 'CJ대한통운', label: 'CJ대한통운' },
   { value: 'DHL', label: 'DHL' },
 ]
 const US_PICKUP_CARRIER_OPTIONS: EditableFieldOption[] = [
@@ -129,7 +126,7 @@ const REPAIR_DETAIL_OPTIONS: EditableFieldOption[] = [
   { value: '융접수리', label: '융접수리' },
   { value: '제품교환', label: '제품교환' },
   { value: '타제품교환', label: '타제품교환' },
-  { value: '부속품제공', label: '부속품제공' },
+  { value: '부품제공', label: '부품제공' },
   { value: '미입금발송', label: '미입금발송' },
   { value: '수리불가', label: '수리불가' },
   { value: '수리취소', label: '수리취소' },
@@ -139,6 +136,13 @@ const REPAIR_CHARGE_OPTIONS: EditableFieldOption[] = [
   { value: '-', label: '-' },
   { value: 'PAID', label: '유상' },
   { value: 'FREE', label: '무상' },
+]
+const NO_REPAIR_REASON_OPTIONS: EditableFieldOption[] = [
+  { value: '-', label: '-' },
+  { value: 'FAKE', label: '가품' },
+  { value: 'PURCHASE_PROOF_UNAVAILABLE', label: '구매증빙불가' },
+  { value: 'PRODUCT_CONDITION', label: '제품상태 문제' },
+  { value: 'OTHER', label: '기타' },
 ]
 const LENS_TYPE_OPTIONS: EditableFieldOption[] = [
   { value: '-', label: '-' },
@@ -168,13 +172,14 @@ const REPAIR_SYMPTOM_OPTIONS = [
   '토탈 케어 요청',
   '제품 파손 · 변형',
   '장식 문제',
-  '부속품 교체',
-  '부속품 요청',
+  '부품 교체',
   '제품 결함 · 이상 확인요청',
   '그 외 문제',
   '부품 분실',
   '매장/SIS 파손',
   '가품',
+  '구매증빙불가',
+  '제품상태 문제',
 ]
 const REPAIR_ISSUE_AREA_OPTIONS = [
   '경첩', '나사', '렌즈', '리벳', '림 고리', '슬렉스', '와이어', '코기둥', '코받침',
@@ -184,23 +189,6 @@ const REPAIR_ISSUE_AREA_OPTIONS = [
 const REPAIR_ISSUE_TYPE_OPTIONS = [
   '박리', '변형', '부식', '유격', '탈락', '파손', '마모', '변색', '이염',
   '수축', '백화', '들뜸', '균열', 'UP 불량', '오염', '손상',
-]
-
-const MESSAGE_TEMPLATES: MessageTemplate[] = [
-  { id: '024040000393', channel: 'kakao', kind: 'AUTO',   title: '[판정] 무상 수리 안내',       stage: '판정' },
-  { id: '024040000395', channel: 'kakao', kind: 'AUTO',   title: '[판정] 유상 결제 안내',       stage: '판정' },
-  { id: '024040000494', channel: 'kakao', kind: 'AUTO',   title: '[출고] 매장 수령 안내',       stage: '출고' },
-  { id: '024040001151', channel: 'kakao', kind: 'AUTO',   title: '[출고] 택배 출고 안내',       stage: '출고' },
-  { id: '025050000154', channel: 'kakao', kind: 'MANUAL', title: '[수동] 제품 교환 안내',       stage: '판정' },
-  { id: '025050000157', channel: 'kakao', kind: 'MANUAL', title: '[수동] 수리 불가 안내',       stage: '판정' },
-  { id: '025050000219', channel: 'kakao', kind: 'MANUAL', title: '[수동] 운송장 정보 안내',     stage: '출고' },
-  { id: 'mail-judgement-free',     channel: 'email', kind: 'AUTO',   title: '[판정] 무상 수리 안내',       stage: '판정' },
-  { id: 'mail-judgement-paid',     channel: 'email', kind: 'AUTO',   title: '[판정] 유상 결제 안내',       stage: '판정' },
-  { id: 'mail-ship-out-delivery',  channel: 'email', kind: 'AUTO',   title: '[출고] 배송 출고 안내',       stage: '출고' },
-  { id: 'mail-moving-store',       channel: 'email', kind: 'AUTO',   title: '[출고] 매장 이동 안내',       stage: '출고' },
-  { id: 'mail-repair-cancel',      channel: 'email', kind: 'MANUAL', title: '[수동] 수리 취소 안내',       stage: '취소' },
-  { id: 'mail-no-repair',          channel: 'email', kind: 'MANUAL', title: '[수동] 수리 불가 안내',       stage: '판정' },
-  { id: 'mail-address-check',      channel: 'email', kind: 'MANUAL', title: '[수동] 주소 확인 요청',       stage: '출고' },
 ]
 
 const RECEPTION_TAG_META: Record<TicketReceptionTag, { label: string; className: string }> = {
@@ -218,9 +206,348 @@ const RECEPTION_TAG_META: Record<TicketReceptionTag, { label: string; className:
   },
 }
 
+const TICKET_CHANGE_SECTION_META: Record<TicketChangeType, { label: string; className: string }> = {
+  CUSTOMER: {
+    label: '고객 정보',
+    className: 'bg-slate-50 text-slate-600 border-slate-200',
+  },
+  PRODUCT: {
+    label: '제품 정보',
+    className: 'bg-indigo-50 text-indigo-600 border-indigo-200',
+  },
+  RECEPTION: {
+    label: '접수 정보',
+    className: 'bg-blue-50 text-blue-600 border-blue-200',
+  },
+  STATUS: {
+    label: '상태',
+    className: 'bg-lime-50 text-lime-700 border-lime-200',
+  },
+  REPAIR: {
+    label: '수리 정보',
+    className: 'bg-violet-50 text-violet-600 border-violet-200',
+  },
+  PAYMENT: {
+    label: '결제 정보',
+    className: 'bg-emerald-50 text-emerald-600 border-emerald-200',
+  },
+  CONSULTATION: {
+    label: '상담',
+    className: 'bg-amber-50 text-amber-700 border-amber-200',
+  },
+  SHIPPING: {
+    label: '출고 정보',
+    className: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+  },
+  ASSIGNEE: {
+    label: '담당자',
+    className: 'bg-gray-50 text-gray-600 border-gray-200',
+  },
+  SYSTEM: {
+    label: '시스템',
+    className: 'bg-gray-50 text-gray-500 border-gray-200',
+  },
+}
+
+type TicketChangeValueFormatter = (value: unknown, ticket: Ticket, members: Member[]) => string
+type TicketChangeFieldMeta = {
+  label: string
+  changeType: TicketChangeType
+  format?: TicketChangeValueFormatter
+}
+
+function optionLabel(options: EditableFieldOption[] | Array<{ value: string; label: string }>, value: unknown) {
+  if (value === null || value === undefined || value === '') return '-'
+  const normalizedValue = String(value ?? '')
+  return options.find(option => option.value === normalizedValue)?.label ?? normalizedValue
+}
+
+function formatChangeValue(value: unknown) {
+  if (value === null || value === undefined || value === '') return '-'
+  if (Array.isArray(value)) return value.length > 0 ? value.join(', ') : '-'
+  return String(value)
+}
+
+function formatMoneyChangeValue(value: unknown) {
+  const amount = Number(value)
+  if (!Number.isFinite(amount) || amount <= 0) return '0'
+  return amount.toLocaleString('ko-KR')
+}
+
+function formatStatusChangeValue(value: unknown) {
+  const status = value as TicketStatus
+  return STATUS_META[status]?.label ?? formatChangeValue(value)
+}
+
+function formatMemberChangeValue(value: unknown, fallbackName: string | undefined, members: Member[]) {
+  const id = String(value ?? '')
+  if (!id) return '-'
+  return getMemberLabel(id, undefined, members)
+    ?? getMemberLabel(id, fallbackName, members)
+    ?? id
+}
+
+const TICKET_CHANGE_FIELD_META: Partial<Record<keyof Ticket, TicketChangeFieldMeta>> = {
+  status: {
+    label: '티켓 상태',
+    changeType: 'STATUS',
+    format: formatStatusChangeValue,
+  },
+  productFactory1: {
+    label: '생산공장1',
+    changeType: 'PRODUCT',
+  },
+  productFactory2: {
+    label: '생산공장2',
+    changeType: 'PRODUCT',
+  },
+  productFactory3: {
+    label: '생산공장3',
+    changeType: 'PRODUCT',
+  },
+  reRepairYn: {
+    label: '재수리 여부',
+    changeType: 'RECEPTION',
+  },
+  urgentRepairYn: {
+    label: '긴급수리 여부',
+    changeType: 'RECEPTION',
+  },
+  pickupTrackingNo: {
+    label: '회수 운송장 No.',
+    changeType: 'RECEPTION',
+  },
+  purchaseProofType: {
+    label: '구매증빙 유형',
+    changeType: 'RECEPTION',
+    format: value => optionLabel(PURCHASE_PROOF_OPTIONS, value),
+  },
+  purchaseInfoSource: {
+    label: '구매정보 출처',
+    changeType: 'RECEPTION',
+  },
+  purchaseDate: {
+    label: '구매일',
+    changeType: 'RECEPTION',
+  },
+  purchasePlace: {
+    label: '구매처',
+    changeType: 'RECEPTION',
+  },
+  customerRequest: {
+    label: '고객 요청사항',
+    changeType: 'RECEPTION',
+  },
+  symptom: {
+    label: '현상',
+    changeType: 'REPAIR',
+  },
+  repairPartTags: {
+    label: '현상 부위',
+    changeType: 'REPAIR',
+  },
+  repairIssueTypeTags: {
+    label: '문제 유형',
+    changeType: 'REPAIR',
+  },
+  repairIssueAreaTags: {
+    label: '문제 부위',
+    changeType: 'REPAIR',
+  },
+  careRequest: {
+    label: '케어요청사항',
+    changeType: 'REPAIR',
+  },
+  lensType: {
+    label: '렌즈 유형',
+    changeType: 'REPAIR',
+    format: value => optionLabel(LENS_TYPE_OPTIONS, value),
+  },
+  repairDepartment: {
+    label: '수리 진행처',
+    changeType: 'REPAIR',
+  },
+  repairDetail: {
+    label: '수리 내용',
+    changeType: 'REPAIR',
+    format: value => normalizeRepairDetail(formatChangeValue(value)),
+  },
+  noRepairReason: {
+    label: '수리불가 사유',
+    changeType: 'REPAIR',
+    format: value => optionLabel(NO_REPAIR_REASON_OPTIONS, value),
+  },
+  repairChargeType: {
+    label: '수리비용 결정',
+    changeType: 'REPAIR',
+    format: value => optionLabel(REPAIR_CHARGE_OPTIONS, value),
+  },
+  repairCost: {
+    label: '수리 비용',
+    changeType: 'REPAIR',
+    format: formatMoneyChangeValue,
+  },
+  repairBeginDate: {
+    label: '수리 진행일',
+    changeType: 'REPAIR',
+  },
+  factoryForwardingDate: {
+    label: '협력업체 출고일',
+    changeType: 'REPAIR',
+  },
+  factoryReceivingDate: {
+    label: '협력업체 입고일',
+    changeType: 'REPAIR',
+  },
+  repairAgainReason: {
+    label: '재수리 사유',
+    changeType: 'REPAIR',
+  },
+  productProblemYn: {
+    label: '제품 문제 여부',
+    changeType: 'REPAIR',
+  },
+  repairReference: {
+    label: '수리 참고사항',
+    changeType: 'REPAIR',
+  },
+  repairSpecialNote: {
+    label: '수리 특이사항',
+    changeType: 'REPAIR',
+  },
+  technicianId: {
+    label: '서비스 기술자',
+    changeType: 'ASSIGNEE',
+    format: (value, ticket, members) => formatMemberChangeValue(value, ticket.technicianName, members),
+  },
+  judgementManagerId: {
+    label: '판정 담당자',
+    changeType: 'ASSIGNEE',
+    format: (value, ticket, members) => formatMemberChangeValue(value, ticket.judgementManagerName, members),
+  },
+  consultationRequestedYn: {
+    label: '상담 희망 여부',
+    changeType: 'CONSULTATION',
+  },
+  outboundType: {
+    label: 'Outbound 유형',
+    changeType: 'CONSULTATION',
+    format: value => optionLabel(OUTBOUND_TYPE_OPTIONS, value),
+  },
+  consultationManager: {
+    label: '상담 담당자',
+    changeType: 'CONSULTATION',
+  },
+  consultationStatus: {
+    label: '상담 상태',
+    changeType: 'CONSULTATION',
+    format: value => optionLabel(CONSULTATION_STATUS_OPTIONS, value),
+  },
+  consultationCompletedAt: {
+    label: '상담일시',
+    changeType: 'CONSULTATION',
+  },
+  consultationExceptionCategory: {
+    label: '예외 처리 분류',
+    changeType: 'CONSULTATION',
+  },
+  consultationRepairMemo: {
+    label: '수리 전달 사항',
+    changeType: 'CONSULTATION',
+  },
+  judgementCompletedAt: {
+    label: '판정 완료일',
+    changeType: 'SYSTEM',
+  },
+  paymentCompleted: {
+    label: '결제 완료 여부',
+    changeType: 'PAYMENT',
+    format: value => PAYMENT_META[value as PaymentCompleted] ?? formatChangeValue(value),
+  },
+  paymentDate: {
+    label: '결제 일자',
+    changeType: 'PAYMENT',
+  },
+  paymentExpiresAt: {
+    label: '결제 만료기한',
+    changeType: 'PAYMENT',
+  },
+  paymentApprovalNo: {
+    label: '결제 승인 번호',
+    changeType: 'PAYMENT',
+  },
+  shippingMethod: {
+    label: '출고방식',
+    changeType: 'SHIPPING',
+    format: value => optionLabel(SHIPPING_METHOD_OPTIONS, value),
+  },
+  trackingNo: {
+    label: '운송장 No.',
+    changeType: 'SHIPPING',
+  },
+  outboundCarrier: {
+    label: '운송사',
+    changeType: 'SHIPPING',
+  },
+  shipmentCompletedYn: {
+    label: '출고완료',
+    changeType: 'SHIPPING',
+  },
+  shipmentCompletedAt: {
+    label: '출고완료일',
+    changeType: 'SHIPPING',
+  },
+  deliveryCompletedYn: {
+    label: '배송완료',
+    changeType: 'SHIPPING',
+  },
+  deliveredAt: {
+    label: '배송일자',
+    changeType: 'SHIPPING',
+  },
+  storePickupCompletedYn: {
+    label: '고객픽업여부(매장)',
+    changeType: 'SHIPPING',
+  },
+  storePickupCompletedAt: {
+    label: '고객픽업일자(매장)',
+    changeType: 'SHIPPING',
+  },
+  hqTrackingNo: {
+    label: 'HQ 운송장 No.',
+    changeType: 'SHIPPING',
+  },
+  hqInvoiceNo: {
+    label: 'HQ Invoice No.',
+    changeType: 'SHIPPING',
+  },
+  corporateShippedAt: {
+    label: '법인 출고완료일',
+    changeType: 'SHIPPING',
+  },
+  corporateTrackingNo: {
+    label: '법인 운송장 No.',
+    changeType: 'SHIPPING',
+  },
+  corporateInvoiceNo: {
+    label: '법인 Invoice No.',
+    changeType: 'SHIPPING',
+  },
+  reexportCondition: {
+    label: '재수출 이행 조건',
+    changeType: 'SHIPPING',
+  },
+}
+
+const TICKET_CHANGE_IGNORED_FIELDS = new Set<keyof Ticket>([
+  'productFactory',
+  'technicianName',
+  'judgementManagerName',
+])
+
 function getReceptionTitle(ticket: Ticket) {
-  if (ticket.receptionTitle) return ticket.receptionTitle
-  return /online/i.test(ticket.receptionPlace) ? 'PS 온라인 접수' : null
+  if (!ticket.receptionTitle || ticket.receptionTitle === 'PS 온라인 접수') return null
+  return ticket.receptionTitle
 }
 
 function isOnlineAutoCreatedTicket(ticket: Ticket) {
@@ -283,21 +610,47 @@ function hasDeliveryCompletedStatus(ticket: Ticket) {
   return ['SHIPPED', 'CLOSED'].includes(ticket.status)
 }
 
+function normalizeCountry(value?: string | null) {
+  return String(value ?? '').trim().toUpperCase()
+}
+
+function isKoreaCountry(value?: string | null) {
+  const country = normalizeCountry(value)
+  return ['KR', 'KOR', 'KOREA', 'SOUTH KOREA', 'REPUBLIC OF KOREA', '대한민국', '한국'].includes(country)
+}
+
+function getBranchCountry(ticket: Ticket) {
+  return BRANCHES.find(branch => branch.code === ticket.branchCode)?.country ?? null
+}
+
+function hasDomesticReceptionMarker(ticket: Ticket) {
+  return /국내|KOREA/i.test(`${ticket.receptionPlace} ${ticket.receptionTitle ?? ''}`)
+}
+
+function isDomesticReceptionTicket(ticket: Ticket) {
+  if (isKoreaCountry(ticket.deliveryCountry)) return true
+  return isKoreaCountry(getBranchCountry(ticket)) && hasDomesticReceptionMarker(ticket)
+}
+
 function isOverseasDestination(ticket: Ticket) {
-  const country = String(ticket.deliveryCountry ?? '').trim().toUpperCase()
-  if (country && !['KR', 'KOR', 'KOREA', '대한민국'].includes(country)) return true
+  const country = normalizeCountry(ticket.deliveryCountry)
+  if (country) return !isKoreaCountry(country)
+  if (isDomesticReceptionTicket(ticket)) return false
   return isGlobalTicket(ticket)
 }
 
 function getNormalizedShippingMethod(ticket: Ticket, receptionMethod: ReturnType<typeof getReceptionMethod>) {
   const raw = String(ticket.shippingMethod ?? '').trim()
+  const is3pl = /3PL/i.test(`${ticket.repairDepartment} ${raw}`)
+  const overseas = isOverseasDestination(ticket)
+
+  if (!overseas && /해외|DHL|FedEx/i.test(raw)) return is3pl ? '택배(3PL)' : '택배(HQ)'
+
   const known = SHIPPING_METHOD_OPTIONS.find(option => option.value === raw)
   if (known) return known.value
   if (/퀵/.test(raw)) return '퀵(HQ)'
   if (/자체/.test(raw)) return '자체 수령(HQ)'
 
-  const is3pl = /3PL/i.test(`${ticket.repairDepartment} ${raw}`)
-  const overseas = isOverseasDestination(ticket)
   if (is3pl) return overseas ? '해외 택배(3PL)' : '택배(3PL)'
   if (overseas) return '해외 택배(HQ)'
   if (receptionMethod === 'store') return '행낭(HQ)'
@@ -305,10 +658,29 @@ function getNormalizedShippingMethod(ticket: Ticket, receptionMethod: ReturnType
 }
 
 function getOutboundCarrier(ticket: Ticket, normalizedShippingMethod: string) {
+  if (ticket.outboundCarrier) return ticket.outboundCarrier
   if (normalizedShippingMethod.includes('행낭')) return '성화기업'
   if (normalizedShippingMethod.includes('해외')) return isUsTicket(ticket) ? 'FedEx' : 'DHL'
-  if (normalizedShippingMethod.includes('택배')) return 'CJ'
+  if (normalizedShippingMethod.includes('택배')) return 'CJ대한통운'
   return '-'
+}
+
+function isHomeDeliveryShipment(ticket: Ticket, normalizedShippingMethod: string) {
+  const sourceText = `${ticket.shippingMethod} ${normalizedShippingMethod}`
+  if (/행낭|매장|스토어|자체\s*수령|store/i.test(sourceText)) return false
+  return /자택|택배|배송|DHL|FedEx|CJ/i.test(sourceText)
+}
+
+function isOutboundShipmentLocked(ticket: Ticket) {
+  return Boolean(
+    ticket.trackingNo ||
+    ticket.shippedAt ||
+    ticket.shipmentCompletedYn === 'Y' ||
+    ticket.shipmentCompletedAt ||
+    ticket.deliveryCompletedYn === 'Y' ||
+    ticket.deliveredAt ||
+    ['SHIPPING', 'SHIPPED', 'CLOSED'].includes(ticket.status),
+  )
 }
 
 function getShipmentCompletedYn(ticket: Ticket) {
@@ -351,17 +723,20 @@ function getHqTrackingNo(ticket: Ticket, normalizedShippingMethod: string) {
 }
 
 function isGlobalTicket(ticket: Ticket) {
+  if (isDomesticReceptionTicket(ticket)) return false
   return ticket.branchCode === 'C1002' || /Global|US|DHL|FedEx/i.test(`${ticket.receptionPlace} ${ticket.shippingMethod}`)
 }
 
 function isUsTicket(ticket: Ticket) {
+  if (isDomesticReceptionTicket(ticket)) return false
   return ticket.branchCode === 'C1002' || /US|U\.S\.A|IICOMBINED|FedEx|미국/i.test(`${ticket.receptionPlace} ${ticket.shippingMethod}`)
 }
 
 function getDefaultPickupCarrier(ticket: Ticket) {
+  if (!isOverseasDestination(ticket)) return 'CJ대한통운'
   if (isUsTicket(ticket)) return 'FedEx'
   if (isGlobalTicket(ticket)) return 'DHL'
-  return 'CJ'
+  return 'CJ대한통운'
 }
 
 function parsePickupTrackingNo(ticket: Ticket, value?: string | null) {
@@ -373,7 +748,7 @@ function parsePickupTrackingNo(ticket: Ticket, value?: string | null) {
   if (!carrierMatch) return { carrier: defaultCarrier, trackingNo: raw }
 
   const matchedCarrier = carrierMatch[1].toLowerCase()
-  const carrier = matchedCarrier.startsWith('fedex') ? 'FedEx' : matchedCarrier.startsWith('dhl') ? 'DHL' : 'CJ'
+  const carrier = matchedCarrier.startsWith('fedex') ? 'FedEx' : matchedCarrier.startsWith('dhl') ? 'DHL' : 'CJ대한통운'
   return {
     carrier,
     trackingNo: raw.slice(carrierMatch[0].length).trim(),
@@ -381,6 +756,7 @@ function parsePickupTrackingNo(ticket: Ticket, value?: string | null) {
 }
 
 function shouldHavePickup(ticket: Ticket) {
+  if (isPartsRequestTicket(ticket)) return false
   return ticket.reRepairYn === 'Y' || getReceptionMethod(ticket) === 'house' || ticket.status === 'PICKUP_WAITING'
 }
 
@@ -392,7 +768,7 @@ function getAutoPickupTrackingNo(ticket: Ticket, carrier = getDefaultPickupCarri
   if (carrier === 'DHL') {
     return `DHL JD${numericSeed.slice(-14).padStart(14, '0')}`
   }
-  return `CJ ${numericSeed.slice(-12).padStart(12, '0')}`
+  return `CJ대한통운 ${numericSeed.slice(-12).padStart(12, '0')}`
 }
 
 function getPickupTrackingInfo(ticket: Ticket) {
@@ -402,6 +778,13 @@ function getPickupTrackingInfo(ticket: Ticket) {
     return parsePickupTrackingNo(ticket, `${getDefaultPickupCarrier(ticket)} ${ticket.trackingNo}`)
   }
   return parsePickupTrackingNo(ticket, getAutoPickupTrackingNo(ticket))
+}
+
+function getPickupDeliveryStatus(ticket: Ticket, pickupTrackingNo?: string | null) {
+  if (ticket.hqReceivedAt) return '회수 완료'
+  if (ticket.status === 'PICKUP_WAITING') return '픽업 접수'
+  if (pickupTrackingNo) return '회수 중'
+  return '운송장 발급 전'
 }
 
 function getUrgentRepairYn(ticket: Ticket) {
@@ -423,8 +806,7 @@ function isOrderHistoryPurchaseInfo(ticket: Ticket) {
 }
 
 function getMockReceivingAddress(ticket: Ticket) {
-  const isUs = ticket.branchCode === 'C1002' || /US|FedEx/i.test(`${ticket.receptionPlace} ${ticket.shippingMethod}`)
-  return isUs
+  return isUsTicket(ticket)
     ? '10013 / United States New York 70 Wooster St'
     : '06028 / 대한민국 서울특별시 강남구 강남대로162길 24 2층'
 }
@@ -491,8 +873,8 @@ function formatReceivingInfo(
   return null
 }
 
-function getMemberLabel(id?: string, name?: string) {
-  const member = id ? MEMBERS.find(item => item.id === id) : null
+function getMemberLabel(id?: string, name?: string, members: Member[] = MEMBERS) {
+  const member = id ? members.find(item => item.id === id) : null
   const displayName = name || member?.name
   const loginId = member?.loginId || id
   if (!displayName) return null
@@ -540,9 +922,53 @@ function normalizeRepairDetail(value?: string | null) {
   if (!value) return '-'
   if (value === '부품 교체') return '부품교체'
   if (value === '용접수리') return '융접수리'
-  if (value === '젠틀케어') return '토탈케어'
+  if (value === '토탈케어') return '토탈케어'
   if (value === '심플케어') return '심플리페어'
   return value
+}
+
+function isNoRepairDetail(value?: string | null) {
+  return normalizeRepairDetail(value) === '수리불가'
+}
+
+function inferNoRepairReason(ticket: Ticket): Ticket['noRepairReason'] | null {
+  if (ticket.noRepairReason) return ticket.noRepairReason
+
+  const sourceText = [
+    ticket.symptom,
+    ticket.repairIssueTypeTags?.join(' '),
+    ticket.repairReference,
+    ticket.repairSpecialNote,
+    ticket.consultationExceptionCategory,
+    ticket.outboundType,
+  ].filter(Boolean).join(' ')
+
+  if (/가품|정품\s*아님|fake|counterfeit/i.test(sourceText)) return 'FAKE'
+  if (/구매\s*증빙\s*불가|구매증빙불가|증빙\s*불가|구매\s*증빙\s*없|구매증빙없/i.test(sourceText)) {
+    return 'PURCHASE_PROOF_UNAVAILABLE'
+  }
+  if (/제품\s*상태|제품상태|상태\s*문제|부품교체불가|복원불가|토탈케어불가/i.test(sourceText)) {
+    return 'PRODUCT_CONDITION'
+  }
+
+  return null
+}
+
+function isFakeNoRepairTicket(ticket: Ticket) {
+  return isNoRepairDetail(ticket.repairDetail) && inferNoRepairReason(ticket) === 'FAKE'
+}
+
+function isPartsRequestTicket(ticket: Ticket) {
+  const sourceText = [
+    ticket.symptom,
+    ticket.repairDetail,
+    normalizeRepairDetail(ticket.repairDetail),
+    ticket.customerRequest,
+    ticket.repairReference,
+    ticket.repairSpecialNote,
+  ].filter(Boolean).join(' ')
+
+  return /부속품\s*요청|부품\s*요청|부속품\s*제공|부품\s*제공|부속품제공|부품제공/i.test(sourceText)
 }
 
 function normalizeSymptom(value?: string | null) {
@@ -551,7 +977,7 @@ function normalizeSymptom(value?: string | null) {
   if (value === '제품 파손·변형') return '제품 파손 · 변형'
   if (value === '제품 결함/이상') return '제품 결함 · 이상 확인요청'
   if (value === '제품 결함 이상 문의') return '제품 결함 · 이상 확인요청'
-  if (value === '부속품 문제') return '부속품 교체'
+  if (value === '부품 문제') return '부품 교체'
   return value
 }
 
@@ -597,7 +1023,36 @@ function estimateRepairCost(detail: string, fallbackCost?: number | null) {
   return fallbackCost ?? 0
 }
 
-type Tab = 'overview' | 'pricing' | 'kakao' | 'email'
+const NO_REPAIR_RETURN_FLOW_LOCKED_STATUSES = new Set<TicketStatus>([
+  'READY_TO_SHIP',
+  'SHIPPING',
+  'SHIPPED',
+  'CLOSED',
+  'CANCELED',
+])
+
+const PARTS_REQUEST_STATUS_OPTIONS = new Set<TicketStatus>([
+  'PARTS_READY',
+  'SHIPPING',
+  'SHIPPED',
+  'CLOSED',
+  'CANCELED',
+])
+
+function shouldMoveNoRepairToJudgementDone(
+  ticket: Ticket,
+  nextRepairDetail: string,
+  nextRepairChargeType?: Ticket['repairChargeType'],
+  nextConsultationStatus?: string | null,
+) {
+  if (!isNoRepairDetail(nextRepairDetail)) return false
+  if (!nextRepairChargeType) return false
+  if (NO_REPAIR_RETURN_FLOW_LOCKED_STATUSES.has(ticket.status)) return false
+  if (ticket.status === 'JUDGEMENT_PENDING' && nextConsultationStatus !== '상담완료') return false
+  return true
+}
+
+type Tab = 'overview' | 'pricing' | 'kakao' | 'email' | 'history'
 
 function Field({ label, value }: { label: string; value?: string | null }) {
   return (
@@ -613,12 +1068,16 @@ function EditableReceptionField({
   value,
   type = 'text',
   options = [],
+  disabled = false,
+  disabledReason = '수정할 수 없습니다.',
   onSave,
 }: {
   label: string
   value?: string | null
   type?: 'text' | 'textarea' | 'date' | 'select'
   options?: EditableFieldOption[]
+  disabled?: boolean
+  disabledReason?: string
   onSave: (value: string) => void
 }) {
   const normalizedValue = value ?? ''
@@ -633,6 +1092,7 @@ function EditableReceptionField({
   }, [editing, normalizedValue])
 
   function startEditing() {
+    if (disabled) return
     setDraft(normalizedValue)
     setEditing(true)
   }
@@ -668,7 +1128,7 @@ function EditableReceptionField({
   }
 
   return (
-    <div className="-m-1 rounded-lg p-1 transition-colors hover:bg-gray-50">
+    <div className={`-m-1 rounded-lg p-1 transition-colors ${disabled ? '' : 'hover:bg-gray-50'}`}>
       <dt className="text-[11px] font-medium text-gray-400 mb-0.5">{label}</dt>
       {editing ? (
         type === 'textarea' ? (
@@ -711,8 +1171,10 @@ function EditableReceptionField({
       ) : (
         <dd
           onDoubleClick={startEditing}
-          title="더블클릭하여 수정"
-          className="min-h-5 cursor-text whitespace-pre-wrap text-sm text-gray-800 underline-offset-4 hover:text-gray-950 hover:underline decoration-dotted"
+          title={disabled ? disabledReason : '더블클릭하여 수정'}
+          className={`min-h-5 whitespace-pre-wrap text-sm text-gray-800 underline-offset-4 decoration-dotted ${
+            disabled ? 'cursor-default' : 'cursor-text hover:text-gray-950 hover:underline'
+          }`}
         >
           {displayValue || '-'}
         </dd>
@@ -893,21 +1355,63 @@ function TicketLinkField({
   )
 }
 
-function ManagerMeta({
+function EditableMetaSelect({
   label,
   value,
+  displayValue,
+  options,
+  onSave,
+  valueClassName,
 }: {
-  label: string
-  value: string
+  label?: string
+  value?: string | null
+  displayValue: React.ReactNode
+  options: EditableFieldOption[]
+  onSave: (value: string) => void
+  valueClassName?: string
 }) {
-  const isEmpty = value === '-'
+  const [editing, setEditing] = useState(false)
+  const normalizedValue = value ?? '-'
+  const hasCurrentOption = options.some(option => option.value === normalizedValue)
+  const selectValue = hasCurrentOption ? normalizedValue : ''
 
   return (
     <span className="inline-flex min-w-0 items-center gap-1.5">
-      <span className="text-[11px] font-medium text-gray-400">{label}</span>
-      <span className={`max-w-[220px] truncate text-xs font-semibold ${isEmpty ? 'text-gray-300' : 'text-gray-800'}`}>
-        {value}
-      </span>
+      {label && <span className="text-[11px] font-medium text-gray-400">{label}</span>}
+      {editing ? (
+        <select
+          autoFocus
+          value={selectValue}
+          onChange={event => {
+            setEditing(false)
+            onSave(event.target.value)
+          }}
+          onBlur={() => setEditing(false)}
+          className="h-7 min-w-[160px] rounded-lg border border-gray-300 bg-white px-2 text-xs font-medium text-gray-800 outline-none transition-colors focus:border-gray-500"
+        >
+          {!hasCurrentOption && (
+            <option value="" disabled>변경할 상태 선택</option>
+          )}
+          {options.map(option => (
+            <option key={option.value} value={option.value}>{option.label}</option>
+          ))}
+        </select>
+      ) : (
+        <span
+          role="button"
+          tabIndex={0}
+          title="더블클릭하여 변경"
+          onDoubleClick={() => setEditing(true)}
+          onKeyDown={event => {
+            if (event.key === 'Enter') {
+              setEditing(true)
+            }
+          }}
+          className={`${valueClassName ?? 'max-w-[220px] truncate text-xs font-semibold text-gray-800'} cursor-pointer outline-none`}
+        >
+          {displayValue}
+        </span>
+      )}
     </span>
   )
 }
@@ -926,7 +1430,7 @@ function SectionCard({
   onEdit?: () => void
 }) {
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <div className="break-inside-avoid overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm xl:mb-4">
       <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
         <h3 className="text-xs font-semibold text-gray-700">{title}</h3>
         {editable && (
@@ -950,9 +1454,84 @@ function PlaceholderTab({ message }: { message: string }) {
   )
 }
 
+function formatKstTimestamp(value: string) {
+  if (!value) return '-'
+  const normalized = value
+    .replace('T', ' ')
+    .replace(/\.\d+Z?$/, '')
+    .replace(/Z$/, '')
+
+  return /\(KST\)$/i.test(normalized) ? normalized : `${normalized} (KST)`
+}
+
+function ChangeHistoryPanel({ logs }: { logs: TicketChangeLog[] }) {
+  if (logs.length === 0) {
+    return (
+      <div className="rounded-2xl border border-gray-200 bg-white px-5 py-16 text-center">
+        <History className="mx-auto mb-3 h-6 w-6 text-gray-300" />
+        <p className="text-sm font-medium text-gray-500">변경 이력이 없습니다.</p>
+        <p className="mt-1 text-xs text-gray-400">상세 화면에서 값을 변경하면 이곳에 기록됩니다.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+      <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-3">
+        <h3 className="text-xs font-semibold text-gray-700">변경이력</h3>
+        <span className="text-[11px] font-medium text-gray-400">{logs.length.toLocaleString('ko-KR')}건</span>
+      </div>
+      <div className="divide-y divide-gray-100">
+        {logs.map(log => {
+          const meta = TICKET_CHANGE_SECTION_META[log.changeType ?? 'SYSTEM']
+          return (
+            <div key={log.id} className="grid gap-4 px-5 py-4 xl:grid-cols-[160px_minmax(0,1fr)_190px]">
+              <div className="min-w-0">
+                <span className={`inline-flex rounded-md border px-2 py-0.5 text-[11px] font-semibold ${meta.className}`}>
+                  {meta.label}
+                </span>
+                <p className="mt-2 font-mono text-[11px] text-gray-400">{formatKstTimestamp(log.changedAt)}</p>
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-gray-900">{log.fieldLabel}</p>
+                <div className="mt-2 grid gap-2 md:grid-cols-[minmax(0,1fr)_20px_minmax(0,1fr)] md:items-start">
+                  <div className="min-w-0">
+                    <p className="mb-1 text-[10px] font-medium text-gray-400">변경 전</p>
+                    <p className="min-w-0 whitespace-pre-wrap break-words rounded-lg border border-gray-100 bg-gray-50/80 px-3 py-2 text-xs leading-5 text-gray-500">
+                      {log.beforeValue || '-'}
+                    </p>
+                  </div>
+                  <span className="hidden pt-6 text-center text-gray-300 md:block">→</span>
+                  <div className="min-w-0">
+                    <p className="mb-1 text-[10px] font-medium text-blue-500">변경 후</p>
+                    <p className="min-w-0 whitespace-pre-wrap break-words rounded-lg border border-blue-100 bg-blue-50/60 px-3 py-2 text-xs font-semibold leading-5 text-gray-800">
+                      {log.afterValue || '-'}
+                    </p>
+                  </div>
+                </div>
+                {(log.memo || log.channel) && (
+                  <p className="mt-2 text-[11px] text-gray-400">
+                    {[log.channel, log.memo].filter(Boolean).join(' · ')}
+                  </p>
+                )}
+              </div>
+              <div className="text-xs text-gray-400 xl:text-right">
+                <p className="font-medium text-gray-600">{log.changedByName}</p>
+                <p className="mt-1">{log.changedByLoginId}</p>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 function isOverseasTicket(ticket: Ticket) {
+  if (ticket.reexportCondition === 'Y') return true
+  if (isDomesticReceptionTicket(ticket)) return false
   const channelText = `${ticket.branchCode} ${ticket.receptionPlace} ${ticket.shippingMethod}`
-  return ticket.branchCode === 'C1002' || ticket.reexportCondition === 'Y' || /해외|DHL|FedEx|Global|US/i.test(channelText)
+  return ticket.branchCode === 'C1002' || /해외|DHL|FedEx|Global|US/i.test(channelText)
 }
 
 function getInitialMessageLogs(ticket: Ticket, channel: MessageChannel): MessageLog[] {
@@ -983,6 +1562,98 @@ function nowLocalText() {
   return new Date().toLocaleString('sv-SE', { hour12: false }).replace('T', ' ')
 }
 
+function TemplateMeta({ label, value }: { label: string; value?: string }) {
+  if (!value) return null
+  return (
+    <div>
+      <dt className="text-[11px] font-semibold text-gray-400">{label}</dt>
+      <dd className="mt-1 whitespace-pre-wrap text-xs leading-5 text-gray-600">{value}</dd>
+    </div>
+  )
+}
+
+function getTemplateCode(template: MessageTemplate) {
+  return template.title.match(/^([A-Z]+_\d+)/)?.[1] ?? ''
+}
+
+function getTemplateMetaText(template: MessageTemplate, includeKind = false) {
+  return [
+    getTemplateCode(template),
+    template.source,
+    template.locale,
+    template.stage,
+    includeKind ? TEMPLATE_KIND_LABEL[template.kind] : '',
+  ].filter(Boolean).join(' · ')
+}
+
+function getEmailTemplateSource(ticket: Ticket) {
+  const branch = BRANCHES.find(item => item.code === ticket.branchCode)
+  const sourceText = [
+    ticket.branchCode,
+    branch?.name,
+    branch?.country,
+    ticket.receptionPlace,
+    ticket.receptionTitle,
+    ticket.deliveryCountry,
+  ].filter(Boolean).join(' ')
+  const normalized = sourceText.toUpperCase()
+
+  if (/\bJP\b|JAPAN|일본/.test(normalized)) return 'JP'
+  if (isOverseasTicket(ticket)) return 'HQ INT'
+  return 'HQ KR'
+}
+
+function getTemplateSearchText(template: MessageTemplate) {
+  return [
+    template.title,
+    template.stage,
+    template.source,
+    template.locale,
+    template.body,
+    template.conditions,
+    template.note,
+  ].filter(Boolean).join(' ')
+}
+
+function scoreNoRepairTemplate(ticket: Ticket, template: MessageTemplate) {
+  if (!isNoRepairDetail(ticket.repairDetail)) return 0
+  if (template.stage !== '판정') return 0
+
+  const text = getTemplateSearchText(template)
+  if (!/수리\s*불가|수리불가/i.test(text)) return 0
+
+  const mentionsFake = /가품|fake|counterfeit/i.test(text)
+  const mentionsPurchaseProof = /구매\s*증빙|구매증빙/i.test(text)
+  const mentionsProductCondition = /제품\s*상태|제품상태/i.test(text)
+  const isGenericNoRepair = /수리불가_안내|수리\s*불가\s*안내/i.test(text)
+
+  if (isFakeNoRepairTicket(ticket)) {
+    return mentionsFake ? 500 : 50
+  }
+
+  if (mentionsFake) return -50
+  if (isGenericNoRepair) return 500
+  if (mentionsPurchaseProof || mentionsProductCondition) return 80
+  return 120
+}
+
+function sortTemplatesForTicket(ticket: Ticket, templates: MessageTemplate[]) {
+  return [...templates].sort((a, b) => {
+    const scoreDiff = scoreNoRepairTemplate(ticket, b) - scoreNoRepairTemplate(ticket, a)
+    if (scoreDiff !== 0) return scoreDiff
+    return a.title.localeCompare(b.title)
+  })
+}
+
+function getRecommendedTemplateId(ticket: Ticket, templates: MessageTemplate[]) {
+  const recommended = templates
+    .map(template => ({ template, score: scoreNoRepairTemplate(ticket, template) }))
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score)[0]
+
+  return recommended?.template.id ?? ''
+}
+
 function MessageTemplatePanel({
   ticket,
   channel,
@@ -1000,7 +1671,11 @@ function MessageTemplatePanel({
   const channelLabel = channel === 'kakao' ? '알림톡' : '이메일'
   const Icon = channel === 'kakao' ? MessageSquare : Mail
   const receiver = channel === 'kakao' ? ticket.phone : ticket.email
-  const templates = MESSAGE_TEMPLATES.filter(template => template.channel === channel)
+  const emailTemplateSource = channel === 'email' ? getEmailTemplateSource(ticket) : null
+  const templates = sortTemplatesForTicket(ticket, MESSAGE_TEMPLATES.filter(template => (
+    template.channel === channel &&
+    (!emailTemplateSource || template.source === emailTemplateSource)
+  )))
   const filteredTemplates = templates.filter(template => {
     const keyword = templateQuery.trim().toLowerCase()
     if (!keyword) return true
@@ -1008,10 +1683,20 @@ function MessageTemplatePanel({
       template.id.toLowerCase().includes(keyword) ||
       template.title.toLowerCase().includes(keyword) ||
       template.stage.toLowerCase().includes(keyword) ||
-      TEMPLATE_KIND_LABEL[template.kind].includes(keyword)
+      template.source.toLowerCase().includes(keyword) ||
+      template.locale.toLowerCase().includes(keyword) ||
+      TEMPLATE_KIND_LABEL[template.kind].includes(keyword) ||
+      template.body.toLowerCase().includes(keyword) ||
+      template.variables?.toLowerCase().includes(keyword) ||
+      template.buttons?.toLowerCase().includes(keyword) ||
+      template.buttonLink?.toLowerCase().includes(keyword) ||
+      template.sendAt?.toLowerCase().includes(keyword) ||
+      template.conditions?.toLowerCase().includes(keyword) ||
+      template.note?.toLowerCase().includes(keyword)
     )
   })
-  const selectedTemplate = templates.find(template => template.id === selectedTemplateId)
+  const effectiveSelectedTemplateId = selectedTemplateId || getRecommendedTemplateId(ticket, templates)
+  const selectedTemplate = templates.find(template => template.id === effectiveSelectedTemplateId)
   const logs = [...sentLogs, ...getInitialMessageLogs(ticket, channel)]
 
   useEffect(() => {
@@ -1087,7 +1772,7 @@ function MessageTemplatePanel({
                 <span className="min-w-0">
                   <span className="block truncate font-medium text-gray-800">{selectedTemplate.title}</span>
                   <span className="block truncate text-[11px] text-gray-400">
-                    {selectedTemplate.id} · {selectedTemplate.stage} · {TEMPLATE_KIND_LABEL[selectedTemplate.kind]}
+                    {getTemplateMetaText(selectedTemplate, true)}
                   </span>
                 </span>
               ) : (
@@ -1124,12 +1809,14 @@ function MessageTemplatePanel({
                       type="button"
                       onClick={() => handleSelectTemplate(template)}
                       className={`flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left transition-colors hover:bg-gray-50 ${
-                        selectedTemplateId === template.id ? 'bg-gray-50' : ''
+                        effectiveSelectedTemplateId === template.id ? 'bg-gray-50' : ''
                       }`}
                     >
                       <span className="min-w-0">
                         <span className="block truncate text-sm font-medium text-gray-800">{template.title}</span>
-                        <span className="mt-0.5 block text-xs text-gray-400">{template.id} · {template.stage}</span>
+                        <span className="mt-0.5 block text-xs text-gray-400">
+                          {getTemplateMetaText(template)}
+                        </span>
                       </span>
                       <span className="shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">
                         {TEMPLATE_KIND_LABEL[template.kind]}
@@ -1140,6 +1827,33 @@ function MessageTemplatePanel({
                   <div className="px-3 py-6 text-center text-xs text-gray-400">검색 결과가 없습니다.</div>
                 )}
               </div>
+            </div>
+          )}
+
+          {selectedTemplate && (
+            <div className="mt-4 rounded-2xl border border-gray-100 bg-gray-50 px-4 py-4">
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold text-gray-900">템플릿 내용</p>
+                  <p className="mt-0.5 text-[11px] text-gray-400">
+                    {getTemplateMetaText(selectedTemplate, true)}
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-md bg-white px-2 py-1 font-mono text-[11px] text-gray-400">
+                  {selectedTemplate.id}
+                </span>
+              </div>
+              <div className="max-h-72 overflow-y-auto rounded-xl bg-white px-3 py-3 text-xs leading-5 text-gray-700">
+                <p className="whitespace-pre-wrap">{selectedTemplate.body}</p>
+              </div>
+              <dl className="mt-4 grid gap-3 md:grid-cols-2">
+                <TemplateMeta label="발송시점" value={selectedTemplate.sendAt} />
+                <TemplateMeta label="조건값" value={selectedTemplate.conditions} />
+                <TemplateMeta label="사용 변수" value={selectedTemplate.variables} />
+                <TemplateMeta label="버튼" value={selectedTemplate.buttons} />
+                <TemplateMeta label="버튼 링크" value={selectedTemplate.buttonLink} />
+                <TemplateMeta label="비고" value={selectedTemplate.note} />
+              </dl>
             </div>
           )}
         </div>
@@ -1201,10 +1915,17 @@ export function TicketDetailPage() {
   const detailScanInputRef = useRef<HTMLInputElement>(null)
   const toastTimerRef = useRef<number | null>(null)
   const { parts } = useParts()
+  const { members } = useMembers()
   const ticket = getTicketsWithExtras().find(t => t.ticketNo === ticketNo)
   const autoPrintRequested = (location.state as { autoPrintBarcodeOnce?: boolean } | null)?.autoPrintBarcodeOnce === true
-  const onlineAutoPrintRequested = ticket ? isOnlineAutoCreatedTicket(ticket) : false
-  const shouldAutoPrintBarcode = autoPrintRequested || onlineAutoPrintRequested
+  const suppressAutoPrintBarcode = ticket ? isPartsRequestTicket(ticket) : false
+  const onlineAutoPrintRequested = ticket ? isOnlineAutoCreatedTicket(ticket) && !suppressAutoPrintBarcode : false
+  const shouldAutoPrintBarcode = !suppressAutoPrintBarcode && (autoPrintRequested || onlineAutoPrintRequested)
+
+  useEffect(() => {
+    if (!autoPrintRequested || !suppressAutoPrintBarcode) return
+    navigate(location.pathname, { replace: true, state: null })
+  }, [autoPrintRequested, location.pathname, navigate, suppressAutoPrintBarcode])
 
   useEffect(() => {
     if (!ticketNo || !shouldAutoPrintBarcode) return
@@ -1231,12 +1952,28 @@ export function TicketDetailPage() {
   useEffect(() => {
     if (!ticket) return
     const hasConsultationRequest = ticket.consultationRequestedYn === 'Y' || Boolean(ticket.outboundType && ticket.outboundType !== '-')
-    const terminalStatus = ticket.status === 'CLOSED' || ticket.status === 'CANCELED'
-    if (hasConsultationRequest && ticket.status !== 'JUDGEMENT_PENDING' && !terminalStatus) {
+    const consultationCompleted = ticket.consultationStatus === '상담완료'
+    const terminalStatus = NO_REPAIR_RETURN_FLOW_LOCKED_STATUSES.has(ticket.status)
+    const noRepairJudgementDone = isNoRepairDetail(ticket.repairDetail) && ticket.status === 'JUDGEMENT_DONE'
+    if (hasConsultationRequest && !consultationCompleted && ticket.status !== 'JUDGEMENT_PENDING' && !terminalStatus && !noRepairJudgementDone) {
       updatePrototypeTicket(ticket.ticketNo, { status: 'JUDGEMENT_PENDING' })
+      appendTicketChangeLog({
+        ticketNo: ticket.ticketNo,
+        changeType: 'SYSTEM',
+        fieldKey: 'status',
+        fieldLabel: '티켓 상태',
+        beforeValue: STATUS_META[ticket.status].label,
+        afterValue: STATUS_META.JUDGEMENT_PENDING.label,
+        channel: '관리자 화면',
+        memo: '상담 요청 상태 자동 동기화',
+        changedById: CURRENT_ADMIN_MEMBER?.id,
+        changedByName: CURRENT_ADMIN_MEMBER?.name ?? '한혜지',
+        changedByLoginId: CURRENT_ADMIN_MEMBER?.loginId ?? 'monster563',
+        changedByRoleId: CURRENT_ADMIN_MEMBER?.roleId,
+      })
       setTicketRevision(revision => revision + 1)
     }
-  }, [ticket?.consultationRequestedYn, ticket?.outboundType, ticket?.status, ticket?.ticketNo])
+  }, [ticket?.consultationRequestedYn, ticket?.consultationStatus, ticket?.outboundType, ticket?.repairDetail, ticket?.status, ticket?.ticketNo])
 
   if (!ticket) {
     return (
@@ -1254,11 +1991,29 @@ export function TicketDetailPage() {
 
   const currentTicket = ticket
   const statusMeta = STATUS_META[ticket.status]
+  const isPartsRequest = isPartsRequestTicket(ticket)
+  const ticketStatusOptions = isPartsRequest
+    ? TICKET_STATUS_OPTIONS.filter(option => PARTS_REQUEST_STATUS_OPTIONS.has(option.value as TicketStatus))
+    : TICKET_STATUS_OPTIONS
   const soInfo = getSoDocumentInfo(ticket)
   const branchLabel = BRANCHES.find(b => b.code === ticket.branchCode)?.name ?? ticket.branchCode
-  const technicianLabel = getMemberLabel(ticket.technicianId, ticket.technicianName) || '-'
+  const technicianOptionMembers = [
+    ...members.filter(member => member.isTechnician && member.status === 'active'),
+    ...[ticket.technicianId, ticket.judgementManagerId]
+      .map(memberId => members.find(member => member.id === memberId))
+      .filter((member): member is Member => Boolean(member)),
+  ].filter((member, index, list) => list.findIndex(item => item.id === member.id) === index)
+  const technicianMemberOptions: EditableFieldOption[] = [
+    { value: '-', label: '-' },
+    ...technicianOptionMembers.map(member => ({
+      value: member.id,
+      label: getMemberLabel(member.id, member.name, members) ?? member.name,
+    })),
+  ]
+  const technicianLabel = getMemberLabel(ticket.technicianId, ticket.technicianName, members) || '-'
   const judgementManagerLabel =
-    getMemberLabel(ticket.judgementManagerId, ticket.judgementManagerName) || '-'
+    getMemberLabel(ticket.judgementManagerId, ticket.judgementManagerName, members) || '-'
+  const changeLogs = getTicketChangeLogs(ticket.ticketNo)
   const receptionTitle = getReceptionTitle(ticket)
   const receptionTags = ticket.receptionTags ?? []
   const receptionChannel = getReceptionChannel(ticket)
@@ -1267,9 +2022,9 @@ export function TicketDetailPage() {
   const receptionContact = receptionStore?.tel2 || null
   const receptionMethod = getReceptionMethod(ticket)
   const receptionMethodLabel = receptionMethod === 'store'
-    ? '매장수령'
+    ? '스토어 접수'
     : receptionMethod === 'house'
-      ? '자택수령'
+      ? '자택 픽업'
       : null
   const kakaoEnabled = !isOverseasTicket(ticket)
   const ticketEmail = ticket.email.trim().toLowerCase()
@@ -1290,9 +2045,20 @@ export function TicketDetailPage() {
   const storePickupCompletedAt = getStorePickupCompletedAt(ticket, receptionMethod)
   const hqTrackingNo = getHqTrackingNo(ticket, normalizedShippingMethod)
   const outboundCarrier = getOutboundCarrier(ticket, normalizedShippingMethod)
+  const isHomeDeliveryOutbound = isHomeDeliveryShipment(ticket, normalizedShippingMethod)
+  const outboundShipmentLocked = isOutboundShipmentLocked(ticket)
+  const outboundShipmentLockedReason = '픽업 요청 성공 후에는 출고 정보를 수정할 수 없습니다.'
+  const outboundShipmentEditProps = {
+    disabled: outboundShipmentLocked,
+    disabledReason: outboundShipmentLockedReason,
+  }
   const pickupTrackingInfo = getPickupTrackingInfo(ticket)
-  const pickupCarrier = pickupTrackingInfo?.carrier ?? getDefaultPickupCarrier(ticket)
+  const defaultPickupCarrier = getDefaultPickupCarrier(ticket)
+  const pickupCarrier = !isOverseasDestination(ticket) && /DHL|FedEx/i.test(pickupTrackingInfo?.carrier ?? '')
+    ? defaultPickupCarrier
+    : pickupTrackingInfo?.carrier ?? defaultPickupCarrier
   const pickupTrackingNo = pickupTrackingInfo?.trackingNo ?? ''
+  const pickupDeliveryStatus = getPickupDeliveryStatus(ticket, pickupTrackingNo)
   const pickupCarrierOptions = isUsTicket(ticket) ? US_PICKUP_CARRIER_OPTIONS : PICKUP_CARRIER_OPTIONS
   const urgentRepairYn = getUrgentRepairYn(ticket)
   const purchaseProofValue = getPurchaseProofValue(ticket)
@@ -1317,6 +2083,7 @@ export function TicketDetailPage() {
   const productFactory2 = normalizeProductFactory(ticket.productFactory2 ?? matchedProduct?.factory2)
   const productFactory3 = normalizeProductFactory(ticket.productFactory3 ?? matchedProduct?.factory3)
   const repairDetailValue = normalizeRepairDetail(ticket.repairDetail)
+  const noRepairReason = isNoRepairDetail(repairDetailValue) ? inferNoRepairReason(ticket) : null
   const repairSymptomTags = splitTagText(ticket.symptom)
   const repairPartTags = ticket.repairPartTags ?? defaultRepairParts(ticket)
   const repairIssueAreaTags = ticket.repairIssueAreaTags ?? repairPartTags.map(part => part.replace(/\((R|L)\)/, ''))
@@ -1336,6 +2103,101 @@ export function TicketDetailPage() {
     if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
     setToast({ message, ok })
     toastTimerRef.current = window.setTimeout(() => setToast(null), 2500)
+  }
+
+  function formatTicketChangeFieldValue(fieldKey: keyof Ticket, value: unknown, sourceTicket: Ticket) {
+    const meta = TICKET_CHANGE_FIELD_META[fieldKey]
+    const formatter = meta?.format ?? formatChangeValue
+    return formatter(value, sourceTicket, members)
+  }
+
+  function recordTicketChange({
+    changeType,
+    fieldKey,
+    fieldLabel,
+    beforeValue,
+    afterValue,
+    memo,
+  }: {
+    changeType: TicketChangeType
+    fieldKey?: keyof Ticket
+    fieldLabel: string
+    beforeValue: string
+    afterValue: string
+    memo?: string
+  }) {
+    if (beforeValue === afterValue) return
+    appendTicketChangeLog({
+      ticketNo: currentTicket.ticketNo,
+      changeType,
+      fieldKey: fieldKey ? String(fieldKey) : undefined,
+      fieldLabel,
+      beforeValue: beforeValue || '-',
+      afterValue: afterValue || '-',
+      channel: '관리자 화면',
+      memo,
+      changedById: CURRENT_ADMIN_MEMBER?.id,
+      changedByName: CURRENT_ADMIN_MEMBER?.name ?? '한혜지',
+      changedByLoginId: CURRENT_ADMIN_MEMBER?.loginId ?? 'monster563',
+      changedByRoleId: CURRENT_ADMIN_MEMBER?.roleId,
+    })
+  }
+
+  function recordTicketFieldChanges(patch: Partial<Ticket>, memo?: string) {
+    const nextTicket = { ...currentTicket, ...patch }
+    ;(Object.keys(patch) as Array<keyof Ticket>).forEach(fieldKey => {
+      if (TICKET_CHANGE_IGNORED_FIELDS.has(fieldKey)) return
+
+      const meta = TICKET_CHANGE_FIELD_META[fieldKey]
+      if (!meta) return
+
+      const beforeValue = formatTicketChangeFieldValue(fieldKey, currentTicket[fieldKey], currentTicket)
+      const afterValue = formatTicketChangeFieldValue(fieldKey, nextTicket[fieldKey], nextTicket)
+      recordTicketChange({
+        changeType: meta.changeType,
+        fieldKey,
+        fieldLabel: meta.label,
+        beforeValue,
+        afterValue,
+        memo,
+      })
+    })
+  }
+
+  function saveTicketStatus(nextStatusValue: string) {
+    if (!Object.prototype.hasOwnProperty.call(STATUS_META, nextStatusValue)) return
+    const nextStatus = nextStatusValue as TicketStatus
+    if (nextStatus === currentTicket.status) return
+    if (isPartsRequestTicket(currentTicket) && !PARTS_REQUEST_STATUS_OPTIONS.has(nextStatus)) {
+      showToast('부품 요청 건은 부품 준비 완료, 배송 시작, 배송 완료, 서비스 완료, 취소 상태로만 변경할 수 있습니다.', false)
+      return
+    }
+
+    const patch: Partial<Ticket> = { status: nextStatus }
+    updatePrototypeTicket(currentTicket.ticketNo, patch)
+    recordTicketFieldChanges(patch, '티켓 상태 직접 변경')
+    setTicketRevision(revision => revision + 1)
+    showToast('티켓 상태가 변경되었습니다.')
+  }
+
+  function saveTicketAssignee(kind: 'technician' | 'judgementManager', memberId: string) {
+    const nextMember = memberId === '-' ? null : technicianOptionMembers.find(member => member.id === memberId)
+    if (memberId !== '-' && !nextMember) return
+
+    const patch: Partial<Ticket> = kind === 'technician'
+      ? {
+          technicianId: nextMember?.id,
+          technicianName: nextMember?.name,
+        }
+      : {
+          judgementManagerId: nextMember?.id,
+          judgementManagerName: nextMember?.name,
+        }
+
+    updatePrototypeTicket(currentTicket.ticketNo, patch)
+    recordTicketFieldChanges(patch, kind === 'technician' ? '서비스 기술자 변경' : '판정 담당자 변경')
+    setTicketRevision(revision => revision + 1)
+    showToast(kind === 'technician' ? '서비스 기술자가 변경되었습니다.' : '판정 담당자가 변경되었습니다.')
   }
 
   function handleDetailBarcodeScan() {
@@ -1390,6 +2252,7 @@ export function TicketDetailPage() {
     }
 
     updatePrototypeTicket(currentTicket.ticketNo, nextPatch)
+    recordTicketFieldChanges(nextPatch, isReRepair ? '접수 정보 저장 및 재수리 자동 반영' : '접수 정보 저장')
     setTicketRevision(revision => revision + 1)
     showToast(isReRepair
       ? '접수 정보가 저장되었습니다. 재수리 건은 회수 대기 중 상태와 긴급수리 Y로 적용됩니다.'
@@ -1432,9 +2295,16 @@ export function TicketDetailPage() {
       if (!currentTicket.consultationCompletedAt) {
         nextPatch.consultationCompletedAt = nowLocalText()
       }
+      if (isNoRepairDetail(currentTicket.repairDetail)) {
+        nextPatch.status = 'JUDGEMENT_DONE'
+        if (!currentTicket.judgementCompletedAt) {
+          nextPatch.judgementCompletedAt = nowLocalText()
+        }
+      }
     }
 
     updatePrototypeTicket(currentTicket.ticketNo, nextPatch)
+    recordTicketFieldChanges(nextPatch, '상담 정보 저장')
     setTicketRevision(revision => revision + 1)
     showToast('상담 정보가 저장되었습니다.')
   }
@@ -1442,17 +2312,35 @@ export function TicketDetailPage() {
   function saveRepairPatch(patch: Partial<Ticket>) {
     const nextPatch: Partial<Ticket> = { ...patch }
     const nextRepairDetail = normalizeRepairDetail(patch.repairDetail ?? currentTicket.repairDetail)
-    const nextRepairChargeType = patch.repairChargeType ?? currentTicket.repairChargeType ?? soInfo.repairChargeType
+    let nextRepairChargeType = patch.repairChargeType ?? currentTicket.repairChargeType ?? soInfo.repairChargeType
+    const nextConsultationStatus = patch.consultationStatus ?? currentTicket.consultationStatus
+    const nextIsNoRepair = isNoRepairDetail(nextRepairDetail)
+
+    if (nextIsNoRepair) {
+      nextRepairChargeType = 'FREE'
+      nextPatch.repairChargeType = 'FREE'
+      nextPatch.repairCost = 0
+      if (shouldMoveNoRepairToJudgementDone(currentTicket, nextRepairDetail, nextRepairChargeType, nextConsultationStatus)) {
+        nextPatch.status = 'JUDGEMENT_DONE'
+        if (!currentTicket.judgementCompletedAt) {
+          nextPatch.judgementCompletedAt = nowLocalText()
+        }
+      }
+    }
+
+    if (patch.repairDetail && !nextIsNoRepair) {
+      nextPatch.noRepairReason = null
+    }
 
     if (patch.repairChargeType === 'FREE') {
       nextPatch.repairCost = 0
     }
 
-    if (patch.repairChargeType === 'PAID') {
+    if (!nextIsNoRepair && patch.repairChargeType === 'PAID') {
       nextPatch.repairCost = estimateRepairCost(nextRepairDetail, currentTicket.repairCost ?? soInfo.repairCost)
     }
 
-    if (patch.repairDetail && nextRepairChargeType === 'PAID') {
+    if (!nextIsNoRepair && patch.repairDetail && nextRepairChargeType === 'PAID') {
       nextPatch.repairCost = estimateRepairCost(nextRepairDetail, currentTicket.repairCost ?? soInfo.repairCost)
     }
 
@@ -1465,12 +2353,19 @@ export function TicketDetailPage() {
     }
 
     updatePrototypeTicket(currentTicket.ticketNo, nextPatch)
+    recordTicketFieldChanges(nextPatch, nextIsNoRepair ? '수리불가 판정 저장' : '수리 정보 저장')
     setTicketRevision(revision => revision + 1)
     showToast('수리 정보가 저장되었습니다.')
   }
 
   function saveShippingPatch(patch: Partial<Ticket>) {
+    if (isOutboundShipmentLocked(currentTicket)) {
+      showToast('픽업 요청 성공 후에는 출고 정보를 수정할 수 없습니다.', false)
+      return
+    }
+
     updatePrototypeTicket(currentTicket.ticketNo, patch)
+    recordTicketFieldChanges(patch, '출고 정보 저장')
     setTicketRevision(revision => revision + 1)
     showToast('출고 정보가 저장되었습니다.')
   }
@@ -1480,10 +2375,11 @@ export function TicketDetailPage() {
     { id: 'pricing',  label: '가격결정' },
     { id: 'kakao',    label: '알림톡 발송내역' },
     { id: 'email',    label: '메일 발송내역' },
+    { id: 'history',  label: '변경이력' },
   ]
 
   return (
-    <div className="mx-auto min-w-0 w-full max-w-[1440px] animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="min-w-0 w-full max-w-none animate-in fade-in slide-in-from-bottom-4 duration-500">
       {showBarcodeModal && ticket && (
         <BarcodePrintModal
           ticketNo={ticket.ticketNo}
@@ -1634,9 +2530,21 @@ export function TicketDetailPage() {
                 </div>
               )}
               <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                <ManagerMeta label="서비스 기술자" value={technicianLabel} />
+                <EditableMetaSelect
+                  label="서비스 기술자"
+                  value={ticket.technicianId ?? '-'}
+                  displayValue={technicianLabel}
+                  options={technicianMemberOptions}
+                  onSave={value => saveTicketAssignee('technician', value)}
+                />
                 <span className="hidden h-3 w-px bg-gray-200 sm:inline-block" />
-                <ManagerMeta label="판정 담당자" value={judgementManagerLabel} />
+                <EditableMetaSelect
+                  label="판정 담당자"
+                  value={ticket.judgementManagerId ?? '-'}
+                  displayValue={judgementManagerLabel}
+                  options={technicianMemberOptions}
+                  onSave={value => saveTicketAssignee('judgementManager', value)}
+                />
               </div>
             </div>
             {/* 액션 버튼 */}
@@ -1683,14 +2591,17 @@ export function TicketDetailPage() {
             <div className="pr-8">
               <p className="text-[11px] text-gray-400 mb-1.5">상태</p>
               <div className="flex items-center gap-2">
-                <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold border ${statusMeta.className}`}>
-                  <I18nText i18nKey={ticketStatusI18nKey(ticket.status)} display="tooltip">
-                    {statusMeta.label}
-                  </I18nText>
-                </span>
-                <button className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors">
-                  <History className="w-3 h-3" />내역
-                </button>
+                <EditableMetaSelect
+                  value={ticket.status}
+                  displayValue={(
+                    <I18nText i18nKey={ticketStatusI18nKey(ticket.status)} display="tooltip">
+                      {statusMeta.label}
+                    </I18nText>
+                  )}
+                  options={ticketStatusOptions}
+                  onSave={saveTicketStatus}
+                  valueClassName={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold border ${statusMeta.className}`}
+                />
               </div>
             </div>
             <div className="px-8">
@@ -1733,10 +2644,95 @@ export function TicketDetailPage() {
           {/* 탭 콘텐츠 */}
           <div className="p-5">
             {activeTab === 'overview' && (
-              <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] xl:items-start">
+              <div className="space-y-4 xl:block xl:columns-2 xl:gap-4 xl:space-y-0">
 
-                {/* 상세 정보 카드 */}
-                <div className="space-y-4">
+                  {/* 고객 정보 카드 */}
+                  <SectionCard title="고객 정보" editable={false}>
+                    <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+                      <ClickableField label="이메일" value={ticket.email} onClick={handleCustomerClick} />
+                      <Field label="고객명" value={ticket.customerName} />
+                      <Field label="전화번호" value={ticket.phone} />
+                      <Field label="국가" value={customerCountry} />
+                      <Field label="마케팅 동의" value={customerMarketingAgree} />
+                      <Field label="개인정보 동의" value={customerPrivacyAgree} />
+                      <div className="col-span-2">
+                        <Field label="수령 유형" value={receptionMethodLabel} />
+                      </div>
+                      <div className="col-span-2">
+                        <Field label="수령 정보" value={receivingInfo} />
+                      </div>
+                    </dl>
+                  </SectionCard>
+
+                  {/* 제품 정보 카드 */}
+                  <SectionCard title="제품 정보" editable={false}>
+                    <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+                      <Field label="제품명" value={matchedProduct?.name ?? ticket.productName} />
+                      <Field label="제품 코드" value={matchedProduct?.productCode} />
+                      {productSerialNumber ? <Field label="시리얼 번호" value={productSerialNumber} /> : null}
+                      <Field label="중분류" value={productMidCategory} />
+                      <Field label="소분류" value={productSubCategory} />
+                      <Field label="재고보유여부" value={productStockAvailableYn} />
+                      <Field label="복원수리 가능여부" value={productRestorationRepairYn} />
+                      <Field label="장식 보유 여부" value={productDecorationYn} />
+                      <Field label="런칭일" value={productLaunchDate} />
+                      <EditableReceptionField
+                        label="생산공장1"
+                        value={productFactory1}
+                        type="select"
+                        options={PRODUCT_FACTORY_SELECT_OPTIONS}
+                        onSave={value => saveReceptionPatch({
+                          productFactory1: value || null,
+                          productFactory: value || null,
+                        })}
+                      />
+                      <EditableReceptionField
+                        label="생산공장2"
+                        value={productFactory2}
+                        type="select"
+                        options={PRODUCT_FACTORY_SELECT_OPTIONS}
+                        onSave={value => saveReceptionPatch({ productFactory2: value || null })}
+                      />
+                      <EditableReceptionField
+                        label="생산공장3"
+                        value={productFactory3}
+                        type="select"
+                        options={PRODUCT_FACTORY_SELECT_OPTIONS}
+                        onSave={value => saveReceptionPatch({ productFactory3: value || null })}
+                      />
+                      <div className="col-span-2 pt-2">
+                        <dt className="mb-2 text-[11px] font-semibold text-gray-500">부품</dt>
+                        <div className="overflow-hidden rounded-lg border border-gray-100 bg-white">
+                          <table className="w-full table-fixed text-left text-xs">
+                            <thead className="border-b border-gray-100 bg-gray-50/70 text-[11px] font-semibold text-gray-400">
+                              <tr>
+                                <th className="px-3 py-2.5">부품명</th>
+                                <th className="w-24 px-3 py-2.5 text-center">부품수량</th>
+                                <th className="w-40 px-3 py-2.5">부품 보관위치</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 text-gray-700">
+                              {matchedProductParts.length > 0 ? (
+                                matchedProductParts.map(part => (
+                                  <tr key={part.id}>
+                                    <td className="truncate px-3 py-2.5 font-medium text-gray-800">{part.name}</td>
+                                    <td className="px-3 py-2.5 text-center text-gray-600">1</td>
+                                    <td className="truncate px-3 py-2.5 font-mono text-[11px] text-gray-600">{part.storageLocation || '-'}</td>
+                                  </tr>
+                                ))
+                              ) : (
+                                <tr>
+                                  <td colSpan={3} className="px-3 py-5 text-center text-gray-400">
+                                    등록된 부품 정보가 없습니다.
+                                  </td>
+                                </tr>
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </dl>
+                  </SectionCard>
 
                   {/* 접수 정보 카드 */}
                   <SectionCard title="접수 정보" editable={false}>
@@ -1746,15 +2742,6 @@ export function TicketDetailPage() {
                       <Field label="접수처" value={ticket.receptionPlace} />
                       {shouldShowReceptionContact && (
                         <Field label="담당자 연락처" value={receptionContact} />
-                      )}
-                      {pickupTrackingInfo && (
-                        <>
-                          <Field
-                            label="픽업 택배사"
-                            value={pickupCarrierOptions.find(option => option.value === pickupCarrier)?.label ?? pickupCarrier}
-                          />
-                          <Field label="픽업 운송장 No." value={pickupTrackingNo} />
-                        </>
                       )}
                       <Field label="B2C 여부(법인용)" value={soInfo.b2cYn} />
                       <ToggleField
@@ -1848,148 +2835,20 @@ export function TicketDetailPage() {
                     </div>
                   </SectionCard>
 
-                  {/* 고객 정보 카드 */}
-                  <SectionCard title="고객 정보" editable={false}>
-                    <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
-                      <ClickableField label="이메일" value={ticket.email} onClick={handleCustomerClick} />
-                      <Field label="고객명" value={ticket.customerName} />
-                      <Field label="전화번호" value={ticket.phone} />
-                      <Field label="국가" value={customerCountry} />
-                      <Field label="마케팅 동의" value={customerMarketingAgree} />
-                      <Field label="개인정보 동의" value={customerPrivacyAgree} />
-                      <div className="col-span-2">
-                        <Field label="수령 유형" value={receptionMethodLabel} />
-                      </div>
-                      <div className="col-span-2">
-                        <Field label="수령 정보" value={receivingInfo} />
-                      </div>
-                    </dl>
-                  </SectionCard>
-
-                  {/* 상담 카드 */}
-                  <SectionCard title="상담" editable={false}>
-                    <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
-                      <Field label="상담 티켓" value={ticket.consultationTicketNo} />
-                      <ToggleField
-                        label="상담 희망 여부"
-                        checked={consultationRequestedYn === 'Y'}
-                        disabled={consultationRequestLocked}
-                        onChange={checked => saveConsultationPatch({ consultationRequestedYn: checked ? 'Y' : 'N' })}
-                      />
-                      <EditableReceptionField
-                        label="Outbound 유형"
-                        value={outboundType}
-                        type="select"
-                        options={OUTBOUND_TYPE_OPTIONS}
-                        onSave={value => saveConsultationPatch({ outboundType: value })}
-                      />
-                      <EditableReceptionField
-                        label="상담 담당자"
-                        value={ticket.consultationManager ?? ''}
-                        type="select"
-                        options={CONSULTATION_MANAGER_OPTIONS}
-                        onSave={value => saveConsultationPatch({ consultationManager: value || null })}
-                      />
-                      <EditableReceptionField
-                        label="상담 상태"
-                        value={consultationStatus}
-                        type="select"
-                        options={CONSULTATION_STATUS_OPTIONS}
-                        onSave={value => saveConsultationPatch({ consultationStatus: value === '-' ? null : value })}
-                      />
-                      <Field
-                        label="상담일시"
-                        value={ticket.consultationCompletedAt ? `${ticket.consultationCompletedAt} (KST)` : null}
-                      />
-                      <EditableReceptionField
-                        label="예외 처리 분류"
-                        value={ticket.consultationExceptionCategory ?? ''}
-                        onSave={value => saveConsultationPatch({ consultationExceptionCategory: value || null })}
-                      />
-                      <div className="col-span-2">
-                        <EditableReceptionField
-                          label="수리 전달 사항"
-                          value={ticket.consultationRepairMemo ?? ''}
-                          type="textarea"
-                          onSave={value => saveConsultationPatch({ consultationRepairMemo: value || null })}
+                  {receptionMethod === 'house' && !isPartsRequest && (
+                    <SectionCard title="회수 정보" editable={false}>
+                      <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+                        <Field label="회수 방식" value="자택 픽업" />
+                        <Field label="회수 배송 상태" value={pickupDeliveryStatus} />
+                        <Field
+                          label="회수 운송사"
+                          value={pickupCarrierOptions.find(option => option.value === pickupCarrier)?.label ?? pickupCarrier}
                         />
-                      </div>
-                    </dl>
-                  </SectionCard>
-
-                </div>
-
-                <div className="space-y-4">
-
-                  {/* 제품 정보 카드 */}
-                  <SectionCard title="제품 정보" editable={false}>
-                    <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
-                      <Field label="제품명" value={matchedProduct?.name ?? ticket.productName} />
-                      <Field label="제품 코드" value={matchedProduct?.productCode} />
-                      {productSerialNumber ? <Field label="시리얼 번호" value={productSerialNumber} /> : null}
-                      <Field label="중분류" value={productMidCategory} />
-                      <Field label="소분류" value={productSubCategory} />
-                      <Field label="재고보유여부" value={productStockAvailableYn} />
-                      <Field label="복원수리 가능여부" value={productRestorationRepairYn} />
-                      <Field label="장식 보유 여부" value={productDecorationYn} />
-                      <Field label="런칭일" value={productLaunchDate} />
-                      <EditableReceptionField
-                        label="생산공장1"
-                        value={productFactory1}
-                        type="select"
-                        options={PRODUCT_FACTORY_SELECT_OPTIONS}
-                        onSave={value => saveReceptionPatch({
-                          productFactory1: value || null,
-                          productFactory: value || null,
-                        })}
-                      />
-                      <EditableReceptionField
-                        label="생산공장2"
-                        value={productFactory2}
-                        type="select"
-                        options={PRODUCT_FACTORY_SELECT_OPTIONS}
-                        onSave={value => saveReceptionPatch({ productFactory2: value || null })}
-                      />
-                      <EditableReceptionField
-                        label="생산공장3"
-                        value={productFactory3}
-                        type="select"
-                        options={PRODUCT_FACTORY_SELECT_OPTIONS}
-                        onSave={value => saveReceptionPatch({ productFactory3: value || null })}
-                      />
-                      <div className="col-span-2 pt-2">
-                        <dt className="mb-2 text-[11px] font-semibold text-gray-500">부속품</dt>
-                        <div className="overflow-hidden rounded-lg border border-gray-100 bg-white">
-                          <table className="w-full table-fixed text-left text-xs">
-                            <thead className="border-b border-gray-100 bg-gray-50/70 text-[11px] font-semibold text-gray-400">
-                              <tr>
-                                <th className="px-3 py-2.5">부속품명</th>
-                                <th className="w-24 px-3 py-2.5 text-center">부속품수량</th>
-                                <th className="w-40 px-3 py-2.5">부속품 보관위치</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100 text-gray-700">
-                              {matchedProductParts.length > 0 ? (
-                                matchedProductParts.map(part => (
-                                  <tr key={part.id}>
-                                    <td className="truncate px-3 py-2.5 font-medium text-gray-800">{part.name}</td>
-                                    <td className="px-3 py-2.5 text-center text-gray-600">1</td>
-                                    <td className="truncate px-3 py-2.5 font-mono text-[11px] text-gray-600">{part.storageLocation || '-'}</td>
-                                  </tr>
-                                ))
-                              ) : (
-                                <tr>
-                                  <td colSpan={3} className="px-3 py-5 text-center text-gray-400">
-                                    등록된 부속품 정보가 없습니다.
-                                  </td>
-                                </tr>
-                              )}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </dl>
-                  </SectionCard>
+                        <Field label="회수 운송장 No." value={pickupTrackingNo || '운송장 발급 전'} />
+                        <Field label="PS Office 입고일" value={ticket.hqReceivedAt} />
+                      </dl>
+                    </SectionCard>
+                  )}
 
                   {/* 수리 정보 카드 */}
                   <SectionCard title="수리 정보">
@@ -2048,6 +2907,17 @@ export function TicketDetailPage() {
                         options={REPAIR_DETAIL_OPTIONS}
                         onSave={value => saveRepairPatch({ repairDetail: value === '-' ? '' : value })}
                       />
+                      {isNoRepairDetail(repairDetailValue) && (
+                        <EditableReceptionField
+                          label="수리불가 사유"
+                          value={noRepairReason ?? '-'}
+                          type="select"
+                          options={NO_REPAIR_REASON_OPTIONS}
+                          onSave={value => saveRepairPatch({
+                            noRepairReason: value === '-' ? null : value as Ticket['noRepairReason'],
+                          })}
+                        />
+                      )}
                       <EditableReceptionField
                         label="수리비용 결정"
                         value={ticket.repairChargeType ?? soInfo.repairChargeType}
@@ -2064,7 +2934,13 @@ export function TicketDetailPage() {
                         type="text"
                         onSave={value => saveRepairPatch({ repairCost: Number(value.replace(/[^\d]/g, '')) || 0 })}
                       />
-                      <Field label="서비스 기술자" value={technicianLabel} />
+                      <EditableReceptionField
+                        label="서비스 기술자"
+                        value={ticket.technicianId ?? '-'}
+                        type="select"
+                        options={technicianMemberOptions}
+                        onSave={value => saveTicketAssignee('technician', value)}
+                      />
                       <EditableReceptionField
                         label="수리 진행일"
                         value={ticket.repairBeginDate}
@@ -2129,33 +3005,166 @@ export function TicketDetailPage() {
                     </dl>
                   </SectionCard>
 
+                  {/* 상담 카드 */}
+                  <SectionCard title="상담" editable={false}>
+                    <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+                      <Field label="상담 티켓" value={ticket.consultationTicketNo} />
+                      <ToggleField
+                        label="상담 희망 여부"
+                        checked={consultationRequestedYn === 'Y'}
+                        disabled={consultationRequestLocked}
+                        onChange={checked => saveConsultationPatch({ consultationRequestedYn: checked ? 'Y' : 'N' })}
+                      />
+                      <EditableReceptionField
+                        label="Outbound 유형"
+                        value={outboundType}
+                        type="select"
+                        options={OUTBOUND_TYPE_OPTIONS}
+                        onSave={value => saveConsultationPatch({ outboundType: value })}
+                      />
+                      <EditableReceptionField
+                        label="상담 담당자"
+                        value={ticket.consultationManager ?? ''}
+                        type="select"
+                        options={CONSULTATION_MANAGER_OPTIONS}
+                        onSave={value => saveConsultationPatch({ consultationManager: value || null })}
+                      />
+                      <EditableReceptionField
+                        label="상담 상태"
+                        value={consultationStatus}
+                        type="select"
+                        options={CONSULTATION_STATUS_OPTIONS}
+                        onSave={value => saveConsultationPatch({ consultationStatus: value === '-' ? null : value })}
+                      />
+                      <Field
+                        label="상담일시"
+                        value={ticket.consultationCompletedAt ? `${ticket.consultationCompletedAt} (KST)` : null}
+                      />
+                      <EditableReceptionField
+                        label="예외 처리 분류"
+                        value={ticket.consultationExceptionCategory ?? ''}
+                        onSave={value => saveConsultationPatch({ consultationExceptionCategory: value || null })}
+                      />
+                      <div className="col-span-2">
+                        <EditableReceptionField
+                          label="수리 전달 사항"
+                          value={ticket.consultationRepairMemo ?? ''}
+                          type="textarea"
+                          onSave={value => saveConsultationPatch({ consultationRepairMemo: value || null })}
+                        />
+                      </div>
+                    </dl>
+                  </SectionCard>
+
                   {/* 출고 정보 카드 */}
                   <SectionCard title="출고 정보">
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
-                      <Field label="출고완료" value={shipmentCompletedYn} />
-                      <Field label="출고완료일" value={shipmentCompletedAt} />
+                      <EditableReceptionField
+                        label="출고완료"
+                        value={shipmentCompletedYn}
+                        type="select"
+                        options={YN_OPTIONS}
+                        {...outboundShipmentEditProps}
+                        onSave={value => saveShippingPatch({ shipmentCompletedYn: value === 'Y' ? 'Y' : 'N' })}
+                      />
+                      <EditableReceptionField
+                        label="출고완료일"
+                        value={shipmentCompletedAt}
+                        {...outboundShipmentEditProps}
+                        onSave={value => saveShippingPatch({ shipmentCompletedAt: value || null })}
+                      />
                       <EditableReceptionField
                         label="출고방식"
                         value={normalizedShippingMethod}
                         type="select"
                         options={SHIPPING_METHOD_OPTIONS}
+                        {...outboundShipmentEditProps}
                         onSave={value => saveShippingPatch({ shippingMethod: value })}
                       />
-                      <Field label="운송사" value={outboundCarrier} />
-                      <Field label="배송완료" value={deliveryCompletedYn} />
-                      <Field label="배송일자" value={deliveredAt} />
-                      <Field label="등기번호" value={ticket.trackingNo} />
-                      <Field label="고객픽업여부(매장)" value={storePickupCompletedYn} />
-                      <Field label="고객픽업일자(매장)" value={storePickupCompletedAt} />
-                      <Field label="HQ 운송장 No." value={hqTrackingNo} />
-                      <Field label="법인 출고완료일" value={ticket.corporateShippedAt} />
-                      <Field label="법인 운송장 No." value={ticket.corporateTrackingNo} />
-                      <Field label="법인 Invoice No." value={ticket.corporateInvoiceNo} />
-                      <Field label="HQ Invoice No." value={ticket.hqInvoiceNo} />
-                      <Field label="재수출 이행 조건" value={ticket.reexportCondition} />
+                      <EditableReceptionField
+                        label="운송사"
+                        value={outboundCarrier === '-' ? '' : outboundCarrier}
+                        {...outboundShipmentEditProps}
+                        onSave={value => saveShippingPatch({ outboundCarrier: value || null })}
+                      />
+                      <EditableReceptionField
+                        label="배송완료"
+                        value={deliveryCompletedYn}
+                        type="select"
+                        options={YN_OPTIONS}
+                        {...outboundShipmentEditProps}
+                        onSave={value => saveShippingPatch({ deliveryCompletedYn: value === 'Y' ? 'Y' : 'N' })}
+                      />
+                      <EditableReceptionField
+                        label="배송일자"
+                        value={deliveredAt}
+                        {...outboundShipmentEditProps}
+                        onSave={value => saveShippingPatch({ deliveredAt: value || null })}
+                      />
+                      <EditableReceptionField
+                        label="운송장 No."
+                        value={ticket.trackingNo}
+                        {...outboundShipmentEditProps}
+                        onSave={value => saveShippingPatch({ trackingNo: value || null })}
+                      />
+                      {!isHomeDeliveryOutbound && (
+                        <>
+                          <EditableReceptionField
+                            label="고객픽업여부(매장)"
+                            value={storePickupCompletedYn}
+                            type="select"
+                            options={YN_OPTIONS}
+                            {...outboundShipmentEditProps}
+                            onSave={value => saveShippingPatch({ storePickupCompletedYn: value === 'Y' ? 'Y' : 'N' })}
+                          />
+                          <EditableReceptionField
+                            label="고객픽업일자(매장)"
+                            value={storePickupCompletedAt}
+                            {...outboundShipmentEditProps}
+                            onSave={value => saveShippingPatch({ storePickupCompletedAt: value || null })}
+                          />
+                          <EditableReceptionField
+                            label="HQ 운송장 No."
+                            value={hqTrackingNo}
+                            {...outboundShipmentEditProps}
+                            onSave={value => saveShippingPatch({ hqTrackingNo: value || null })}
+                          />
+                          <EditableReceptionField
+                            label="법인 출고완료일"
+                            value={ticket.corporateShippedAt}
+                            {...outboundShipmentEditProps}
+                            onSave={value => saveShippingPatch({ corporateShippedAt: value || null })}
+                          />
+                          <EditableReceptionField
+                            label="법인 운송장 No."
+                            value={ticket.corporateTrackingNo}
+                            {...outboundShipmentEditProps}
+                            onSave={value => saveShippingPatch({ corporateTrackingNo: value || null })}
+                          />
+                          <EditableReceptionField
+                            label="법인 Invoice No."
+                            value={ticket.corporateInvoiceNo}
+                            {...outboundShipmentEditProps}
+                            onSave={value => saveShippingPatch({ corporateInvoiceNo: value || null })}
+                          />
+                          <EditableReceptionField
+                            label="HQ Invoice No."
+                            value={ticket.hqInvoiceNo}
+                            {...outboundShipmentEditProps}
+                            onSave={value => saveShippingPatch({ hqInvoiceNo: value || null })}
+                          />
+                          <EditableReceptionField
+                            label="재수출 이행 조건"
+                            value={ticket.reexportCondition}
+                            type="select"
+                            options={YN_OPTIONS}
+                            {...outboundShipmentEditProps}
+                            onSave={value => saveShippingPatch({ reexportCondition: value === 'Y' ? 'Y' : 'N' })}
+                          />
+                        </>
+                      )}
                     </dl>
                   </SectionCard>
-                </div>
               </div>
             )}
 
@@ -2167,6 +3176,9 @@ export function TicketDetailPage() {
             )}
             {activeTab === 'email' && (
               <MessageTemplatePanel ticket={ticket} channel="email" />
+            )}
+            {activeTab === 'history' && (
+              <ChangeHistoryPanel logs={changeLogs} />
             )}
           </div>
         </div>

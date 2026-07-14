@@ -1,26 +1,36 @@
-const PART_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+const PART_CODE_LENGTH = 8
+const PART_CODE_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ'
+const PART_CODE_ALPHABET = `${PART_CODE_LETTERS}23456789`
 
-function randomToken(length: number) {
+function randomIndex(max: number) {
   const crypto = globalThis.crypto
 
   if (crypto?.getRandomValues) {
-    const values = new Uint32Array(length)
-    crypto.getRandomValues(values)
-    return Array.from(values, value => PART_CODE_ALPHABET[value % PART_CODE_ALPHABET.length]).join('')
+    const value = new Uint32Array(1)
+    crypto.getRandomValues(value)
+    return value[0] % max
   }
 
-  return Array.from({ length }, () => (
-    PART_CODE_ALPHABET[Math.floor(Math.random() * PART_CODE_ALPHABET.length)]
-  )).join('')
+  return Math.floor(Math.random() * max)
+}
+
+function randomToken(length: number) {
+  const chars = Array.from({ length }, () => PART_CODE_ALPHABET[randomIndex(PART_CODE_ALPHABET.length)])
+
+  if (!chars.some(char => PART_CODE_LETTERS.includes(char))) {
+    chars[randomIndex(length)] = PART_CODE_LETTERS[randomIndex(PART_CODE_LETTERS.length)]
+  }
+
+  return chars.join('')
 }
 
 export function generatePartCode(existingCodes: Iterable<string>, reservedCodes: Iterable<string> = []) {
   const used = new Set([...existingCodes, ...reservedCodes])
 
-  for (let i = 0; i < 20; i += 1) {
-    const code = `PT-${randomToken(10)}`
+  for (let i = 0; i < 100; i += 1) {
+    const code = randomToken(PART_CODE_LENGTH)
     if (!used.has(code)) return code
   }
 
-  return `PT-${Date.now().toString(36).toUpperCase()}${randomToken(4)}`
+  return randomToken(PART_CODE_LENGTH)
 }

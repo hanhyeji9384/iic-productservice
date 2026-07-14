@@ -155,7 +155,7 @@ function defaultLineItem(ticket: Ticket): DocumentLineItem {
     category,
     material: 'ACETATE',
     hsCode: hsCodeFor(category),
-    price: ticket.repairDetail === '젠틀케어' ? '30' : '80',
+    price: ticket.repairDetail === '토탈케어' ? '30' : '80',
   }
 }
 

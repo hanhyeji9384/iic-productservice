@@ -39,6 +39,7 @@ const TICKET_STATUS_META: Record<TicketStatus, { label: string; className: strin
   CLOSED: { label: '종료', className: 'bg-gray-100 text-gray-500' },
   CANCELED: { label: '취소', className: 'bg-red-50 text-red-700' },
   PICKUP_WAITING: { label: '회수 대기중', className: 'bg-orange-50 text-orange-700' },
+  PARTS_READY: { label: '부품 준비 완료', className: 'bg-pink-50 text-pink-700' },
 }
 
 function statusMeta(value: ComponentReturnStatus) {
@@ -381,7 +382,7 @@ export function ComponentReturnsPage() {
           'courier',
         )
       case 'trackingNo':
-        return renderTextFilter(trackingNoFilter, setTrackingNoFilter, '운송장 번호', 'trackingNo')
+        return renderTextFilter(trackingNoFilter, setTrackingNoFilter, '운송장 No.', 'trackingNo')
     }
   }
 
@@ -417,8 +418,8 @@ export function ComponentReturnsPage() {
                     <HeaderCell label="연락처" col="phone" />
                     <HeaderCell label="반송 상태" col="returnStatus" />
                     <HeaderCell label="구성품 유형" />
-                    <HeaderCell label="택배사" col="courier" />
-                    <HeaderCell label="운송장 번호" col="trackingNo" />
+                    <HeaderCell label="운송사" col="courier" />
+                    <HeaderCell label="운송장 No." col="trackingNo" />
                     <HeaderCell label="생성일시" />
                     <HeaderCell label="알림톡" />
                   </tr>
@@ -544,8 +545,8 @@ export function ComponentReturnsPage() {
                         <dl className="grid grid-cols-2 gap-x-5 gap-y-4">
                           <Field label="반송 상태" value={statusMeta(draft.status).label} />
                           <Field label="구성품 유형" value={componentTypeLabel(draft.componentType)} />
-                          <Field label="택배사" value={draft.courier} />
-                          <Field label="운송장 번호" value={draft.trackingNo} />
+                          <Field label="운송사" value={draft.courier} />
+                          <Field label="운송장 No." value={draft.trackingNo} />
                           <Field label="알림톡 발송" value={draft.alimtalkSentYn} />
                           <Field label="생성일시" value={`${draft.createdAt} (KST)`} />
                           <Field label="반송일시" value={draft.returnedAt ? `${draft.returnedAt} (KST)` : '-'} />

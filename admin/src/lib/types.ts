@@ -62,10 +62,12 @@ export type TicketStatus =
   | 'CLOSED'
   | 'CANCELED'
   | 'PICKUP_WAITING'
+  | 'PARTS_READY'
 
 export type PaymentCompleted = 'Y' | 'N' | 'C'
 export type TicketReceptionTag = 'RETURN_COMPONENTS' | 'MODIFIED' | 'PRE_RECEPTION'
 export type RepairChargeType = 'PAID' | 'FREE'
+export type NoRepairReason = 'FAKE' | 'PURCHASE_PROOF_UNAVAILABLE' | 'PRODUCT_CONDITION' | 'OTHER'
 export type SapSendFlag = 'Y' | 'N'
 
 export type Ticket = {
@@ -128,6 +130,7 @@ export type Ticket = {
   lensType?: string | null
   repairDepartment: string
   repairDetail: string
+  noRepairReason?: NoRepairReason | null
   repairChargeType?: RepairChargeType
   repairCost?: number | null
   repairReference?: string | null
@@ -144,6 +147,7 @@ export type Ticket = {
   shipmentCompletedAt?: string | null
   deliveryCompletedYn?: 'Y' | 'N'
   deliveredAt?: string | null
+  outboundCarrier?: string | null
   storePickupCompletedYn?: 'Y' | 'N'
   storePickupCompletedAt?: string | null
   hqTrackingNo?: string | null
@@ -230,6 +234,35 @@ export type MemberChangeLog = {
   changedById: string
 }
 
+export type TicketChangeType =
+  | 'STATUS'
+  | 'ASSIGNEE'
+  | 'RECEPTION'
+  | 'CUSTOMER'
+  | 'PRODUCT'
+  | 'REPAIR'
+  | 'PAYMENT'
+  | 'CONSULTATION'
+  | 'SHIPPING'
+  | 'SYSTEM'
+
+export type TicketChangeLog = {
+  id: string
+  ticketNo: string
+  changedAt: string
+  changeType?: TicketChangeType
+  fieldKey?: string
+  fieldLabel: string
+  beforeValue: string
+  afterValue: string
+  channel?: string
+  memo?: string
+  changedById?: string
+  changedByName: string
+  changedByLoginId: string
+  changedByRoleId?: string
+}
+
 
 export type Role = {
   id: string
@@ -296,11 +329,11 @@ export type ProductChangeLog = {
 export type Part = {
   id: string
   productCode: string       // 연결된 제품 SAP/PS 코드
-  partCode: string          // 부속품 ID (PS 자동 생성, PT-XXXXX)
-  name: string              // 부속품명
+  partCode: string          // 부품 ID (PS 자동 생성, 영문 포함 8자리)
+  name: string              // 부품명
   specification: string     // 규격
   color: string             // 컬러
-  storageLocation: string   // 부속품 보관위치
+  storageLocation: string   // 부품 보관위치
   registeredBy: string
   registeredAt: string
   updatedAt?: string

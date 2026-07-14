@@ -70,7 +70,7 @@ const initColumnFilters = {
 }
 
 const REPAIR_TYPES = [
-  { value: '젠틀케어', label: '젠틀케어' },
+  { value: '토탈케어', label: '토탈케어' },
   { value: '부품 교체', label: '부품 교체' },
   { value: '도금수리', label: '도금수리' },
   { value: '용접수리', label: '용접수리' },
@@ -155,6 +155,7 @@ const STATUS_META: Record<TicketStatus, { label: string; className: string }> = 
   CLOSED: { label: '종료', className: 'bg-gray-100 text-gray-500' },
   CANCELED: { label: '취소', className: 'bg-red-50 text-red-700' },
   PICKUP_WAITING: { label: '회수 대기중', className: 'bg-orange-50 text-orange-700' },
+  PARTS_READY: { label: '부품 준비 완료', className: 'bg-pink-50 text-pink-700' },
 }
 
 const PAYMENT_META: Record<PaymentCompleted, { label: string; className: string }> = {
@@ -388,7 +389,7 @@ export function TicketsPage() {
       '제품명': t.productName,
       '수리부서': t.repairDepartment,
       '수리내역': t.repairDetail,
-      '운송장번호': t.trackingNo ?? '',
+      '운송장 No.': t.trackingNo ?? '',
       '결제완료': t.paymentCompleted,
       '결제일': t.paymentDate ?? '',
       '결제 만료기한': getPaymentExpiresAt(t) ?? '',
@@ -639,7 +640,7 @@ export function TicketsPage() {
     { key: 'productName', label: '제품명', sort: 'productName' },
     { key: 'repairDepartment', label: '수리진행처', sort: 'repairDepartment' },
     { key: 'repairDetail', label: '수리내용', sort: null },
-    { key: 'trackingNo', label: '등기번호', sort: null },
+    { key: 'trackingNo', label: '운송장 No.', sort: null },
     { key: 'paymentCompleted', label: '결제 완료 여부', sort: 'paymentCompleted' },
     { key: 'paymentDate', label: '결제일자', sort: 'paymentDate' },
     { key: 'paymentExpiresAt', label: '결제 만료기한', sort: 'paymentExpiresAt' },
@@ -714,7 +715,7 @@ export function TicketsPage() {
       case 'email':          return renderTextFilter('email', '이메일')
       case 'productName':    return renderTextFilter('productName', '제품명')
       case 'repairDetail':   return renderSelectFilter('repairDetail', REPAIR_TYPES)
-      case 'trackingNo':     return renderTextFilter('trackingNo', '등기번호')
+      case 'trackingNo':     return renderTextFilter('trackingNo', '운송장 No.')
       case 'soDocumentNo':   return renderTextFilter('soDocumentNo', 'SO문서번호')
       case 'paymentDate':    return renderDateFilter('paymentDate')
       case 'paymentExpiresAt': return renderDateFilter('paymentExpiresAt')

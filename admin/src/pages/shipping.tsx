@@ -12,7 +12,7 @@ type SortKey = 'ticketNo' | 'customerName' | 'productName' | 'receptionPlace' | 
 type SortDir = 'asc' | 'desc'
 
 const TABS: { key: Tab; label: string; method: string; branch: '1110' | 'C1002' }[] = [
-  { key: 'cj',        label: 'CJ',    method: '택배(HQ)',        branch: '1110'  },
+  { key: 'cj',        label: 'CJ대한통운', method: '택배(HQ)',        branch: '1110'  },
   { key: 'dhl',       label: 'DHL',   method: '해외택배(DHL)',    branch: '1110'  },
   { key: 'haengrang', label: '행낭',  method: '행낭(HQ)',         branch: '1110'  },
   { key: 'fedex',     label: 'FedEx', method: '해외택배(FedEx)',  branch: 'C1002' },
@@ -44,6 +44,7 @@ type ShippingRow = {
   id: string
   type: 'ticket' | 'component-return'
   ticketNo: string
+  status?: Ticket['status']
   branchCode: string
   customerName: string
   phone: string
@@ -51,6 +52,11 @@ type ShippingRow = {
   productName: string
   receptionPlace: string
   receivedAt: string
+  symptom?: string | null
+  repairDetail?: string | null
+  customerRequest?: string | null
+  deliveryCountry?: string | null
+  shippingMethod?: string | null
 }
 
 function ticketToRow(ticket: Ticket): ShippingRow {
@@ -58,6 +64,7 @@ function ticketToRow(ticket: Ticket): ShippingRow {
     id: `ticket:${ticket.ticketNo}`,
     type: 'ticket',
     ticketNo: ticket.ticketNo,
+    status: ticket.status,
     branchCode: ticket.branchCode,
     customerName: ticket.customerName,
     phone: ticket.phone,
@@ -65,6 +72,11 @@ function ticketToRow(ticket: Ticket): ShippingRow {
     productName: ticket.productName,
     receptionPlace: ticket.receptionPlace,
     receivedAt: ticket.receivedAt,
+    symptom: ticket.symptom,
+    repairDetail: ticket.repairDetail,
+    customerRequest: ticket.customerRequest,
+    deliveryCountry: ticket.deliveryCountry,
+    shippingMethod: ticket.shippingMethod,
   }
 }
 
@@ -80,7 +92,63 @@ function componentReturnToRow(record: ComponentReturn): ShippingRow {
     productName: record.productName,
     receptionPlace: '구성품 반송 출고',
     receivedAt: record.createdAt,
+    repairDetail: null,
   }
+}
+
+function getShippingTag(row: ShippingRow) {
+  if (row.type === 'component-return') {
+    return {
+      label: '구성품 반송',
+      className: 'border-amber-200 bg-amber-50 text-amber-700',
+    }
+  }
+
+  if (row.status === 'PARTS_READY' || isPartsRequestRow(row)) {
+    return {
+      label: '부품 발송',
+      className: 'border-sky-200 bg-sky-50 text-sky-700',
+    }
+  }
+
+  if (row.repairDetail === '수리불가') {
+    return {
+      label: '수리불가 반송',
+      className: 'border-rose-200 bg-rose-50 text-rose-700',
+    }
+  }
+
+  return {
+    label: '서비스 완료 출고',
+    className: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  }
+}
+
+function isPartsRequestRow(row: ShippingRow) {
+  const sourceText = [row.symptom, row.repairDetail, row.customerRequest].filter(Boolean).join(' ')
+  return /부속품\s*요청|부품\s*요청|부속품\s*제공|부품\s*제공|부속품제공|부품제공/i.test(sourceText)
+}
+
+function isClearedFromShippingQueue(ticket: Ticket) {
+  return (
+    ticket.shipmentCompletedYn === 'Y' ||
+    Boolean(ticket.shipmentCompletedAt) ||
+    ticket.status === 'SHIPPING' ||
+    ticket.status === 'SHIPPED' ||
+    ticket.status === 'CLOSED'
+  )
+}
+
+function ticketMatchesTab(ticket: Ticket, tab: { key: Tab; method: string }) {
+  if (isClearedFromShippingQueue(ticket)) return false
+  if (ticket.status === 'READY_TO_SHIP') return ticket.shippingMethod === tab.method
+  if (ticket.status !== 'PARTS_READY') return false
+
+  const deliveryCountry = (ticket.deliveryCountry || '').toUpperCase()
+  const isKrDelivery = deliveryCountry === 'KR' || ticket.receptionPlace.includes('국내')
+
+  if (isKrDelivery) return tab.key === 'cj'
+  return tab.key === 'dhl'
 }
 
 function componentReturnMatchesTab(record: ComponentReturn, tab: Tab) {
@@ -133,8 +201,7 @@ export function ShippingPage() {
 
     const regularRows = allTickets
       .filter(ticket =>
-        ticket.status === 'READY_TO_SHIP' &&
-        ticket.shippingMethod === currentTab.method &&
+        ticketMatchesTab(ticket, currentTab) &&
         (!branch || ticket.branchCode === branch)
       )
       .map(ticketToRow)
@@ -420,13 +487,14 @@ export function ShippingPage() {
                         <input type="checkbox" checked={selectedIds.has(row.id)} onChange={() => toggleSelect(row.id)} className="rounded border-gray-300 cursor-pointer" />
                       </td>
                       <td className="px-4 py-3">
-                        {row.type === 'component-return' ? (
-                          <span className="inline-flex w-fit rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold leading-none text-amber-700">
-                            구성품 반송
-                          </span>
-                        ) : (
-                          <span className="text-xs text-gray-300">-</span>
-                        )}
+                        {(() => {
+                          const tag = getShippingTag(row)
+                          return (
+                            <span className={`inline-flex w-fit rounded-md border px-2 py-0.5 text-[10px] font-semibold leading-none ${tag.className}`}>
+                              {tag.label}
+                            </span>
+                          )
+                        })()}
                       </td>
                       <td className="px-4 py-3">
                         <button

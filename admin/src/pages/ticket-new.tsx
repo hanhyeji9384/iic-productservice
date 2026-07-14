@@ -931,7 +931,7 @@ function shippingMethodLabel(form: Form, branchCode = form.branchCode) {
 
 function pickupTrackingNo(branchCode: string, ticketNo: string) {
   if (branchCode === 'C1002') return `FedEx ${ticketNo.replace(/\D/g, '').slice(-12).padStart(12, '0')}`
-  return `CJ ${ticketNo.replace(/\D/g, '').slice(-12).padStart(12, '0')}`
+  return `CJ대한통운 ${ticketNo.replace(/\D/g, '').slice(-12).padStart(12, '0')}`
 }
 
 function receptionTypeFromTicket(ticket: Ticket): Form['receptionType'] {

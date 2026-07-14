@@ -90,11 +90,11 @@ function parseBulkRegisterRows(sheetRows: string[][]) {
   const idx = (aliases: string[]) => headers.findIndex(header => aliases.includes(header))
 
   const productCodeIdx = idx(['제품코드', 'productcode', 'product_code'])
-  const partCodeIdx = idx(['부품id', '부품아이디', '부속품id', '부속품아이디', 'partcode', 'part_code'])
-  const nameIdx = idx(['부품명', '부속품명', 'name', 'partname', 'part_name'])
+  const partCodeIdx = idx(['부품id', '부품아이디', '부품id', '부품아이디', 'partcode', 'part_code'])
+  const nameIdx = idx(['부품명', '부품명', 'name', 'partname', 'part_name'])
   const specIdx = idx(['규격', 'specification'])
   const colorIdx = idx(['컬러', 'color'])
-  const locationIdx = idx(['보관위치', '부품보관위치', '부속품보관위치', 'storagelocation', 'storage_location', 'location'])
+  const locationIdx = idx(['보관위치', '부품보관위치', '부품보관위치', 'storagelocation', 'storage_location', 'location'])
 
   if (productCodeIdx < 0 || nameIdx < 0) return { rows: [], error: 'required-missing' as const }
 
@@ -131,10 +131,10 @@ function parseBulkUpdateRows(sheetRows: string[][]) {
   const headers = headerLine.map(normalizeHeader)
   const idx = (aliases: string[]) => headers.findIndex(header => aliases.includes(header))
 
-  const partCodeIdx = idx(['부품id', '부품아이디', '부속품id', '부속품아이디', 'partcode', 'part_code'])
+  const partCodeIdx = idx(['부품id', '부품아이디', '부품id', '부품아이디', 'partcode', 'part_code'])
   const specIdx = idx(['규격', 'specification'])
   const colorIdx = idx(['컬러', 'color'])
-  const locationIdx = idx(['보관위치', '부품보관위치', '부속품보관위치', 'storagelocation', 'storage_location', 'location'])
+  const locationIdx = idx(['보관위치', '부품보관위치', '부품보관위치', 'storagelocation', 'storage_location', 'location'])
 
   if (partCodeIdx < 0) return { rows: [], error: 'empty-value' as const }
 

@@ -47,6 +47,7 @@ const STATUS_LABELS: Record<TicketStatus, string> = {
   CLOSED: '완료',
   CANCELED: '취소',
   PICKUP_WAITING: '픽업대기',
+  PARTS_READY: '부품 준비 완료',
 }
 
 const STATUS_COLOR: Record<TicketStatus, string> = {
@@ -64,6 +65,7 @@ const STATUS_COLOR: Record<TicketStatus, string> = {
   CLOSED:             'bg-gray-100 text-gray-600',
   CANCELED:           'bg-red-50 text-red-600',
   PICKUP_WAITING:     'bg-amber-50 text-amber-700',
+  PARTS_READY:        'bg-pink-50 text-pink-700',
 }
 
 type AddressForm = { address1: string; address2: string; zipCode: string; country: string }
