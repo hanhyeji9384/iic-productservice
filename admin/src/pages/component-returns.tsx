@@ -39,6 +39,7 @@ const TICKET_STATUS_META: Record<TicketStatus, { label: string; className: strin
   CLOSED: { label: '종료', className: 'bg-gray-100 text-gray-500' },
   CANCELED: { label: '취소', className: 'bg-red-50 text-red-700' },
   PICKUP_WAITING: { label: '회수 대기중', className: 'bg-orange-50 text-orange-700' },
+  STORE_ARRIVED: { label: '매장 도착 완료', className: 'bg-indigo-50 text-indigo-700' },
   PARTS_READY: { label: '부품 준비 완료', className: 'bg-pink-50 text-pink-700' },
 }
 

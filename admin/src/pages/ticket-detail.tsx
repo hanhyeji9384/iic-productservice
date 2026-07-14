@@ -29,6 +29,7 @@ const STATUS_META: Record<TicketStatus, { label: string; className: string }> = 
   CLOSED:            { label: '서비스 완료',      className: 'bg-gray-100 text-gray-600 border-gray-200' },
   CANCELED:          { label: '취소',             className: 'bg-red-50 text-red-600 border-red-200' },
   PICKUP_WAITING:    { label: '회수 대기 중',      className: 'bg-violet-50 text-violet-700 border-violet-200' },
+  STORE_ARRIVED:     { label: '매장 도착 완료',    className: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
   PARTS_READY:       { label: '부품 준비 완료',    className: 'bg-pink-50 text-pink-700 border-pink-200' },
 }
 
@@ -757,7 +758,13 @@ function parsePickupTrackingNo(ticket: Ticket, value?: string | null) {
 
 function shouldHavePickup(ticket: Ticket) {
   if (isPartsRequestTicket(ticket)) return false
-  return ticket.reRepairYn === 'Y' || getReceptionMethod(ticket) === 'house' || ticket.status === 'PICKUP_WAITING'
+  const receptionMethod = getReceptionMethod(ticket)
+  return (
+    ticket.reRepairYn === 'Y' ||
+    receptionMethod === 'house' ||
+    ticket.status === 'PICKUP_WAITING' ||
+    (receptionMethod === 'store' && ticket.status === 'STORE_ARRIVED')
+  )
 }
 
 function getAutoPickupTrackingNo(ticket: Ticket, carrier = getDefaultPickupCarrier(ticket)) {
@@ -782,6 +789,7 @@ function getPickupTrackingInfo(ticket: Ticket) {
 
 function getPickupDeliveryStatus(ticket: Ticket, pickupTrackingNo?: string | null) {
   if (ticket.hqReceivedAt) return '회수 완료'
+  if (ticket.status === 'STORE_ARRIVED') return isDomesticReceptionTicket(ticket) ? '픽업 요청' : '매장 도착 완료'
   if (ticket.status === 'PICKUP_WAITING') return '픽업 접수'
   if (pickupTrackingNo) return '회수 중'
   return '운송장 발급 전'
@@ -2060,6 +2068,8 @@ export function TicketDetailPage() {
   const pickupTrackingNo = pickupTrackingInfo?.trackingNo ?? ''
   const pickupDeliveryStatus = getPickupDeliveryStatus(ticket, pickupTrackingNo)
   const pickupCarrierOptions = isUsTicket(ticket) ? US_PICKUP_CARRIER_OPTIONS : PICKUP_CARRIER_OPTIONS
+  const shouldShowPickupInfo = shouldHavePickup(ticket) && !isPartsRequest
+  const pickupMethodLabel = receptionMethod === 'store' ? '매장 Drop-off 후 회수' : '자택 픽업'
   const urgentRepairYn = getUrgentRepairYn(ticket)
   const purchaseProofValue = getPurchaseProofValue(ticket)
   const purchaseProofLabel = PURCHASE_PROOF_OPTIONS.find(option => option.value === purchaseProofValue)?.label ?? purchaseProofValue
@@ -2174,10 +2184,27 @@ export function TicketDetailPage() {
     }
 
     const patch: Partial<Ticket> = { status: nextStatus }
+    if (
+      nextStatus === 'STORE_ARRIVED' &&
+      getReceptionMethod(currentTicket) === 'store' &&
+      isDomesticReceptionTicket(currentTicket) &&
+      !currentTicket.pickupTrackingNo
+    ) {
+      patch.pickupTrackingNo = getAutoPickupTrackingNo(currentTicket, 'CJ대한통운')
+    }
     updatePrototypeTicket(currentTicket.ticketNo, patch)
-    recordTicketFieldChanges(patch, '티켓 상태 직접 변경')
+    recordTicketFieldChanges(
+      patch,
+      nextStatus === 'STORE_ARRIVED' && patch.pickupTrackingNo
+        ? '매장 도착 완료 처리 및 TMS 픽업 지시'
+        : '티켓 상태 직접 변경',
+    )
     setTicketRevision(revision => revision + 1)
-    showToast('티켓 상태가 변경되었습니다.')
+    showToast(
+      nextStatus === 'STORE_ARRIVED' && patch.pickupTrackingNo
+        ? '매장 도착 완료 처리 후 TMS 픽업 지시가 생성되었습니다.'
+        : '티켓 상태가 변경되었습니다.',
+    )
   }
 
   function saveTicketAssignee(kind: 'technician' | 'judgementManager', memberId: string) {
@@ -2835,10 +2862,10 @@ export function TicketDetailPage() {
                     </div>
                   </SectionCard>
 
-                  {receptionMethod === 'house' && !isPartsRequest && (
+                  {shouldShowPickupInfo && (
                     <SectionCard title="회수 정보" editable={false}>
                       <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
-                        <Field label="회수 방식" value="자택 픽업" />
+                        <Field label="회수 방식" value={pickupMethodLabel} />
                         <Field label="회수 배송 상태" value={pickupDeliveryStatus} />
                         <Field
                           label="회수 운송사"

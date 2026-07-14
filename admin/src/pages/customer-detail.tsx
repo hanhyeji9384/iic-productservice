@@ -47,6 +47,7 @@ const STATUS_LABELS: Record<TicketStatus, string> = {
   CLOSED: '완료',
   CANCELED: '취소',
   PICKUP_WAITING: '픽업대기',
+  STORE_ARRIVED: '매장 도착 완료',
   PARTS_READY: '부품 준비 완료',
 }
 
@@ -65,6 +66,7 @@ const STATUS_COLOR: Record<TicketStatus, string> = {
   CLOSED:             'bg-gray-100 text-gray-600',
   CANCELED:           'bg-red-50 text-red-600',
   PICKUP_WAITING:     'bg-amber-50 text-amber-700',
+  STORE_ARRIVED:      'bg-indigo-50 text-indigo-700',
   PARTS_READY:        'bg-pink-50 text-pink-700',
 }
 

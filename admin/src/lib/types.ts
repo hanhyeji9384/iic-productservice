@@ -62,6 +62,7 @@ export type TicketStatus =
   | 'CLOSED'
   | 'CANCELED'
   | 'PICKUP_WAITING'
+  | 'STORE_ARRIVED'
   | 'PARTS_READY'
 
 export type PaymentCompleted = 'Y' | 'N' | 'C'

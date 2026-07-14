@@ -7,24 +7,23 @@ import { getComponentReturns, getCustomersWithOverrides, getTicketsWithExtras } 
 import { maskName } from '@/lib/masking'
 import type { ComponentReturn, Ticket } from '@/lib/types'
 
-type Tab = 'cj' | 'dhl' | 'haengrang' | 'fedex'
+type Tab = 'cj' | 'dhl' | 'fedex'
 type SortKey = 'ticketNo' | 'customerName' | 'productName' | 'receptionPlace' | 'receivedAt'
 type SortDir = 'asc' | 'desc'
 
 const TABS: { key: Tab; label: string; method: string; branch: '1110' | 'C1002' }[] = [
   { key: 'cj',        label: 'CJ대한통운', method: '택배(HQ)',        branch: '1110'  },
   { key: 'dhl',       label: 'DHL',   method: '해외택배(DHL)',    branch: '1110'  },
-  { key: 'haengrang', label: '행낭',  method: '행낭(HQ)',         branch: '1110'  },
   { key: 'fedex',     label: 'FedEx', method: '해외택배(FedEx)',  branch: 'C1002' },
 ]
 
 const BRANCH_TABS: Record<string, Tab[]> = {
-  '':      ['cj', 'dhl', 'haengrang', 'fedex'],
-  '1110':  ['cj', 'dhl', 'haengrang'],
+  '':      ['cj', 'dhl', 'fedex'],
+  '1110':  ['cj', 'dhl'],
   'C1002': ['fedex'],
 }
 
-const TBD_TABS: Tab[] = ['haengrang']
+const TBD_TABS: Tab[] = []
 
 type ColKey = 'tag' | 'ticketNo' | 'customerName' | 'productName' | 'receptionPlace' | 'receivedAt'
 
