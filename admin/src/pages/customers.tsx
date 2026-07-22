@@ -33,7 +33,6 @@ function normalizeDigits(value: string) {
 function countryLabel(code: string) {
   const labels: Record<string, string> = {
     KR: '한국',
-    US: '미국',
     JP: '일본',
     CN: '중국',
     GB: '영국',

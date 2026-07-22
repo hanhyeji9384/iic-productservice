@@ -12,10 +12,10 @@ import {
   X,
 } from 'lucide-react'
 import { Pagination } from '@/components/pagination'
-import { BRANCHES } from '@/lib/mock-data'
-import { getTicketsWithExtras } from '@/lib/prototype-storage'
+import { BRANCHES, MEMBERS } from '@/lib/mock-data'
+import { appendTicketChangeLog, getTicketsWithExtras, updatePrototypeTicket } from '@/lib/prototype-storage'
 import { maskName } from '@/lib/masking'
-import type { Ticket, TicketStatus } from '@/lib/types'
+import type { Ticket, TicketChangeType, TicketStatus } from '@/lib/types'
 
 const ITEMS_PER_PAGE = 20
 const TABLE_HEADER_CLASS = 'bg-gray-50/50 px-4 py-3 text-left text-[10px] font-medium leading-none text-gray-500'
@@ -37,8 +37,11 @@ type DocumentLineItem = {
 type TicketDocumentState = {
   corporateInvoiceNo?: string
   hqInvoiceNo?: string
-  globalDeliveryStatus?: 'A' | 'B'
+  status?: TicketStatus
+  hqReceivedAt?: string
   corporateForwardingAt?: string
+  pickupCarrier?: string
+  pickupTrackingNo?: string
 }
 
 type InvoicePackingLog = {
@@ -51,7 +54,6 @@ type InvoicePackingLog = {
   createdAt: string
   createdByName: string
   createdById: string
-  statusEffect: string
   invoiceUrl: string
   packingUrl?: string
   items: Record<string, DocumentLineItem>
@@ -72,30 +74,25 @@ const DOCUMENT_KIND_OPTIONS: {
     value: 'CORP',
     label: '법인 인보이스 생성',
     shortLabel: '법인 인보이스',
-    helper: '생성 후 선택 티켓은 법인 발송 완료로 표시됩니다.',
+    helper: '생성 후 법인 인보이스 No.와 법인 출고 완료일이 저장됩니다. HQ 수령 후 생성 이력에서 입고처리해 주세요.',
   },
   {
     value: 'HQ',
     label: 'HQ 문서 생성',
     shortLabel: 'HQ 문서',
-    helper: 'HQ 문서는 Invoice와 Packing List가 탭으로 구분되어 생성됩니다.',
+    helper: 'HQ 문서는 Invoice와 Packing List가 탭으로 구분되어 생성되며, 생성 후 입고처리할 수 있습니다.',
   },
 ]
 
-const TARGET_STATUS: TicketStatus[] = ['READY_TO_SHIP']
+const TARGET_STATUS: TicketStatus[] = ['READY_TO_SHIP', 'STORE_ARRIVED', 'PRODUCT_MOVING', 'PICKUP_DONE']
+const CURRENT_ADMIN_MEMBER = MEMBERS.find(member => member.loginId === 'monster563') ?? MEMBERS[0]
 
 const BRANCH_EN: Record<string, string> = {
   '1110': 'IICOMBINED CO., LTD.',
-  '1210': 'TAMBURINS CO., LTD.',
-  '1310': 'NUDAKE CO., LTD.',
-  '1410': 'NUFLA CO., LTD.',
-  '1610': 'ATII CO., LTD.',
-  C1002: 'IICOMBINED U.S.A. INC.',
 }
 
 const BRANCH_ADDRESS: Record<string, string[]> = {
   '1110': ['8F Product Service team, 61 Dongil-ro, Seongdong-gu', 'Seoul, 04786, Republic of Korea'],
-  C1002: ['2211 E. Howell Ave.', 'Anaheim, CA 92806, USA'],
 }
 
 function todayStr() {
@@ -106,6 +103,43 @@ function nowDateTime() {
   const d = new Date()
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:00`
+}
+
+function statusText(status: TicketStatus) {
+  switch (status) {
+    case 'PRODUCT_MOVING':
+      return '제품 이동 중'
+    case 'PICKUP_DONE':
+      return '회수 완료'
+    case 'STORE_ARRIVED':
+      return '매장 도착(Drop-off)'
+    case 'READY_TO_SHIP':
+      return '출고 준비'
+    default:
+      return status
+  }
+}
+
+function pickupTrackingInfo(value?: string | null) {
+  const raw = String(value ?? '').trim()
+  const carrierMatch = raw.match(/^(DHL|UPS|EMS|CJ대한통운|CJ|성화기업)\s*/i)
+  if (!carrierMatch) return { carrier: 'DHL', trackingNo: raw }
+
+  const matchedCarrier = carrierMatch[1].toLowerCase()
+  const carrier = matchedCarrier.startsWith('dhl')
+      ? 'DHL'
+      : matchedCarrier.startsWith('ups')
+        ? 'UPS'
+        : matchedCarrier.startsWith('ems')
+          ? 'EMS'
+          : matchedCarrier.startsWith('cj')
+            ? 'CJ대한통운'
+            : '성화기업'
+
+  return {
+    carrier,
+    trackingNo: raw.slice(carrierMatch[0].length).trim(),
+  }
 }
 
 function dateStamp(value = todayStr()) {
@@ -219,7 +253,6 @@ function makeLog(
     createdAt,
     createdByName: '한혜지',
     createdById: 'monster563',
-    statusEffect: kind === 'CORP' ? '법인 발송 완료 자동 변경' : 'Invoice/Packing List 번호 저장',
     invoiceUrl: `#${id}-invoice`,
     packingUrl: kind === 'HQ' ? `#${id}-packing` : undefined,
     items: lineItems,
@@ -246,7 +279,6 @@ function buildInitialDocumentStates(logs: InvoicePackingLog[]): Record<string, T
         ...(log.documentKind === 'CORP'
           ? {
               corporateInvoiceNo: log.name,
-              globalDeliveryStatus: 'B',
               corporateForwardingAt: log.createdAt.slice(0, 10),
             }
           : { hqInvoiceNo: log.name }),
@@ -455,6 +487,20 @@ export function InvoicePackingPage() {
   const currentPageIds = paginatedCandidates.map(ticket => ticket.ticketNo)
   const allCurrentSelected = currentPageIds.length > 0 && currentPageIds.every(id => selectedIds.has(id))
 
+  function getDocumentState(ticket: Ticket) {
+    const savedPickupInfo = pickupTrackingInfo(ticket.pickupTrackingNo)
+    return {
+      corporateInvoiceNo: ticket.corporateInvoiceNo ?? undefined,
+      hqInvoiceNo: ticket.hqInvoiceNo ?? undefined,
+      status: ticket.status,
+      hqReceivedAt: ticket.hqReceivedAt ?? undefined,
+      corporateForwardingAt: ticket.corporateShippedAt ?? undefined,
+      pickupCarrier: ticket.pickupTrackingNo ? savedPickupInfo.carrier : undefined,
+      pickupTrackingNo: ticket.pickupTrackingNo ?? undefined,
+      ...ticketDocumentState[ticket.ticketNo],
+    }
+  }
+
   function handleBranchChange(nextBranch: string) {
     setBranch(nextBranch)
     setPage(1)
@@ -522,6 +568,91 @@ export function InvoicePackingPage() {
     })
   }
 
+  function recordDocumentChange(ticket: Ticket, fieldKey: string, fieldLabel: string, beforeValue: string, afterValue: string, changeType: TicketChangeType, memo: string) {
+    if ((beforeValue || '-') === (afterValue || '-')) return
+    appendTicketChangeLog({
+      ticketNo: ticket.ticketNo,
+      changeType,
+      fieldKey,
+      fieldLabel,
+      beforeValue: beforeValue || '-',
+      afterValue: afterValue || '-',
+      channel: '인보이스/패킹리스트',
+      memo,
+      changedById: CURRENT_ADMIN_MEMBER?.id,
+      changedByName: CURRENT_ADMIN_MEMBER?.name ?? '한혜지',
+      changedByLoginId: CURRENT_ADMIN_MEMBER?.loginId ?? 'monster563',
+      changedByRoleId: CURRENT_ADMIN_MEMBER?.roleId,
+    })
+  }
+
+  function applyDocumentToTicket(ticket: Ticket, log: InvoicePackingLog) {
+    if (log.documentKind === 'CORP') {
+      const corporateShippedAt = log.createdAt.slice(0, 10)
+      const patch: Partial<Ticket> = {
+        corporateInvoiceNo: log.name,
+        corporateShippedAt,
+      }
+
+      updatePrototypeTicket(ticket.ticketNo, patch)
+      recordDocumentChange(ticket, 'corporateInvoiceNo', '법인 Invoice No.', ticket.corporateInvoiceNo ?? '-', log.name, 'SHIPPING', '법인 인보이스 생성')
+      recordDocumentChange(ticket, 'corporateShippedAt', '법인 출고 완료일', ticket.corporateShippedAt ?? '-', corporateShippedAt, 'SHIPPING', '법인 인보이스 생성')
+      return
+    }
+
+    updatePrototypeTicket(ticket.ticketNo, { hqInvoiceNo: log.name })
+    recordDocumentChange(ticket, 'hqInvoiceNo', 'HQ Invoice No.', ticket.hqInvoiceNo ?? '-', log.name, 'SHIPPING', 'HQ 문서 생성')
+  }
+
+  function getLogTickets(log: InvoicePackingLog) {
+    return tickets.filter(ticket => log.ticketNos.includes(ticket.ticketNo))
+  }
+
+  function isLogReceived(log: InvoicePackingLog) {
+    const targetTickets = getLogTickets(log)
+    return targetTickets.length > 0 && targetTickets.every(ticket => getDocumentState(ticket).status === 'PICKUP_DONE')
+  }
+
+  function canReceiveLog(log: InvoicePackingLog) {
+    return getLogTickets(log).some(ticket => getDocumentState(ticket).status !== 'PICKUP_DONE')
+  }
+
+  function processingResultLabel(log: InvoicePackingLog) {
+    if (isLogReceived(log)) return '입고 완료'
+    return log.documentKind === 'CORP' ? '인보이스 생성' : '문서 생성'
+  }
+
+  function handleReceiveLog(log: InvoicePackingLog) {
+    const receivedAt = todayStr()
+    const targetTickets = getLogTickets(log).filter(ticket => getDocumentState(ticket).status !== 'PICKUP_DONE')
+    if (targetTickets.length === 0) return
+    const receiveMemo = `${documentKindShortLabel(log.documentKind)} 입고처리`
+
+    targetTickets.forEach(ticket => {
+      const currentState = getDocumentState(ticket)
+      const patch: Partial<Ticket> = {
+        status: 'PICKUP_DONE',
+        hqReceivedAt: receivedAt,
+      }
+
+      updatePrototypeTicket(ticket.ticketNo, patch)
+      recordDocumentChange(ticket, 'status', '티켓 상태', statusText(currentState.status ?? ticket.status), statusText('PICKUP_DONE'), 'STATUS', receiveMemo)
+      recordDocumentChange(ticket, 'hqReceivedAt', 'PS Office 입고일', currentState.hqReceivedAt ?? '-', receivedAt, 'RECEPTION', receiveMemo)
+    })
+
+    setTicketDocumentState(prev => {
+      const next = { ...prev }
+      targetTickets.forEach(ticket => {
+        next[ticket.ticketNo] = {
+          ...next[ticket.ticketNo],
+          status: 'PICKUP_DONE',
+          hqReceivedAt: receivedAt,
+        }
+      })
+      return next
+    })
+  }
+
   function handleCreateDocuments() {
     const grouped = selectedTickets.reduce<Record<string, Ticket[]>>((acc, ticket) => {
       const key = ticket.branchCode
@@ -535,6 +666,10 @@ export function InvoicePackingPage() {
     )
 
     setLogs(prev => [...newLogs, ...prev])
+    newLogs.forEach(log => {
+      const group = grouped[log.branchCode] ?? []
+      group.forEach(ticket => applyDocumentToTicket(ticket, log))
+    })
     setTicketDocumentState(prev => {
       const next = { ...prev }
       newLogs.forEach(log => {
@@ -544,7 +679,6 @@ export function InvoicePackingPage() {
             ...(log.documentKind === 'CORP'
               ? {
                   corporateInvoiceNo: log.name,
-                  globalDeliveryStatus: 'B',
                   corporateForwardingAt: log.createdAt.slice(0, 10),
                 }
               : { hqInvoiceNo: log.name }),
@@ -560,8 +694,9 @@ export function InvoicePackingPage() {
   }
 
   function statusLabel(ticket: Ticket) {
-    const current = ticketDocumentState[ticket.ticketNo]?.globalDeliveryStatus
-    if (current === 'B') return '법인 발송 완료'
+    const current = getDocumentState(ticket)
+    if (current.status === 'PICKUP_DONE') return '회수 완료'
+    if (current.status === 'PRODUCT_MOVING') return '제품 이동 중'
     return '발송대기'
   }
 
@@ -709,7 +844,7 @@ export function InvoicePackingPage() {
           {activeTab === 'target' ? (
             <>
               <div className="max-w-full overflow-x-auto">
-                <table className="min-w-[1840px] w-full">
+                <table className="min-w-[2200px] w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
                       <th className="w-10 bg-gray-50/50 px-4 py-3">
@@ -741,6 +876,9 @@ export function InvoicePackingPage() {
                       <th className={TABLE_HEADER_CLASS}>출고방식</th>
                       <th className={TABLE_HEADER_CLASS}>수리내용</th>
                       <th className={TABLE_HEADER_CLASS}>글로벌 배송상태</th>
+                      <th className={TABLE_HEADER_CLASS}>회수 운송사</th>
+                      <th className={TABLE_HEADER_CLASS}>회수 운송장 No.</th>
+                      <th className={TABLE_HEADER_CLASS}>법인 출고 완료일</th>
                       <th className={TABLE_HEADER_CLASS}>법인 인보이스 No.</th>
                       <th className={TABLE_HEADER_CLASS}>HQ 문서 No.</th>
                     </tr>
@@ -748,12 +886,13 @@ export function InvoicePackingPage() {
                   <tbody className="divide-y divide-gray-100">
                     {paginatedCandidates.length === 0 ? (
                       <tr>
-                        <td colSpan={13} className="px-6 py-12 text-center text-sm text-gray-400">
+                        <td colSpan={16} className="px-6 py-12 text-center text-sm text-gray-400">
                           생성 대상이 없습니다.
                         </td>
                       </tr>
                     ) : paginatedCandidates.map(ticket => {
-                      const docState = ticketDocumentState[ticket.ticketNo]
+                      const docState = getDocumentState(ticket)
+                      const pickupInfo = pickupTrackingInfo(docState?.pickupTrackingNo ?? ticket.pickupTrackingNo)
                       return (
                         <tr key={ticket.ticketNo} className="transition-colors hover:bg-gray-50/50">
                           <td className="px-4 py-3.5">
@@ -774,11 +913,18 @@ export function InvoicePackingPage() {
                           <td className="whitespace-nowrap px-4 py-3.5 text-xs text-gray-600">{ticket.repairDetail}</td>
                           <td className="whitespace-nowrap px-4 py-3.5">
                             <span className={`inline-flex rounded-md px-2 py-0.5 text-xs font-semibold ${
-                              docState?.globalDeliveryStatus === 'B' ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-500'
+                              docState?.status === 'PICKUP_DONE'
+                                ? 'bg-emerald-50 text-emerald-700'
+                                : docState?.status === 'PRODUCT_MOVING'
+                                  ? 'bg-blue-50 text-blue-700'
+                                  : 'bg-gray-100 text-gray-500'
                             }`}>
                               {statusLabel(ticket)}
                             </span>
                           </td>
+                          <td className="whitespace-nowrap px-4 py-3.5 text-xs text-gray-700">{docState?.pickupTrackingNo ? (docState.pickupCarrier ?? pickupInfo.carrier) : '-'}</td>
+                          <td className="max-w-[240px] truncate px-4 py-3.5 font-mono text-xs text-gray-600">{docState?.pickupTrackingNo ? pickupInfo.trackingNo : (ticket.pickupTrackingNo ? pickupInfo.trackingNo : '-')}</td>
+                          <td className="whitespace-nowrap px-4 py-3.5 font-mono text-xs text-gray-600">{docState?.corporateForwardingAt ?? '-'}</td>
                           <td className="max-w-[240px] truncate px-4 py-3.5 font-mono text-xs text-gray-600">{docState?.corporateInvoiceNo ?? '-'}</td>
                           <td className="max-w-[240px] truncate px-4 py-3.5 font-mono text-xs text-gray-600">{docState?.hqInvoiceNo ?? '-'}</td>
                         </tr>
@@ -821,10 +967,23 @@ export function InvoicePackingPage() {
                         <td className="whitespace-nowrap px-5 py-3.5 font-mono text-xs text-gray-600">{log.createdAt} <span className="font-sans text-gray-400">(KST)</span></td>
                         <td className="whitespace-nowrap px-5 py-3.5 text-xs text-gray-600">{log.createdByName}({log.createdById})</td>
                         <td className="whitespace-nowrap px-5 py-3.5">
-                          <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
-                            <CheckCircle2 className="h-3 w-3" />
-                            {log.statusEffect}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-semibold ${
+                              isLogReceived(log) ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'
+                            }`}>
+                              <CheckCircle2 className="h-3 w-3" />
+                              {processingResultLabel(log)}
+                            </span>
+                            {canReceiveLog(log) && (
+                              <button
+                                type="button"
+                                onClick={() => handleReceiveLog(log)}
+                                className="rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50"
+                              >
+                                입고처리
+                              </button>
+                            )}
+                          </div>
                         </td>
                         <td className="px-5 py-3.5 text-right">
                           <button

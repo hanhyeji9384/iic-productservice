@@ -46,6 +46,13 @@ export const PERMISSION_MENUS: PermissionMenu[] = [
   { id: 'stores',         label: '매장/거래처',    parentLabel: '마스터 관리' },
   // 재고 관리
   { id: 'stock',          label: '재고 현황',      parentLabel: '재고 관리' },
+  { id: 'stock-requests', label: '재고 요청 관리', parentLabel: '재고 관리' },
+  { id: 'part-requests',  label: '부품 요청',      parentLabel: '재고 관리' },
+  { id: 'part-request-management', label: '부품 요청 관리', parentLabel: '재고 관리' },
+  { id: 'stock-transfers', label: 'WMS 재고 출고', parentLabel: '재고 관리' },
+  { id: 'stock-adjustments', label: '재고 조정', parentLabel: '재고 관리' },
+  { id: 'stock-snapshots', label: '재고 스냅샷',  parentLabel: '재고 관리' },
+  { id: 'stock-ledger',   label: '재고 Ledger',    parentLabel: '재고 관리' },
   // 고객 관리
   { id: 'customers',      label: '고객',           parentLabel: '고객 관리' },
   // 티켓 관리
@@ -93,6 +100,13 @@ export const INITIAL_ROLES: PermissionRole[] = [
       parts:            { read: true, write: true },
       stores:           { read: true, write: true },
       stock:            { read: true, write: true },
+      'stock-snapshots': { read: true, write: true },
+      'stock-ledger':   { read: true, write: true },
+      'stock-transfers': { read: true, write: true },
+      'stock-adjustments': { read: true, write: true },
+      'stock-requests': { read: true, write: true },
+      'part-requests':  { read: true, write: true },
+      'part-request-management': { read: true, write: true },
       customers:        { read: true, write: true, delete: true },
       tickets:          { read: true, write: true, delete: true },
       'invoice-packing': { read: true, write: true },
@@ -107,6 +121,13 @@ export const INITIAL_ROLES: PermissionRole[] = [
     name: '본사 접수 담당',
     description: '티켓 등록·수정, 고객 조회',
     permissions: custom({
+      stock:            { read: true },
+      'stock-snapshots': { read: true },
+      'stock-ledger':   { read: true },
+      'stock-transfers': { read: true, write: true },
+      'stock-adjustments': { read: true, write: true },
+      'part-requests':  { read: true, write: true },
+      'part-request-management': { read: true, write: true },
       customers:        { read: true },
       tickets:          { read: true, write: true },
       'invoice-packing': { read: true, write: true },
@@ -121,6 +142,7 @@ export const INITIAL_ROLES: PermissionRole[] = [
     name: '매장 접수 담당',
     description: '티켓 등록·수정만 가능',
     permissions: custom({
+      'part-requests': { read: true, write: true },
       tickets: { read: true, write: true },
     }),
     memberCount: 2,
@@ -141,6 +163,7 @@ export const INITIAL_ROLES: PermissionRole[] = [
     name: '가맹점주',
     description: '가맹 매장 접수 전용 (한국)',
     permissions: custom({
+      'part-requests': { read: true, write: true },
       customers: { read: true },
       tickets:   { read: true, write: true },
     }),
@@ -153,6 +176,7 @@ export const INITIAL_ROLES: PermissionRole[] = [
     name: '심플리페어 가맹점주',
     description: '심플리페어 가맹 매장 접수 전용 (한국)',
     permissions: custom({
+      'part-requests': { read: true, write: true },
       customers: { read: true },
       tickets:   { read: true, write: true },
     }),

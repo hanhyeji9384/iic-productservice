@@ -13,7 +13,7 @@ import {
 
 type Tab = 'roles' | 'history'
 
-const ITEMS_PER_PAGE = 10
+const ITEMS_PER_PAGE = 20
 
 const CHANGE_TYPE_STYLE = {
   update: { bg: 'bg-blue-50 text-blue-700',  label: '수정' },

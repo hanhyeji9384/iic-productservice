@@ -11,10 +11,7 @@ export function Pagination({ total, perPage, current, onChange }: Props) {
   const totalPages = Math.max(1, Math.ceil(total / perPage))
 
   return (
-    <div className="flex items-center justify-between px-6 py-3 border-t border-gray-100">
-      <span className="text-xs text-gray-400">
-        {(current - 1) * perPage + 1}–{Math.min(current * perPage, total)} / 전체 {total}건
-      </span>
+    <div className="flex items-center justify-end px-6 py-3 border-t border-gray-100">
       <div className="flex items-center gap-1">
         <button
           onClick={() => onChange(current - 1)}

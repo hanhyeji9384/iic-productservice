@@ -25,7 +25,7 @@ export const TEMPLATE_KIND_LABEL: Record<TemplateKind, string> = {
 
 // Source: PS 고객 여정별 자동 안내 템플릿_v4.1 (2).xlsx
 // Sheets: HQ카카오톡(KR), HQ이메일(KR), HQ이메일(INT), US이메일, JP이메일
-export const MESSAGE_TEMPLATES: MessageTemplate[] = [
+const RAW_MESSAGE_TEMPLATES: MessageTemplate[] = [
   {
     id: "kakao-hq-kr-rcp-01-2-ko",
     channel: "kakao",
@@ -189,7 +189,7 @@ export const MESSAGE_TEMPLATES: MessageTemplate[] = [
     buttons: "1.서비스취소하기 누르면 Web에서 접수 취소 가능한 [세부 정보 보기] 페이지로 이동\n2. Web 문의하기",
     sendAt: "티켓 상태값: [서비스 판정 완료]로 변경 후 발송",
     conditions: "- 수리 비용 결정: 무상\n - 수리 진행처: 협력업체\n - 수리 내용: 도금수리, 용접수리\n - 티켓 상태 값: 서비스 판정 완료\n - 국가: KR",
-    note: "1. 2026 phase2 부터 용접수리 추가\n2.수리취소 가능 (유상:결제 전까지,#{-}:수리진행 중 전까지)",
+    note: "1. 2026 phase2 부터 용접수리 추가\n2. 수리취소 가능: 수리 진행 중 이전 상태까지",
   },
   {
     id: "kakao-hq-kr-diag-09-13-ko",
@@ -434,8 +434,8 @@ export const MESSAGE_TEMPLATES: MessageTemplate[] = [
     body: "[GENTLE MONSTER]\n서비스 취소 안내\n\n#{고객명}님, 요청에 따라 서비스가 취소 처리되었습니다.\n\n· 티켓번호: #{티켓번호}\n· 제품명: #{제품명}\n\n서비스가 다시 필요하시면 언제든 요청해 주세요.\n(유상 부품 교체 서비스는 구매일로부터 36개월간 제공됩니다.)\n\n▶ 새로 접수하기",
     variables: "#{고객명}\n#{티켓번호}\n#{제품명}",
     buttons: "새로접수하기 누르면\nWeb 접수하기 페이지로 연결",
-    sendAt: "티켓 상태값: [서비스 판정 완료]로 변경 후 발송",
-    conditions: "- 수리내용: 수리취소\n - 티켓 상태 값: 서비스 판정 완료\n - 국가: KR",
+    sendAt: "티켓 상태값: [취소]로 변경 후 발송",
+    conditions: "- 수리내용: 수리취소\n - 티켓 상태 값: 취소\n - 국가: KR",
   },
   {
     id: "kakao-hq-kr-del-01-29-ko",
@@ -1087,8 +1087,8 @@ export const MESSAGE_TEMPLATES: MessageTemplate[] = [
     variables: "#{티켓번호}\n#{제품명}\n#{고객명}",
     buttons: "▶ 새로 접수하기",
     buttonLink: "새로접수하기 누르면\nWeb 접수하기 페이지로 연결",
-    sendAt: "티켓 상태값: 서비스 판정 완료로 변경 후 발송",
-    conditions: "- 수리내용: 수리취소\n - 티켓 상태 값: 서비스 판정 완료\n - 국가: KR",
+    sendAt: "티켓 상태값: 취소로 변경 후 발송",
+    conditions: "- 수리내용: 수리취소\n - 티켓 상태 값: 취소\n - 국가: KR",
   },
   {
     id: "email-hq-kr-del-01-29-ko",
@@ -2138,8 +2138,8 @@ export const MESSAGE_TEMPLATES: MessageTemplate[] = [
     variables: "#{티켓번호}\n#{제품명}\n#{고객명}",
     buttons: "▶ 새로 접수하기",
     buttonLink: "새로접수하기 누르면\nWeb 접수하기 페이지로 연결",
-    sendAt: "티켓 상태값: 서비스 판정 완료로 변경 후 발송",
-    conditions: "- 수리내용: 수리취소\n - 티켓 상태 값: 서비스 판정 완료\n - 국가: KR, CN, JP, US 제외",
+    sendAt: "티켓 상태값: 취소로 변경 후 발송",
+    conditions: "- 수리내용: 수리취소\n - 티켓 상태 값: 취소\n - 국가: KR, CN, JP, US 제외",
   },
   {
     id: "email-hq-int-prc-05-28-en",
@@ -2153,8 +2153,8 @@ export const MESSAGE_TEMPLATES: MessageTemplate[] = [
     variables: "#{티켓번호}\n#{제품명}\n#{고객명}",
     buttons: "▶ Submit New Request",
     buttonLink: "새로접수하기 누르면\nWeb 접수하기 페이지로 연결",
-    sendAt: "티켓 상태값: 서비스 판정 완료로 변경 후 발송",
-    conditions: "- 수리내용: 수리취소\n - 티켓 상태 값: 서비스 판정 완료\n - 국가: KR, CN, JP, US 제외",
+    sendAt: "티켓 상태값: 취소로 변경 후 발송",
+    conditions: "- 수리내용: 수리취소\n - 티켓 상태 값: 취소\n - 국가: KR, CN, JP, US 제외",
   },
   {
     id: "email-hq-int-del-01-29-ko",
@@ -4766,3 +4766,37 @@ export const MESSAGE_TEMPLATES: MessageTemplate[] = [
     conditions: "수동",
   },
 ]
+
+function cleanVisibleTemplateText(value?: string) {
+  return value
+    ?.replace(/,\s*US\s*제외/g, ' 제외')
+    .split('\n')
+    .filter(line => !/US Office|FedEx|미국/i.test(line))
+    .join('\n')
+    .trim()
+}
+
+export const MESSAGE_TEMPLATES: MessageTemplate[] = RAW_MESSAGE_TEMPLATES
+  .filter(template => template.source !== 'US')
+  .filter(template => {
+    const visibleText = [
+      template.title,
+      template.body,
+      template.buttons,
+      template.buttonLink,
+      template.sendAt,
+      template.note,
+    ].filter(Boolean).join(' ')
+    return !/FedEx|미국/i.test(visibleText)
+  })
+  .map(template => ({
+    ...template,
+    title: cleanVisibleTemplateText(template.title) ?? template.title,
+    body: cleanVisibleTemplateText(template.body) ?? template.body,
+    variables: cleanVisibleTemplateText(template.variables),
+    buttons: cleanVisibleTemplateText(template.buttons),
+    buttonLink: cleanVisibleTemplateText(template.buttonLink),
+    sendAt: cleanVisibleTemplateText(template.sendAt),
+    conditions: cleanVisibleTemplateText(template.conditions),
+    note: cleanVisibleTemplateText(template.note),
+  }))

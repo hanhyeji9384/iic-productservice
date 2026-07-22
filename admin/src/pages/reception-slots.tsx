@@ -25,7 +25,7 @@ type LogEntry = {
 }
 type Tab = 'settings' | 'holidays' | 'history'
 
-const LOG_PAGE_SIZE = 10
+const LOG_PAGE_SIZE = 20
 
 const CATEGORY_STYLES: Record<LogEntry['category'], { className: string; i18nKey: string }> = {
   '기본 설정':  { className: 'bg-gray-100 text-gray-700', i18nKey: 'reception_slots.history.category.default' },

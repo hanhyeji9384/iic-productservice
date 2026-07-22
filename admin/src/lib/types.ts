@@ -51,18 +51,24 @@ export type TicketStatus =
   | 'RECEIVED'
   | 'JUDGEMENT_PENDING'
   | 'JUDGEMENT_DONE'
+  | 'SERVICE_UNAVAILABLE'
   | 'PAYMENT_REQUESTED'
   | 'PAYMENT_DONE'
   | 'PARTNER_SENT'
+  | 'PARTNER_RECEIVED'
   | 'REPAIRING'
   | 'REPAIR_DONE'
   | 'READY_TO_SHIP'
   | 'SHIPPING'
   | 'SHIPPED'
+  | 'SERVICE_DONE'
   | 'CLOSED'
   | 'CANCELED'
   | 'PICKUP_WAITING'
   | 'STORE_ARRIVED'
+  | 'PICKUP_COMPLETED'
+  | 'PRODUCT_MOVING'
+  | 'PICKUP_DONE'
   | 'PARTS_READY'
 
 export type PaymentCompleted = 'Y' | 'N' | 'C'
@@ -70,6 +76,31 @@ export type TicketReceptionTag = 'RETURN_COMPONENTS' | 'MODIFIED' | 'PRE_RECEPTI
 export type RepairChargeType = 'PAID' | 'FREE'
 export type NoRepairReason = 'FAKE' | 'PURCHASE_PROOF_UNAVAILABLE' | 'PRODUCT_CONDITION' | 'OTHER'
 export type SapSendFlag = 'Y' | 'N'
+
+export type TicketPricingItem = {
+  id: string
+  itemName: string
+  repairDetail: string
+  price: number
+  externalPricingYn?: 'Y' | 'N'
+  note?: string | null
+}
+
+export type TicketPartRequestItem = {
+  id: string
+  partName: string
+  quantity: number
+  unit?: string
+}
+
+export type TicketAttachment = string | {
+  id: string
+  name: string
+  url: string
+  uploadedAt?: string
+  purpose?: 'CUSTOMER_IMAGE' | 'PURCHASE_PROOF' | 'CUSTOMER_NOTICE'
+  readOnly?: boolean
+}
 
 export type Ticket = {
   id: string
@@ -94,7 +125,7 @@ export type Ticket = {
   purchaseInfoSource?: 'ORDER_HISTORY' | 'ADMIN'
   componentType?: string | null
   customerRequest?: string | null
-  attachments?: string[]
+  attachments?: TicketAttachment[]
   receptionMethod?: 'store' | 'house' | null
   receptionStoreCode?: string | null
   receptionStoreName?: string | null
@@ -127,20 +158,40 @@ export type Ticket = {
   repairPartTags?: string[]
   repairIssueAreaTags?: string[]
   repairIssueTypeTags?: string[]
+  partRequestItems?: TicketPartRequestItem[]
   careRequest?: string | null
   lensType?: string | null
   repairDepartment: string
   repairDetail: string
+  replacementProductCode?: string | null
+  replacementProductName?: string | null
+  replacementProductRetailPrice?: number | null
   noRepairReason?: NoRepairReason | null
   repairChargeType?: RepairChargeType
   repairCost?: number | null
+  productRetailPrice?: number | null
+  repairTypeTags?: string[]
+  repairPricingCurrency?: string | null
+  serviceChargeAmount?: number | null
+  repairOtherAmount?: number | null
+  customsDutyAmount?: number | null
+  pickupFreightAmount?: number | null
+  externalPricingYn?: 'Y' | 'N'
+  externalPricingVendor?: string | null
+  externalPricingCost?: number | null
+  externalPricingCheckedAt?: string | null
+  externalPricingMemo?: string | null
+  pricingItems?: TicketPricingItem[]
   repairReference?: string | null
   repairBeginDate?: string | null
+  repairCompletedAt?: string | null
   factoryForwardingDate?: string | null
   factoryReceivingDate?: string | null
   repairAgainReason?: string | null
   productProblemYn?: 'Y' | 'N'
   repairSpecialNote?: string | null
+  customerNotice?: string | null
+  customerNoticeImages?: TicketAttachment[]
   technicianId?: string
   technicianName?: string
   trackingNo: string | null
@@ -203,6 +254,195 @@ export type ComponentReturn = {
   createdAt: string
   returnedAt: string | null
   alimtalkSentYn: 'Y' | 'N'
+}
+
+export type StockRequestStatus = 'REQUESTED' | 'COMPLETED' | 'OUT_OF_STOCK' | 'HOLD' | 'CANCELED'
+
+export type StockRequestReason =
+  | '긴급 건'
+  | '분배 누락'
+  | '분배 오류'
+  | '접수 오류'
+  | '수리내용 변경'
+  | '수리 중 손상'
+  | '제품 불량'
+  | '재수리'
+  | '타제품교환'
+  | '공장수리(코팅)'
+  | '개인픽업'
+  | '기타'
+
+export type StockRequest = {
+  id: string
+  requestNo: string
+  ticketNo: string
+  requestedAt: string
+  status: StockRequestStatus
+  requester: string
+  requesterId?: string
+  productCode: string
+  productName: string
+  reason: StockRequestReason
+  reasonLargeCategory: string
+  reasonMiddleCategory: string
+  processedAt: string | null
+  processor: string | null
+  processorId?: string | null
+}
+
+export type PartOrderRequestStatus = 'REQUESTED' | 'COMPLETED' | 'OUT_OF_STOCK' | 'HOLD' | 'CANCELED'
+
+export type PartOrderStoreType =
+  | 'Flagship Store'
+  | '백화점'
+  | 'Mall'
+  | '면세점'
+  | '안경원'
+  | '편집샵'
+  | '온라인 자사몰'
+  | '해외법인(자회사)'
+  | '해외법인(Joint Venture)'
+  | 'PS'
+  | '기타'
+
+export type PartOrderRequest = {
+  id: string
+  requestNo: string
+  requestedAt: string
+  status: PartOrderRequestStatus
+  requester: string
+  requesterId?: string
+  storeType: PartOrderStoreType
+  storeCode?: string | null
+  storeName: string
+  productCode: string
+  productName: string
+  partCode: string
+  partName: string
+  partStorageLocation: string
+  color: string
+  quantityPairs: number
+  requestMemo?: string | null
+  processedAt: string | null
+  processor: string | null
+  processorId?: string | null
+}
+
+export type StockLedgerEventType =
+  | '입고'
+  | '출고'
+  | '출고요청'
+  | '출고완료'
+  | '입고완료'
+  | '조정대기'
+  | '조정반영'
+  | '재고예약'
+  | '예약해제'
+
+export type StockLedgerStatus = '완료' | '대기' | '취소'
+export type StockLedgerSourceType = '티켓' | '재고출고' | '재고조정' | '수기'
+
+export type StockLedgerEntry = {
+  id: string
+  occurredAt: string
+  eventType: StockLedgerEventType
+  status: StockLedgerStatus
+  sourceType: StockLedgerSourceType
+  sourceNo: string
+  branchCode: string
+  branchName: string
+  fromLocation: string | null
+  toLocation: string | null
+  productCode: string
+  productName: string
+  barcode: string
+  quantity: number
+  beforeQty: number | null
+  afterQty: number | null
+  handler: string
+  memo?: string | null
+}
+
+export type StockTransferStatus = 'REQUESTED' | 'SHIPPED' | 'RECEIVED' | 'FAILED' | 'CANCELED'
+
+export type StockTransferLine = {
+  id: string
+  productCode: string
+  productName: string
+  barcode: string
+  quantity: number
+}
+
+export type StockTransfer = {
+  id: string
+  transferNo: string
+  requestedAt: string
+  status: StockTransferStatus
+  requester: string
+  requesterId?: string | null
+  fromLocation: '3PL'
+  toLocation: 'PS Office'
+  shippedAt: string | null
+  receivedAt: string | null
+  trackingNo?: string | null
+  failedAt?: string | null
+  erpResultCode?: string | null
+  erpResultMessage?: string | null
+  receiver: string | null
+  memo?: string | null
+  items: StockTransferLine[]
+}
+
+export type StockAdjustmentType = '일반' | '리턴' | '타부서요청' | '폐기' | '기타'
+export type StockAdjustmentStatus = 'REQUESTED' | 'APPLIED' | 'REJECTED'
+export type StockAdjustmentLocation = string
+
+export type StockAdjustment = {
+  id: string
+  adjustmentNo: string
+  requestedAt: string
+  status: StockAdjustmentStatus
+  type: StockAdjustmentType
+  requester: string
+  requesterId?: string | null
+  branchCode?: string | null
+  branchName?: string | null
+  storeCode?: string | null
+  storeName?: string | null
+  locationCode?: string | null
+  locationName?: string | null
+  productCode: string
+  productName: string
+  barcode: string
+  location: StockAdjustmentLocation
+  quantityDelta: number
+  reason: string
+  erpSendRequired?: boolean
+  appliedAt: string | null
+  processor: string | null
+  memo?: string | null
+}
+
+export type StockSnapshotRow = {
+  id: string
+  saveDate: string
+  branchCode: string
+  branchName: string
+  storeCode: string
+  storeName: string
+  locationCode: string
+  locationName: string
+  productCode: string
+  productName: string
+  barcode: string
+  midCategory: string
+  subCategory: string
+  onHandQty: number
+  outboundWaitingQty: number
+  adjustmentWaitingQty: number
+  availableQty: number
+  erpQty?: number
+  stockDiffQty?: number
 }
 
 export type Member = {

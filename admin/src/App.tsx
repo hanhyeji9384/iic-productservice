@@ -13,6 +13,12 @@ import { ProductsPage } from '@/pages/products'
 import { PartsPage } from '@/pages/parts'
 import { PartNewPage } from '@/pages/part-new'
 import { StockPage } from '@/pages/stock'
+import { StockSnapshotsPage } from '@/pages/stock-snapshots'
+import { StockLedgerPage } from '@/pages/stock-ledger'
+import { StockTransferDetailPage, StockTransferNewPage, StockTransfersPage } from '@/pages/stock-transfers'
+import { StockAdjustmentNewPage, StockAdjustmentsPage } from '@/pages/stock-adjustments'
+import { StockRequestsPage } from '@/pages/stock-requests'
+import { PartOrderRequestsPage } from '@/pages/part-order-requests'
 import { StoresPage } from '@/pages/stores'
 import { StoreDetailPage } from '@/pages/store-detail'
 import { CustomersPage } from '@/pages/customers'
@@ -85,6 +91,20 @@ export default function App() {
 
           {/* 재고 관리 */}
           <Route path="stock" element={<StockPage />} />
+          <Route path="stock/snapshots" element={<StockSnapshotsPage />} />
+          <Route path="stock/ledger" element={<StockLedgerPage />} />
+          <Route path="stock/transfers" element={<StockTransfersPage />} />
+          <Route path="stock/transfers/new" element={<StockTransferNewPage />} />
+          <Route path="stock/transfers/:transferNo" element={<StockTransferDetailPage />} />
+          <Route path="stock/adjustments" element={<StockAdjustmentsPage />} />
+          <Route path="stock/adjustments/new" element={<StockAdjustmentNewPage />} />
+          <Route path="stock/requests" element={<StockRequestsPage />} />
+          <Route path="stock/requests/:requestNo" element={<StockRequestsPage />} />
+          <Route path="stock/part-requests" element={<PartOrderRequestsPage mode="requester" />} />
+          <Route path="stock/part-requests/new" element={<PartOrderRequestsPage mode="requester" />} />
+          <Route path="stock/part-requests/:requestNo" element={<PartOrderRequestsPage mode="requester" />} />
+          <Route path="stock/part-request-management" element={<PartOrderRequestsPage mode="management" />} />
+          <Route path="stock/part-request-management/:requestNo" element={<PartOrderRequestsPage mode="management" />} />
 
           {/* 고객 관리 */}
           <Route path="customers" element={<CustomersPage />} />

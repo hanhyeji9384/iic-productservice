@@ -28,8 +28,8 @@ import type { Part, PartChangeLog } from '@/lib/types'
 type SortKey = 'productCode' | 'productName' | 'partCode' | 'name' | 'specification' | 'color' | 'storageLocation'
 type Tab = 'list' | 'history'
 
-const ITEMS_PER_PAGE = 15
-const HISTORY_PER_PAGE = 15
+const ITEMS_PER_PAGE = 20
+const HISTORY_PER_PAGE = 20
 const XLSX_ACCEPT = '.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 
 const CHANGE_TYPE_STYLES: Record<PartChangeLog['changeType'], { bg: string; label: string; i18nKey: string }> = {

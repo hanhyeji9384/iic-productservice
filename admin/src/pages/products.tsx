@@ -22,8 +22,8 @@ type Tab = 'list' | 'history'
 type ProductsPageMode = 'list' | 'management'
 type BulkYnValue = 'keep' | 'true' | 'false'
 
-const ITEMS_PER_PAGE = 15
-const HISTORY_PER_PAGE = 15
+const ITEMS_PER_PAGE = 20
+const HISTORY_PER_PAGE = 20
 const SALES_STATUSES: SalesStatus[] = ['사용중', '종료 예정', '판매 종료 (P)', '판매 종료 (C)']
 
 const SALES_STATUS_KEYS: Record<SalesStatus, string> = {

@@ -6,7 +6,7 @@ import { Pagination } from '@/components/pagination'
 import { STORES } from '@/lib/mock-data'
 import type { Store } from '@/lib/types'
 
-const ITEMS_PER_PAGE = 30
+const ITEMS_PER_PAGE = 20
 
 const STORE_GROUP_LABELS: Record<number, string> = {
   100: 'Flagship',

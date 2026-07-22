@@ -5,6 +5,7 @@ import {
   UserCog, Shield, Package, Wrench, ArchiveX,
   Store, Users, Ticket, Truck, PanelLeftClose, PanelLeftOpen, LogOut, ChevronRight,
   AlertTriangle, KeyRound, CalendarDays, Download, ShieldCheck, FileText,
+  ClipboardList, ArrowLeftRight, SlidersHorizontal,
 } from 'lucide-react'
 import { useSession } from '@/lib/session-context'
 import { I18nModeToggle, I18nText } from '@/lib/i18n-inspector'
@@ -53,6 +54,13 @@ const NAV: NavGroup[] = [
     icon: ArchiveX,
     children: [
       { to: '/stock', label: '재고 현황', i18nKey: 'nav.stock_management.stock', icon: ArchiveX },
+      { to: '/stock/requests', label: '재고 요청 관리', i18nKey: 'nav.stock_management.stock_requests', icon: Package },
+      { to: '/stock/part-requests', label: '부품 요청', i18nKey: 'nav.stock_management.part_requests', icon: Wrench },
+      { to: '/stock/part-request-management', label: '부품 요청 관리', i18nKey: 'nav.stock_management.part_request_management', icon: Wrench },
+      { to: '/stock/transfers', label: 'WMS 재고 출고', i18nKey: 'nav.stock_management.transfers', icon: ArrowLeftRight },
+      { to: '/stock/adjustments', label: '재고 조정', i18nKey: 'nav.stock_management.adjustments', icon: SlidersHorizontal },
+      { to: '/stock/snapshots', label: '재고 스냅샷', i18nKey: 'nav.stock_management.snapshots', icon: ClipboardList },
+      { to: '/stock/ledger', label: '재고 Ledger', i18nKey: 'nav.stock_management.ledger', icon: ClipboardList },
     ],
   },
   {
@@ -112,6 +120,16 @@ function NavLabel({ i18nKey, label, className = '' }: { i18nKey?: string; label:
   return <I18nText i18nKey={i18nKey} display="tooltip" className={className}>{label}</I18nText>
 }
 
+function isNavPathMatch(pathname: string, target: string) {
+  return pathname === target || pathname.startsWith(`${target}/`)
+}
+
+function getActiveChildTo(group: NavGroup, pathname: string, pfx: string) {
+  return group.children
+    .filter(child => isNavPathMatch(pathname, `${pfx}${child.to}`))
+    .sort((a, b) => b.to.length - a.to.length)[0]?.to
+}
+
 export function AdminLayout() {
   const { triggerWarning, triggerExpiry } = useSession()
   const [collapsed, setSidebarCollapsed] = useState(false)
@@ -146,9 +164,7 @@ export function AdminLayout() {
 
   // 현재 경로에 맞는 그룹을 자동 열기
   useEffect(() => {
-    const active = NAV.filter(g =>
-      g.children.some(c => location.pathname.startsWith(`${pfx}${c.to}`))
-    ).map(g => g.label)
+    const active = NAV.filter(g => getActiveChildTo(g, location.pathname, pfx)).map(g => g.label)
     setExpanded(prev => {
       const merged = Array.from(new Set([...prev, ...active]))
       return merged
@@ -196,9 +212,7 @@ export function AdminLayout() {
             const GroupIcon = group.icon
 
             if (collapsed) {
-              const isGroupActive = group.children.some(c =>
-                location.pathname.startsWith(`${pfx}${c.to}`)
-              )
+              const isGroupActive = Boolean(getActiveChildTo(group, location.pathname, pfx))
               return (
                 <div
                   key={group.label}
@@ -223,6 +237,7 @@ export function AdminLayout() {
             }
 
             const isExpanded = expanded.includes(group.label)
+            const activeChildTo = getActiveChildTo(group, location.pathname, pfx)
             return (
               <div key={group.label} className="mb-0.5">
                 {/* 그룹 헤더 */}
@@ -254,10 +269,9 @@ export function AdminLayout() {
                       <NavLink
                         key={to}
                         to={`${pfx}${to}`}
-                        end
-                        className={({ isActive }) =>
+                        className={() =>
                           `flex items-center gap-3 px-4 py-2.5 text-sm rounded-xl transition-colors ${
-                            isActive
+                            activeChildTo === to
                               ? 'text-gray-900 bg-gray-100 font-medium'
                               : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
                           }`
@@ -353,6 +367,7 @@ export function AdminLayout() {
         (() => {
           const group = NAV.find(g => g.label === flyoutGroup)
           if (!group) return null
+          const activeChildTo = getActiveChildTo(group, location.pathname, pfx)
           return (
             <div
               className="fixed z-[9999]"
@@ -370,11 +385,10 @@ export function AdminLayout() {
                   <NavLink
                     key={to}
                     to={`${pfx}${to}`}
-                    end
                     onClick={() => setFlyoutGroup(null)}
-                    className={({ isActive }) =>
+                    className={() =>
                       `flex items-center gap-2.5 mx-1.5 px-2.5 py-2 text-sm rounded-lg transition-colors ${
-                        isActive
+                        activeChildTo === to
                           ? 'text-gray-900 bg-gray-100 font-medium'
                           : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
                       }`

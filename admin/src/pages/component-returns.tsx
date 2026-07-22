@@ -28,20 +28,29 @@ const TICKET_STATUS_META: Record<TicketStatus, { label: string; className: strin
   RECEIVED: { label: '접수', className: 'bg-sky-50 text-sky-700' },
   JUDGEMENT_PENDING: { label: '서비스 판정 대기', className: 'bg-amber-50 text-amber-700' },
   JUDGEMENT_DONE: { label: '서비스 판정 완료', className: 'bg-blue-50 text-blue-700' },
+  SERVICE_UNAVAILABLE: { label: '서비스 불가', className: 'bg-rose-50 text-rose-700' },
   PAYMENT_REQUESTED: { label: '결제 요청', className: 'bg-violet-50 text-violet-700' },
   PAYMENT_DONE: { label: '결제 완료', className: 'bg-emerald-50 text-emerald-700' },
   PARTNER_SENT: { label: '협력업체 발송', className: 'bg-indigo-50 text-indigo-700' },
+  PARTNER_RECEIVED: { label: '협력업체 입고 후 검수 중', className: 'bg-violet-50 text-violet-700' },
   REPAIRING: { label: '수리 진행 중', className: 'bg-blue-50 text-blue-700' },
   REPAIR_DONE: { label: '수리 완료', className: 'bg-emerald-50 text-emerald-700' },
   READY_TO_SHIP: { label: '출고 준비 완료', className: 'bg-cyan-50 text-cyan-700' },
   SHIPPING: { label: '배송 시작', className: 'bg-slate-100 text-slate-700' },
   SHIPPED: { label: '배송 완료', className: 'bg-gray-100 text-gray-600' },
-  CLOSED: { label: '종료', className: 'bg-gray-100 text-gray-500' },
+  SERVICE_DONE: { label: '서비스 완료', className: 'bg-gray-100 text-gray-700' },
+  CLOSED: { label: '서비스 완료', className: 'bg-gray-100 text-gray-500' },
   CANCELED: { label: '취소', className: 'bg-red-50 text-red-700' },
-  PICKUP_WAITING: { label: '회수 대기중', className: 'bg-orange-50 text-orange-700' },
-  STORE_ARRIVED: { label: '매장 도착 완료', className: 'bg-indigo-50 text-indigo-700' },
-  PARTS_READY: { label: '부품 준비 완료', className: 'bg-pink-50 text-pink-700' },
+  PICKUP_WAITING: { label: '접수', className: 'bg-sky-50 text-sky-700' },
+  STORE_ARRIVED: { label: '매장 도착(Drop-off)', className: 'bg-indigo-50 text-indigo-700' },
+  PICKUP_COMPLETED: { label: '픽업 완료', className: 'bg-emerald-50 text-emerald-700' },
+  PRODUCT_MOVING: { label: '제품 이동 중', className: 'bg-cyan-50 text-cyan-700' },
+  PICKUP_DONE: { label: '회수 완료', className: 'bg-emerald-50 text-emerald-700' },
+  PARTS_READY: { label: '부속품 준비 완료', className: 'bg-pink-50 text-pink-700' },
 }
+const TICKET_STATUS_FILTER_OPTIONS = (Object.keys(TICKET_STATUS_META) as TicketStatus[])
+  .filter(value => value !== 'PICKUP_WAITING' && value !== 'CLOSED')
+  .map(value => ({ value, label: TICKET_STATUS_META[value].label }))
 
 function statusMeta(value: ComponentReturnStatus) {
   return STATUS_OPTIONS.find(option => option.value === value) ?? STATUS_OPTIONS[0]
@@ -361,7 +370,7 @@ export function ComponentReturnsPage() {
         return renderSelectFilter(
           ticketStatusFilter,
           value => setTicketStatusFilter(value as 'all' | TicketStatus),
-          (Object.keys(TICKET_STATUS_META) as TicketStatus[]).map(value => ({ value, label: TICKET_STATUS_META[value].label })),
+          TICKET_STATUS_FILTER_OPTIONS,
           'ticketStatus',
         )
       case 'customerName':
@@ -405,7 +414,6 @@ export function ComponentReturnsPage() {
               >
                 <option value="all">전체 법인</option>
                 <option value="1110">1110 GM 본사</option>
-                <option value="C1002">C1002 GM_미국법인</option>
               </select>
             </div>
 

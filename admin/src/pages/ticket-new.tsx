@@ -6,7 +6,7 @@ import { BRANCHES, STORES, PRODUCTS, MEMBERS } from '@/lib/mock-data'
 import { addPrototypeTicket, getCustomersWithOverrides, getTicketsWithExtras, localTimestamp, saveCustomerAddresses, upsertPrototypeCustomer } from '@/lib/prototype-storage'
 import type { Customer, CustomerAddress, Ticket } from '@/lib/types'
 
-const TICKET_BRANCH_CODES = ['1110', 'C1002']
+const TICKET_BRANCH_CODES = ['1110']
 const TICKET_BRANCHES = BRANCHES.filter(branch => TICKET_BRANCH_CODES.includes(branch.code))
 const TECHNICIANS = MEMBERS.filter(m => m.isTechnician && m.status === 'active')
 
@@ -87,15 +87,6 @@ function createInitialForm(branchCode: string): Form {
 
 const COUNTRIES = [
   { code: 'KR', name: '대한민국 (Korea)' },
-  { code: 'US', name: '미국 (United States)' },
-  { code: 'CN', name: '중국 (China)' },
-  { code: 'JP', name: '일본 (Japan)' },
-  { code: 'HK', name: '홍콩 (Hong Kong)' },
-  { code: 'GB', name: '영국 (United Kingdom)' },
-  { code: 'FR', name: '프랑스 (France)' },
-  { code: 'DE', name: '독일 (Germany)' },
-  { code: 'IT', name: '이탈리아 (Italy)' },
-  { code: 'AU', name: '호주 (Australia)' },
 ]
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
@@ -922,20 +913,22 @@ function buildCustomerId(form: Form) {
   return `C-${seed}`
 }
 
-function shippingMethodLabel(form: Form, branchCode = form.branchCode) {
-  if (form.receptionType === 'STORE') return '자체수령'
-  if (form.receptionType === 'HOME' && branchCode === 'C1002') return '해외택배(FedEx)'
-  if (form.receptionType === 'HOME') return '택배(HQ)'
+function shippingMethodLabel(form: Form, deliveryCountry = form.country) {
+  if (form.receptionType === 'STORE') return '매장 Drop-Off'
+  if (form.receptionType === 'HOME') return isOverseasCountry(deliveryCountry) ? '해외 택배(HQ)' : '택배(HQ)'
   return '-'
 }
 
-function pickupTrackingNo(branchCode: string, ticketNo: string) {
-  if (branchCode === 'C1002') return `FedEx ${ticketNo.replace(/\D/g, '').slice(-12).padStart(12, '0')}`
-  return `CJ대한통운 ${ticketNo.replace(/\D/g, '').slice(-12).padStart(12, '0')}`
+function pickupTrackingNo(ticketNo: string, deliveryCountry: string) {
+  const numericSeed = ticketNo.replace(/\D/g, '')
+  if (isOverseasCountry(deliveryCountry)) {
+    return `DHL JD${numericSeed.slice(-14).padStart(14, '0')}`
+  }
+  return `CJ대한통운 ${numericSeed.slice(-12).padStart(12, '0')}`
 }
 
 function receptionTypeFromTicket(ticket: Ticket): Form['receptionType'] {
-  if (ticket.shippingMethod.includes('행낭') || ticket.shippingMethod.includes('자체')) return 'STORE'
+  if (/행낭|자체|매장\s*Drop-?Off/i.test(ticket.shippingMethod)) return 'STORE'
   if (ticket.shippingMethod && ticket.shippingMethod !== '-') return 'HOME'
   return ''
 }
@@ -1206,7 +1199,7 @@ export function TicketNewPage() {
       ticketNo,
       branchCode: ticketBranchCode,
       receivedAt: localTimestamp(),
-      status: isReRepair ? 'PICKUP_WAITING' : 'RECEIVED',
+      status: 'RECEIVED',
       hqReceivedAt: null,
       expectedShipAt: null,
       receptionPlace: form.receptionStoreName || TICKET_BRANCHES.find(branch => branch.code === ticketBranchCode)?.name || '-',
@@ -1216,7 +1209,7 @@ export function TicketNewPage() {
       receptionTitle: reRepairSourceTicket ? '재수리 접수' : undefined,
       originalTicketNo: reRepairSourceTicket?.ticketNo,
       reRepairYn: reRepairSourceTicket ? 'Y' : 'N',
-      pickupTrackingNo: shouldCreatePickup ? pickupTrackingNo(ticketBranchCode, ticketNo) : null,
+      pickupTrackingNo: shouldCreatePickup ? pickupTrackingNo(ticketNo, deliveryCountry) : null,
       serviceCoupon: null,
       urgentRepairYn: isReRepair ? 'Y' : 'N',
       purchaseProofType: isNewCustomer ? '-' : 'MEMBERSHIP',
@@ -1225,8 +1218,8 @@ export function TicketNewPage() {
       customerRequest: null,
       attachments: [],
       receptionMethod,
-      receptionStoreCode: isStoreReception ? form.pickupStoreCode || null : null,
-      receptionStoreName: isStoreReception ? form.pickupStoreName || selectedPickupStore?.name || null : null,
+      receptionStoreCode: isStoreReception ? form.pickupStoreCode || form.receptionStoreCode || null : null,
+      receptionStoreName: isStoreReception ? form.pickupStoreName || selectedPickupStore?.name || form.receptionStoreName || null : null,
       deliveryCountry: isHomeReception ? deliveryCountry : null,
       deliveryZipCode: isHomeReception
         ? (isNewCustomer ? form.newAddressZipCode.trim() : selectedDeliveryAddress?.zipCode) || null
@@ -1248,7 +1241,7 @@ export function TicketNewPage() {
       paymentCompleted: 'N',
       paymentDate: null,
       reexportCondition: 'N',
-      shippingMethod: shippingMethodLabel(form, ticketBranchCode),
+      shippingMethod: shippingMethodLabel(form, deliveryCountry),
       shippedAt: null,
       soDocumentNo: null,
     }
@@ -1335,7 +1328,18 @@ export function TicketNewPage() {
                   <StoreSearchSelect
                     stores={branchStores}
                     value={form.receptionStoreCode}
-                    onChange={(code, name) => setForm(p => ({ ...p, receptionStoreCode: code, receptionStoreName: name }))}
+                    onChange={(code, name) => {
+                      resetAddressEditor()
+                      setForm(p => ({
+                        ...p,
+                        receptionStoreCode: code,
+                        receptionStoreName: name,
+                        receptionType: 'STORE',
+                        deliveryAddressId: '',
+                        pickupStoreCode: code,
+                        pickupStoreName: name,
+                      }))
+                    }}
                   />
                 </dd>
               </div>
@@ -1360,7 +1364,13 @@ export function TicketNewPage() {
                         onClick={() => {
                           resetAddressEditor()
                           const defaultId = type === 'HOME' ? (customerAddresses.find(a => a.isDefault)?.id ?? '') : ''
-                          setForm(p => ({ ...p, receptionType: type, deliveryAddressId: defaultId, pickupStoreCode: '', pickupStoreName: '' }))
+                          setForm(p => ({
+                            ...p,
+                            receptionType: type,
+                            deliveryAddressId: defaultId,
+                            pickupStoreCode: type === 'STORE' ? p.receptionStoreCode : '',
+                            pickupStoreName: type === 'STORE' ? p.receptionStoreName : '',
+                          }))
                         }}
                         className={`flex-1 py-2 rounded-xl border text-sm transition-colors ${
                           !form.phone
@@ -1370,7 +1380,7 @@ export function TicketNewPage() {
                               : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300'
                         }`}
                       >
-                        {type === 'HOME' ? '자택수령' : '매장수령'}
+                        {type === 'HOME' ? '자택 픽업' : '매장 Drop-Off'}
                       </button>
                     ))}
                   </div>

@@ -72,8 +72,8 @@ export function getSoDocumentInfo(ticket: Ticket): SoDocumentInfo {
   const paymentApprovalNo = getPaymentApprovalNo(ticket)
   const b2cYn = getB2cYn(ticket)
   const sapSendFlag = getSapSendFlag(ticket)
-  const serviceClosed = ticket.status === 'CLOSED'
-  const shipmentCompleted = ticket.status === 'CLOSED' || !!ticket.shippedAt
+  const serviceClosed = ticket.status === 'SERVICE_DONE' || ticket.status === 'CANCELED' || ticket.status === 'CLOSED'
+  const shipmentCompleted = ticket.status === 'SERVICE_DONE' || ticket.status === 'CLOSED' || !!ticket.shippedAt
   const cancelReviewNeeded = ticket.status === 'CANCELED' || ticket.paymentCompleted === 'C'
 
   const conditions: SoCondition[] = [
@@ -108,8 +108,8 @@ export function getSoDocumentInfo(ticket: Ticket): SoDocumentInfo {
     {
       key: 'serviceClosed',
       label: '상태',
-      required: '종료',
-      value: serviceClosed ? '종료' : '진행 중',
+      required: '서비스 완료 또는 취소',
+      value: ticket.status === 'CANCELED' ? '취소' : serviceClosed ? '서비스 완료' : '진행 중',
       met: serviceClosed,
     },
     {

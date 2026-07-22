@@ -6,16 +6,20 @@ import { Pagination } from '@/components/pagination'
 import { BRANCHES, MEMBERS } from '@/lib/mock-data'
 import { addDownloadLog } from '@/lib/download-logs'
 import { maskEmail, maskName, maskPhone } from '@/lib/masking'
-import { getCustomersWithOverrides, getTicketsWithExtras } from '@/lib/prototype-storage'
+import { appendTicketChangeLog, getCustomersWithOverrides, getTicketsWithExtras, updatePrototypeTicket } from '@/lib/prototype-storage'
 import { getSoDocumentInfo } from '@/lib/ticket-so'
-import type { PaymentCompleted, Ticket, TicketReceptionTag, TicketStatus } from '@/lib/types'
+import type { PaymentCompleted, Ticket, TicketChangeType, TicketReceptionTag, TicketStatus } from '@/lib/types'
 import { I18nText, useI18nLabel } from '@/lib/i18n-inspector'
 import { ticketStatusI18nKey } from '@/lib/ticket-status-i18n'
 
 const ITEMS_PER_PAGE = 20
+const CURRENT_ADMIN_MEMBER = MEMBERS.find(member => member.loginId === 'monster563') ?? MEMBERS[0]
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
+}
+function nowLocalText() {
+  return new Date().toLocaleString('sv-SE', { hour12: false }).replace('T', ' ')
 }
 function monthsAgoStr(n: number) {
   const d = new Date()
@@ -89,7 +93,6 @@ const REPAIR_DEPARTMENTS = [
   { code: '1', label: '본사' },
   { code: '3', label: '공장' },
   { code: '4', label: '협력업체' },
-  { code: '5', label: 'US Office' },
   { code: '6', label: 'JP Office' },
   { code: '7', label: '3PL' },
 ]
@@ -100,7 +103,7 @@ const SHIPPING_METHODS = [
   { code: 'b', label: '행낭(HQ)' },
   { code: 'h', label: '택배(3PL)' },
   { code: 'g', label: '해외택배 3PL' },
-  { code: 's', label: '자체수령' },
+  { code: 's', label: '매장 Drop-Off' },
   { code: 'q', label: '퀵' },
   { code: 't', label: '임시출고' },
 ]
@@ -144,20 +147,41 @@ const STATUS_META: Record<TicketStatus, { label: string; className: string }> = 
   RECEIVED: { label: '접수', className: 'bg-sky-50 text-sky-700' },
   JUDGEMENT_PENDING: { label: '서비스 판정 대기', className: 'bg-amber-50 text-amber-700' },
   JUDGEMENT_DONE: { label: '서비스 판정 완료', className: 'bg-blue-50 text-blue-700' },
-  PAYMENT_REQUESTED: { label: '결제 요청', className: 'bg-violet-50 text-violet-700' },
+  SERVICE_UNAVAILABLE: { label: '서비스 불가', className: 'bg-rose-50 text-rose-700' },
+  PAYMENT_REQUESTED: { label: '결제 대기', className: 'bg-violet-50 text-violet-700' },
   PAYMENT_DONE: { label: '결제 완료', className: 'bg-emerald-50 text-emerald-700' },
   PARTNER_SENT: { label: '협력업체 발송', className: 'bg-indigo-50 text-indigo-700' },
+  PARTNER_RECEIVED: { label: '협력업체 입고 후 검수 중', className: 'bg-violet-50 text-violet-700' },
   REPAIRING: { label: '수리 진행 중', className: 'bg-blue-50 text-blue-700' },
   REPAIR_DONE: { label: '수리 완료', className: 'bg-emerald-50 text-emerald-700' },
   READY_TO_SHIP: { label: '출고 준비 완료', className: 'bg-cyan-50 text-cyan-700' },
   SHIPPING: { label: '배송 시작', className: 'bg-slate-100 text-slate-700' },
   SHIPPED: { label: '배송 완료', className: 'bg-gray-100 text-gray-600' },
-  CLOSED: { label: '종료', className: 'bg-gray-100 text-gray-500' },
+  SERVICE_DONE: { label: '서비스 완료', className: 'bg-gray-100 text-gray-700' },
+  CLOSED: { label: '서비스 완료', className: 'bg-gray-100 text-gray-500' },
   CANCELED: { label: '취소', className: 'bg-red-50 text-red-700' },
-  PICKUP_WAITING: { label: '회수 대기중', className: 'bg-orange-50 text-orange-700' },
-  STORE_ARRIVED: { label: '매장 도착 완료', className: 'bg-indigo-50 text-indigo-700' },
-  PARTS_READY: { label: '부품 준비 완료', className: 'bg-pink-50 text-pink-700' },
+  PICKUP_WAITING: { label: '접수', className: 'bg-sky-50 text-sky-700' },
+  STORE_ARRIVED: { label: '매장 도착(Drop-off)', className: 'bg-indigo-50 text-indigo-700' },
+  PICKUP_COMPLETED: { label: '픽업 완료', className: 'bg-emerald-50 text-emerald-700' },
+  PRODUCT_MOVING: { label: '제품 이동 중', className: 'bg-cyan-50 text-cyan-700' },
+  PICKUP_DONE: { label: '회수 완료', className: 'bg-emerald-50 text-emerald-700' },
+  PARTS_READY: { label: '부속품 준비 완료', className: 'bg-pink-50 text-pink-700' },
 }
+const DIRECT_CHANGEABLE_STATUS_ORDER: TicketStatus[] = [
+  'STORE_ARRIVED',
+  'SERVICE_UNAVAILABLE',
+  'PARTNER_SENT',
+  'REPAIRING',
+  'REPAIR_DONE',
+  'READY_TO_SHIP',
+  'SERVICE_DONE',
+  'CANCELED',
+  'PARTS_READY',
+  'PICKUP_COMPLETED',
+  'PARTNER_RECEIVED',
+]
+const DIRECT_CHANGEABLE_STATUS_SET = new Set<TicketStatus>(DIRECT_CHANGEABLE_STATUS_ORDER)
+const TICKET_STATUS_OPTION_KEYS = DIRECT_CHANGEABLE_STATUS_ORDER
 
 const PAYMENT_META: Record<PaymentCompleted, { label: string; className: string }> = {
   Y: { label: 'Y', className: 'bg-emerald-50 text-emerald-700' },
@@ -204,6 +228,236 @@ function dateValue(value?: string | null) {
 
 function normalizeText(value?: string | null) {
   return (value ?? '').toLowerCase()
+}
+
+function normalizeRepairDetail(value?: string | null) {
+  return String(value ?? '').trim()
+}
+
+function isNoRepairDetail(value?: string | null) {
+  return normalizeRepairDetail(value).replace(/\s+/g, '') === '수리불가'
+}
+
+function getReceptionChannel(ticket: Ticket) {
+  const source = ticket.receptionPlace
+  if (/GM_PS_/i.test(source)) return 'PS'
+  if (/online|온라인/i.test(`${ticket.receptionTitle ?? ''} ${source}`)) return '온라인'
+  if (/법인|GM_US_|IICOMBINED/i.test(source)) return '법인'
+  if (/SIS|GM_OS_|안경원|B2B|거래처|가맹/i.test(source)) return '가맹점'
+  if (/GM_(FLAGSHIP|DS|MALL|FS|WS)_|store|스토어|매장/i.test(source)) return '매장'
+  return '-'
+}
+
+function getReceptionMethod(ticket: Ticket): 'store' | 'house' | null {
+  if (ticket.receptionMethod === 'store') return 'store'
+  if (getReceptionChannel(ticket) === '매장') return 'store'
+  if (getReceptionChannel(ticket) === '가맹점') return 'store'
+  if (ticket.receptionMethod === 'house') return 'house'
+  if (/행낭|자체수령|매장수령|매장\s*Drop-?Off/i.test(ticket.shippingMethod)) return 'store'
+  if (/택배|DHL|배송/i.test(ticket.shippingMethod)) return 'house'
+  return null
+}
+
+function normalizeCountry(value?: string | null) {
+  return String(value ?? '').trim().toUpperCase()
+}
+
+function isKoreaCountry(value?: string | null) {
+  const country = normalizeCountry(value)
+  return ['KR', 'KOR', 'KOREA', 'SOUTH KOREA', 'REPUBLIC OF KOREA', '대한민국', '한국'].includes(country)
+}
+
+function getBranchCountry(ticket: Ticket) {
+  return BRANCHES.find(branch => branch.code === ticket.branchCode)?.country ?? null
+}
+
+function hasDomesticReceptionMarker(ticket: Ticket) {
+  return /국내|KOREA/i.test(`${ticket.receptionPlace} ${ticket.receptionTitle ?? ''}`)
+}
+
+function isDomesticReceptionTicket(ticket: Ticket) {
+  const deliveryCountry = normalizeCountry(ticket.deliveryCountry)
+  if (deliveryCountry) return isKoreaCountry(deliveryCountry)
+  const branchCountry = getBranchCountry(ticket)
+  if (branchCountry) return isKoreaCountry(branchCountry)
+  return hasDomesticReceptionMarker(ticket)
+}
+
+function isStoreDropOff(ticket: Ticket) {
+  return getReceptionMethod(ticket) === 'store'
+}
+
+function isGlobalTicket(ticket: Ticket) {
+  if (isDomesticReceptionTicket(ticket)) return false
+  return /Global|DHL|해외/i.test(`${ticket.receptionPlace} ${ticket.shippingMethod}`)
+}
+
+function isOverseasDestination(ticket: Ticket) {
+  const country = normalizeCountry(ticket.deliveryCountry)
+  if (country) return !isKoreaCountry(country)
+  const branchCountry = getBranchCountry(ticket)
+  if (branchCountry && !isKoreaCountry(branchCountry)) return true
+  if (isDomesticReceptionTicket(ticket)) return false
+  return isGlobalTicket(ticket)
+}
+
+function isOverseasStoreDropOff(ticket: Ticket) {
+  return isStoreDropOff(ticket) && isOverseasDestination(ticket)
+}
+
+function hasAccessoryIssue(ticket: Ticket) {
+  return /부속품|코받침|나사|소모성|부품/.test([
+    ticket.symptom,
+    ticket.repairDetail,
+    ...(ticket.repairPartTags ?? []),
+    ...(ticket.repairIssueTypeTags ?? []),
+  ].filter(Boolean).join(' '))
+}
+
+function isSimplyRepairStoreTicket(ticket: Ticket) {
+  return isStoreDropOff(ticket) && /심플리페어|simply\s*repair/i.test([
+    ticket.receptionPlace,
+    ticket.receptionStoreName,
+    normalizeRepairDetail(ticket.repairDetail),
+  ].filter(Boolean).join(' '))
+}
+
+function shouldSkipTmsPickup(ticket: Ticket) {
+  return isSimplyRepairStoreTicket(ticket) && hasAccessoryIssue(ticket)
+}
+
+function isNoRepairReturnFlowTicket(ticket: Ticket) {
+  return ticket.status === 'SERVICE_UNAVAILABLE' || isNoRepairDetail(ticket.repairDetail)
+}
+
+function isPartsRequestTicket(ticket: Ticket) {
+  const sourceText = [
+    ticket.symptom,
+    ticket.repairDetail,
+    normalizeRepairDetail(ticket.repairDetail),
+    ticket.customerRequest,
+    ...(ticket.repairPartTags ?? []),
+    ...(ticket.repairIssueTypeTags ?? []),
+  ].filter(Boolean).join(' ')
+
+  return /부속품\s*요청|부품\s*요청|부속품\s*제공|부품\s*제공|부속품제공|부품제공/i.test(sourceText)
+}
+
+function canMoveToStoreArrived(ticket: Ticket) {
+  if (getReceptionMethod(ticket) !== 'store') return false
+  if (ticket.status === 'RECEIVED') return true
+  return false
+}
+
+function isReturnReadyTicket(ticket: Ticket) {
+  const repairDetail = normalizeRepairDetail(ticket.repairDetail)
+  return (
+    isNoRepairReturnFlowTicket(ticket) ||
+    ticket.status === 'CANCELED' ||
+    repairDetail === '수리취소' ||
+    repairDetail === '미입금반송'
+  )
+}
+
+function isBeforeRepairingStatus(status: TicketStatus) {
+  return ![
+    'REPAIRING',
+    'REPAIR_DONE',
+    'READY_TO_SHIP',
+    'SHIPPING',
+    'SHIPPED',
+    'PICKUP_COMPLETED',
+    'SERVICE_DONE',
+    'CLOSED',
+  ].includes(status)
+}
+
+function canMoveToPartnerSent(ticket: Ticket) {
+  if (!/협력업체/.test(ticket.repairDepartment)) return false
+  if (ticket.repairChargeType === 'PAID') return ticket.status === 'PAYMENT_DONE'
+  if (ticket.repairChargeType === 'FREE') return ticket.status === 'JUDGEMENT_DONE'
+  return ['JUDGEMENT_DONE', 'PAYMENT_DONE'].includes(ticket.status)
+}
+
+function canMoveToRepairing(ticket: Ticket) {
+  if (ticket.status === 'PARTNER_RECEIVED') return true
+  if (ticket.repairChargeType === 'PAID') return ticket.status === 'PAYMENT_DONE'
+  if (ticket.repairChargeType === 'FREE') return ticket.status === 'JUDGEMENT_DONE'
+  return ['JUDGEMENT_DONE', 'PAYMENT_DONE'].includes(ticket.status)
+}
+
+function canMoveToReadyToShip(ticket: Ticket) {
+  return ticket.status === 'REPAIR_DONE' || isReturnReadyTicket(ticket)
+}
+
+function canMoveToPickupCompleted(ticket: Ticket) {
+  return ticket.status === 'STORE_ARRIVED' && (
+    ticket.deliveryCompletedYn === 'Y' ||
+    Boolean(ticket.deliveredAt)
+  )
+}
+
+function canApplyManualStatus(ticket: Ticket, nextStatus: TicketStatus) {
+  if (!DIRECT_CHANGEABLE_STATUS_SET.has(nextStatus)) return false
+
+  switch (nextStatus) {
+    case 'STORE_ARRIVED':
+      return canMoveToStoreArrived(ticket)
+    case 'SERVICE_UNAVAILABLE':
+      return isBeforeRepairingStatus(ticket.status)
+    case 'PARTNER_SENT':
+      return canMoveToPartnerSent(ticket)
+    case 'PARTNER_RECEIVED':
+      return ticket.status === 'PARTNER_SENT'
+    case 'REPAIRING':
+      return canMoveToRepairing(ticket)
+    case 'REPAIR_DONE':
+      return ticket.status === 'REPAIRING'
+    case 'READY_TO_SHIP':
+      return canMoveToReadyToShip(ticket)
+    case 'SERVICE_DONE':
+      return ticket.status === 'SHIPPED' || ticket.status === 'PICKUP_COMPLETED'
+    case 'CANCELED':
+      return isBeforeRepairingStatus(ticket.status)
+    case 'PARTS_READY':
+      return isPartsRequestTicket(ticket)
+    case 'PICKUP_COMPLETED':
+      return canMoveToPickupCompleted(ticket)
+    default:
+      return false
+  }
+}
+
+function getServiceUnavailableShippingMethod(ticket: Ticket) {
+  if (getReceptionMethod(ticket) === 'store' && isDomesticReceptionTicket(ticket)) return '행낭(HQ)'
+  return isOverseasDestination(ticket) ? '해외 택배(HQ)' : '택배(HQ)'
+}
+
+function getServiceUnavailableOutboundCarrier(ticket: Ticket) {
+  if (getReceptionMethod(ticket) === 'store' && isDomesticReceptionTicket(ticket)) return '성화기업'
+  return isOverseasDestination(ticket) ? 'DHL' : 'CJ대한통운'
+}
+
+function getAutoOutboundTrackingNo(ticket: Ticket, shippingMethod: string) {
+  const numericSeed = ticket.ticketNo.replace(/\D/g, '').slice(-12).padStart(12, '0')
+  if (shippingMethod.includes('3PL')) return `WMS${numericSeed}`
+  if (shippingMethod.includes('해외')) return `JD${numericSeed.padStart(14, '0')}`
+  return numericSeed
+}
+
+function getDefaultPickupCarrier(ticket: Ticket) {
+  if (isStoreDropOff(ticket)) return isOverseasStoreDropOff(ticket) || shouldSkipTmsPickup(ticket) ? '-' : '성화기업'
+  return isOverseasDestination(ticket) ? 'DHL' : 'CJ대한통운'
+}
+
+function getAutoPickupTrackingNo(ticket: Ticket, carrier = getDefaultPickupCarrier(ticket)) {
+  if (carrier === '-') return ''
+  const numericSeed = ticket.ticketNo.replace(/\D/g, '')
+  if (carrier === 'DHL') return `DHL JD${numericSeed.slice(-14).padStart(14, '0')}`
+  if (carrier === 'UPS') return `UPS ${numericSeed.slice(-12).padStart(12, '0')}`
+  if (carrier === 'EMS') return `EMS ${numericSeed.slice(-12).padStart(12, '0')}`
+  if (carrier === '성화기업') return `성화기업 ${numericSeed.slice(-12).padStart(12, '0')}`
+  return `CJ대한통운 ${numericSeed.slice(-12).padStart(12, '0')}`
 }
 
 function normalizeDigits(value: string) {
@@ -305,7 +559,7 @@ function SoStatusBadge({ ticket }: { ticket: Ticket }) {
 export function TicketsPage() {
   const [activeBranch, setActiveBranch] = useState('')
   const branchOptions = useMemo(() => {
-    return BRANCHES.filter(branch => branch.code === '1110' || branch.code === 'C1002')
+    return BRANCHES.filter(branch => branch.code === '1110')
   }, [])
   const effectiveBranch = activeBranch
 
@@ -332,7 +586,7 @@ export function TicketsPage() {
   const [exportPassword, setExportPassword] = useState('')
   const [exportReason, setExportReason] = useState('')
   const [toast, setToast] = useState<{ message: string; ok: boolean } | null>(null)
-  const [tickets] = useState(() => getTicketsWithExtras())
+  const [tickets, setTickets] = useState(() => getTicketsWithExtras())
   const scanInputRef = useRef<HTMLInputElement>(null)
   const modalScanRef = useRef<HTMLInputElement>(null)
   const exportMenuRef = useRef<HTMLDivElement>(null)
@@ -723,7 +977,7 @@ export function TicketsPage() {
       case 'shippedAt':      return renderDateFilter('shippedAt')
       case 'status':
         return renderSelectFilter('status',
-          (Object.keys(STATUS_META) as TicketStatus[]).map(s => ({
+          TICKET_STATUS_OPTION_KEYS.map(s => ({
             value: s,
             label: i18nLabel(ticketStatusI18nKey(s), STATUS_META[s].label),
           }))
@@ -773,11 +1027,233 @@ export function TicketsPage() {
     })
   }
 
+  function buildBulkStatusPatch(ticket: Ticket, nextStatus: TicketStatus): { patch: Partial<Ticket>; memo: string; skipped?: boolean } {
+    if (!canApplyManualStatus(ticket, nextStatus)) {
+      return {
+        patch: {},
+        memo: '상태 변경 조건 불일치',
+        skipped: true,
+      }
+    }
+
+    const patch: Partial<Ticket> = { status: nextStatus }
+    const isPickupFlowStatus = nextStatus === 'PRODUCT_MOVING' || nextStatus === 'PICKUP_DONE'
+    const skipTmsPickup = shouldSkipTmsPickup(ticket)
+    const overseasStoreDropOff = isOverseasStoreDropOff(ticket)
+    const noRepairReturnFlow = isNoRepairReturnFlowTicket(ticket) || nextStatus === 'SERVICE_UNAVAILABLE'
+
+    if (
+      nextStatus === 'STORE_ARRIVED' &&
+      getReceptionMethod(ticket) === 'store' &&
+      isDomesticReceptionTicket(ticket) &&
+      !noRepairReturnFlow &&
+      !skipTmsPickup &&
+      !ticket.pickupTrackingNo
+    ) {
+      patch.pickupTrackingNo = getAutoPickupTrackingNo(ticket, '성화기업')
+    }
+    if (isPickupFlowStatus && !ticket.pickupTrackingNo && !skipTmsPickup && !overseasStoreDropOff) {
+      patch.pickupTrackingNo = getAutoPickupTrackingNo(ticket)
+    }
+    if (nextStatus === 'PICKUP_DONE' && !ticket.hqReceivedAt) {
+      patch.hqReceivedAt = todayStr()
+    }
+    if (nextStatus === 'PARTNER_RECEIVED' && !ticket.factoryReceivingDate) {
+      patch.factoryReceivingDate = todayStr()
+    }
+    if (nextStatus === 'PICKUP_COMPLETED') {
+      patch.storePickupCompletedYn = 'Y'
+      if (!ticket.storePickupCompletedAt) {
+        patch.storePickupCompletedAt = todayStr()
+      }
+    }
+    if (nextStatus === 'SERVICE_UNAVAILABLE') {
+      const shippingMethod = getServiceUnavailableShippingMethod(ticket)
+      patch.repairDetail = '수리불가'
+      patch.repairChargeType = 'FREE'
+      patch.repairCost = 0
+      patch.judgementCompletedAt = ticket.judgementCompletedAt || nowLocalText()
+      patch.shippingMethod = shippingMethod
+      patch.outboundCarrier = getServiceUnavailableOutboundCarrier(ticket)
+      patch.shipmentCompletedYn = ticket.shipmentCompletedYn ?? 'N'
+      patch.deliveryCompletedYn = ticket.deliveryCompletedYn ?? 'N'
+    }
+    if (noRepairReturnFlow && ['SHIPPING', 'SHIPPED', 'SERVICE_DONE', 'CLOSED'].includes(nextStatus)) {
+      const shippingMethod = ticket.shippingMethod || getServiceUnavailableShippingMethod(ticket)
+      patch.shippingMethod = shippingMethod
+      patch.outboundCarrier = ticket.outboundCarrier || getServiceUnavailableOutboundCarrier(ticket)
+      patch.shipmentCompletedYn = 'Y'
+      patch.shipmentCompletedAt = ticket.shipmentCompletedAt || todayStr()
+      if (!ticket.trackingNo) patch.trackingNo = getAutoOutboundTrackingNo(ticket, shippingMethod)
+      if (nextStatus === 'SHIPPED' || nextStatus === 'SERVICE_DONE' || nextStatus === 'CLOSED') {
+        patch.deliveryCompletedYn = 'Y'
+        patch.deliveredAt = ticket.deliveredAt || todayStr()
+      }
+      if ((nextStatus === 'SERVICE_DONE' || nextStatus === 'CLOSED') && getReceptionMethod(ticket) === 'store') {
+        patch.storePickupCompletedYn = 'Y'
+        patch.storePickupCompletedAt = ticket.storePickupCompletedAt || todayStr()
+      }
+    }
+
+    let memo = '티켓 목록 일괄 변경'
+    if (nextStatus === 'SERVICE_UNAVAILABLE') {
+      memo = '서비스 불가 판정 및 TMS 반송 요청'
+    } else if (nextStatus === 'STORE_ARRIVED' && patch.pickupTrackingNo) {
+      memo = '매장 도착(Drop-off) 처리 및 TMS 픽업 지시'
+    } else if (nextStatus === 'PRODUCT_MOVING' && patch.pickupTrackingNo) {
+      memo = '제품 이동 중 처리 및 회수 운송장 생성'
+    } else if (nextStatus === 'PICKUP_DONE') {
+      memo = '회수 완료 처리 및 PS Office 입고일 입력'
+    } else if (nextStatus === 'PARTNER_RECEIVED') {
+      memo = '협력업체 입고 처리 및 검수 시작'
+    } else if (nextStatus === 'PICKUP_COMPLETED') {
+      memo = '고객 픽업 완료 처리'
+    } else if (nextStatus === 'SERVICE_DONE') {
+      memo = '서비스 완료 처리'
+    } else if (nextStatus === 'CLOSED') {
+      memo = '서비스 완료 처리'
+    }
+
+    return { patch, memo }
+  }
+
+  function formatBulkChangeValue(fieldKey: keyof Ticket, value: unknown) {
+    if (fieldKey === 'status') {
+      const status = value as TicketStatus
+      return STATUS_META[status]?.label ?? displayValue(String(value ?? ''))
+    }
+    if (fieldKey === 'technicianId') {
+      const id = String(value ?? '')
+      if (!id) return '-'
+      const member = MEMBERS.find(item => item.id === id)
+      return member?.name ?? id
+    }
+    return displayValue(String(value ?? ''))
+  }
+
+  function recordBulkTicketFieldChanges(ticket: Ticket, patch: Partial<Ticket>, memo: string) {
+    const nextTicket = { ...ticket, ...patch }
+    const changeFields: Array<{ key: keyof Ticket; label: string; changeType: TicketChangeType }> = [
+      { key: 'status', label: '티켓 상태', changeType: 'STATUS' },
+      { key: 'pickupTrackingNo', label: '회수 운송장 No.', changeType: 'SHIPPING' },
+      { key: 'hqReceivedAt', label: '본사입고일', changeType: 'SHIPPING' },
+      { key: 'technicianId', label: '서비스 기술자', changeType: 'ASSIGNEE' },
+    ]
+
+    changeFields.forEach(({ key, label, changeType }) => {
+      if (!(key in patch)) return
+      const beforeValue = formatBulkChangeValue(key, ticket[key])
+      const afterValue = formatBulkChangeValue(key, nextTicket[key])
+      if (beforeValue === afterValue) return
+      appendTicketChangeLog({
+        ticketNo: ticket.ticketNo,
+        changeType,
+        fieldKey: String(key),
+        fieldLabel: label,
+        beforeValue,
+        afterValue,
+        channel: '티켓 목록',
+        memo,
+        changedById: CURRENT_ADMIN_MEMBER?.id,
+        changedByName: CURRENT_ADMIN_MEMBER?.name ?? '한혜지',
+        changedByLoginId: CURRENT_ADMIN_MEMBER?.loginId ?? 'monster563',
+        changedByRoleId: CURRENT_ADMIN_MEMBER?.roleId,
+      })
+    })
+  }
+
+  function formatSkippedTicketNos(ticketNos: string[]) {
+    const visibleTicketNos = ticketNos.slice(0, 5)
+    const remainCount = ticketNos.length - visibleTicketNos.length
+    return remainCount > 0
+      ? `${visibleTicketNos.join(', ')} 외 ${remainCount}건`
+      : visibleTicketNos.join(', ')
+  }
+
   function handleBulkApply() {
+    const selectedTickets = tickets.filter(ticket => selectedIds.has(ticket.ticketNo))
+    const nextTechnician = bulkTechnician
+      ? MEMBERS.find(member => member.id === bulkTechnician)
+      : null
+
+    if (bulkTechnician && !nextTechnician) {
+      showToast('선택한 서비스 기술자를 찾을 수 없습니다.', false)
+      return
+    }
+
+    const patchesByTicketNo = new Map<string, Partial<Ticket>>()
+    let updatedCount = 0
+    let tmsInstructionCount = 0
+    let hqReceivedCount = 0
+    let invalidStatusChangeCount = 0
+    const invalidStatusChangeTicketNos: string[] = []
+
+    selectedTickets.forEach(ticket => {
+      const patch: Partial<Ticket> = {}
+      const memoParts: string[] = []
+
+      if (bulkStatus) {
+        const statusResult = buildBulkStatusPatch(ticket, bulkStatus)
+        if (statusResult.skipped) {
+          invalidStatusChangeCount += 1
+          invalidStatusChangeTicketNos.push(ticket.ticketNo)
+        }
+        Object.assign(patch, statusResult.patch)
+        if (!statusResult.skipped) memoParts.push(statusResult.memo)
+        if (bulkStatus === 'STORE_ARRIVED' && statusResult.patch.pickupTrackingNo) tmsInstructionCount += 1
+        if (bulkStatus === 'PICKUP_DONE' && statusResult.patch.hqReceivedAt) hqReceivedCount += 1
+      }
+
+      if (nextTechnician) {
+        patch.technicianId = nextTechnician.id
+        patch.technicianName = nextTechnician.name
+        memoParts.push('서비스 기술자 일괄 지정')
+      }
+
+      const hasMeaningfulPatch = (Object.keys(patch) as Array<keyof Ticket>).some(key => {
+        return ticket[key] !== patch[key]
+      })
+      if (!hasMeaningfulPatch) return
+
+      updatePrototypeTicket(ticket.ticketNo, patch)
+      recordBulkTicketFieldChanges(ticket, patch, Array.from(new Set(memoParts)).join(' / ') || '티켓 목록 일괄 변경')
+      patchesByTicketNo.set(ticket.ticketNo, patch)
+      updatedCount += 1
+    })
+
+    if (patchesByTicketNo.size > 0) {
+      setTickets(prev => prev.map(ticket => {
+        const patch = patchesByTicketNo.get(ticket.ticketNo)
+        return patch ? { ...ticket, ...patch } : ticket
+      }))
+    }
+
     setSelectedIds(new Set())
     setBulkStatus('')
     setBulkTechnician('')
     setBulkEditModalOpen(false)
+
+    if (updatedCount === 0) {
+      if (invalidStatusChangeCount > 0) {
+        showToast(`선택한 상태로 변경 가능한 티켓이 없습니다. 제외: ${formatSkippedTicketNos(invalidStatusChangeTicketNos)}`, false)
+        return
+      }
+      showToast('변경할 내용이 없습니다.', false)
+      return
+    }
+    if (invalidStatusChangeCount > 0) {
+      showToast(`${updatedCount}개 티켓을 변경했습니다. 상태 변경 조건에 맞지 않는 ${invalidStatusChangeCount}건은 제외했습니다. 제외: ${formatSkippedTicketNos(invalidStatusChangeTicketNos)}`)
+      return
+    }
+    if (tmsInstructionCount > 0) {
+      showToast(`${updatedCount}개 티켓을 변경하고 성화기업 픽업 지시 ${tmsInstructionCount}건을 생성했습니다.`)
+      return
+    }
+    if (hqReceivedCount > 0) {
+      showToast(`${updatedCount}개 티켓을 변경하고 PS Office 입고일을 입력했습니다.`)
+      return
+    }
+    showToast(`${updatedCount}개 티켓에 변경사항을 적용했습니다.`)
   }
 
   return (
@@ -1230,7 +1706,7 @@ export function TicketsPage() {
                   className="w-full appearance-none px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:border-gray-400 transition-colors"
                 >
                   <option value="">-</option>
-                  {(Object.keys(STATUS_META) as TicketStatus[]).map(s => (
+                  {TICKET_STATUS_OPTION_KEYS.map(s => (
                     <option key={s} value={s}>{i18nLabel(ticketStatusI18nKey(s), STATUS_META[s].label)}</option>
                   ))}
                 </select>

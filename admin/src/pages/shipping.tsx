@@ -7,20 +7,18 @@ import { getComponentReturns, getCustomersWithOverrides, getTicketsWithExtras } 
 import { maskName } from '@/lib/masking'
 import type { ComponentReturn, Ticket } from '@/lib/types'
 
-type Tab = 'cj' | 'dhl' | 'fedex'
+type Tab = 'cj' | 'dhl'
 type SortKey = 'ticketNo' | 'customerName' | 'productName' | 'receptionPlace' | 'receivedAt'
 type SortDir = 'asc' | 'desc'
 
-const TABS: { key: Tab; label: string; method: string; branch: '1110' | 'C1002' }[] = [
+const TABS: { key: Tab; label: string; method: string; branch: '1110' }[] = [
   { key: 'cj',        label: 'CJ대한통운', method: '택배(HQ)',        branch: '1110'  },
   { key: 'dhl',       label: 'DHL',   method: '해외택배(DHL)',    branch: '1110'  },
-  { key: 'fedex',     label: 'FedEx', method: '해외택배(FedEx)',  branch: 'C1002' },
 ]
 
 const BRANCH_TABS: Record<string, Tab[]> = {
-  '':      ['cj', 'dhl', 'fedex'],
+  '':      ['cj', 'dhl'],
   '1110':  ['cj', 'dhl'],
-  'C1002': ['fedex'],
 }
 
 const TBD_TABS: Tab[] = []
@@ -103,17 +101,31 @@ function getShippingTag(row: ShippingRow) {
     }
   }
 
-  if (row.status === 'PARTS_READY' || isPartsRequestRow(row)) {
+  if (isPaymentDelayedReturnRow(row)) {
     return {
-      label: '부품 발송',
-      className: 'border-sky-200 bg-sky-50 text-sky-700',
+      label: '결제지연반송',
+      className: 'border-orange-200 bg-orange-50 text-orange-700',
     }
   }
 
-  if (row.repairDetail === '수리불가') {
+  if (isServiceCancelShippingRow(row)) {
     return {
-      label: '수리불가 반송',
-      className: 'border-rose-200 bg-rose-50 text-rose-700',
+      label: '서비스 완료 출고',
+      className: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    }
+  }
+
+  if (isServiceUnavailableShippingRow(row)) {
+    return {
+      label: '서비스 완료 출고',
+      className: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    }
+  }
+
+  if (row.status === 'PARTS_READY' || isPartsRequestRow(row)) {
+    return {
+      label: '서비스 완료 출고',
+      className: 'border-emerald-200 bg-emerald-50 text-emerald-700',
     }
   }
 
@@ -123,9 +135,34 @@ function getShippingTag(row: ShippingRow) {
   }
 }
 
+function getShippingTagSourceText(row: ShippingRow) {
+  return [row.symptom, row.repairDetail, row.customerRequest, row.receptionPlace].filter(Boolean).join(' ')
+}
+
+function isPaymentDelayedReturnRow(row: ShippingRow) {
+  return /결제\s*지연|결제지연|미입금\s*반송|미입금반송|미입금발송|미결제\s*반송|결제\s*미확인/i.test(
+    getShippingTagSourceText(row),
+  )
+}
+
+function isServiceCancelShippingRow(row: ShippingRow) {
+  return (
+    row.status === 'CANCELED' ||
+    /수리\s*취소|수리취소|서비스\s*취소|서비스취소/i.test(getShippingTagSourceText(row))
+  )
+}
+
+function isServiceUnavailableShippingRow(row: ShippingRow) {
+  return (
+    row.status === 'SERVICE_UNAVAILABLE' ||
+    /수리\s*불가|수리불가|서비스\s*불가|서비스불가/i.test(getShippingTagSourceText(row))
+  )
+}
+
 function isPartsRequestRow(row: ShippingRow) {
-  const sourceText = [row.symptom, row.repairDetail, row.customerRequest].filter(Boolean).join(' ')
-  return /부속품\s*요청|부품\s*요청|부속품\s*제공|부품\s*제공|부속품제공|부품제공/i.test(sourceText)
+  return /부속품\s*요청|부품\s*요청|부속품\s*제공|부품\s*제공|부속품제공|부품제공/i.test(
+    getShippingTagSourceText(row),
+  )
 }
 
 function isClearedFromShippingQueue(ticket: Ticket) {
@@ -134,6 +171,7 @@ function isClearedFromShippingQueue(ticket: Ticket) {
     Boolean(ticket.shipmentCompletedAt) ||
     ticket.status === 'SHIPPING' ||
     ticket.status === 'SHIPPED' ||
+    ticket.status === 'SERVICE_DONE' ||
     ticket.status === 'CLOSED'
   )
 }
@@ -153,7 +191,6 @@ function ticketMatchesTab(ticket: Ticket, tab: { key: Tab; method: string }) {
 function componentReturnMatchesTab(record: ComponentReturn, tab: Tab) {
   if (record.status === 'COMPLETED') return false
   if (tab === 'cj') return record.courier === 'CJ대한통운'
-  if (tab === 'fedex') return record.courier === 'FedEx'
   if (tab === 'dhl') return record.courier === 'DHL'
   return false
 }
@@ -361,7 +398,6 @@ export function ShippingPage() {
             >
               <option value="">전체</option>
               <option value="1110">본사 (KR)</option>
-              <option value="C1002">미국 법인 (US)</option>
             </select>
           </div>
 

@@ -41,9 +41,9 @@ export function MembersPage() {
   const [appliedColumnFilters, setAppliedColumnFilters] = useState<Record<string, string>>({})
   const [filterPopover, setFilterPopover] = useState<{ col: string; rect: DOMRect } | null>(null)
 
-  const PAGE_SIZE = 10
+  const PAGE_SIZE = 20
   const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page') ?? '1'))
-  const LOG_PAGE_SIZE = 10
+  const LOG_PAGE_SIZE = 20
   const [logsPage, setLogsPage] = useState(1)
 
   type SortKey = 'name' | 'loginId' | 'email' | 'status' | 'createdAt' | 'lastLoginAt'
@@ -640,10 +640,7 @@ export function MembersPage() {
 
             {/* 페이징 */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between px-1">
-                <p className="text-sm text-gray-500">
-                  {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} / 전체 {filtered.length}명
-                </p>
+              <div className="flex items-center justify-end px-1">
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => changePage(Math.max(1, currentPage - 1))}

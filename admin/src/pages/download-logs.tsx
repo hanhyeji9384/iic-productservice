@@ -5,7 +5,7 @@ import { getDownloadLogs } from '@/lib/download-logs'
 import { maskName } from '@/lib/masking'
 import type { DownloadLog, DownloadType } from '@/lib/download-logs'
 
-const ITEMS_PER_PAGE = 12
+const ITEMS_PER_PAGE = 20
 
 const initFilters = {
   target: 'all',

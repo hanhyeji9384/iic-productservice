@@ -15,4 +15,10 @@ export function formatDate(iso: string | null) {
   return iso.slice(0, 10)
 }
 
+export function formatKstDateTime(value?: string | null) {
+  const normalized = String(value ?? '').trim()
+  if (!normalized || normalized === '-') return '-'
+  return /\(KST\)$/i.test(normalized) ? normalized : `${normalized} (KST)`
+}
+
 export const inputCls = 'w-full px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-gray-400 transition-colors hover:border-gray-300'
