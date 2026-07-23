@@ -244,7 +244,7 @@ export function MembersPage() {
         : []
       return (
         <div className="w-full">
-          <div className="flex items-center gap-2 p-2 border-b border-gray-100">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
             <div className="flex flex-1 items-center gap-1.5 rounded-lg bg-gray-50 px-2.5 py-1.5">
               <Search className="w-3 h-3 text-gray-400 flex-shrink-0" />
               <input
@@ -305,7 +305,7 @@ export function MembersPage() {
         : []
       return (
         <div className="w-full">
-          <div className="flex items-center gap-2 p-2 border-b border-gray-100">
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100">
             <div className="flex flex-1 items-center gap-1.5 rounded-lg bg-gray-50 px-2.5 py-1.5">
               <Search className="w-3 h-3 text-gray-400 flex-shrink-0" />
               <input
@@ -781,9 +781,9 @@ export function MembersPage() {
                   style={{
                     top: filterPopover.rect.bottom + 6,
                     ...(filterPopover.col === 'branch'
-                      ? { right: window.innerWidth - filterPopover.rect.right, width: 240 }
+                      ? { right: window.innerWidth - filterPopover.rect.right, width: 268 }
                       : filterPopover.col === 'store'
-                        ? { right: window.innerWidth - filterPopover.rect.right, width: 280 }
+                        ? { right: window.innerWidth - filterPopover.rect.right, width: 300 }
                         : { left: filterPopover.rect.left }),
                   }}
                 >
