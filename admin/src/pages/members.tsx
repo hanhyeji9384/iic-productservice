@@ -273,25 +273,21 @@ export function MembersPage() {
               <li className="px-3 py-4 text-center text-xs text-gray-400">2자 이상 입력 후 검색해 주세요.</li>
             ) : filteredBranches.length === 0 ? (
               <li className="px-3 py-4 text-center text-xs text-gray-400">조회 결과가 없습니다.</li>
-            ) : (
-              <>
-                <li>
-                  <button
-                    onClick={() => applyColumnFilter('branch', '')}
-                    className={`block w-full whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.branch ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-                  >전체</button>
-                </li>
-                {filteredBranches.map(b => (
-                  <li key={b.code}>
-                    <button
-                      onClick={() => applyColumnFilter('branch', b.code)}
-                      className={`block w-full whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.branch === b.code ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-                    >{b.code} {b.name}</button>
-                  </li>
-                ))}
-              </>
-            )}
+            ) : filteredBranches.map(b => (
+              <li key={b.code}>
+                <button
+                  onClick={() => applyColumnFilter('branch', b.code)}
+                  className={`block w-full whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.branch === b.code ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                >{b.code} {b.name}</button>
+              </li>
+            ))}
           </ul>
+          <div className="border-t border-gray-100 px-3 py-2">
+            <button
+              onClick={() => applyColumnFilter('branch', '')}
+              className="w-full py-1.5 rounded-lg border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 transition-colors"
+            >초기화</button>
+          </div>
         </div>
       )
     }
@@ -334,28 +330,24 @@ export function MembersPage() {
               <li className="px-3 py-4 text-center text-xs text-gray-400">2자 이상 입력 후 검색해 주세요.</li>
             ) : filteredStores.length === 0 ? (
               <li className="px-3 py-4 text-center text-xs text-gray-400">조회 결과가 없습니다.</li>
-            ) : (
-              <>
-                <li>
-                  <button
-                    onClick={() => applyColumnFilter('store', '')}
-                    className={`block w-full whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.store ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-                  >전체</button>
-                </li>
-                {filteredStores.map(s => (
-                  <li key={s.code}>
-                    <button
-                      onClick={() => applyColumnFilter('store', s.code)}
-                      className={`block w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.store === s.code ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-                    >
-                      <span className="block truncate">{s.name}</span>
-                      <span className="font-mono text-[10px] opacity-60">{s.code}</span>
-                    </button>
-                  </li>
-                ))}
-              </>
-            )}
+            ) : filteredStores.map(s => (
+              <li key={s.code}>
+                <button
+                  onClick={() => applyColumnFilter('store', s.code)}
+                  className={`block w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.store === s.code ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                >
+                  <span className="block truncate">{s.name}</span>
+                  <span className="font-mono text-[10px] opacity-60">{s.code}</span>
+                </button>
+              </li>
+            ))}
           </ul>
+          <div className="border-t border-gray-100 px-3 py-2">
+            <button
+              onClick={() => applyColumnFilter('store', '')}
+              className="w-full py-1.5 rounded-lg border border-gray-200 text-xs text-gray-500 hover:bg-gray-50 transition-colors"
+            >초기화</button>
+          </div>
         </div>
       )
     }
