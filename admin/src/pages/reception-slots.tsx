@@ -357,7 +357,7 @@ export function ReceptionSlotsPage() {
         {/* override badge */}
         {isOv && !isClosed && (
           <span className="absolute top-1 right-1 text-[9px] font-semibold text-blue-600 bg-blue-100 px-1 rounded">
-            개별
+            <I18nText i18nKey="reception_slots.calendar.badge.custom" display="tooltip">개별</I18nText>
           </span>
         )}
 
@@ -375,7 +375,7 @@ export function ReceptionSlotsPage() {
         {!isWknd && (
           isClosed ? (
             <span className="text-[10px] text-gray-400 font-medium">
-              {holidayName || '휴무'}
+              {holidayName || <I18nText i18nKey="reception_slots.calendar.cell.closed" display="tooltip">휴무</I18nText>}
             </span>
           ) : (
             <span className={cn(
@@ -410,8 +410,11 @@ export function ReceptionSlotsPage() {
             </p>
             <p className="text-xs text-gray-400 mt-0.5">
               {holidayName ? `${holidayName} · ` : ''}
-              {selectedDate < todayStr ? '이미 지난 날짜' :
-               selectedDate === todayStr ? '오늘' : '예약 가능 일자'}
+              {selectedDate < todayStr
+                ? <I18nText i18nKey="reception_slots.detail.label.past_date" display="tooltip">이미 지난 날짜</I18nText>
+                : selectedDate === todayStr
+                  ? <I18nText i18nKey="reception_slots.detail.label.today" display="tooltip">오늘</I18nText>
+                  : <I18nText i18nKey="reception_slots.detail.label.available_date" display="tooltip">예약 가능 일자</I18nText>}
             </p>
           </div>
           <button
@@ -425,10 +428,10 @@ export function ReceptionSlotsPage() {
         {/* 설정 옵션 */}
         <div className="space-y-2">
           {[
-            { val: 'default' as const, title: '기본값 사용', desc: `${currentDefault}건 적용` },
-            { val: 'override' as const, title: '직접 지정', desc: '이 날짜만 별도 설정' },
-            { val: 'closed' as const, title: '휴무일 지정', desc: '접수 전체 차단' },
-          ].map(({ val, title, desc }) => (
+            { val: 'default' as const, titleKey: 'reception_slots.detail.option.default.title', title: '기본값 사용', descKey: 'reception_slots.detail.option.default.description', desc: `${currentDefault}건 적용` },
+            { val: 'override' as const, titleKey: 'reception_slots.detail.option.override.title', title: '직접 지정', descKey: 'reception_slots.detail.option.override.description', desc: '이 날짜만 별도 설정' },
+            { val: 'closed' as const, titleKey: 'reception_slots.detail.option.closed.title', title: '휴무일 지정', descKey: 'reception_slots.detail.option.closed.description', desc: '접수 전체 차단' },
+          ].map(({ val, title, titleKey, desc, descKey }) => (
             <label
               key={val}
               onClick={() => setDetailOpt(val)}
@@ -445,8 +448,8 @@ export function ReceptionSlotsPage() {
                 className="mt-0.5 accent-blue-600 flex-shrink-0"
               />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900">{title}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
+                <p className="text-sm font-medium text-gray-900"><I18nText i18nKey={titleKey} display="tooltip">{title}</I18nText></p>
+                <p className="text-xs text-gray-400 mt-0.5"><I18nText i18nKey={descKey} display="tooltip">{desc}</I18nText></p>
                 {val === 'override' && detailOpt === 'override' && (
                   <div className="mt-2.5 space-y-2">
                     <div className="flex items-center gap-2">
@@ -458,12 +461,14 @@ export function ReceptionSlotsPage() {
                         min={1} max={999}
                         onClick={e => e.stopPropagation()}
                       />
-                      <span className="text-sm text-gray-500">건</span>
+                      <span className="text-sm text-gray-500"><I18nText i18nKey="reception_slots.detail.unit.count" display="tooltip">건</I18nText></span>
                     </div>
                     <Input
                       value={detailReason}
                       onChange={e => setDetailReason(e.target.value)}
-                      placeholder="메모 — 예: 이벤트, 직원 연수"
+                      placeholder={i18nLabel('reception_slots.detail.placeholder.override_memo', '메모 — 예: 이벤트, 직원 연수')}
+                      data-i18n-managed="true"
+                      data-i18n-placeholder-key="reception_slots.detail.placeholder.override_memo"
                       className="text-xs rounded-xl border-gray-200"
                       onClick={e => e.stopPropagation()}
                     />
@@ -474,7 +479,9 @@ export function ReceptionSlotsPage() {
                     <Input
                       value={detailReason}
                       onChange={e => setDetailReason(e.target.value)}
-                      placeholder="메모 — 예: 시스템 점검"
+                      placeholder={i18nLabel('reception_slots.detail.placeholder.closed_memo', '메모 — 예: 시스템 점검')}
+                      data-i18n-managed="true"
+                      data-i18n-placeholder-key="reception_slots.detail.placeholder.closed_memo"
                       className="text-xs rounded-xl border-gray-200"
                       onClick={e => e.stopPropagation()}
                     />
@@ -488,10 +495,12 @@ export function ReceptionSlotsPage() {
         {/* 현재 상태 표시 */}
         <p className="text-xs text-gray-400 leading-relaxed">
           {hasOverride
-            ? (ov!.type === 'closed' ? '현재 설정: 휴무일' : `현재 설정: ${(ov as { type: 'override'; max: number }).max}건 개별 적용`)
+            ? (ov!.type === 'closed'
+              ? <I18nText i18nKey="reception_slots.detail.state.closed" display="tooltip">현재 설정: 휴무일</I18nText>
+              : <I18nText i18nKey="reception_slots.detail.state.override" display="tooltip">{`현재 설정: ${(ov as { type: 'override'; max: number }).max}건 개별 적용`}</I18nText>)
             : isHolidayDate(selectedDate)
             ? `공휴일 자동 비활성화 (${holidayName})`
-            : `현재: 기본값 ${currentDefault}건 적용 중`}
+            : <I18nText i18nKey="reception_slots.detail.state.default" display="tooltip">{`현재: 기본값 ${currentDefault}건 적용 중`}</I18nText>}
         </p>
 
         {/* 액션 버튼 */}
