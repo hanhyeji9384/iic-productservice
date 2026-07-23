@@ -73,9 +73,6 @@
           <span id="key-est-cost" class="summary-key" style="padding-top:2px;">예상 비용</span>
           <div>
             <span id="est-cost" class="summary-val" style="font-size:16px;">₩49,800</span>
-            <div id="est-urgent-fee" style="display:none;margin-top:4px;">
-              <span id="val-urgent-fee" style="font-size:12px;color:#c8491a;">+ 긴급 서비스 +n만원</span>
-            </div>
           </div>
         </div>
         <p id="notice-main" style="font-size:12px;color:var(--gray-500);line-height:1.8;margin-top:16px;">› 실물 확인 후 최종 진행 내용이 결정되며, 비용과 소요 기간은 달라질 수 있습니다.</p>
@@ -204,8 +201,6 @@ var currentLang = 'ko';
 var currentCountry = 'kr';
 var sendMethod = 'pickup';
 var receiveMethod = 'home';
-var URGENT_SERVICE_FEE = 50000;
-
 var DEFAULT_CONTACT = {
   kr: {
     address: '서울 성동구 왕십리로 83-21',
@@ -245,9 +240,6 @@ var STRINGS = {
     keyDispatch: '예상 출고일',
     keySvcType: '서비스 유형',
     keySvcDetail: '서비스 상세',
-    keyUrgentOpt: '추가 옵션',
-    valUrgent: '긴급 서비스',
-    urgentFeeLabel: '+ 긴급 서비스 +n만원',
     keySend: '발송 방법',
     keyRecv: '수령 방법',
     keyAddr: '수령 주소',
@@ -274,9 +266,6 @@ var STRINGS = {
     keyDispatch: 'Estimated Dispatch Date',
     keySvcType: 'Service Type',
     keySvcDetail: 'Detail',
-    keyUrgentOpt: 'Add-on',
-    valUrgent: '',
-    urgentFeeLabel: '+ Urgent service +n',
     keySend: 'Shipping',
     keyRecv: 'Return',
     keyAddr: 'Address',
@@ -309,47 +298,42 @@ var SCENARIOS = {
   total: {
     ko: { type: '토탈 케어', detail: null, method: '클리닝 & 폴리싱 & 피팅', cost: '무상', leadtime: '입고 후 10~15 영업일' },
     en: { type: 'Total Care', detail: null, method: 'Cleaning & Polishing & Fitting', cost: 'Complimentary', leadtime: '10-15 business days after receipt' },
-    urgent: false, baseCost: 50000, costPaid: false,
-  },
-  'total-urgent': {
-    ko: { type: '토탈 케어', detail: null, method: '클리닝 & 폴리싱 & 피팅', cost: '무상', leadtime: '입고 후 3~5 영업일' },
-    en: { type: 'Total Care', detail: null, method: 'Cleaning & Polishing & Fitting', cost: 'Complimentary', leadtime: '3-5 business days after receipt' },
-    urgent: true, baseCost: 100000, costPaid: false,
+    baseCost: 50000, costPaid: false,
   },
   'repair-break3': {
     ko: { type: '제품 수리', detail: '파손 & 변형 (구매 3년 이내)', method: '부품 교체', leadtime: '입고 후 10~15 영업일' },
     en: { type: 'Product Repair', detail: 'Damage & Deformation (within 3 years)', method: 'Part Replacement', leadtime: '10-15 business days after receipt' },
-    urgent: false, costRatio: 0.20, costPaid: true,
+    costRatio: 0.20, costPaid: true,
   },
   'repair-break7': {
     ko: { type: '제품 수리', detail: '파손 & 변형 (3~7년, 복원 수리)', method: '복원 수리', cost: '30,000원', leadtime: '입고 후 10~15 영업일' },
     en: { type: 'Product Repair', detail: 'Damage & Deformation (3-7 years, restoration)', method: 'Restoration Repair', cost: '$22', leadtime: '10-15 business days after receipt' },
-    urgent: false, baseCost: 30000, costPaid: true,
+    baseCost: 30000, costPaid: true,
   },
   'repair-deco': {
     ko: { type: '제품 수리', detail: '장식 문제', method: '장식 수리', cost: '무상', leadtime: '입고 후 10~15 영업일' },
     en: { type: 'Product Repair', detail: 'Decoration Issue', method: 'Decoration Repair', cost: 'Complimentary', leadtime: '10-15 business days after receipt' },
-    urgent: false, baseCost: 20000, costPaid: false,
+    baseCost: 20000, costPaid: false,
   },
   'repair-acc': {
     ko: { type: '제품 수리', detail: '부속품 문제', method: '부속품 교체', cost: '무상', leadtime: '입고 후 3~5 영업일' },
     en: { type: 'Product Repair', detail: 'Accessory Issue', method: 'Accessory Replacement', cost: 'Complimentary', leadtime: '3-5 business days after receipt' },
-    urgent: false, baseCost: 10000, costPaid: false,
+    baseCost: 10000, costPaid: false,
   },
   consult: {
     ko: { type: '상담 & 기타', detail: '제품 결함 & 이상', method: '판정 후 안내', cost: '점검 결과에 따라 안내', leadtime: '입고 후 안내' },
     en: { type: 'Consultation', detail: 'Product Defect & Anomaly', method: 'To be determined', cost: 'Subject to inspection result', leadtime: 'After receipt' },
-    urgent: false, baseCost: null, costPaid: null,
+    baseCost: null, costPaid: null,
   },
   'consult-acc': {
     ko: { type: '상담 & 기타', detail: '부속품 요청', method: '부속품 발송', cost: '무상', leadtime: '발송 후 3~5 영업일' },
     en: { type: 'Consultation', detail: 'Accessory Request', method: 'Accessory Delivery', cost: 'Complimentary', leadtime: '3-5 business days after dispatch' },
-    urgent: false, baseCost: null, costPaid: false, hideSendMethod: true, hideEst: true,
+    baseCost: null, costPaid: false, hideSendMethod: true, hideEst: true,
   },
   'ai-func-only': {
     ko: { type: 'AI — 기능 이상', detail: null, method: null, cost: null, leadtime: null },
     en: { type: 'AI — Functional Issue', detail: null, method: null, cost: null, leadtime: null },
-    urgent: false, baseCost: null, costPaid: null, hideEst: true,
+    baseCost: null, costPaid: null, hideEst: true,
   },
   'ai-func-prod': {
     ko: {
@@ -368,7 +352,7 @@ var SCENARIOS = {
       leadtime: 'After receipt',
       notice: 'Estimated service guidance for AI product issue submissions is currently under policy review.',
     },
-    urgent: false, baseCost: null, costPaid: null, tbdEstimate: true,
+    baseCost: null, costPaid: null, tbdEstimate: true,
   },
 };
 
@@ -381,12 +365,6 @@ function fmt(n) {
 function getScenarioCost(scenario, state) {
   scenario = scenario || {};
   state = state || {};
-
-  if (scenario.urgent) {
-    if (scenario.baseCost !== null && scenario.baseCost !== undefined) return fmt(scenario.baseCost);
-    var savedCost = parseWonAmount(state.estimatedCost || state.estimateCost);
-    if (savedCost !== null) return fmt(savedCost + URGENT_SERVICE_FEE);
-  }
 
   if (scenario.baseCost !== null && scenario.baseCost !== undefined) return fmt(scenario.baseCost);
   if (scenario.costRatio) return fmt(Math.round(PRODUCT_RETAIL_PRICE * scenario.costRatio));
@@ -440,7 +418,7 @@ function getIssueLabel(state) {
 
 function getProcessText(key, state) {
   state = state || {};
-  if (key === 'total' || key === 'total-urgent' || state.serviceType === 'total-care') return '토탈 케어 : 클리닝·폴리싱·피팅';
+  if (key === 'total' || state.serviceType === 'total-care') return '토탈 케어 : 클리닝·폴리싱·피팅';
   if (key === 'repair-break3') return '제품 파손·변형 : 부품 교체 (3년 이내)';
   if (key === 'repair-break7') return '제품 파손·변형 : 복원 수리 (3~7년)';
   if (key === 'repair-deco') return '장식 문제 : 장식 수리';
@@ -662,9 +640,6 @@ function applyStrings(state) {
   setText('key-dispatch', st.keyDispatch);
   setText('key-svc-type', st.keySvcType);
   setText('key-svc-detail', st.keySvcDetail);
-  setText('key-urgent-opt', st.keyUrgentOpt);
-  setText('val-urgent', st.valUrgent);
-  setText('val-urgent-fee', st.urgentFeeLabel);
   setText('key-send', st.keySend);
   setText('key-recv', st.keyRecv);
   setText('lbl-est', st.lblEst);
@@ -695,7 +670,6 @@ function setLang(lang) {
 }
 
 function setScenario(key) {
-  if (currentCountry === 'us' && key === 'total-urgent') key = 'total';
   var s = SCENARIOS[key];
   if (!s) return;
   currentKey = key;
@@ -711,9 +685,6 @@ function setScenario(key) {
       detailRow.style.display = 'none';
     }
   }
-
-  var urgentRow = document.getElementById('sc-urgent-row');
-  if (urgentRow) urgentRow.style.display = s.urgent ? '' : 'none';
 
   var sendRow = document.getElementById('sc-send-row');
   if (sendRow) sendRow.style.display = (s.hideShipping || s.hideSendMethod) ? 'none' : '';
@@ -735,8 +706,6 @@ function setScenario(key) {
       costEl.style.color = '#111';
     }
     setText('est-leadtime', loc.leadtime);
-    var urgentFee = document.getElementById('est-urgent-fee');
-    if (urgentFee) urgentFee.style.display = s.urgent ? '' : 'none';
     var paidNotice = document.getElementById('notice-paid');
     if (paidNotice) paidNotice.style.display = 'none';
     setText('notice-main', STRINGS[currentLang].noticeMain);
@@ -784,7 +753,7 @@ function getScenarioFromState(state) {
   if (state.isAi && state.aiIssueFunc && !state.aiIssueProd) return 'ai-func-only';
 
   if (st === 'total-care' || (!st && !state.isAi)) {
-    return currentCountry !== 'us' && state.urgentRepair ? 'total-urgent' : 'total';
+    return 'total';
   }
 
   if (st === 'repair') {

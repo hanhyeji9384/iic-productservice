@@ -196,21 +196,9 @@
     <!-- TOTAL CARE SCHEDULE -->
     <div id="total-care-schedule" class="shipping-schedule">
       <p id="schedule-title" class="shipping-schedule-title">서비스 일정</p>
-      <p id="schedule-desc" class="shipping-schedule-desc">토탈 케어 접수 시 긴급 서비스 여부와 출고 희망일을 선택해 주세요.</p>
+      <p id="schedule-desc" class="shipping-schedule-desc">토탈 케어 접수 시 출고 희망일을 선택해 주세요.</p>
 
-      <p id="lbl-urgent" class="section-label">긴급 서비스 <span style="font-size:10px;color:#999;text-transform:none;letter-spacing:0;">(선택)</span></p>
-      <label class="check-item" id="urgent-check-item" style="margin-bottom:8px;">
-        <input type="checkbox" id="urgent-check" onchange="toggleTotalCareUrgent()" style="accent-color:var(--black);width:16px;height:16px;margin-top:2px;flex-shrink:0;cursor:pointer;">
-        <div>
-          <p id="title-urgent" class="check-item-title">입고 후 5영업일 이내 출고 +n만원</p>
-          <p id="desc-urgent" class="check-item-desc"></p>
-        </div>
-      </label>
-      <div id="urgent-cal-note" style="display:none;padding:12px 14px;background:var(--gray-50);border:1px solid var(--gray-200);font-size:12px;color:var(--gray-600);margin-bottom:8px;line-height:1.7;">
-        <span id="txt-urgent-note">입고 후 5영업일 이내 출고 +n만원</span>
-      </div>
-
-      <p id="lbl-dispatch" class="section-label" style="margin-top:32px;"><span id="lbl-dispatch-text">출고 희망일</span> <span id="dispatch-req" class="required-mark">*</span><span id="dispatch-opt" style="font-size:10px;color:#999;text-transform:none;letter-spacing:0;display:none;">(선택)</span></p>
+      <p id="lbl-dispatch" class="section-label" style="margin-top:16px;"><span id="lbl-dispatch-text">출고 희망일</span> <span class="required-mark">*</span></p>
       <div id="cal-wrapper-el" class="cal-wrapper">
         <div class="cal-nav-row">
           <button type="button" class="cal-nav" id="cal-prev" onclick="calPrev()">←</button>
@@ -469,11 +457,7 @@ const STRINGS = {
     btnPrev: '이전', btnNext: '다음',
     searchPlaceholder: '매장명 또는 지역 검색',
     scheduleTitle: '서비스 일정',
-    scheduleDesc: '토탈 케어 접수 시 긴급 서비스 여부와 출고 희망일을 선택해 주세요.',
-    lblUrgent: '긴급 서비스',
-    titleUrgent: '입고 후 5영업일 이내 출고 +n만원',
-    descUrgent: '',
-    txtUrgentNote: '입고 후 5영업일 이내 출고 +n만원',
+    scheduleDesc: '토탈 케어 접수 시 출고 희망일을 선택해 주세요.',
     lblDispatch: '출고 희망일',
     lblDispatchSelected: '출고 희망일',
     txtDispatchHint: '선택하신 날짜는 희망일로, 진행 내용에 따라 실제 출고일은 달라질 수 있습니다.<br>정확한 출고일은 알림톡 또는 이메일로 안내드릴게요.',
@@ -524,11 +508,7 @@ const STRINGS = {
     btnPrev: 'Back', btnNext: 'Next',
     searchPlaceholder: 'Search store name or area',
     scheduleTitle: 'Service Schedule',
-    scheduleDesc: 'For Total Care requests, select urgent service or a preferred dispatch date.',
-    lblUrgent: 'Urgent Service',
-    titleUrgent: 'Dispatched within 5 business days of receipt +n KRW',
-    descUrgent: '',
-    txtUrgentNote: 'Dispatched within 5 business days of receipt +n KRW',
+    scheduleDesc: 'For Total Care requests, select a preferred dispatch date.',
     lblDispatch: 'Preferred Dispatch Date',
     lblDispatchSelected: 'Preferred Dispatch Date',
     txtDispatchHint: 'The selected date is a preferred date, and the actual dispatch date may change depending on the service details.<br>We will notify you of the exact dispatch date by AlimTalk or email.',
@@ -645,10 +625,6 @@ function setLang(lang) {
   if (rss) rss.placeholder = st.searchPlaceholder;
   setText('schedule-title', st.scheduleTitle);
   setText('schedule-desc', st.scheduleDesc);
-  setText('lbl-urgent', st.lblUrgent);
-  setText('title-urgent', st.titleUrgent);
-  setText('desc-urgent', st.descUrgent);
-  setText('txt-urgent-note', st.txtUrgentNote);
   setText('lbl-dispatch-text', st.lblDispatch);
   setText('lbl-dispatch-selected', st.lblDispatchSelected);
   setHtml('txt-dispatch-hint', st.txtDispatchHint);
@@ -666,7 +642,6 @@ var currentSend = null;
 var currentReceive = null;
 var currentDropStore = null;
 var currentRecvStore = null;
-var scheduleUrgentRepair = false;
 var scheduleDispatchDate = null;
 var SCHEDULE_MIN_BIZ = 15;
 var SCHEDULE_MAX_BIZ = 20;
@@ -798,41 +773,11 @@ function calNext() {
 
 function selectScheduleDispatch(ds) {
   scheduleDispatchDate = ds;
-  scheduleUrgentRepair = false;
-  var check = document.getElementById('urgent-check');
-  if (check) check.checked = false;
-  updateTotalCareUrgentUi();
   renderScheduleCalendar();
   var wrap = document.getElementById('dispatch-selected-wrap');
   var label = document.getElementById('dispatch-selected-label');
   if (wrap) wrap.style.display = '';
   if (label) label.textContent = formatScheduleDate(ds);
-  var error = document.getElementById('dispatch-error');
-  if (error) error.style.display = 'none';
-  checkShippingNextBtn();
-}
-
-function updateTotalCareUrgentUi() {
-  var item = document.getElementById('urgent-check-item');
-  var note = document.getElementById('urgent-cal-note');
-  var calWrap = document.getElementById('cal-wrapper-el');
-  var selWrap = document.getElementById('dispatch-selected-wrap');
-  var reqMark = document.getElementById('dispatch-req');
-  var optMark = document.getElementById('dispatch-opt');
-  if (item) item.classList.toggle('selected', scheduleUrgentRepair);
-  if (note) note.style.display = scheduleUrgentRepair ? '' : 'none';
-  if (calWrap) calWrap.style.display = scheduleUrgentRepair ? 'none' : '';
-  if (selWrap && scheduleUrgentRepair) selWrap.style.display = 'none';
-  if (reqMark) reqMark.style.display = scheduleUrgentRepair ? 'none' : '';
-  if (optMark) optMark.style.display = scheduleUrgentRepair ? '' : 'none';
-}
-
-function toggleTotalCareUrgent() {
-  var check = document.getElementById('urgent-check');
-  scheduleUrgentRepair = !!(check && check.checked);
-  if (scheduleUrgentRepair) scheduleDispatchDate = null;
-  updateTotalCareUrgentUi();
-  renderScheduleCalendar();
   var error = document.getElementById('dispatch-error');
   if (error) error.style.display = 'none';
   checkShippingNextBtn();
@@ -846,21 +791,16 @@ function updateTotalCareScheduleVisibility() {
     var error = document.getElementById('dispatch-error');
     if (error) error.style.display = 'none';
   }
-  updateTotalCareUrgentUi();
 }
 
 function isTotalCareScheduleReady() {
   if (!isDomesticTotalCareSchedule()) return true;
-  return scheduleUrgentRepair || !!scheduleDispatchDate;
+  return !!scheduleDispatchDate;
 }
 
 function applySavedScheduleSelection(state) {
   if (!state) return;
-  scheduleUrgentRepair = !!state.urgentRepair;
-  scheduleDispatchDate = state.urgentRepair ? null : (state.dispatchDate || null);
-  var check = document.getElementById('urgent-check');
-  if (check) check.checked = scheduleUrgentRepair;
-  updateTotalCareUrgentUi();
+  scheduleDispatchDate = state.dispatchDate || null;
   renderScheduleCalendar();
   if (scheduleDispatchDate) {
     var wrap = document.getElementById('dispatch-selected-wrap');
@@ -940,10 +880,8 @@ function saveShippingState() {
     var lensDisclaimer = document.getElementById('chk-lens-pickup');
     if (lensDisclaimer) state.lensPickupDisclaimer = lensDisclaimer.checked;
     if (isDomesticTotalCareSchedule()) {
-      state.urgentRepair = scheduleUrgentRepair;
-      state.dispatchDate = scheduleUrgentRepair ? null : scheduleDispatchDate;
+      state.dispatchDate = scheduleDispatchDate;
     } else if (state.serviceType === 'total-care') {
-      state.urgentRepair = false;
       state.dispatchDate = null;
     }
     localStorage.setItem('ps-state', JSON.stringify(state));

@@ -803,18 +803,14 @@ function scenarioDetailText(sc, key) {
   return serviceText(key);
 }
 
-function paymentCompletedMap() {
-  return readJson('ps-payment-completed-tickets', {});
-}
+var _paymentCompletedSet = {};
 
 function isPaymentCompleted(ticketNo) {
-  return !!paymentCompletedMap()[ticketNo];
+  return !!_paymentCompletedSet[ticketNo];
 }
 
 function markPaymentCompleted(ticketNo) {
-  var completed = paymentCompletedMap();
-  completed[ticketNo] = { status: 'PAID', label: '결제 완료', updatedAt: localTimestamp() };
-  writeJson('ps-payment-completed-tickets', completed);
+  _paymentCompletedSet[ticketNo] = true;
 }
 
 function applyServiceDetailValues(sc) {
@@ -850,9 +846,8 @@ function configurePaymentAction(sc) {
     hide('sec-pay-btn');
     return;
   }
-  var ticketNo = getDisplayTicketNo(sc);
-  var completed = sc.showConsent || isPaymentCompleted(ticketNo);
-  var shouldShow = sc.showPayBtn || completed;
+  var completed = sc.showConsent === true && !sc.showPayBtn;
+  var shouldShow = sc.showPayBtn || sc.showConsent;
   if (!shouldShow) {
     hide('sec-pay-btn');
     return;
@@ -985,9 +980,7 @@ function setScenario(id) {
     var scForReset = SC['payment-wait'];
     if (scForReset) {
       var ticketNoForReset = getDisplayTicketNo(scForReset);
-      var completedMap = paymentCompletedMap();
-      delete completedMap[ticketNoForReset];
-      writeJson('ps-payment-completed-tickets', completedMap);
+      delete _paymentCompletedSet[ticketNoForReset];
     }
     var panelForReset = document.getElementById('pay-panel');
     if (panelForReset) panelForReset.style.maxHeight = '0';

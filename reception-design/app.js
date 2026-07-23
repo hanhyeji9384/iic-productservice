@@ -641,7 +641,6 @@ function setShippingValue(group, value) {
 }
 
 function selectedScheduleMode() {
-  if (document.querySelector('.shipping-option.selected[data-schedule-mode="urgent"]')) return 'urgent';
   return selectedScheduleDate() ? 'standard' : '';
 }
 
@@ -1424,8 +1423,8 @@ function reviewMethodAndCost(state, product) {
   if (state.serviceType === 'total-care' || !state.serviceType) {
     return {
       method: '클리닝·폴리싱·피팅',
-      cost: state.serviceScheduleMode === 'urgent' ? '무상 + 긴급 서비스 n원' : '무상',
-      leadtime: state.serviceScheduleMode === 'urgent' ? '입고 후 5영업일 이내 출고' : '입고 후 10~15 영업일'
+      cost: '무상',
+      leadtime: '입고 후 10~15 영업일'
     };
   }
 
@@ -1792,7 +1791,6 @@ function progressiveScheduleDate(panel) {
 }
 
 function progressiveScheduleMode(panel) {
-  if (panel?.querySelector('.shipping-option.selected[data-schedule-mode="urgent"]')) return 'urgent';
   return progressiveScheduleDate(panel) ? 'standard' : '';
 }
 
@@ -2195,7 +2193,7 @@ function saveProgressiveStep(step, panel) {
     const rows = [{ title: '발송 방법', value: collectionMethod === 'store' ? '스토어 방문' : '무료 택배 픽업' }];
     if (addressName) rows.push({ title: '픽업 주소', value: addressName });
     if (storeName) rows.push({ title: '방문 매장', value: storeName });
-    if (scheduleMode) rows.push({ title: '서비스 일정', value: scheduleMode === 'urgent' ? '긴급 서비스' : reviewDateLabel(scheduleDate) });
+    if (scheduleMode) rows.push({ title: '서비스 일정', value: reviewDateLabel(scheduleDate) });
     return rows;
   }
   if (step === 'return') {
