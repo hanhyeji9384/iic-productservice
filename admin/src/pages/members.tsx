@@ -41,12 +41,16 @@ export function MembersPage() {
   const [appliedColumnFilters, setAppliedColumnFilters] = useState<Record<string, string>>({})
   const [filterPopover, setFilterPopover] = useState<{ col: string; rect: DOMRect } | null>(null)
   const [branchSearch, setBranchSearch] = useState('')
+  const [branchSearched, setBranchSearched] = useState('')
   const [storeSearch, setStoreSearch] = useState('')
+  const [storeSearched, setStoreSearched] = useState('')
 
   function closeFilterPopover() {
     setFilterPopover(null)
     setBranchSearch('')
+    setBranchSearched('')
     setStoreSearch('')
+    setStoreSearched('')
   }
 
   const PAGE_SIZE = 20
@@ -233,87 +237,125 @@ export function MembersPage() {
       const allAvailableBranches = BRANCHES.filter(b =>
         members.some(m => (m.managedBranches ?? []).includes(b.code))
       )
-      const filteredBranches = branchSearch.trim()
+      const filteredBranches = branchSearched.trim()
         ? allAvailableBranches.filter(b =>
-            `${b.code} ${b.name}`.toLowerCase().includes(branchSearch.toLowerCase())
+            `${b.code} ${b.name}`.toLowerCase().includes(branchSearched.toLowerCase())
           )
-        : allAvailableBranches
+        : []
       return (
-        <div className="w-56 space-y-1">
-          <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 px-2.5 py-1.5 mb-1">
-            <Search className="w-3 h-3 text-gray-400 flex-shrink-0" />
-            <input
-              autoFocus
-              value={branchSearch}
-              onChange={e => setBranchSearch(e.target.value)}
-              placeholder="법인 검색..."
-              className="flex-1 bg-transparent text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none"
-            />
-            {branchSearch && (
-              <button onClick={() => setBranchSearch('')} className="text-gray-300 hover:text-gray-500">
-                <X className="w-3 h-3" />
-              </button>
-            )}
-          </div>
-          {!branchSearch && (
+        <div className="w-56">
+          <div className="flex items-center gap-2 p-2 border-b border-gray-100">
+            <div className="flex flex-1 items-center gap-1.5 rounded-lg bg-gray-50 px-2.5 py-1.5">
+              <Search className="w-3 h-3 text-gray-400 flex-shrink-0" />
+              <input
+                autoFocus
+                value={branchSearch}
+                onChange={e => setBranchSearch(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && branchSearch.trim().length >= 2) setBranchSearched(branchSearch)
+                }}
+                placeholder="법인 검색..."
+                className="flex-1 bg-transparent text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none"
+              />
+              {branchSearch && (
+                <button onClick={() => { setBranchSearch(''); setBranchSearched('') }} className="text-gray-300 hover:text-gray-500">
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
             <button
-              onClick={() => applyColumnFilter('branch', '')}
-              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.branch ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >전체</button>
-          )}
-          {filteredBranches.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-gray-400">조회 결과가 없습니다.</p>
-          ) : filteredBranches.map(b => (
-            <button key={b.code}
-              onClick={() => applyColumnFilter('branch', b.code)}
-              className={`block w-full whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.branch === b.code ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >{b.code} {b.name}</button>
-          ))}
+              onClick={() => { if (branchSearch.trim().length >= 2) setBranchSearched(branchSearch) }}
+              className="flex-shrink-0 rounded-lg bg-gray-900 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-gray-700 transition-colors"
+            >검색</button>
+          </div>
+          <ul className="py-1">
+            {!branchSearched.trim() ? (
+              <li className="px-3 py-4 text-center text-xs text-gray-400">2자 이상 입력 후 검색해 주세요.</li>
+            ) : filteredBranches.length === 0 ? (
+              <li className="px-3 py-4 text-center text-xs text-gray-400">조회 결과가 없습니다.</li>
+            ) : (
+              <>
+                <li>
+                  <button
+                    onClick={() => applyColumnFilter('branch', '')}
+                    className={`block w-full whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.branch ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                  >전체</button>
+                </li>
+                {filteredBranches.map(b => (
+                  <li key={b.code}>
+                    <button
+                      onClick={() => applyColumnFilter('branch', b.code)}
+                      className={`block w-full whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.branch === b.code ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >{b.code} {b.name}</button>
+                  </li>
+                ))}
+              </>
+            )}
+          </ul>
         </div>
       )
     }
     if (col === 'store') {
       const availableStoreCodes = [...new Set(members.flatMap(m => m.assignedStores ?? []))]
       const allAvailableStores = STORES.filter(s => availableStoreCodes.includes(s.code))
-      const filteredStores = storeSearch.trim()
+      const filteredStores = storeSearched.trim()
         ? allAvailableStores.filter(s =>
-            `${s.code} ${s.name}`.toLowerCase().includes(storeSearch.toLowerCase())
+            `${s.code} ${s.name}`.toLowerCase().includes(storeSearched.toLowerCase())
           )
-        : allAvailableStores
+        : []
       return (
-        <div className="w-64 space-y-1">
-          <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 px-2.5 py-1.5 mb-1">
-            <Search className="w-3 h-3 text-gray-400 flex-shrink-0" />
-            <input
-              autoFocus
-              value={storeSearch}
-              onChange={e => setStoreSearch(e.target.value)}
-              placeholder="스토어 검색..."
-              className="flex-1 bg-transparent text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none"
-            />
-            {storeSearch && (
-              <button onClick={() => setStoreSearch('')} className="text-gray-300 hover:text-gray-500">
-                <X className="w-3 h-3" />
-              </button>
-            )}
-          </div>
-          {!storeSearch && (
+        <div className="w-64">
+          <div className="flex items-center gap-2 p-2 border-b border-gray-100">
+            <div className="flex flex-1 items-center gap-1.5 rounded-lg bg-gray-50 px-2.5 py-1.5">
+              <Search className="w-3 h-3 text-gray-400 flex-shrink-0" />
+              <input
+                autoFocus
+                value={storeSearch}
+                onChange={e => setStoreSearch(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && storeSearch.trim().length >= 2) setStoreSearched(storeSearch)
+                }}
+                placeholder="스토어 검색..."
+                className="flex-1 bg-transparent text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none"
+              />
+              {storeSearch && (
+                <button onClick={() => { setStoreSearch(''); setStoreSearched('') }} className="text-gray-300 hover:text-gray-500">
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+            </div>
             <button
-              onClick={() => applyColumnFilter('store', '')}
-              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.store ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >전체</button>
-          )}
-          {filteredStores.length === 0 ? (
-            <p className="px-3 py-2 text-xs text-gray-400">조회 결과가 없습니다.</p>
-          ) : filteredStores.map(s => (
-            <button key={s.code}
-              onClick={() => applyColumnFilter('store', s.code)}
-              className={`block w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.store === s.code ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >
-              <span className="block truncate">{s.name}</span>
-              <span className="font-mono text-[10px] opacity-60">{s.code}</span>
-            </button>
-          ))}
+              onClick={() => { if (storeSearch.trim().length >= 2) setStoreSearched(storeSearch) }}
+              className="flex-shrink-0 rounded-lg bg-gray-900 px-2.5 py-1.5 text-xs font-medium text-white hover:bg-gray-700 transition-colors"
+            >검색</button>
+          </div>
+          <ul className="max-h-64 overflow-y-auto py-1">
+            {!storeSearched.trim() ? (
+              <li className="px-3 py-4 text-center text-xs text-gray-400">2자 이상 입력 후 검색해 주세요.</li>
+            ) : filteredStores.length === 0 ? (
+              <li className="px-3 py-4 text-center text-xs text-gray-400">조회 결과가 없습니다.</li>
+            ) : (
+              <>
+                <li>
+                  <button
+                    onClick={() => applyColumnFilter('store', '')}
+                    className={`block w-full whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.store ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                  >전체</button>
+                </li>
+                {filteredStores.map(s => (
+                  <li key={s.code}>
+                    <button
+                      onClick={() => applyColumnFilter('store', s.code)}
+                      className={`block w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.store === s.code ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                      <span className="block truncate">{s.name}</span>
+                      <span className="font-mono text-[10px] opacity-60">{s.code}</span>
+                    </button>
+                  </li>
+                ))}
+              </>
+            )}
+          </ul>
         </div>
       )
     }
