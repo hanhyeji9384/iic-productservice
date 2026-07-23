@@ -777,10 +777,13 @@ export function MembersPage() {
               <>
                 <div className="fixed inset-0 z-[40]" onClick={closeFilterPopover} />
                 <div
-                  className="fixed z-[50] bg-white border border-gray-200 rounded-xl shadow-lg p-3 w-max"
+                  className="fixed z-[50] bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden w-max"
                   style={{ top: filterPopover.rect.bottom + 6, left: Math.min(filterPopover.rect.left, window.innerWidth - 320) }}
                 >
-                  {renderFilterPopoverContent(filterPopover.col)}
+                  {(['branch', 'store'].includes(filterPopover.col))
+                    ? renderFilterPopoverContent(filterPopover.col)
+                    : <div className="p-3">{renderFilterPopoverContent(filterPopover.col)}</div>
+                  }
                 </div>
               </>
             )}
