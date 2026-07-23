@@ -243,7 +243,7 @@ export function MembersPage() {
           )
         : []
       return (
-        <div className="w-56">
+        <div className="w-full">
           <div className="flex items-center gap-2 p-2 border-b border-gray-100">
             <div className="flex flex-1 items-center gap-1.5 rounded-lg bg-gray-50 px-2.5 py-1.5">
               <Search className="w-3 h-3 text-gray-400 flex-shrink-0" />
@@ -304,7 +304,7 @@ export function MembersPage() {
           )
         : []
       return (
-        <div className="w-64">
+        <div className="w-full">
           <div className="flex items-center gap-2 p-2 border-b border-gray-100">
             <div className="flex flex-1 items-center gap-1.5 rounded-lg bg-gray-50 px-2.5 py-1.5">
               <Search className="w-3 h-3 text-gray-400 flex-shrink-0" />
@@ -777,12 +777,14 @@ export function MembersPage() {
               <>
                 <div className="fixed inset-0 z-[40]" onClick={closeFilterPopover} />
                 <div
-                  className="fixed z-[50] bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden w-max"
+                  className="fixed z-[50] bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden"
                   style={{
                     top: filterPopover.rect.bottom + 6,
-                    ...(['branch', 'store'].includes(filterPopover.col)
-                      ? { right: window.innerWidth - filterPopover.rect.right }
-                      : { left: filterPopover.rect.left }),
+                    ...(filterPopover.col === 'branch'
+                      ? { right: window.innerWidth - filterPopover.rect.right, width: 240 }
+                      : filterPopover.col === 'store'
+                        ? { right: window.innerWidth - filterPopover.rect.right, width: 280 }
+                        : { left: filterPopover.rect.left }),
                   }}
                 >
                   {(['branch', 'store'].includes(filterPopover.col))
