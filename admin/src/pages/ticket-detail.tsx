@@ -138,6 +138,14 @@ const MANUAL_SHIPPING_METHOD_OPTIONS: EditableFieldOption[] = [
   { value: '자체 수령', label: '자체 수령' },
   { value: '퀵', label: '퀵' },
 ]
+const COMPENSATION_COUPON_OPTIONS: EditableFieldOption[] = [
+  { value: '-', label: '-' },
+  { value: '타제품 교환', label: '타제품 교환' },
+  { value: '감가상각', label: '감가상각' },
+  { value: '전액 환불', label: '전액 환불' },
+  { value: '무상 쿠폰', label: '무상 쿠폰' },
+  { value: '긴급 쿠폰', label: '긴급 쿠폰' },
+]
 const REPAIR_DETAIL_OPTIONS: EditableFieldOption[] = [
   { value: '-', label: '-' },
   { value: '부품교체', label: '부품교체' },
@@ -512,6 +520,10 @@ const TICKET_CHANGE_FIELD_META: Partial<Record<keyof Ticket, TicketChangeFieldMe
   urgentRepairYn: {
     label: '긴급수리 여부',
     changeType: 'RECEPTION',
+  },
+  serviceCoupon: {
+    label: '보상 서비스 쿠폰',
+    changeType: 'REPAIR',
   },
   pickupTrackingNo: {
     label: '회수 운송장 No.',
@@ -5929,6 +5941,21 @@ export function TicketDetailPage() {
                         disabled={repairPricingLocked}
                         disabledReason="가격 결정 후에는 수정할 수 없습니다."
                         onSave={value => saveRepairPatch({ repairDepartment: value })}
+                      />
+                      <EditableReceptionField
+                        label="보상 서비스 쿠폰"
+                        value={ticket.serviceCoupon ?? '-'}
+                        type="select"
+                        options={COMPENSATION_COUPON_OPTIONS}
+                        onSave={value => {
+                          const coupon = value === '-' ? null : value
+                          const patch: Partial<Ticket> = { serviceCoupon: coupon }
+                          if (coupon === '타제품 교환') patch.repairDetail = '타제품교환'
+                          else if (coupon === '감가상각' || coupon === '전액 환불') patch.repairDetail = '환불'
+                          else if (coupon === '무상 쿠폰') patch.repairChargeType = 'FREE'
+                          saveRepairPatch(patch)
+                          if (coupon === '긴급 쿠폰') saveReceptionPatch({ urgentRepairYn: 'Y' })
+                        }}
                       />
                       <EditableReceptionField
                         label="수리 내용"
