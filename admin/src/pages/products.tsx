@@ -15,7 +15,7 @@ function fmtRetention(dateStr: string): string {
   return `${y}년 ${parseInt(m)}월`
 }
 
-type SortKey = 'productCode' | 'barcode' | 'name' | 'brandCategory' | 'midCategory' | 'subCategory' | 'stockAvailable' | 'isSafetyStock' | 'hasDecoration' | 'salesStatus' | 'isRestorationRepair'
+type SortKey = 'productCode' | 'barcode' | 'name' | 'brandCategory' | 'midCategory' | 'subCategory' | 'hasDecoration' | 'salesStatus' | 'isRestorationRepair'
   | 'psOfficeQuantity' | 'threePlQuantity'
   | 'factory1' | 'factory2' | 'factory3' | 'releaseDate' | 'partsRetentionPeriod' | 'netWeight' | 'netWeightUnit'
 type Tab = 'list' | 'history'
@@ -46,7 +46,6 @@ const COMMON_COL_KEYS: Record<string, string> = {
   subCategory: 'common.label.sub_category',
   releaseDate: 'common.label.release_date',
   salesStatus: 'common.label.sales_status',
-  stockAvailable: 'common.label.stock_available',
   isRestorationRepair: 'products.label.restoration_repair',
   hasDecoration: 'products.label.has_decoration',
   factory1: 'products.label.factory_1',
@@ -55,7 +54,6 @@ const COMMON_COL_KEYS: Record<string, string> = {
   partsRetentionPeriod: 'products.label.parts_retention_period',
   psOfficeQuantity: 'products.label.ps_office_quantity',
   threePlQuantity: 'products.label.three_pl_quantity',
-  isSafetyStock: 'products.label.safety_stock_status',
   netWeight: 'products.label.net_weight',
   netWeightUnit: 'products.label.net_weight_unit',
 }
@@ -72,21 +70,7 @@ function getThreePlQuantity(product: Product) {
   return product.threePlQuantity ?? 0
 }
 
-function getAvailableStock(product: Product) {
-  return getPsOfficeQuantity(product) + getThreePlQuantity(product)
-}
 
-function hasAvailableStock(product: Product) {
-  return getAvailableStock(product) >= 1
-}
-
-function hasSafetyStockShortage(product: Product) {
-  return getAvailableStock(product) < 5
-}
-
-function safetyStockLabel(product: Product) {
-  return hasSafetyStockShortage(product) ? '부족' : ''
-}
 
 function splitNetWeight(raw?: string) {
   const value = raw?.trim() ?? ''
@@ -300,10 +284,8 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
       if (appliedColumnFilters.factory1 && normalizeProductFactory(p.factory1) !== appliedColumnFilters.factory1) return false
       if (appliedColumnFilters.factory2 && normalizeProductFactory(p.factory2) !== appliedColumnFilters.factory2) return false
       if (appliedColumnFilters.factory3 && normalizeProductFactory(p.factory3) !== appliedColumnFilters.factory3) return false
-      if (appliedColumnFilters.isSafetyStock && hasSafetyStockShortage(p) !== (appliedColumnFilters.isSafetyStock === 'true')) return false
       if (appliedColumnFilters.hasDecoration && (p.hasDecoration ?? false) !== (appliedColumnFilters.hasDecoration === 'true')) return false
       if (appliedColumnFilters.salesStatus && p.salesStatus !== appliedColumnFilters.salesStatus) return false
-      if (appliedColumnFilters.stockAvailable && hasAvailableStock(p) !== (appliedColumnFilters.stockAvailable === 'true')) return false
       if (appliedColumnFilters.restorationRepair && isRestorationRepairProduct(p) !== (appliedColumnFilters.restorationRepair === 'true')) return false
       if (appliedColumnFilters.releaseDateFrom && p.releaseDate < appliedColumnFilters.releaseDateFrom) return false
       if (appliedColumnFilters.releaseDateTo && p.releaseDate > appliedColumnFilters.releaseDateTo) return false
@@ -316,9 +298,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     if (!sortKey || !sortDir) return filtered
     const dir = sortDir === 'asc' ? 1 : -1
     return [...filtered].sort((a, b) => {
-      const av = sortKey === 'stockAvailable'
-          ? hasAvailableStock(a)
-          : sortKey === 'psOfficeQuantity'
+      const av = sortKey === 'psOfficeQuantity'
             ? getPsOfficeQuantity(a)
             : sortKey === 'threePlQuantity'
               ? getThreePlQuantity(a)
@@ -334,14 +314,10 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
               ? netWeightUnitLabel(a)
           : sortKey === 'isRestorationRepair'
             ? isRestorationRepairProduct(a)
-            : sortKey === 'isSafetyStock'
-              ? hasSafetyStockShortage(a)
-              : sortKey === 'hasDecoration'
-                ? a.hasDecoration ?? false
-                : a[sortKey as keyof Product]
-      const bv = sortKey === 'stockAvailable'
-          ? hasAvailableStock(b)
-          : sortKey === 'psOfficeQuantity'
+            : sortKey === 'hasDecoration'
+              ? a.hasDecoration ?? false
+              : a[sortKey as keyof Product]
+      const bv = sortKey === 'psOfficeQuantity'
             ? getPsOfficeQuantity(b)
             : sortKey === 'threePlQuantity'
               ? getThreePlQuantity(b)
@@ -357,11 +333,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
               ? netWeightUnitLabel(b)
           : sortKey === 'isRestorationRepair'
             ? isRestorationRepairProduct(b)
-            : sortKey === 'isSafetyStock'
-              ? hasSafetyStockShortage(b)
-              : sortKey === 'hasDecoration'
-                ? b.hasDecoration ?? false
-                : b[sortKey as keyof Product]
+            : sortKey === 'hasDecoration'
+              ? b.hasDecoration ?? false
+              : b[sortKey as keyof Product]
       const sortableA = av
       const sortableB = bv
       if (sortableA == null && sortableB == null) return 0
@@ -393,8 +367,8 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
 
   function handleExport() {
     const headers = isManagementMode
-      ? ['브랜드','바코드','제품 코드','제품명','중분류','소분류','복원 가능 여부','장식 보유 여부','생산공장1','생산공장2','생산공장3','출시일','판매상태','부품보유기간','PS오피스 가용수량','3PL 가용수량','안전재고여부','Net weight','Unit']
-      : ['브랜드','제품 코드','제품명','중분류','소분류','복원 가능 여부','장식 보유 여부','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','재고보유여부','Net weight','Unit']
+      ? ['브랜드','바코드','제품 코드','제품명','중분류','소분류','복원 가능 여부','장식 보유 여부','생산공장1','생산공장2','생산공장3','출시일','판매상태','부품보유기간','PS오피스 가용수량','3PL 가용수량','Net weight','Unit']
+      : ['브랜드','제품 코드','제품명','중분류','소분류','복원 가능 여부','장식 보유 여부','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','Net weight','Unit']
     const rows = isManagementMode
       ? sorted.map(p => [
           p.brandCategory,
@@ -413,7 +387,6 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           p.partsRetentionPeriod,
           getPsOfficeQuantity(p),
           getThreePlQuantity(p),
-          safetyStockLabel(p),
           netWeightLabel(p),
           netWeightUnitLabel(p),
         ])
@@ -430,7 +403,6 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           displayProductFactory(p.factory3),
           p.releaseDate,
           p.partsRetentionPeriod,
-          hasAvailableStock(p) ? 'Y' : 'N',
           netWeightLabel(p),
           netWeightUnitLabel(p),
         ])
@@ -542,11 +514,8 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
 
   function getAppliedFilterDisplay(col: string): string {
     switch (col) {
-      case 'isSafetyStock':
-        return appliedColumnFilters[col] === 'true' ? '부족' : '정상'
       case 'hasDecoration':
       case 'restorationRepair':
-      case 'stockAvailable':
         return appliedColumnFilters[col] === 'true' ? 'Y' : 'N'
       case 'releaseDate': {
         const from = appliedColumnFilters.releaseDateFrom
@@ -595,13 +564,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           </div>
         )
       }
-      case 'isSafetyStock':
       case 'hasDecoration':
-      case 'stockAvailable':
       case 'restorationRepair': {
         const labelKey = col === 'restorationRepair' ? 'restorationRepair' : col
-        const trueLabel = col === 'isSafetyStock' ? '부족' : 'Y'
-        const falseLabel = col === 'isSafetyStock' ? '정상' : 'N'
         return (
           <div className="space-y-1">
             <button onClick={() => applyFilter({ [labelKey]: undefined })}
@@ -612,18 +577,12 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
             <button onClick={() => applyFilter({ [labelKey]: 'true' })}
               className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters[labelKey] === 'true' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
             >
-              {col === 'isSafetyStock' ? (
-                <I18nText i18nKey="products.value.shortage" display="tooltip">{trueLabel}</I18nText>
-              ) : (
-                <I18nText i18nKey="common.value.y" display="tooltip">{trueLabel}</I18nText>
-              )}
+              <I18nText i18nKey="common.value.y" display="tooltip">Y</I18nText>
             </button>
             <button onClick={() => applyFilter({ [labelKey]: 'false' })}
               className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters[labelKey] === 'false' ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
             >
-              {col === 'isSafetyStock' ? falseLabel : (
-                <I18nText i18nKey="common.value.n" display="tooltip">{falseLabel}</I18nText>
-              )}
+              <I18nText i18nKey="common.value.n" display="tooltip">N</I18nText>
             </button>
           </div>
         )
@@ -749,7 +708,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
 
   const FILTERABLE_COLS = new Set([
     'name', 'productCode', 'barcode', 'brandCategory', 'midCategory', 'subCategory', 'factory1', 'factory2', 'factory3',
-    'releaseDate', 'partsRetentionPeriod', 'isSafetyStock', 'hasDecoration', 'salesStatus', 'stockAvailable', 'isRestorationRepair',
+    'releaseDate', 'partsRetentionPeriod', 'hasDecoration', 'salesStatus', 'isRestorationRepair',
   ])
 
   const COL_FILTER_KEY: Record<string, string> = {
@@ -759,8 +718,6 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     brandCategory: 'brandCategory',
     midCategory: 'midCategory',
     subCategory: 'subCategory',
-    stockAvailable: 'stockAvailable',
-    isSafetyStock: 'isSafetyStock',
     hasDecoration: 'hasDecoration',
     salesStatus: 'salesStatus',
     isRestorationRepair: 'restorationRepair',
@@ -784,7 +741,6 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     { key: 'factory3',             label: '생산공장3',   sort: 'factory3' },
     { key: 'releaseDate',          label: '출시일',      sort: 'releaseDate' },
     { key: 'partsRetentionPeriod', label: '부품보유기한', sort: 'partsRetentionPeriod' },
-    { key: 'stockAvailable',       label: '재고보유여부', sort: 'stockAvailable' },
     { key: 'netWeight',            label: 'Net weight', sort: 'netWeight' },
     { key: 'netWeightUnit',        label: 'Unit',       sort: 'netWeightUnit' },
   ]
@@ -805,7 +761,6 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     { key: 'partsRetentionPeriod', label: '부품보유기간', sort: 'partsRetentionPeriod' },
     { key: 'psOfficeQuantity',     label: 'PS오피스 가용수량', sort: 'psOfficeQuantity' },
     { key: 'threePlQuantity',      label: '3PL 가용수량', sort: 'threePlQuantity' },
-    { key: 'isSafetyStock',        label: '안전재고여부', sort: 'isSafetyStock' },
     { key: 'netWeight',            label: 'Net weight', sort: 'netWeight' },
     { key: 'netWeightUnit',        label: 'Unit',       sort: 'netWeightUnit' },
   ]
@@ -1124,15 +1079,6 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{fmtRetention(p.partsRetentionPeriod)}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-right font-mono text-sm text-gray-700">{getPsOfficeQuantity(p).toLocaleString()}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-right font-mono text-sm text-gray-700">{getThreePlQuantity(p).toLocaleString()}</td>
-                        <td className="px-5 py-3.5 whitespace-nowrap">
-                          {hasSafetyStockShortage(p) ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-red-50 text-red-700">
-                              <I18nText i18nKey="products.value.shortage" display="tooltip">부족</I18nText>
-                            </span>
-                          ) : (
-                            <span className="text-sm text-gray-300">—</span>
-                          )}
-                        </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono text-gray-600">{netWeightLabel(p)}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono text-gray-500">{netWeightUnitLabel(p)}</td>
                         </>
@@ -1164,13 +1110,6 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{displayProductFactory(p.factory3)}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.releaseDate}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{fmtRetention(p.partsRetentionPeriod)}</td>
-                        <td className="px-5 py-3.5 whitespace-nowrap">
-                          <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${ynBadgeClass(hasAvailableStock(p), true)}`}>
-                            <I18nText i18nKey={hasAvailableStock(p) ? 'common.value.y' : 'common.value.n'} display="tooltip">
-                              {ynLabel(hasAvailableStock(p))}
-                            </I18nText>
-                          </span>
-                        </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono text-gray-600">{netWeightLabel(p)}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono text-gray-500">{netWeightUnitLabel(p)}</td>
                         </>
