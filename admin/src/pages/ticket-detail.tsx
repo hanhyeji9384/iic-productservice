@@ -5878,6 +5878,33 @@ export function TicketDetailPage() {
                   )}
 
                   {/* 수리 정보 카드 */}
+                  <SectionCard title="보상 서비스 쿠폰">
+                    <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
+                      {([
+                        { label: '타제품 교환', value: '타제품 교환' },
+                        { label: '감가상각', value: '감가상각' },
+                        { label: '전액 환불', value: '전액 환불' },
+                        { label: '무상 쿠폰', value: '무상 쿠폰' },
+                        { label: '긴급 쿠폰', value: '긴급 쿠폰' },
+                      ] as const).map(({ label, value }) => (
+                        <ToggleField
+                          key={value}
+                          label={label}
+                          checked={ticket.serviceCoupon === value}
+                          onChange={checked => {
+                            const coupon = checked ? value : null
+                            const patch: Partial<Ticket> = { serviceCoupon: coupon }
+                            if (coupon === '타제품 교환') patch.repairDetail = '타제품교환'
+                            else if (coupon === '감가상각' || coupon === '전액 환불') patch.repairDetail = '환불'
+                            else if (coupon === '무상 쿠폰') patch.repairChargeType = 'FREE'
+                            saveRepairPatch(patch)
+                            if (coupon === '긴급 쿠폰') saveReceptionPatch({ urgentRepairYn: 'Y' })
+                          }}
+                        />
+                      ))}
+                    </dl>
+                  </SectionCard>
+
                   <SectionCard title="수리 정보">
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
                       <Field label="본사 입고일" value={ticket.hqReceivedAt} />
@@ -5941,21 +5968,6 @@ export function TicketDetailPage() {
                         disabled={repairPricingLocked}
                         disabledReason="가격 결정 후에는 수정할 수 없습니다."
                         onSave={value => saveRepairPatch({ repairDepartment: value })}
-                      />
-                      <EditableReceptionField
-                        label="보상 서비스 쿠폰"
-                        value={ticket.serviceCoupon ?? '-'}
-                        type="select"
-                        options={COMPENSATION_COUPON_OPTIONS}
-                        onSave={value => {
-                          const coupon = value === '-' ? null : value
-                          const patch: Partial<Ticket> = { serviceCoupon: coupon }
-                          if (coupon === '타제품 교환') patch.repairDetail = '타제품교환'
-                          else if (coupon === '감가상각' || coupon === '전액 환불') patch.repairDetail = '환불'
-                          else if (coupon === '무상 쿠폰') patch.repairChargeType = 'FREE'
-                          saveRepairPatch(patch)
-                          if (coupon === '긴급 쿠폰') saveReceptionPatch({ urgentRepairYn: 'Y' })
-                        }}
                       />
                       <EditableReceptionField
                         label="수리 내용"
