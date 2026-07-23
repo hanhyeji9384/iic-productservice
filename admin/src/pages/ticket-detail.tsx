@@ -2344,7 +2344,7 @@ function StorePickerField({
                   value={query}
                   onChange={event => setQuery(event.target.value)}
                   onKeyDown={event => {
-                    if (event.key === 'Enter') setSearchedQuery(query)
+                    if (event.key === 'Enter' && query.trim().length >= 2) setSearchedQuery(query)
                     if (event.key === 'Escape') setOpen(false)
                   }}
                   placeholder="매장명, 코드, 주소 입력"
@@ -2358,7 +2358,7 @@ function StorePickerField({
               </div>
               <button
                 type="button"
-                onClick={() => setSearchedQuery(query)}
+                onClick={() => { if (query.trim().length >= 2) setSearchedQuery(query) }}
                 className="flex-shrink-0 rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700"
               >
                 검색
@@ -2367,7 +2367,7 @@ function StorePickerField({
           </div>
           <ul className="max-h-64 overflow-y-auto py-1">
             {!searchedQuery.trim() ? (
-              <li className="px-3 py-4 text-center text-xs text-gray-400">매장명 또는 코드를 입력 후 검색해 주세요.</li>
+              <li className="px-3 py-4 text-center text-xs text-gray-400">2자 이상 입력 후 검색해 주세요.</li>
             ) : filtered.length === 0 ? (
               <li className="px-3 py-4 text-center text-xs text-gray-400">조회 결과가 없습니다.</li>
             ) : (
