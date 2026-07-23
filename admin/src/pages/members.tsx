@@ -778,7 +778,12 @@ export function MembersPage() {
                 <div className="fixed inset-0 z-[40]" onClick={closeFilterPopover} />
                 <div
                   className="fixed z-[50] bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden w-max"
-                  style={{ top: filterPopover.rect.bottom + 6, left: Math.min(filterPopover.rect.left, window.innerWidth - 320) }}
+                  style={{
+                    top: filterPopover.rect.bottom + 6,
+                    ...(['branch', 'store'].includes(filterPopover.col)
+                      ? { right: window.innerWidth - filterPopover.rect.right }
+                      : { left: filterPopover.rect.left }),
+                  }}
                 >
                   {(['branch', 'store'].includes(filterPopover.col))
                     ? renderFilterPopoverContent(filterPopover.col)
