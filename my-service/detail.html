@@ -980,6 +980,21 @@ function setLang(lang) {
 }
 
 function setScenario(id) {
+  // Reset payment state when switching to payment-wait via prototype controls
+  if (id === 'payment-wait') {
+    var scForReset = SC['payment-wait'];
+    if (scForReset) {
+      var ticketNoForReset = getDisplayTicketNo(scForReset);
+      var completedMap = paymentCompletedMap();
+      delete completedMap[ticketNoForReset];
+      writeJson('ps-payment-completed-tickets', completedMap);
+    }
+    var panelForReset = document.getElementById('pay-panel');
+    if (panelForReset) panelForReset.style.maxHeight = '0';
+    var formForReset = document.getElementById('virtual-account-form');
+    if (formForReset) formForReset.style.display = 'none';
+  }
+
   // Button styles
   document.querySelectorAll('.sc-btn').forEach(function(b) {
     b.classList.remove('active-sc');
