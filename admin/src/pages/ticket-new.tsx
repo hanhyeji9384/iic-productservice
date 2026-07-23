@@ -941,6 +941,7 @@ function createReRepairForm(sourceTicket: Ticket, sourceCustomer?: Customer): Fo
 
   return {
     ...createInitialForm(branchCode),
+    // 고객 정보
     customerId: sourceCustomer?.id ?? '',
     customerLastName: lastName,
     customerFirstName: firstName,
@@ -948,8 +949,14 @@ function createReRepairForm(sourceTicket: Ticket, sourceCustomer?: Customer): Fo
     phone: sourceTicket.phone,
     email: sourceTicket.email,
     marketingAgree: sourceCustomer?.marketingAgree === 'Y',
+    // 제품 정보
     productName: sourceTicket.productName,
+    discontinuedYear: sourceTicket.discontinuedYear ?? '',
+    // 접수 정보 (재수리 여부는 N이 기본값 — submitTicket에서 처리)
     receptionStoreName: sourceTicket.receptionPlace,
+    receptionStoreCode: sourceTicket.receptionStoreCode ?? '',
+    pickupStoreCode: receptionType === 'STORE' ? (sourceTicket.receptionStoreCode ?? '') : '',
+    pickupStoreName: receptionType === 'STORE' ? (sourceTicket.receptionStoreName ?? '') : '',
     receptionType,
     deliveryAddressId: receptionType === 'HOME'
       ? (addresses.find(address => address.isDefault)?.id ?? addresses[0]?.id ?? '')
@@ -1208,10 +1215,10 @@ export function TicketNewPage() {
       email: form.email.trim(),
       receptionTitle: reRepairSourceTicket ? '재수리 접수' : undefined,
       originalTicketNo: reRepairSourceTicket?.ticketNo,
-      reRepairYn: reRepairSourceTicket ? 'Y' : 'N',
+      reRepairYn: 'N',
       pickupTrackingNo: shouldCreatePickup ? pickupTrackingNo(ticketNo, deliveryCountry) : null,
       serviceCoupon: null,
-      urgentRepairYn: isReRepair ? 'Y' : 'N',
+      urgentRepairYn: 'N',
       purchaseProofType: isNewCustomer ? '-' : 'MEMBERSHIP',
       purchaseInfoSource: 'ADMIN',
       componentType: null,
@@ -1233,8 +1240,13 @@ export function TicketNewPage() {
       deliveryCity: isHomeReception ? deliveryCity || null : null,
       deliveryState: null,
       productName: form.productName || '-',
-      repairDepartment: '',
-      repairDetail: '',
+      repairDepartment: reRepairSourceTicket?.repairDepartment ?? '',
+      repairDetail: reRepairSourceTicket?.repairDetail ?? '',
+      symptom: reRepairSourceTicket?.symptom ?? null,
+      repairIssueTypeTags: reRepairSourceTicket?.repairIssueTypeTags ?? [],
+      repairTypeTags: reRepairSourceTicket?.repairTypeTags ?? [],
+      careRequest: reRepairSourceTicket?.careRequest ?? null,
+      repairAgainReason: reRepairSourceTicket?.repairAgainReason ?? null,
       technicianId: form.technicianId || undefined,
       technicianName: form.technicianName || undefined,
       trackingNo: null,

@@ -4785,37 +4785,12 @@ export function TicketDetailPage() {
   }
 
   function saveReceptionPatch(patch: Partial<Ticket>) {
-    const nextReRepairYn = patch.reRepairYn ?? currentTicket.reRepairYn ?? 'N'
-    const isReRepair = nextReRepairYn === 'Y'
-    const nextPatch: Partial<Ticket> = { ...patch, reRepairYn: nextReRepairYn }
-
-    if (isReRepair) {
-      nextPatch.urgentRepairYn = 'Y'
-      if (
-        !nextPatch.pickupTrackingNo &&
-        !currentTicket.pickupTrackingNo &&
-        !pickupTrackingNo &&
-        !isOverseasStoreDropOff(currentTicket) &&
-        !shouldSkipTmsPickup(currentTicket)
-      ) {
-        nextPatch.pickupTrackingNo = getAutoPickupTrackingNo(currentTicket, pickupCarrier)
-      }
-    }
-
-    const projectedTicket = { ...currentTicket, ...nextPatch }
-    const urgentExpectedShipAt = getUrgentTotalCareExpectedShipAt(projectedTicket, projectedTicket.hqReceivedAt)
-    const shouldApplyUrgentSchedule = isReRepair || patch.urgentRepairYn === 'Y'
-    if ((shouldApplyUrgentSchedule || !projectedTicket.expectedShipAt) && urgentExpectedShipAt) {
-      nextPatch.expectedShipAt = urgentExpectedShipAt
-    }
+    const nextPatch: Partial<Ticket> = { ...patch }
 
     updatePrototypeTicket(currentTicket.ticketNo, nextPatch)
-    recordTicketFieldChanges(nextPatch, isReRepair ? '접수 정보 저장 및 재수리 자동 반영' : '접수 정보 저장')
+    recordTicketFieldChanges(nextPatch, '접수 정보 저장')
     setTicketRevision(revision => revision + 1)
-    showToast(isReRepair
-      ? '접수 정보가 저장되었습니다. 재수리 건은 긴급수리 Y로 적용됩니다.'
-      : '접수 정보가 저장되었습니다.'
-    )
+    showToast('접수 정보가 저장되었습니다.')
   }
 
   function saveAttachmentPatch(nextAttachments: TicketAttachment[], toastMessage: string) {
@@ -5105,7 +5080,6 @@ export function TicketDetailPage() {
 
     if (patch.repairAgainReason && patch.repairAgainReason !== '-') {
       nextPatch.reRepairYn = 'Y'
-      nextPatch.urgentRepairYn = 'Y'
     }
 
     if (patch.repairIssueTypeTags) {
@@ -5115,17 +5089,6 @@ export function TicketDetailPage() {
     if (!currentTicket.technicianId && !nextPatch.technicianId && patchKeys.length > 0) {
       nextPatch.technicianId = CURRENT_ADMIN_MEMBER?.id
       nextPatch.technicianName = CURRENT_ADMIN_MEMBER?.name
-    }
-
-    const projectedTicket = { ...currentTicket, ...nextPatch }
-    const urgentExpectedShipAt = getUrgentTotalCareExpectedShipAt(projectedTicket, projectedTicket.hqReceivedAt)
-    const shouldApplyUrgentSchedule = nextPatch.urgentRepairYn === 'Y' && (
-      patch.repairAgainReason !== undefined ||
-      patch.repairDetail !== undefined ||
-      patch.careRequest !== undefined
-    )
-    if ((shouldApplyUrgentSchedule || !projectedTicket.expectedShipAt) && urgentExpectedShipAt) {
-      nextPatch.expectedShipAt = urgentExpectedShipAt
     }
 
     updatePrototypeTicket(currentTicket.ticketNo, nextPatch)
