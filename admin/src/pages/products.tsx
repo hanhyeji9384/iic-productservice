@@ -273,8 +273,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
       if (appliedColumnFilters.restorationRepair && isRestorationRepairProduct(p) !== (appliedColumnFilters.restorationRepair === 'true')) return false
       if (appliedColumnFilters.releaseDateFrom && p.releaseDate < appliedColumnFilters.releaseDateFrom) return false
       if (appliedColumnFilters.releaseDateTo && p.releaseDate > appliedColumnFilters.releaseDateTo) return false
-      if (appliedColumnFilters.partsRetentionFrom && (!p.partsRetentionPeriod || p.partsRetentionPeriod < appliedColumnFilters.partsRetentionFrom)) return false
-      if (appliedColumnFilters.partsRetentionTo && (!p.partsRetentionPeriod || p.partsRetentionPeriod > appliedColumnFilters.partsRetentionTo)) return false
+      if (appliedColumnFilters.partsRetention && !p.partsRetentionPeriod?.startsWith(appliedColumnFilters.partsRetention)) return false
       return true
     })
   }, [appliedColumnFilters, products])
@@ -500,14 +499,8 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
         if (to) return `~ ${to}`
         return ''
       }
-      case 'partsRetention': {
-        const from = appliedColumnFilters.partsRetentionFrom
-        const to = appliedColumnFilters.partsRetentionTo
-        if (from && to) return `${from} ~ ${to}`
-        if (from) return `${from} ~`
-        if (to) return `~ ${to}`
-        return ''
-      }
+      case 'partsRetention':
+        return appliedColumnFilters.partsRetention ?? ''
       default:
         return appliedColumnFilters[col] ?? ''
     }
@@ -518,7 +511,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
       case 'releaseDate':
         return !!(appliedColumnFilters.releaseDateFrom || appliedColumnFilters.releaseDateTo)
       case 'partsRetention':
-        return !!(appliedColumnFilters.partsRetentionFrom || appliedColumnFilters.partsRetentionTo)
+        return !!appliedColumnFilters.partsRetention
       default:
         return !!appliedColumnFilters[col]
     }
@@ -647,24 +640,15 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
         )
       case 'partsRetention':
         return (
-          <div className="space-y-2">
-            <p className="text-xs text-gray-500 font-medium">
-              <I18nText i18nKey="products.label.parts_retention_period" display="tooltip">부품보유기한</I18nText>
-            </p>
-            <div className="space-y-1.5">
-              <input type="month" value={columnFilters.partsRetentionFrom ?? ''}
-                onChange={e => setColumnFilters(prev => ({ ...prev, partsRetentionFrom: e.target.value }))}
-                className="w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-400" />
-              <span className="block text-center text-gray-300 text-xs">~</span>
-              <input type="month" value={columnFilters.partsRetentionTo ?? ''}
-                onChange={e => setColumnFilters(prev => ({ ...prev, partsRetentionTo: e.target.value }))}
-                className="w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-400" />
-            </div>
-            <div className="flex gap-1.5 pt-1">
-              {(columnFilters.partsRetentionFrom || columnFilters.partsRetentionTo) && (
-                <button onClick={() => applyFilter({ partsRetentionFrom: undefined, partsRetentionTo: undefined })}
+          <div className="space-y-1.5">
+            <input type="month" value={columnFilters.partsRetention ?? ''}
+              onChange={e => setColumnFilters(prev => ({ ...prev, partsRetention: e.target.value }))}
+              className="w-full px-2.5 py-1.5 bg-white border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-gray-400" />
+            <div className="flex gap-1.5">
+              {columnFilters.partsRetention && (
+                <button onClick={() => applyFilter({ partsRetention: undefined })}
                   className="flex-1 text-center text-xs text-gray-400 hover:text-gray-600 transition-colors py-1.5 border border-gray-200 rounded-lg">
-                  <I18nText i18nKey="common.button.reset" display="tooltip">초기화</I18nText>
+                  <I18nText i18nKey="common.button.clear" display="tooltip">지우기</I18nText>
                 </button>
               )}
               <button onClick={applyCurrentFilters}
