@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useNavigate, useSearchParams, useParams } from 'react-router-dom'
-import { UserPlus, Shield, History, Users, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown, X, Filter } from 'lucide-react'
+import { UserPlus, Shield, History, Users, ChevronLeft, ChevronRight, ArrowUp, ArrowDown, ArrowUpDown, X, Filter, Search } from 'lucide-react'
 import { ROLES, BRANCHES, STORES } from '@/lib/mock-data'
 import { Pagination } from '@/components/pagination'
 import { SummaryCell } from '@/components/summary-cell'
@@ -40,6 +40,14 @@ export function MembersPage() {
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({})
   const [appliedColumnFilters, setAppliedColumnFilters] = useState<Record<string, string>>({})
   const [filterPopover, setFilterPopover] = useState<{ col: string; rect: DOMRect } | null>(null)
+  const [branchSearch, setBranchSearch] = useState('')
+  const [storeSearch, setStoreSearch] = useState('')
+
+  function closeFilterPopover() {
+    setFilterPopover(null)
+    setBranchSearch('')
+    setStoreSearch('')
+  }
 
   const PAGE_SIZE = 20
   const [currentPage, setCurrentPage] = useState(Number(searchParams.get('page') ?? '1'))
@@ -83,7 +91,7 @@ export function MembersPage() {
   function applyCurrentColumnFilters() {
     setAppliedColumnFilters(columnFilters)
     setCurrentPage(1)
-    setFilterPopover(null)
+    closeFilterPopover()
   }
 
   function applyColumnFilterPatch(patch: Record<string, string>) {
@@ -95,7 +103,7 @@ export function MembersPage() {
     setColumnFilters(next)
     setAppliedColumnFilters(next)
     setCurrentPage(1)
-    setFilterPopover(null)
+    closeFilterPopover()
   }
 
   function applyColumnFilter(key: string, value: string) {
@@ -222,19 +230,43 @@ export function MembersPage() {
       )
     }
     if (col === 'branch') {
-      const availableBranches = BRANCHES.filter(b =>
+      const allAvailableBranches = BRANCHES.filter(b =>
         members.some(m => (m.managedBranches ?? []).includes(b.code))
       )
+      const filteredBranches = branchSearch.trim()
+        ? allAvailableBranches.filter(b =>
+            `${b.code} ${b.name}`.toLowerCase().includes(branchSearch.toLowerCase())
+          )
+        : allAvailableBranches
       return (
-        <div className="space-y-1">
-          <button
-            onClick={() => applyColumnFilter('branch', '')}
-            className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.branch ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-          >전체</button>
-          {availableBranches.map(b => (
+        <div className="w-56 space-y-1">
+          <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 px-2.5 py-1.5 mb-1">
+            <Search className="w-3 h-3 text-gray-400 flex-shrink-0" />
+            <input
+              autoFocus
+              value={branchSearch}
+              onChange={e => setBranchSearch(e.target.value)}
+              placeholder="법인 검색..."
+              className="flex-1 bg-transparent text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none"
+            />
+            {branchSearch && (
+              <button onClick={() => setBranchSearch('')} className="text-gray-300 hover:text-gray-500">
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+          {!branchSearch && (
+            <button
+              onClick={() => applyColumnFilter('branch', '')}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.branch ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >전체</button>
+          )}
+          {filteredBranches.length === 0 ? (
+            <p className="px-3 py-2 text-xs text-gray-400">조회 결과가 없습니다.</p>
+          ) : filteredBranches.map(b => (
             <button key={b.code}
               onClick={() => applyColumnFilter('branch', b.code)}
-              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.branch === b.code ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+              className={`block w-full whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.branch === b.code ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
             >{b.code} {b.name}</button>
           ))}
         </div>
@@ -242,18 +274,45 @@ export function MembersPage() {
     }
     if (col === 'store') {
       const availableStoreCodes = [...new Set(members.flatMap(m => m.assignedStores ?? []))]
-      const availableStores = STORES.filter(s => availableStoreCodes.includes(s.code))
+      const allAvailableStores = STORES.filter(s => availableStoreCodes.includes(s.code))
+      const filteredStores = storeSearch.trim()
+        ? allAvailableStores.filter(s =>
+            `${s.code} ${s.name}`.toLowerCase().includes(storeSearch.toLowerCase())
+          )
+        : allAvailableStores
       return (
-        <div className="space-y-1">
-          <button
-            onClick={() => applyColumnFilter('store', '')}
-            className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.store ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-          >전체</button>
-          {availableStores.map(s => (
+        <div className="w-64 space-y-1">
+          <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 px-2.5 py-1.5 mb-1">
+            <Search className="w-3 h-3 text-gray-400 flex-shrink-0" />
+            <input
+              autoFocus
+              value={storeSearch}
+              onChange={e => setStoreSearch(e.target.value)}
+              placeholder="스토어 검색..."
+              className="flex-1 bg-transparent text-xs text-gray-800 placeholder:text-gray-400 focus:outline-none"
+            />
+            {storeSearch && (
+              <button onClick={() => setStoreSearch('')} className="text-gray-300 hover:text-gray-500">
+                <X className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+          {!storeSearch && (
+            <button
+              onClick={() => applyColumnFilter('store', '')}
+              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${!columnFilters.store ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >전체</button>
+          )}
+          {filteredStores.length === 0 ? (
+            <p className="px-3 py-2 text-xs text-gray-400">조회 결과가 없습니다.</p>
+          ) : filteredStores.map(s => (
             <button key={s.code}
               onClick={() => applyColumnFilter('store', s.code)}
-              className={`block whitespace-nowrap text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.store === s.code ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
-            >{s.name}</button>
+              className={`block w-full text-left px-3 py-2 rounded-lg text-xs transition-colors ${columnFilters.store === s.code ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-100'}`}
+            >
+              <span className="block truncate">{s.name}</span>
+              <span className="font-mono text-[10px] opacity-60">{s.code}</span>
+            </button>
           ))}
         </div>
       )
@@ -674,7 +733,7 @@ export function MembersPage() {
             {/* Column filter popover */}
             {filterPopover && (
               <>
-                <div className="fixed inset-0 z-[40]" onClick={() => setFilterPopover(null)} />
+                <div className="fixed inset-0 z-[40]" onClick={closeFilterPopover} />
                 <div
                   className="fixed z-[50] bg-white border border-gray-200 rounded-xl shadow-lg p-3 w-max"
                   style={{ top: filterPopover.rect.bottom + 6, left: filterPopover.rect.left }}

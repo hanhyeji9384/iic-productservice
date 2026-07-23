@@ -2225,6 +2225,180 @@ function ProductSearchReceptionField({
   )
 }
 
+function StorePickerField({
+  label,
+  value,
+  stores,
+  disabled = false,
+  disabledReason = '수정할 수 없습니다.',
+  onSave,
+}: {
+  label: string
+  value?: string | null
+  stores: Store[]
+  disabled?: boolean
+  disabledReason?: string
+  onSave: (store: Store | null) => void
+}) {
+  const normalizedValue = value ?? ''
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [searchedQuery, setSearchedQuery] = useState('')
+  const [dropdownRect, setDropdownRect] = useState<DOMRect | null>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const selectedStore = stores.find(s => s.name === normalizedValue || s.code === normalizedValue)
+  const displayValue = selectedStore?.name ?? normalizedValue
+  const filtered = searchedQuery.trim()
+    ? stores.filter(s =>
+        purchasePlaceSearchText({ value: s.name, label: s.name, meta: storeAddressText(s), code: s.code })
+          .includes(searchedQuery.toLowerCase())
+      )
+    : []
+
+  useEffect(() => {
+    if (!open) return
+    function handleOutside(event: MouseEvent) {
+      const target = event.target as Node
+      if (!triggerRef.current?.contains(target) && !dropdownRef.current?.contains(target)) {
+        setOpen(false)
+      }
+    }
+    function handleScroll(event: Event) {
+      if (dropdownRef.current?.contains(event.target as Node)) return
+      setOpen(false)
+    }
+    document.addEventListener('mousedown', handleOutside)
+    window.addEventListener('scroll', handleScroll, true)
+    return () => {
+      document.removeEventListener('mousedown', handleOutside)
+      window.removeEventListener('scroll', handleScroll, true)
+    }
+  }, [open])
+
+  function handleOpen() {
+    if (disabled) return
+    if (open) { setOpen(false); return }
+    const rect = triggerRef.current?.getBoundingClientRect()
+    if (rect) setDropdownRect(rect)
+    setOpen(true)
+    setTimeout(() => inputRef.current?.focus(), 0)
+  }
+
+  function handleClear(event: React.MouseEvent) {
+    event.stopPropagation()
+    if (disabled) return
+    onSave(null)
+  }
+
+  function handleSelect(store: Store) {
+    if (disabled) return
+    onSave(store)
+    setOpen(false)
+    setQuery('')
+    setSearchedQuery('')
+  }
+
+  return (
+    <div className={`-m-1 rounded-lg p-1 transition-colors ${disabled ? '' : 'hover:bg-gray-50'}`}>
+      <dt className="mb-0.5 text-[11px] font-medium text-gray-400">{label}</dt>
+      <dd>
+        <button
+          ref={triggerRef}
+          type="button"
+          disabled={disabled}
+          onClick={handleOpen}
+          className={`group flex min-h-5 w-full items-center justify-between gap-2 text-left text-sm underline-offset-4 decoration-dotted ${
+            disabled ? 'cursor-default text-gray-800' : 'text-gray-800 hover:text-gray-950 hover:underline'
+          }`}
+          title={disabled ? disabledReason : '클릭하여 매장 선택'}
+        >
+          <span className={`truncate ${displayValue ? 'text-gray-800' : 'text-gray-400'}`}>
+            {displayValue || '매장 검색'}
+          </span>
+          <span className="flex flex-shrink-0 items-center gap-1">
+            {selectedStore && !disabled && (
+              <span onClick={handleClear} className="rounded p-0.5 text-gray-300 transition-colors hover:text-gray-500">
+                <X className="h-3.5 w-3.5" />
+              </span>
+            )}
+            {!disabled && (
+              <ChevronDown className={`h-3.5 w-3.5 text-gray-300 transition-transform ${open ? 'rotate-180' : 'group-hover:text-gray-500'}`} />
+            )}
+          </span>
+        </button>
+      </dd>
+      {open && dropdownRect && createPortal(
+        <div
+          ref={dropdownRef}
+          className="fixed z-[9999] overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl shadow-black/[0.08]"
+          style={{ top: dropdownRect.bottom + 6, left: dropdownRect.left, width: Math.max(dropdownRect.width, 420) }}
+        >
+          <div className="border-b border-gray-100 p-2">
+            <div className="flex items-center gap-2">
+              <div className="flex flex-1 items-center gap-2 rounded-lg bg-gray-50 px-2.5 py-1.5">
+                <Search className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
+                <input
+                  ref={inputRef}
+                  value={query}
+                  onChange={event => setQuery(event.target.value)}
+                  onKeyDown={event => {
+                    if (event.key === 'Enter') setSearchedQuery(query)
+                    if (event.key === 'Escape') setOpen(false)
+                  }}
+                  placeholder="매장명, 코드, 주소 입력"
+                  className="flex-1 bg-transparent text-sm text-gray-800 placeholder:text-gray-300 focus:outline-none"
+                />
+                {query && (
+                  <button type="button" onClick={() => { setQuery(''); setSearchedQuery('') }} className="text-gray-300 hover:text-gray-500">
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setSearchedQuery(query)}
+                className="flex-shrink-0 rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-gray-700"
+              >
+                검색
+              </button>
+            </div>
+          </div>
+          <ul className="max-h-64 overflow-y-auto py-1">
+            {!searchedQuery.trim() ? (
+              <li className="px-3 py-4 text-center text-xs text-gray-400">매장명 또는 코드를 입력 후 검색해 주세요.</li>
+            ) : filtered.length === 0 ? (
+              <li className="px-3 py-4 text-center text-xs text-gray-400">조회 결과가 없습니다.</li>
+            ) : (
+              filtered.map(store => (
+                <li key={store.code}>
+                  <button
+                    type="button"
+                    onClick={() => handleSelect(store)}
+                    className={`w-full px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50 ${
+                      store.name === normalizedValue || store.code === normalizedValue ? 'bg-gray-50 font-medium text-gray-900' : 'text-gray-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="truncate">{store.name}</span>
+                      <span className="font-mono text-[11px] text-gray-400">{store.code}</span>
+                    </div>
+                    {storeAddressText(store) ? (
+                      <div className="mt-0.5 truncate text-xs text-gray-400">{storeAddressText(store)}</div>
+                    ) : null}
+                  </button>
+                </li>
+              ))
+            )}
+          </ul>
+        </div>,
+        document.body
+      )}
+    </div>
+  )
+}
+
 function PartRequestItemsField({ ticket }: { ticket: Ticket }) {
   const items = getPartRequestItems(ticket)
 
@@ -5408,7 +5582,14 @@ export function TicketDetailPage() {
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
                       <Field label="접수일시" value={`${ticket.receivedAt} (KST)`} />
                       <Field label="접수처 유형" value={receptionChannel} />
-                      {canEditReceptionPlace ? (
+                      {canEditReceptionPlace && receptionChannel === '매장' && receptionMethod === 'store' ? (
+                        <StorePickerField
+                          label="접수처"
+                          value={ticket.receptionPlace}
+                          stores={STORES}
+                          onSave={store => saveReceptionPatch({ receptionPlace: store?.name ?? '-' })}
+                        />
+                      ) : canEditReceptionPlace ? (
                         <EditableReceptionField
                           label="접수처"
                           value={ticket.receptionPlace}
@@ -6058,7 +6239,16 @@ export function TicketDetailPage() {
                         onSave={value => saveShippingPatch({ shippingMethod: value })}
                       />
                       <div className="col-span-2">
-                        <Field label="출고 정보" value={outboundDeliveryInfo} />
+                        {!isHomeDeliveryOutbound && !outboundShipmentLocked ? (
+                          <StorePickerField
+                            label="출고 매장"
+                            value={ticket.receptionStoreName || findReceptionStore(ticket)?.name || ticket.receptionPlace}
+                            stores={STORES}
+                            onSave={store => saveShippingPatch({ receptionStoreName: store?.name ?? null, receptionStoreCode: store?.code ?? null })}
+                          />
+                        ) : (
+                          <Field label={!isHomeDeliveryOutbound ? '출고 매장' : '출고 정보'} value={outboundDeliveryInfo} />
+                        )}
                       </div>
                       <Field label="출고 완료 여부" value={shipmentCompletedYn} />
                       <Field label="출고 완료일" value={shipmentCompletedAt} />
