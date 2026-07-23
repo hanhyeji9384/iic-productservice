@@ -16,7 +16,6 @@ function fmtRetention(dateStr: string): string {
 }
 
 type SortKey = 'productCode' | 'barcode' | 'name' | 'brandCategory' | 'midCategory' | 'subCategory' | 'hasDecoration' | 'salesStatus' | 'isRestorationRepair'
-  | 'psOfficeQuantity' | 'threePlQuantity'
   | 'factory1' | 'factory2' | 'factory3' | 'releaseDate' | 'partsRetentionPeriod' | 'netWeight' | 'netWeightUnit'
 type Tab = 'list' | 'history'
 type ProductsPageMode = 'list' | 'management'
@@ -52,8 +51,6 @@ const COMMON_COL_KEYS: Record<string, string> = {
   factory2: 'products.label.factory_2',
   factory3: 'products.label.factory_3',
   partsRetentionPeriod: 'products.label.parts_retention_period',
-  psOfficeQuantity: 'products.label.ps_office_quantity',
-  threePlQuantity: 'products.label.three_pl_quantity',
   netWeight: 'products.label.net_weight',
   netWeightUnit: 'products.label.net_weight_unit',
 }
@@ -62,13 +59,6 @@ function isRestorationRepairProduct(product: Product) {
   return product.isRestorationRepair ?? /METAL|COMBI/.test(product.subCategory)
 }
 
-function getPsOfficeQuantity(product: Product) {
-  return product.psQuantity ?? product.quantity
-}
-
-function getThreePlQuantity(product: Product) {
-  return product.threePlQuantity ?? 0
-}
 
 
 
@@ -298,11 +288,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     if (!sortKey || !sortDir) return filtered
     const dir = sortDir === 'asc' ? 1 : -1
     return [...filtered].sort((a, b) => {
-      const av = sortKey === 'psOfficeQuantity'
-            ? getPsOfficeQuantity(a)
-            : sortKey === 'threePlQuantity'
-              ? getThreePlQuantity(a)
-            : sortKey === 'factory1'
+      const av = sortKey === 'factory1'
               ? displayProductFactory(a.factory1)
             : sortKey === 'factory2'
               ? displayProductFactory(a.factory2)
@@ -317,11 +303,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
             : sortKey === 'hasDecoration'
               ? a.hasDecoration ?? false
               : a[sortKey as keyof Product]
-      const bv = sortKey === 'psOfficeQuantity'
-            ? getPsOfficeQuantity(b)
-            : sortKey === 'threePlQuantity'
-              ? getThreePlQuantity(b)
-            : sortKey === 'factory1'
+      const bv = sortKey === 'factory1'
               ? displayProductFactory(b.factory1)
             : sortKey === 'factory2'
               ? displayProductFactory(b.factory2)
@@ -367,7 +349,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
 
   function handleExport() {
     const headers = isManagementMode
-      ? ['브랜드','바코드','제품 코드','제품명','중분류','소분류','복원 가능 여부','장식 보유 여부','생산공장1','생산공장2','생산공장3','출시일','판매상태','부품보유기간','PS오피스 가용수량','3PL 가용수량','Net weight','Unit']
+      ? ['브랜드','바코드','제품 코드','제품명','중분류','소분류','복원 가능 여부','장식 보유 여부','생산공장1','생산공장2','생산공장3','출시일','판매상태','부품보유기간','Net weight','Unit']
       : ['브랜드','제품 코드','제품명','중분류','소분류','복원 가능 여부','장식 보유 여부','생산공장1','생산공장2','생산공장3','출시일','부품보유기한','Net weight','Unit']
     const rows = isManagementMode
       ? sorted.map(p => [
@@ -385,8 +367,6 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
           p.releaseDate,
           p.salesStatus,
           p.partsRetentionPeriod,
-          getPsOfficeQuantity(p),
-          getThreePlQuantity(p),
           netWeightLabel(p),
           netWeightUnitLabel(p),
         ])
@@ -759,8 +739,6 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
     { key: 'releaseDate',          label: '출시일',      sort: 'releaseDate' },
     { key: 'salesStatus',          label: '판매상태',    sort: 'salesStatus' },
     { key: 'partsRetentionPeriod', label: '부품보유기간', sort: 'partsRetentionPeriod' },
-    { key: 'psOfficeQuantity',     label: 'PS오피스 가용수량', sort: 'psOfficeQuantity' },
-    { key: 'threePlQuantity',      label: '3PL 가용수량', sort: 'threePlQuantity' },
     { key: 'netWeight',            label: 'Net weight', sort: 'netWeight' },
     { key: 'netWeightUnit',        label: 'Unit',       sort: 'netWeightUnit' },
   ]
@@ -1077,8 +1055,6 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                           </span>
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{fmtRetention(p.partsRetentionPeriod)}</td>
-                        <td className="px-5 py-3.5 whitespace-nowrap text-right font-mono text-sm text-gray-700">{getPsOfficeQuantity(p).toLocaleString()}</td>
-                        <td className="px-5 py-3.5 whitespace-nowrap text-right font-mono text-sm text-gray-700">{getThreePlQuantity(p).toLocaleString()}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono text-gray-600">{netWeightLabel(p)}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono text-gray-500">{netWeightUnitLabel(p)}</td>
                         </>
