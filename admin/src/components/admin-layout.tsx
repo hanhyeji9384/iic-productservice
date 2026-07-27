@@ -42,7 +42,6 @@ const NAV: NavGroup[] = [
     i18nKey: 'nav.master_management.title',
     icon: Package,
     children: [
-      { to: '/products',           label: '제품 리스트',      i18nKey: 'nav.master_management.products', icon: Package },
       { to: '/product-management', label: '제품 관리',        i18nKey: 'nav.master_management.product_management', icon: Package },
       { to: '/parts',              label: '부품 관리',        i18nKey: 'nav.master_management.parts', icon: Wrench },
       { to: '/stores',             label: '매장/거래처 관리', i18nKey: 'nav.master_management.stores', icon: Store },
@@ -57,7 +56,6 @@ const NAV: NavGroup[] = [
       { to: '/stock/requests', label: '재고 요청 관리', i18nKey: 'nav.stock_management.stock_requests', icon: Package },
       { to: '/stock/part-requests', label: '부품 요청', i18nKey: 'nav.stock_management.part_requests', icon: Wrench },
       { to: '/stock/part-request-management', label: '부품 요청 관리', i18nKey: 'nav.stock_management.part_request_management', icon: Wrench },
-      { to: '/stock/transfers', label: 'WMS 재고 출고', i18nKey: 'nav.stock_management.transfers', icon: ArrowLeftRight },
       { to: '/stock/adjustments', label: '재고 조정', i18nKey: 'nav.stock_management.adjustments', icon: SlidersHorizontal },
       { to: '/stock/snapshots', label: '재고 스냅샷', i18nKey: 'nav.stock_management.snapshots', icon: ClipboardList },
       { to: '/stock/ledger', label: '재고 Ledger', i18nKey: 'nav.stock_management.ledger', icon: ClipboardList },

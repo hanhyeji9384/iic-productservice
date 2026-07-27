@@ -81,7 +81,6 @@ export default function App() {
           <Route path="privacy-logs" element={<PrivacyLogsPage />} />
 
           {/* 마스터 관리 */}
-          <Route path="products" element={<ProductsPage mode="list" />} />
           <Route path="product-management" element={<ProductsPage mode="management" />} />
           <Route path="parts" element={<PartsPage />} />
           <Route path="parts/new" element={<PartNewPage />} />
