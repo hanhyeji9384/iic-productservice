@@ -323,7 +323,13 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
   }, [filtered, sortKey, sortDir])
 
   const paginated = sorted.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
-  const paginatedLogs = productChangeLogs.slice((historyPage - 1) * HISTORY_PER_PAGE, historyPage * HISTORY_PER_PAGE)
+  const filteredLogs = useMemo(() => {
+    const branch = appliedColumnFilters.branch
+    if (!branch) return productChangeLogs
+    const branchCodes = new Set(products.filter(p => p.branchCode === branch).map(p => p.productCode))
+    return productChangeLogs.filter(log => branchCodes.has(log.productCode))
+  }, [productChangeLogs, appliedColumnFilters.branch, products])
+  const paginatedLogs = filteredLogs.slice((historyPage - 1) * HISTORY_PER_PAGE, historyPage * HISTORY_PER_PAGE)
   const allPageSelected = paginated.length > 0 && paginated.every(p => selected.has(p.id))
   const somePageSelected = paginated.some(p => selected.has(p.id)) && !allPageSelected
 
@@ -1111,6 +1117,22 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
 
         {activeTab === 'history' && (
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2">
+              <select
+                value={columnFilters.branch ?? defaultBranchCode}
+                onChange={e => {
+                  const val = e.target.value
+                  setColumnFilters(prev => ({ ...prev, branch: val }))
+                  setAppliedColumnFilters(prev => ({ ...prev, branch: val }))
+                  setHistoryPage(1)
+                }}
+                className="w-64 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400"
+              >
+                {branchOptions.map(b => (
+                  <option key={b.code} value={b.code}>{b.code} {b.name}</option>
+                ))}
+              </select>
+            </div>
             <div className="overflow-x-auto">
               <table className="min-w-max w-full">
                 <thead>
@@ -1162,7 +1184,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                 </tbody>
               </table>
             </div>
-            <Pagination total={productChangeLogs.length} perPage={HISTORY_PER_PAGE} current={historyPage} onChange={setHistoryPage} />
+            <Pagination total={filteredLogs.length} perPage={HISTORY_PER_PAGE} current={historyPage} onChange={setHistoryPage} />
           </div>
         )}
 

@@ -20,15 +20,15 @@ export const STOCK_TRANSFER_STATUS_OPTIONS: {
   { value: 'CANCELED', label: '취소', className: 'bg-gray-100 text-gray-600 border-gray-200' },
 ]
 
-export const STOCK_ADJUSTMENT_TYPES: StockAdjustmentType[] = ['일반', '리턴', '타부서요청', '폐기', '기타']
+export const STOCK_ADJUSTMENT_TYPES: StockAdjustmentType[] = ['A/S 출고', '취소 - A/S 출고']
 
 export const STOCK_ADJUSTMENT_STATUS_OPTIONS: {
   value: StockAdjustmentStatus
   label: string
   className: string
 }[] = [
-  { value: 'REQUESTED', label: '요청완료', className: 'bg-blue-50 text-blue-700 border-blue-200' },
-  { value: 'APPLIED', label: '확정완료', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+  { value: 'REQUESTED', label: '요청', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { value: 'APPLIED', label: '확정', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   { value: 'REJECTED', label: '반려', className: 'bg-red-50 text-red-600 border-red-200' },
 ]
 

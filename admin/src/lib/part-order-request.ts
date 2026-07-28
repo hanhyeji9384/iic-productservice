@@ -1,7 +1,7 @@
 import type { PartOrderRequestStatus, PartOrderStoreType, Store } from './types'
 
 export const PART_ORDER_STATUS_OPTIONS: { value: PartOrderRequestStatus; label: string }[] = [
-  { value: 'REQUESTED', label: '요청완료' },
+  { value: 'REQUESTED', label: '요청' },
   { value: 'COMPLETED', label: '처리완료' },
   { value: 'OUT_OF_STOCK', label: '재고부족' },
   { value: 'HOLD', label: '보류' },

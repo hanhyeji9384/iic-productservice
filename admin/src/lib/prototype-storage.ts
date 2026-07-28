@@ -7,6 +7,7 @@ import {
   STOCK_REQUESTS,
   STOCK_SNAPSHOTS,
   STOCK_TRANSFERS,
+  THREE_PL_STO_REQUESTS,
   TICKETS,
   isVisibleGmBranchCode,
   isVisibleGmProductCode,
@@ -29,6 +30,8 @@ import type {
   StockTransfer,
   StockTransferLine,
   StockTransferStatus,
+  ThreePlStoRequest,
+  ThreePlStoStatus,
   Ticket,
   TicketChangeLog,
 } from './types'
@@ -37,12 +40,13 @@ const CUSTOMER_OVERRIDES_KEY = 'ps-admin-customer-overrides'
 const EXTRA_TICKETS_KEY = 'ps-admin-extra-tickets'
 const CUSTOMER_CANCELLED_TICKETS_KEY = 'ps-customer-cancelled-tickets'
 const COMPONENT_RETURNS_KEY = 'ps-admin-component-returns'
-const STOCK_REQUESTS_KEY = 'ps-admin-stock-requests'
+const STOCK_REQUESTS_KEY = 'ps-admin-stock-requests-v2'
 const PART_ORDER_REQUESTS_KEY = 'ps-admin-part-order-requests'
 const STOCK_LEDGER_KEY = 'ps-admin-stock-ledger'
 const STOCK_TRANSFERS_KEY = 'ps-admin-stock-transfers'
-const STOCK_ADJUSTMENTS_KEY = 'ps-admin-stock-adjustments'
+const STOCK_ADJUSTMENTS_KEY = 'ps-admin-stock-adjustments-v2'
 const STOCK_SNAPSHOTS_KEY = 'ps-admin-stock-snapshots'
+const THREE_PL_STO_KEY = 'ps-admin-three-pl-sto-v2'
 const TICKET_CHANGE_LOGS_KEY = 'ps-admin-ticket-change-logs'
 
 type CustomerOverride = Partial<Omit<Customer, 'id'>>
@@ -389,9 +393,6 @@ export function createStockRequestFromTicket(
   reason: StockRequestReason,
   requester?: { id?: string; label: string },
 ) {
-  const existing = getStockRequests().find(record => record.ticketNo === ticket.ticketNo && record.status !== 'CANCELED')
-  if (existing) return existing
-
   const meta = getStockRequestReasonMeta(reason)
   const record: StockRequest = {
     id: `stock-request-${Date.now()}-${randomToken(5).toLowerCase()}`,
@@ -421,6 +422,69 @@ export function updateStockRequest(record: StockRequest) {
     ? stored.map(item => item.requestNo === record.requestNo ? record : item)
     : [record, ...stored]
   saveStoredStockRequests(next)
+}
+
+function threePlStoNo() {
+  const now = new Date()
+  const pad = (value: number) => String(value).padStart(2, '0')
+  return `STO${String(now.getFullYear()).slice(2)}${pad(now.getMonth() + 1)}${pad(now.getDate())}${randomToken(8)}`
+}
+
+function getStoredThreePlStoRequests() {
+  return readJson<ThreePlStoRequest[]>(THREE_PL_STO_KEY, [])
+}
+
+function saveStoredThreePlStoRequests(records: ThreePlStoRequest[]) {
+  writeJson(THREE_PL_STO_KEY, records)
+}
+
+export function getThreePlStoRequests(): ThreePlStoRequest[] {
+  const stored = getStoredThreePlStoRequests()
+  const storedIds = new Set(stored.map(r => r.stoNo))
+  return [
+    ...stored,
+    ...THREE_PL_STO_REQUESTS.filter(r => !storedIds.has(r.stoNo)),
+  ].sort((a, b) => b.requestedAt.localeCompare(a.requestedAt))
+}
+
+export function createThreePlStoRequest(
+  stockRequestNos: string[],
+  requester?: { id?: string; label: string },
+): ThreePlStoRequest {
+  const record: ThreePlStoRequest = {
+    id: `three-pl-sto-${Date.now()}-${randomToken(5).toLowerCase()}`,
+    stoNo: threePlStoNo(),
+    requestedAt: localTimestamp(),
+    requester: requester?.label ?? '한혜지(monster563)',
+    requesterId: requester?.id ?? null,
+    stockRequestNos,
+    status: 'REQUESTED',
+    processedAt: null,
+    processor: null,
+  }
+  saveStoredThreePlStoRequests([record, ...getStoredThreePlStoRequests()])
+
+  // 포함된 재고 요청들을 STO_REQUESTED 상태로 변경 (mock data 포함 전체에서 찾아서 저장)
+  const now = localTimestamp()
+  const all = getStockRequests()
+  all
+    .filter(req => stockRequestNos.includes(req.requestNo))
+    .forEach(req => {
+      updateStockRequest({ ...req, status: 'STO_REQUESTED', processedAt: now, processor: requester?.label ?? '한혜지(monster563)' })
+    })
+
+  return record
+}
+
+export function updateThreePlStoRequest(record: ThreePlStoRequest, status: ThreePlStoStatus, processor: string) {
+  const stored = getStoredThreePlStoRequests()
+  const now = localTimestamp()
+  const updated: ThreePlStoRequest = { ...record, status, processedAt: now, processor }
+  const next = stored.some(item => item.stoNo === record.stoNo)
+    ? stored.map(item => item.stoNo === record.stoNo ? updated : item)
+    : [updated, ...stored]
+  saveStoredThreePlStoRequests(next)
+  return updated
 }
 
 function getStoredPartOrderRequests() {

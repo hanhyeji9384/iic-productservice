@@ -12,24 +12,25 @@ type SortKey = 'ticketNo' | 'customerName' | 'productName' | 'receptionPlace' | 
 type SortDir = 'asc' | 'desc'
 
 const TABS: { key: Tab; label: string; method: string; branch: '1110' }[] = [
-  { key: 'cj',        label: 'CJ대한통운', method: '택배(HQ)',        branch: '1110'  },
-  { key: 'dhl',       label: 'DHL',   method: '해외택배(DHL)',    branch: '1110'  },
+  { key: 'cj',  label: 'CJ대한통운', method: '택배(HQ)',      branch: '1110' },
+  { key: 'dhl', label: 'DHL',        method: '해외택배(DHL)', branch: '1110' },
 ]
 
 const BRANCH_TABS: Record<string, Tab[]> = {
-  '':      ['cj', 'dhl'],
-  '1110':  ['cj', 'dhl'],
+  '':     ['cj', 'dhl'],
+  '1110': ['cj', 'dhl'],
 }
 
 const TBD_TABS: Tab[] = []
 
-type ColKey = 'tag' | 'ticketNo' | 'customerName' | 'productName' | 'receptionPlace' | 'receivedAt'
+type ColKey = 'tag' | 'ticketNo' | 'customerName' | 'productName' | 'productCode' | 'receptionPlace' | 'receivedAt'
 
 const TABLE_COLS: { key: ColKey; label: string; sort: SortKey; filterable: boolean }[] = [
   { key: 'tag',           label: '태그',         sort: 'ticketNo',       filterable: false },
   { key: 'ticketNo',      label: 'Ticket No.',  sort: 'ticketNo',       filterable: true  },
   { key: 'customerName',  label: '고객명',       sort: 'customerName',   filterable: true  },
-  { key: 'productName',   label: '제품코드',     sort: 'productName',    filterable: false },
+  { key: 'productName',   label: '제품명',       sort: 'productName',    filterable: false },
+  { key: 'productCode',   label: '제품코드',     sort: 'productName',    filterable: false },
   { key: 'receptionPlace',label: '접수처',       sort: 'receptionPlace', filterable: false },
   { key: 'receivedAt',    label: '접수일시',     sort: 'receivedAt',     filterable: false },
 ]
@@ -101,31 +102,17 @@ function getShippingTag(row: ShippingRow) {
     }
   }
 
-  if (isPaymentDelayedReturnRow(row)) {
+  if (isPaymentDelayedReturnRow(row) || isServiceCancelShippingRow(row) || isServiceUnavailableShippingRow(row)) {
     return {
-      label: '결제지연반송',
-      className: 'border-orange-200 bg-orange-50 text-orange-700',
-    }
-  }
-
-  if (isServiceCancelShippingRow(row)) {
-    return {
-      label: '서비스 완료 출고',
-      className: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-    }
-  }
-
-  if (isServiceUnavailableShippingRow(row)) {
-    return {
-      label: '서비스 완료 출고',
-      className: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+      label: '서비스 취소 반송',
+      className: 'border-red-200 bg-red-50 text-red-700',
     }
   }
 
   if (row.status === 'PARTS_READY' || isPartsRequestRow(row)) {
     return {
-      label: '서비스 완료 출고',
-      className: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+      label: '부품 출고',
+      className: 'border-blue-200 bg-blue-50 text-blue-700',
     }
   }
 
@@ -213,7 +200,7 @@ function findMappedCustomer(row: ShippingRow) {
 export function ShippingPage() {
   const navigate = useNavigate()
   const { langCode = 'ko' } = useParams()
-  const [branch, setBranch] = useState('')
+  const [branch, setBranch] = useState('1110')
   const [activeTab, setActiveTab] = useState<Tab>('cj')
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [filters, setFilters] = useState(initFilters)
@@ -396,7 +383,6 @@ export function ShippingPage() {
               onChange={e => handleBranchChange(e.target.value)}
               className="w-52 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400"
             >
-              <option value="">전체</option>
               <option value="1110">본사 (KR)</option>
             </select>
           </div>
@@ -551,8 +537,9 @@ export function ShippingPage() {
                           <ExternalLink className="h-3 w-3 text-gray-300" />
                         </button>
                       </td>
-                      <td className="px-4 py-3 text-xs font-mono text-gray-700">
-                        {PRODUCTS.find(p => p.name === row.productName)?.productCode ?? row.productName}
+                      <td className="px-4 py-3 text-xs text-gray-700">{row.productName}</td>
+                      <td className="px-4 py-3 text-xs font-mono text-gray-500">
+                        {PRODUCTS.find(p => p.name === row.productName)?.productCode ?? '—'}
                       </td>
                       <td className="px-4 py-3 text-xs text-gray-500">{row.receptionPlace}</td>
                       <td className="px-4 py-3 text-xs font-mono text-gray-500 whitespace-nowrap">
@@ -562,14 +549,12 @@ export function ShippingPage() {
                   ))}
                 </tbody>
               </table>
-              {sorted.length > PAGE_SIZE && (
-                <Pagination
-                  total={sorted.length}
-                  perPage={PAGE_SIZE}
-                  current={currentPage}
-                  onChange={setCurrentPage}
-                />
-              )}
+              <Pagination
+                total={sorted.length}
+                perPage={PAGE_SIZE}
+                current={currentPage}
+                onChange={setCurrentPage}
+              />
             </>
           )}
         </div>

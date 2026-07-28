@@ -1116,6 +1116,8 @@ function canMoveToPartnerSent(ticket: Ticket) {
 
 function canMoveToRepairing(ticket: Ticket) {
   if (ticket.status === 'PARTNER_RECEIVED') return true
+  // 수리 진행처가 3PL 또는 본사일 때만 가능 (명세: 협력업체는 협력업체 발송 흐름으로 처리)
+  if (/협력업체/.test(ticket.repairDepartment ?? '')) return false
   if (ticket.repairChargeType === 'PAID') return ticket.status === 'PAYMENT_DONE'
   if (ticket.repairChargeType === 'FREE') return ticket.status === 'JUDGEMENT_DONE'
   return ['JUDGEMENT_DONE', 'PAYMENT_DONE'].includes(ticket.status)
@@ -3747,7 +3749,12 @@ function formatKstTimestamp(value: string) {
   return /\(KST\)$/i.test(normalized) ? normalized : `${normalized} (KST)`
 }
 
+const CHANGE_LOG_PAGE_SIZE = 20
+
 function ChangeHistoryPanel({ logs }: { logs: TicketChangeLog[] }) {
+  const [page, setPage] = useState(1)
+  const paginated = logs.slice((page - 1) * CHANGE_LOG_PAGE_SIZE, page * CHANGE_LOG_PAGE_SIZE)
+
   if (logs.length === 0) {
     return (
       <div className="rounded-2xl border border-gray-200 bg-white px-5 py-16 text-center">
@@ -3765,7 +3772,7 @@ function ChangeHistoryPanel({ logs }: { logs: TicketChangeLog[] }) {
         <span className="text-[11px] font-medium text-gray-400">{logs.length.toLocaleString('ko-KR')}건</span>
       </div>
       <div className="divide-y divide-gray-100">
-        {logs.map(log => {
+        {paginated.map(log => {
           const meta = TICKET_CHANGE_SECTION_META[log.changeType ?? 'SYSTEM']
           return (
             <div key={log.id} className="grid gap-4 px-5 py-4 xl:grid-cols-[160px_minmax(0,1fr)_190px]">
@@ -3806,6 +3813,7 @@ function ChangeHistoryPanel({ logs }: { logs: TicketChangeLog[] }) {
           )
         })}
       </div>
+      <Pagination total={logs.length} perPage={CHANGE_LOG_PAGE_SIZE} current={page} onChange={setPage} />
     </div>
   )
 }
@@ -4711,6 +4719,20 @@ export function TicketDetailPage() {
     }
     updatePrototypeTicket(currentTicket.ticketNo, patch)
     recordTicketFieldChanges(patch, memo)
+
+    // 자동 재고 요청: 본사 + 부품교체/제품교환 → 수리 진행 중 전환 시
+    if (nextStatus === 'REPAIRING') {
+      const normalizedDetail = normalizeRepairDetail(currentTicket.repairDetail)
+      const isHQ = currentTicket.repairDepartment === '본사'
+      const needsStock = isHQ && (normalizedDetail === '부품교체' || /제품교환|타제품교환/.test(currentTicket.repairDetail))
+      const alreadyExists = getStockRequests().some(r => r.ticketNo === currentTicket.ticketNo && r.status !== 'CANCELED')
+      if (needsStock && !alreadyExists) {
+        createStockRequestFromTicket({ ...currentTicket, ...patch } as Ticket, '일반 건')
+        toastMessage += ' 부품교체/제품교환 건으로 재고 요청이 자동 생성되었습니다.'
+        setStockRequestCreated(true)
+      }
+    }
+
     setTicketRevision(revision => revision + 1)
     showToast(toastMessage)
   }
@@ -4764,12 +4786,11 @@ export function TicketDetailPage() {
   }
 
   function handleCreateStockRequest() {
-    if (!ticket || stockRequestCreated) return
+    if (!ticket) return
     const record = createStockRequestFromTicket(ticket, selectedStockRequestReason, {
       id: CURRENT_ADMIN_MEMBER?.id,
       label: CURRENT_ADMIN_LABEL,
     })
-    setStockRequestCreated(true)
     setStockRequestModalOpen(false)
     navigate(`/${langCode}/stock/requests/${record.requestNo}`)
   }
@@ -5354,15 +5375,15 @@ export function TicketDetailPage() {
               >
                 <Barcode className="w-3.5 h-3.5" />바코드 출력
               </button>
-              {ticket.status === 'REPAIRING' && (
+              {['REPAIRING', 'REPAIR_DONE', 'READY_TO_SHIP', 'SHIPPING', 'SHIPPED', 'PICKUP_COMPLETED', 'SERVICE_DONE', 'CLOSED'].includes(ticket.status) && (
                 <button
                   type="button"
                   onClick={() => {
                     setSelectedStockRequestReason('긴급 건')
                     setStockRequestModalOpen(true)
                   }}
-                  disabled={stockRequestCreated}
-                  title={stockRequestCreated ? '이미 재고 요청 건이 생성되었습니다.' : '재고 요청 생성'}
+                  disabled={!['REPAIRING', 'REPAIR_DONE'].includes(ticket.status) || stockRequestCreated}
+                  title={stockRequestCreated ? '이미 재고 요청이 생성되었습니다.' : !['REPAIRING', 'REPAIR_DONE'].includes(ticket.status) ? '출고 준비 이후에는 재고 요청을 생성할 수 없습니다.' : '재고 요청 생성'}
                   className="flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
                 >
                   <Package className="w-3.5 h-3.5" />재고 요청
@@ -5388,7 +5409,7 @@ export function TicketDetailPage() {
                 })}
                 className="flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
               >
-                <RotateCcw className="w-3.5 h-3.5" />재수리 접수
+                <RotateCcw className="w-3.5 h-3.5" />티켓 복제
               </button>
             </div>
           </div>
@@ -5842,29 +5863,28 @@ export function TicketDetailPage() {
 
                   {/* 수리 정보 카드 */}
                   <SectionCard title="보상 서비스 쿠폰">
-                    <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
-                      {([
-                        { label: '타제품 교환', value: '타제품 교환' },
-                        { label: '감가상각', value: '감가상각' },
-                        { label: '전액 환불', value: '전액 환불' },
-                        { label: '무상 쿠폰', value: '무상 쿠폰' },
-                        { label: '긴급 쿠폰', value: '긴급 쿠폰' },
-                      ] as const).map(({ label, value }) => (
-                        <ToggleField
-                          key={value}
-                          label={label}
-                          checked={ticket.serviceCoupon === value}
-                          onChange={checked => {
-                            const coupon = checked ? value : null
-                            const patch: Partial<Ticket> = { serviceCoupon: coupon }
-                            if (coupon === '타제품 교환') patch.repairDetail = '타제품교환'
-                            else if (coupon === '감가상각' || coupon === '전액 환불') patch.repairDetail = '환불'
-                            else if (coupon === '무상 쿠폰') patch.repairChargeType = 'FREE'
-                            saveRepairPatch(patch)
-                            if (coupon === '긴급 쿠폰') saveReceptionPatch({ urgentRepairYn: 'Y' })
-                          }}
-                        />
-                      ))}
+                    <dl>
+                      <EditableTagField
+                        label="보상 서비스 쿠폰"
+                        values={ticket.serviceCoupon ? [ticket.serviceCoupon] : []}
+                        options={['타제품 교환', '감가상각', '전액 환불', '무상 쿠폰', '긴급 쿠폰']}
+                        onChange={newValues => {
+                          const coupon = newValues.length === 0
+                            ? null
+                            : (newValues.find(v => v !== ticket.serviceCoupon) ?? newValues[0])
+                          const patch: Partial<Ticket> = { serviceCoupon: coupon }
+                          if (coupon === '타제품 교환') patch.repairDetail = '타제품교환'
+                          else if (coupon === '감가상각' || coupon === '전액 환불') patch.repairDetail = '환불'
+                          // 무상 쿠폰: repairChargeType만 직접 저장 (판정/가격결정 플로우 제외)
+                          saveRepairPatch(patch)
+                          if (coupon === '무상 쿠폰') {
+                            updatePrototypeTicket(currentTicket.ticketNo, { repairChargeType: 'FREE' })
+                            recordTicketFieldChanges({ repairChargeType: 'FREE' }, '보상 서비스 쿠폰 - 무상 적용')
+                            setTicketRevision(r => r + 1)
+                          }
+                          if (coupon === '긴급 쿠폰') saveReceptionPatch({ urgentRepairYn: 'Y' })
+                        }}
+                      />
                     </dl>
                   </SectionCard>
 

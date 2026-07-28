@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Download, Plus, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Download, Plus, RefreshCw, Search, X } from 'lucide-react'
 import {
   DateRangeFilterBar,
   constrainDateRange,
@@ -42,6 +42,8 @@ const CURRENT_ADMIN_LABEL = CURRENT_ADMIN_MEMBER
   : '한혜지(monster563)'
 const ITEMS_PER_PAGE = 20
 const DEFAULT_ADJUSTMENT_BRANCH_CODE = '1110'
+const DEFAULT_ADJUSTMENT_STORE_CODE = 'E1008'
+const DEFAULT_ADJUSTMENT_LOCATION_CODE = '1110'
 
 const VISIBLE_ADJUSTMENT_SOURCES = [
   {
@@ -201,6 +203,99 @@ function inventoryRowKey(row: StockInventoryRow) {
   return [row.branchCode, row.storeCode, row.locationCode, row.productCode, row.barcode].join('|')
 }
 
+type SearchComboItem = { id: string; label: string; sub?: string; keywords: string }
+
+function SearchCombo({
+  label,
+  placeholder,
+  items,
+  selectedId,
+  onSelect,
+  disabled,
+}: {
+  label: string
+  placeholder: string
+  items: SearchComboItem[]
+  selectedId?: string | null
+  onSelect: (id: string) => void
+  disabled?: boolean
+}) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const rootRef = useRef<HTMLLabelElement>(null)
+  const selected = items.find(item => item.id === selectedId)
+  const filtered = useMemo(() => {
+    const normalized = query.trim().toLowerCase()
+    if (!normalized) return items.slice(0, 20)
+    return items.filter(item => item.keywords.toLowerCase().includes(normalized)).slice(0, 30)
+  }, [items, query])
+
+  useEffect(() => {
+    function handleOutside(event: MouseEvent) {
+      if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleOutside)
+    return () => document.removeEventListener('mousedown', handleOutside)
+  }, [])
+
+  return (
+    <label className="block" ref={rootRef}>
+      <span className="text-xs font-semibold text-gray-500">{label}</span>
+      <div className="relative mt-1.5">
+        <button
+          type="button"
+          disabled={disabled}
+          onClick={() => !disabled && setOpen(current => !current)}
+          className={`flex h-10 w-full items-center justify-between gap-2 rounded-xl border border-gray-200 bg-white px-3 text-left text-sm outline-none transition-colors ${
+            disabled ? 'cursor-default bg-gray-50 text-gray-300' : 'text-gray-900 hover:border-gray-300'
+          } ${open ? 'border-gray-400' : ''}`}
+        >
+          <span className={`truncate ${selected ? '' : 'text-gray-300'}`}>{selected?.label ?? placeholder}</span>
+          <Search className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
+        </button>
+        {open && !disabled && (
+          <div className="absolute left-0 right-0 top-[calc(100%+6px)] z-30 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl shadow-black/[0.08]">
+            <div className="flex items-center gap-2 border-b border-gray-100 px-2.5 py-2">
+              <Search className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
+              <input
+                value={query}
+                onChange={event => setQuery(event.target.value)}
+                placeholder="검색어 입력"
+                className="min-w-0 flex-1 bg-transparent text-sm text-gray-900 outline-none placeholder:text-gray-300"
+                autoFocus
+              />
+              {query && (
+                <button type="button" onClick={() => setQuery('')} className="text-gray-300 hover:text-gray-500">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+            <ul className="max-h-56 overflow-y-auto py-1">
+              {filtered.length === 0 && (
+                <li className="px-3 py-5 text-center text-xs text-gray-400">조회 결과가 없습니다.</li>
+              )}
+              {filtered.map(item => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => { onSelect(item.id); setQuery(''); setOpen(false) }}
+                    className={`w-full px-3 py-2 text-left text-sm transition-colors hover:bg-gray-50 ${
+                      selectedId === item.id ? 'bg-gray-50 font-semibold text-gray-900' : 'text-gray-700'
+                    }`}
+                  >
+                    <span className="block truncate">{item.label}</span>
+                    {item.sub && <span className="mt-0.5 block truncate text-[11px] text-gray-400">{item.sub}</span>}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </label>
+  )
+}
+
 function findInventoryRow(record: StockAdjustment, rows: StockInventoryRow[]) {
   return rows.find(row => (
     row.branchCode === record.branchCode &&
@@ -259,14 +354,14 @@ export function StockAdjustmentNewPage() {
   const navigate = useNavigate()
   const params = useParams()
   const langCode = params.langCode ?? 'ko'
-  const [type, setType] = useState<StockAdjustmentType>('일반')
+  const [type, setType] = useState<StockAdjustmentType>('A/S 출고')
   const inventoryRows = useMemo(() => createVisibleAdjustmentRows(products), [products])
-  const [branchCode, setBranchCode] = useState('')
-  const [storeCode, setStoreCode] = useState('')
-  const [locationCode, setLocationCode] = useState('')
+  const [branchCode, setBranchCode] = useState(DEFAULT_ADJUSTMENT_BRANCH_CODE)
+  const [storeCode, setStoreCode] = useState(DEFAULT_ADJUSTMENT_STORE_CODE)
+  const [locationCode, setLocationCode] = useState(DEFAULT_ADJUSTMENT_LOCATION_CODE)
   const [selectedInventoryKey, setSelectedInventoryKey] = useState('')
-  const [quantityDelta, setQuantityDelta] = useState('-1')
-  const [reason, setReason] = useState('')
+  const [quantityDelta, setQuantityDelta] = useState('0')
+  const [reason, setReason] = useState('A/S 출고')
   const [memo, setMemo] = useState('')
   const [erpSendRequired, setErpSendRequired] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
@@ -396,7 +491,7 @@ export function StockAdjustmentNewPage() {
           </div>
           <div className="grid gap-3 px-5 py-5 md:grid-cols-4">
             <label className="block">
-              <span className="text-xs font-semibold text-gray-500">조정유형</span>
+              <span className="text-xs font-semibold text-gray-500">계정과목</span>
               <select
                 value={type}
                 onChange={event => setType(event.target.value as StockAdjustmentType)}
@@ -448,22 +543,21 @@ export function StockAdjustmentNewPage() {
                 ))}
               </select>
             </label>
-            <label className="block md:col-span-2">
-              <span className="text-xs font-semibold text-gray-500">제품</span>
-              <select
-                value={selectedInventoryKey}
-                onChange={event => setSelectedInventoryKey(event.target.value)}
+            <div className="md:col-span-2">
+              <SearchCombo
+                label="제품"
+                placeholder={locationCode ? '제품 검색' : '창고를 먼저 선택'}
+                items={productOptions.map(row => ({
+                  id: inventoryRowKey(row),
+                  label: `${row.productName} (${row.productCode})`,
+                  sub: row.barcode,
+                  keywords: `${row.productName} ${row.productCode} ${row.barcode}`,
+                }))}
+                selectedId={selectedInventoryKey}
+                onSelect={setSelectedInventoryKey}
                 disabled={!locationCode}
-                className="mt-1.5 h-10 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm text-gray-900 outline-none transition-colors disabled:bg-gray-50 disabled:text-gray-300 focus:border-gray-400"
-              >
-                <option value="">{locationCode ? '제품 선택' : '창고를 먼저 선택'}</option>
-                {productOptions.map(row => (
-                  <option key={inventoryRowKey(row)} value={inventoryRowKey(row)}>
-                    {row.productName} ({row.productCode}) / {row.barcode}
-                  </option>
-                ))}
-              </select>
-            </label>
+              />
+            </div>
             <label className="block">
               <span className="text-xs font-semibold text-gray-500">조정수량</span>
               <input
@@ -588,7 +682,7 @@ export function StockAdjustmentsPage() {
     { key: 'barcode', label: '바코드', getValue: record => record.barcode },
     { key: 'erpSendRequired', label: 'ERP 전송', filterType: 'select', filterOptions: selectFilterOptions.erpSendRequired, getValue: record => record.erpSendRequired ? 'Y' : 'N' },
     { key: 'quantityDelta', label: '조정 수량', align: 'right', getValue: record => record.quantityDelta, filterValue: record => formatSignedNumber(record.quantityDelta) },
-    { key: 'reason', label: '사유', getValue: record => record.reason },
+    { key: 'memo', label: '메모', getValue: record => record.memo ?? '-' },
     { key: 'appliedAt', label: '처리일시', filterable: false, getValue: record => record.appliedAt || '-' },
     { key: 'processor', label: '처리자', getValue: record => record.processor || '-' },
   ], [inventoryRows, selectFilterOptions])
@@ -767,7 +861,7 @@ export function StockAdjustmentsPage() {
                       <td className={`whitespace-nowrap px-4 py-3 text-right font-semibold tabular-nums ${record.quantityDelta < 0 ? 'text-red-600' : 'text-gray-900'}`}>
                         {formatSignedNumber(record.quantityDelta)}
                       </td>
-                      <td className="min-w-[180px] px-4 py-3">{record.reason}</td>
+                      <td className="min-w-[180px] px-4 py-3">{record.memo ?? '-'}</td>
                       <td className="whitespace-nowrap px-4 py-3">{formatKstDateTime(record.appliedAt)}</td>
                       <td className="whitespace-nowrap px-4 py-3">{record.processor || '-'}</td>
                     </tr>

@@ -256,7 +256,7 @@ export type ComponentReturn = {
   alimtalkSentYn: 'Y' | 'N'
 }
 
-export type StockRequestStatus = 'REQUESTED' | 'COMPLETED' | 'OUT_OF_STOCK' | 'HOLD' | 'CANCELED'
+export type StockRequestStatus = 'REQUESTED' | 'STO_REQUESTED' | 'COMPLETED' | 'OUT_OF_STOCK' | 'HOLD' | 'CANCELED'
 
 export type StockRequestReason =
   | '긴급 건'
@@ -288,6 +288,20 @@ export type StockRequest = {
   processedAt: string | null
   processor: string | null
   processorId?: string | null
+}
+
+export type ThreePlStoStatus = 'REQUESTED' | 'SHIPPED' | 'SHIP_FAILED' | 'COMPLETED' | 'CANCELED'
+
+export type ThreePlStoRequest = {
+  id: string
+  stoNo: string
+  requestedAt: string
+  requester: string
+  requesterId?: string | null
+  stockRequestNos: string[]
+  status: ThreePlStoStatus
+  processedAt: string | null
+  processor: string | null
 }
 
 export type PartOrderRequestStatus = 'REQUESTED' | 'COMPLETED' | 'OUT_OF_STOCK' | 'HOLD' | 'CANCELED'
@@ -393,7 +407,7 @@ export type StockTransfer = {
   items: StockTransferLine[]
 }
 
-export type StockAdjustmentType = '일반' | '리턴' | '타부서요청' | '폐기' | '기타'
+export type StockAdjustmentType = 'A/S 출고' | '취소 - A/S 출고'
 export type StockAdjustmentStatus = 'REQUESTED' | 'APPLIED' | 'REJECTED'
 export type StockAdjustmentLocation = string
 

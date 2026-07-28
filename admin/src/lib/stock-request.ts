@@ -35,7 +35,8 @@ export const STOCK_REQUEST_STATUS_OPTIONS: {
   label: string
   className: string
 }[] = [
-  { value: 'REQUESTED', label: '요청완료', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { value: 'REQUESTED', label: '요청', className: 'bg-blue-50 text-blue-700 border-blue-200' },
+  { value: 'STO_REQUESTED', label: 'STO 요청', className: 'bg-indigo-50 text-indigo-700 border-indigo-200' },
   { value: 'COMPLETED', label: '처리완료', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
   { value: 'OUT_OF_STOCK', label: '재고부족', className: 'bg-red-50 text-red-600 border-red-200' },
   { value: 'HOLD', label: '보류', className: 'bg-amber-50 text-amber-700 border-amber-200' },
@@ -52,6 +53,7 @@ export function getStockRequestStatusMeta(status: StockRequestStatus) {
 
 export function getStockRequestStatusActions(status: StockRequestStatus): StockRequestStatus[] {
   if (status === 'REQUESTED') return ['COMPLETED', 'OUT_OF_STOCK', 'HOLD', 'CANCELED']
-  if (status === 'HOLD') return ['REQUESTED', 'OUT_OF_STOCK', 'CANCELED']
+  if (status === 'STO_REQUESTED') return ['COMPLETED', 'OUT_OF_STOCK', 'HOLD', 'CANCELED']
+  if (status === 'HOLD') return ['COMPLETED', 'REQUESTED', 'OUT_OF_STOCK', 'CANCELED']
   return []
 }

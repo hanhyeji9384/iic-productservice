@@ -329,6 +329,7 @@ function PartOrderRequestDetail({
   const { products } = useProducts()
   const [draft, setDraft] = useState(record)
   const [editing, setEditing] = useState(false)
+  const [pendingStatus, setPendingStatus] = useState<PartOrderRequestStatus | null>(null)
   const assignedStoreCodes = CURRENT_ADMIN_MEMBER?.assignedStores ?? []
   const hasAssignedStore = assignedStoreCodes.length > 0
   const availableStores = assignedStoreCodes.length > 0
@@ -359,6 +360,10 @@ function PartOrderRequestDetail({
   const canEditDetail = detailActions.includes('EDIT')
   const statusActions = detailActions.filter((action): action is PartOrderRequestStatus => action !== 'EDIT')
   const isEditable = isNew || editing
+
+  useEffect(() => {
+    setPendingStatus(statusActions[0] ?? null)
+  }, [draft.status])
 
   function selectStore(storeCode: string) {
     const store = STORES.find(item => item.code === storeCode)
@@ -410,6 +415,8 @@ function PartOrderRequestDetail({
 
   function changeStatus(status: PartOrderRequestStatus) {
     if (!statusActions.includes(status)) return
+    const label = getPartOrderStatusMeta(status).label
+    if (!window.confirm(`부품 요청 상태를 "${label}"(으)로 변경하시겠습니까?`)) return
     const next = updateWithProgressMeta(draft, status)
     setDraft(next)
     setEditing(false)
@@ -458,7 +465,7 @@ function PartOrderRequestDetail({
       <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-xs font-medium text-gray-400">부품 요청 번호</p>
+            {!isNew && <p className="text-xs font-medium text-gray-400">부품 요청 번호</p>}
             <h1 className="mt-1 text-lg font-bold text-gray-900">{isNew ? '신규 요청' : record.requestNo}</h1>
           </div>
           <StatusBadge status={draft.status} />
@@ -466,7 +473,7 @@ function PartOrderRequestDetail({
 
         {!isNew && (
           <>
-            <div className="mt-6 grid gap-5 md:grid-cols-3">
+            <div className="mt-6 grid gap-5 md:grid-cols-2">
               <FieldRow label="요청일시" value={formatKstDateTime(draft.requestedAt)} />
               <FieldRow label="요청담당자" value={draft.requester} />
               <FieldRow label="처리일시" value={formatKstDateTime(draft.processedAt)} />
@@ -535,8 +542,6 @@ function PartOrderRequestDetail({
                 </label>
               )}
 
-              {draft.productCode && <ReadonlyFormField label="부품 보관위치" value={draft.partStorageLocation} />}
-
               <label className="block">
                 <span className="text-xs font-semibold text-gray-500">수량(조)</span>
                 <select
@@ -589,12 +594,14 @@ function PartOrderRequestDetail({
               <FieldRow label="매장유형" value={draft.storeType} />
               <FieldRow label="매장명" value={draft.storeName} />
               <FieldRow label="제품명" value={draft.productName} />
+              <FieldRow label="제품코드" value={draft.productCode} />
               <FieldRow label="부품명" value={draft.partName} />
+              <FieldRow label="부품코드" value={draft.partCode} />
               <FieldRow label="부품 보관위치" value={draft.partStorageLocation} />
               <FieldRow label="수량(조)" value={`${draft.quantityPairs}조`} />
               <FieldRow label="추가 요청사항" value={draft.requestMemo} />
             </div>
-            <div className="mt-6 flex flex-wrap justify-end gap-2 border-t border-gray-100 pt-4">
+            <div className="mt-6 flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 pt-4">
               {canEditDetail && (
                 <button
                   type="button"
@@ -604,19 +611,27 @@ function PartOrderRequestDetail({
                   수정
                 </button>
               )}
-              {statusActions.map(status => {
-                const meta = getPartOrderStatusMeta(status)
-                return (
-                  <button
-                    key={status}
-                    type="button"
-                    onClick={() => changeStatus(status)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-white ${meta.className}`}
+              {statusActions.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <select
+                    value={pendingStatus ?? statusActions[0]}
+                    onChange={e => setPendingStatus(e.target.value as PartOrderRequestStatus)}
+                    className="rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 outline-none transition-colors hover:border-gray-400 focus:border-gray-400"
                   >
-                    {meta.label}
+                    {statusActions.map(status => {
+                      const meta = getPartOrderStatusMeta(status)
+                      return <option key={status} value={status}>{meta.label}</option>
+                    })}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => pendingStatus && changeStatus(pendingStatus)}
+                    className="rounded-xl bg-gray-900 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-gray-700"
+                  >
+                    상태 변경
                   </button>
-                )
-              })}
+                </div>
+              )}
             </div>
           </>
         )}
@@ -695,11 +710,12 @@ export function PartOrderRequestsPage({ mode = 'requester' }: { mode?: PartOrder
       getValue: record => getPartOrderStatusMeta(record.status).label,
     },
     { key: 'requestedAt', label: '요청일시', filterable: false, getValue: record => record.requestedAt },
-    { key: 'requester', label: '요청담당자', getValue: record => record.requester },
     { key: 'storeType', label: '매장유형', getValue: record => record.storeType },
     { key: 'storeName', label: '매장명', getValue: record => record.storeName },
     { key: 'productName', label: '제품명', getValue: record => record.productName },
+    { key: 'productCode', label: '제품코드', getValue: record => record.productCode },
     { key: 'partName', label: '부품명', getValue: record => record.partName },
+    { key: 'partCode', label: '부품코드', getValue: record => record.partCode },
     ...(isManagementMode
       ? [
           { key: 'partStorageLocation', label: '부품 보관위치', getValue: (record: PartOrderRequest) => record.partStorageLocation },
@@ -968,11 +984,12 @@ export function PartOrderRequestsPage({ mode = 'requester' }: { mode?: PartOrder
                     </td>
                     <td className="whitespace-nowrap px-4 py-3"><StatusBadge status={record.status} /></td>
                     <td className="whitespace-nowrap px-4 py-3 text-gray-600">{formatKstDateTime(record.requestedAt)}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-gray-700">{record.requester}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-gray-700">{record.storeType}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-gray-700">{record.storeName}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-gray-700">{record.productName}</td>
+                    <td className="whitespace-nowrap px-4 py-3 font-mono text-gray-600">{record.productCode}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-gray-700">{record.partName}</td>
+                    <td className="whitespace-nowrap px-4 py-3 font-mono text-gray-600">{record.partCode}</td>
                     {isManagementMode && (
                       <td className="whitespace-nowrap px-4 py-3 font-mono text-gray-600">{record.partStorageLocation}</td>
                     )}

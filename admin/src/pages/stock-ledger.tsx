@@ -405,7 +405,6 @@ export function StockLedgerPage() {
         <section className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
           <div className="flex flex-wrap items-center gap-2 border-b border-gray-100 px-5 py-3">
             <label className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-gray-500">발생일 *</span>
               <select
                 value={dateFilters.dateType}
                 onChange={event => applyDateFilter('dateType', event.target.value)}

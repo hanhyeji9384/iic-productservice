@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, ExternalLink, FileDown, Filter, Lock, Plus, ScanLine, Trash2, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, ExternalLink, FileDown, Filter, Lock, Plus, ScanLine, Search, Trash2, X } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Pagination } from '@/components/pagination'
-import { BRANCHES, MEMBERS } from '@/lib/mock-data'
+import { BRANCHES, MEMBERS, STORES } from '@/lib/mock-data'
 import { addDownloadLog } from '@/lib/download-logs'
 import { maskEmail, maskName, maskPhone } from '@/lib/masking'
 import { appendTicketChangeLog, getCustomersWithOverrides, getTicketsWithExtras, updatePrototypeTicket } from '@/lib/prototype-storage'
@@ -587,6 +587,20 @@ export function TicketsPage() {
   const [exportReason, setExportReason] = useState('')
   const [toast, setToast] = useState<{ message: string; ok: boolean } | null>(null)
   const [tickets, setTickets] = useState(() => getTicketsWithExtras())
+  // 담당 스토어 필터: 유저 assignedStores 기본값 → 스토어 name 배열
+  const defaultStoreNames = useMemo(() => {
+    const codes = CURRENT_ADMIN_MEMBER.assignedStores ?? []
+    if (codes.length === 0) return []
+    return codes.flatMap(code => {
+      const s = STORES.find(st => st.code === code)
+      return s ? [s.name] : []
+    })
+  }, [])
+  const [appliedStoreFilter, setAppliedStoreFilter] = useState<string[]>(defaultStoreNames)
+  const [storeDropdownOpen, setStoreDropdownOpen] = useState(false)
+  const [storeInput, setStoreInput] = useState('')
+  const [storeSearched, setStoreSearched] = useState('')
+  const storeDropdownRef = useRef<HTMLDivElement>(null)
   const scanInputRef = useRef<HTMLInputElement>(null)
   const modalScanRef = useRef<HTMLInputElement>(null)
   const exportMenuRef = useRef<HTMLDivElement>(null)
@@ -618,6 +632,21 @@ export function TicketsPage() {
     document.addEventListener('keydown', closeOnEscape)
     return () => document.removeEventListener('keydown', closeOnEscape)
   }, [originalDownloadOpen])
+
+  useEffect(() => {
+    if (!storeDropdownOpen) return
+    const closeOnOutside = (e: MouseEvent) => {
+      if (!storeDropdownRef.current?.contains(e.target as Node)) setStoreDropdownOpen(false)
+    }
+    document.addEventListener('mousedown', closeOnOutside)
+    return () => document.removeEventListener('mousedown', closeOnOutside)
+  }, [storeDropdownOpen])
+
+  const storeSearchResults = useMemo(() => {
+    if (storeSearched.length < 2) return []
+    const term = storeSearched.toLowerCase()
+    return STORES.filter(s => s.name.toLowerCase().includes(term) || s.code.toLowerCase().includes(term))
+  }, [storeSearched])
 
   const setColumn = (key: ColumnFilterKey) => (value: string) => {
     setColumnFilters(prev => ({ ...prev, [key]: value }))
@@ -730,8 +759,9 @@ export function TicketsPage() {
         ? 1 : 0
     const columnCount = (Object.keys(initColumnFilters) as ColumnFilterKey[])
       .filter(key => appliedColumnFilters[key] !== initColumnFilters[key]).length
-    return dateCount + columnCount
-  }, [appliedDateFilters, appliedColumnFilters])
+    const storeCount = appliedStoreFilter.length > 0 && JSON.stringify(appliedStoreFilter) !== JSON.stringify(defaultStoreNames) ? 1 : 0
+    return dateCount + columnCount + storeCount
+  }, [appliedDateFilters, appliedColumnFilters, appliedStoreFilter])
 
   const filtered = useMemo(() => {
     return branchTickets.filter(ticket => {
@@ -759,9 +789,10 @@ export function TicketsPage() {
       if (appliedColumnFilters.shippingMethod !== 'all' && ticket.shippingMethod !== appliedColumnFilters.shippingMethod) return false
       if (!matchesText(ticket.shippedAt, appliedColumnFilters.shippedAt)) return false
       if (!matchesText(ticket.soDocumentNo, appliedColumnFilters.soDocumentNo)) return false
+      if (appliedStoreFilter.length > 0 && !appliedStoreFilter.includes(ticket.receptionPlace ?? '')) return false
       return true
     })
-  }, [appliedDateFilters, branchTickets, appliedColumnFilters])
+  }, [appliedDateFilters, branchTickets, appliedColumnFilters, appliedStoreFilter])
 
   const sorted = useMemo(() => {
     if (!sortKey || !sortDir) return filtered
@@ -847,6 +878,9 @@ export function TicketsPage() {
     setAppliedDateFilters(freshDates)
     setColumnFilters(initColumnFilters)
     setAppliedColumnFilters(initColumnFilters)
+    setAppliedStoreFilter(defaultStoreNames)
+    setStoreInput('')
+    setStoreSearched('')
     setPage(1)
     setSortKey('receivedAt')
     setSortDir('desc')
@@ -1315,6 +1349,86 @@ export function TicketsPage() {
                 <option key={branch.code} value={branch.code}>{branchLabel(branch.code)}</option>
               ))}
             </select>
+            {/* 담당 스토어 검색 필터 */}
+            <div className="relative" ref={storeDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setStoreDropdownOpen(v => !v)}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs transition-colors ${
+                  appliedStoreFilter.length > 0
+                    ? 'border-blue-300 bg-blue-50 text-blue-700'
+                    : 'border-gray-200 bg-gray-50 text-gray-400 hover:bg-gray-100'
+                }`}
+              >
+                {appliedStoreFilter.length === 0
+                  ? '담당 스토어'
+                  : appliedStoreFilter.length === 1
+                    ? <span className="max-w-[140px] truncate text-blue-700">{appliedStoreFilter[0]}</span>
+                    : <span className="text-blue-700">스토어 {appliedStoreFilter.length}개</span>
+                }
+                <ChevronDown className="w-3 h-3 flex-shrink-0 text-gray-400" />
+              </button>
+              {storeDropdownOpen && (
+                <div className="absolute top-full left-0 mt-1 z-50 w-72 bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden">
+                  <div className="p-2 flex gap-1.5">
+                    <div className="flex-1 flex items-center gap-1.5 px-2.5 py-1.5 bg-gray-50 border border-gray-200 rounded-lg">
+                      <Search className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                      <input
+                        type="text"
+                        value={storeInput}
+                        onChange={e => setStoreInput(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter' && storeInput.length >= 2) setStoreSearched(storeInput) }}
+                        placeholder="스토어 검색..."
+                        className="flex-1 bg-transparent text-xs text-gray-700 placeholder:text-gray-300 focus:outline-none"
+                        autoFocus
+                      />
+                      {storeInput && (
+                        <button onClick={() => { setStoreInput(''); setStoreSearched('') }} className="text-gray-300 hover:text-gray-500">
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { if (storeInput.length >= 2) setStoreSearched(storeInput) }}
+                      className="px-3 py-1.5 bg-gray-900 text-white text-xs font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                    >검색</button>
+                  </div>
+                  <div className="max-h-52 overflow-y-auto border-t border-gray-100">
+                    {storeSearched.length < 2 ? (
+                      <p className="px-4 py-4 text-xs text-gray-400 text-center">2자 이상 입력 후 검색해 주세요.</p>
+                    ) : storeSearchResults.length === 0 ? (
+                      <p className="px-4 py-4 text-xs text-gray-400 text-center">검색 결과가 없습니다.</p>
+                    ) : (
+                      storeSearchResults.map(store => (
+                        <button
+                          key={store.code}
+                          type="button"
+                          onClick={() => {
+                            setAppliedStoreFilter([store.name])
+                            setStoreDropdownOpen(false)
+                            setPage(1)
+                          }}
+                          className={`w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 transition-colors flex items-center justify-between gap-2 ${
+                            appliedStoreFilter.includes(store.name) ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                          }`}
+                        >
+                          <span className="truncate">{store.name}</span>
+                          <span className="text-gray-400 flex-shrink-0">{store.code}</span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                  <div className="border-t border-gray-100 p-2">
+                    <button
+                      type="button"
+                      onClick={() => { setAppliedStoreFilter(defaultStoreNames); setStoreInput(''); setStoreSearched(''); setStoreDropdownOpen(false); setPage(1) }}
+                      className="w-full py-1.5 text-xs text-gray-400 hover:text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                    >초기화</button>
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="w-px h-4 bg-gray-200 flex-shrink-0" />
             <select
               value={dateFilters.dateType}
