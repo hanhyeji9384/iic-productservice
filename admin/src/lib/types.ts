@@ -626,11 +626,11 @@ export type Survey = {
   ticketNo: string
   responseEndDate: string            // 설문 종료일 (ISO date string)
   satisfaction: 1 | 2 | null        // 1=만족, 2=불만족
-  keyword: string | null             // 그룹 키워드 (세미콜론 구분 가능)
-  satisfiedKeyword: string | null    // 만족 키워드 (세미콜론 구분 가능)
-  dissatisfiedKeyword: string | null // 불만족 키워드 (세미콜론 구분 가능)
+  keyword: string | null             // 그룹 키워드
+  satisfiedKeyword: string | null    // 만족 키워드 (단일 선택)
+  dissatisfiedKeyword: string | null // 불만족 키워드 (단일 선택)
   satisfactionEtcText: string | null // 만족/불만족 기타 서술형
-  enforceKeyword: string | null      // 강화 키워드 (세미콜론 구분 가능)
+  enforceKeyword: string | null      // 강화 키워드 (단일 선택)
   enforceKeywordEtc: string | null   // 강화 기타 서술형
   additionalComment: string | null   // 마지막 서술형 (추가로 들려주고 싶은 이야기)
   repairDepartment: string | null    // 수리진행처

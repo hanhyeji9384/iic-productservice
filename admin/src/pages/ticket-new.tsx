@@ -4,6 +4,7 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { ArrowLeft, Check, ChevronDown, RotateCcw, Search, X, UserCheck } from 'lucide-react'
 import { BRANCHES, STORES, PRODUCTS, MEMBERS } from '@/lib/mock-data'
 import { addPrototypeTicket, getCustomersWithOverrides, getTicketsWithExtras, localTimestamp, saveCustomerAddresses, upsertPrototypeCustomer } from '@/lib/prototype-storage'
+import { addPrivacyLog } from '@/lib/download-logs'
 import type { Customer, CustomerAddress, Ticket } from '@/lib/types'
 
 const TICKET_BRANCH_CODES = ['1110']
@@ -1259,6 +1260,7 @@ export function TicketNewPage() {
     }
 
     addPrototypeTicket(ticket)
+    addPrivacyLog({ adminName: '한혜지', adminId: 'monster563', subjectType: '티켓', subjectNo: ticket.ticketNo, actionType: '생성', processedFields: ['티켓 전체정보'], ip: '10.0.1.42', reason: '신규 티켓 접수', status: '완료' })
     if (action === 'save_new') {
       resetNewTicketForm()
       return

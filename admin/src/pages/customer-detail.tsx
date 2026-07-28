@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowDown, ArrowLeft, ArrowUp, ArrowUpDown, Check, ChevronDown, Filter, MapPin, Pencil, Plus, Search, Star, Trash2, X } from 'lucide-react'
 import { BRANCHES, COUNTRIES, MEMBERS, PRODUCTS } from '@/lib/mock-data'
 import { getCustomerById, getTicketsWithExtras, saveCustomerAddresses, upsertPrototypeCustomer } from '@/lib/prototype-storage'
+import { addPrivacyLog } from '@/lib/download-logs'
 import type { Customer, CustomerAddress, Ticket, TicketStatus } from '@/lib/types'
 import { inputCls } from '@/lib/utils'
 import { I18nText, useI18nLabel } from '@/lib/i18n-inspector'
@@ -283,6 +284,9 @@ export function CustomerDetailPage() {
     setTicketSortKey('receivedAt')
     setTicketSortDir('desc')
     setTicketPage(1)
+    if (next && customerId) {
+      addPrivacyLog({ adminName: '한혜지', adminId: 'monster563', subjectType: '고객', subjectNo: customerId, actionType: '조회', processedFields: ['고객 전체정보'], ip: '10.0.1.42', reason: '고객 정보 조회', status: '완료' })
+    }
   }, [customerId])
 
   if (!customer) {
@@ -412,6 +416,7 @@ export function CustomerDetailPage() {
       addresses,
     }
     upsertPrototypeCustomer(next)
+    addPrivacyLog({ adminName: '한혜지', adminId: 'monster563', subjectType: '고객', subjectNo: next.id, actionType: '수정', processedFields: ['이름', '전화번호', '이메일', '국가', '마케팅 동의'], ip: '10.0.1.42', reason: '고객 정보 수정', status: '완료' })
     setCustomer(next)
     setCustomerEditMode(false)
   }

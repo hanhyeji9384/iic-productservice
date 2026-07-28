@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Barcode, ChevronDown, ExternalLink, History, Mail, MessageSquare, Package, RotateCcw, Search, Send, X } from 'lucide-react'
 import { BRANCHES, MEMBERS, PRODUCTS as PRODUCT_SNAPSHOTS, STORES } from '@/lib/mock-data'
 import { appendTicketChangeLog, createComponentReturnFromTicket, createStockRequestFromTicket, getComponentReturns, getCustomersWithOverrides, getStockRequests, getTicketChangeLogs, getTicketsWithExtras, updatePrototypeTicket } from '@/lib/prototype-storage'
+import { addPrivacyLog } from '@/lib/download-logs'
 import { COMPONENT_TYPE_OPTIONS } from '@/lib/component-return'
 import { STOCK_REQUEST_REASONS } from '@/lib/stock-request'
 import { getSoDocumentInfo } from '@/lib/ticket-so'
@@ -4247,6 +4248,11 @@ export function TicketDetailPage() {
       if (toastTimerRef.current) window.clearTimeout(toastTimerRef.current)
     }
   }, [])
+
+  useEffect(() => {
+    if (!ticketNo) return
+    addPrivacyLog({ adminName: '한혜지', adminId: 'monster563', subjectType: '티켓', subjectNo: ticketNo, actionType: '조회', processedFields: ['티켓 전체정보'], ip: '10.0.1.42', reason: '티켓 정보 조회', status: '완료' })
+  }, [ticketNo])
 
   useEffect(() => {
     if (!ticketNo) return
