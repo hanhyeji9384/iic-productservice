@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Barcode, ChevronDown, ExternalLink, History, Mail, MessageSquare, Package, RotateCcw, ScanLine, Search, Send, X } from 'lucide-react'
+import { ArrowLeft, Barcode, ChevronDown, ExternalLink, History, Mail, MessageSquare, Package, RotateCcw, Search, Send, X } from 'lucide-react'
 import { BRANCHES, MEMBERS, PRODUCTS as PRODUCT_SNAPSHOTS, STORES } from '@/lib/mock-data'
 import { appendTicketChangeLog, createComponentReturnFromTicket, createStockRequestFromTicket, getComponentReturns, getCustomersWithOverrides, getStockRequests, getTicketChangeLogs, getTicketsWithExtras, updatePrototypeTicket } from '@/lib/prototype-storage'
 import { COMPONENT_TYPE_OPTIONS } from '@/lib/component-return'
@@ -4214,9 +4214,6 @@ export function TicketDetailPage() {
   const [toast, setToast] = useState<{ message: string; ok: boolean } | null>(null)
   const [componentReturnCreated, setComponentReturnCreated] = useState(false)
   const [, setTicketRevision] = useState(0)
-  const [detailScanValue, setDetailScanValue] = useState('')
-  const [detailScanError, setDetailScanError] = useState(false)
-  const detailScanInputRef = useRef<HTMLInputElement>(null)
   const attachmentInputRef = useRef<HTMLInputElement>(null)
   const purchaseProofInputRef = useRef<HTMLInputElement>(null)
   const customerNoticeImageInputRef = useRef<HTMLInputElement>(null)
@@ -4757,26 +4754,6 @@ export function TicketDetailPage() {
     showToast(kind === 'technician' ? '서비스 기술자가 변경되었습니다.' : '판정 담당자가 변경되었습니다.')
   }
 
-  function handleDetailBarcodeScan() {
-    const value = detailScanValue.trim()
-    if (!value) {
-      detailScanInputRef.current?.focus()
-      return
-    }
-
-    if (value !== currentTicket.ticketNo) {
-      setDetailScanError(true)
-      showToast('현재 티켓과 바코드가 일치하지 않습니다.', false)
-      detailScanInputRef.current?.focus()
-      return
-    }
-
-    setDetailScanValue('')
-    setDetailScanError(false)
-    showToast('바코드가 확인되었습니다. 상태 검증을 진행합니다.')
-    detailScanInputRef.current?.focus()
-  }
-
   function handleCustomerClick() {
     if (!mappedCustomer) {
       showToast('연결된 고객 정보를 찾을 수 없습니다.', false)
@@ -5267,54 +5244,6 @@ export function TicketDetailPage() {
       </button>
 
       <div className="space-y-4">
-        <div className="relative flex justify-center py-1 sm:justify-end">
-          <div className={`flex h-9 w-full max-w-[320px] items-center gap-2 rounded-full border bg-white/95 px-3 shadow-sm backdrop-blur transition-colors ${
-              detailScanError
-                ? 'border-red-300 text-red-500 focus-within:border-red-400'
-                : 'border-gray-200 bg-gray-50 focus-within:border-gray-400 focus-within:bg-white'
-            }`}>
-              <ScanLine className={`h-3.5 w-3.5 flex-shrink-0 ${detailScanError ? 'text-red-400' : 'text-gray-400'}`} />
-              <input
-                ref={detailScanInputRef}
-                type="text"
-                value={detailScanValue}
-                placeholder="바코드 스캔"
-                autoFocus
-                onChange={event => {
-                  setDetailScanValue(event.target.value)
-                  setDetailScanError(false)
-                }}
-                onKeyDown={event => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault()
-                    handleDetailBarcodeScan()
-                  }
-                }}
-                className="min-w-0 flex-1 bg-transparent font-mono text-xs text-gray-800 placeholder:font-sans placeholder:text-gray-300 focus:outline-none"
-              />
-              {detailScanValue && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setDetailScanValue('')
-                    setDetailScanError(false)
-                    detailScanInputRef.current?.focus()
-                  }}
-                  className="text-gray-300 transition-colors hover:text-gray-500"
-                  aria-label="스캔값 지우기"
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              )}
-              <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-400">Enter</span>
-          </div>
-          {detailScanError && (
-            <p className="absolute right-0 top-11 rounded-lg bg-red-50 px-2.5 py-1 text-[11px] font-medium text-red-500 shadow-sm">
-              현재 티켓과 일치하지 않습니다.
-            </p>
-          )}
-        </div>
-
         {/* ── 상단 헤더 카드 ── */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
           {/* 1행: 티켓번호 + 액션 버튼 */}
