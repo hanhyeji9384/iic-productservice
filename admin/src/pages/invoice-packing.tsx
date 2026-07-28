@@ -32,6 +32,7 @@ type DocumentLineItem = {
   material: string
   hsCode: string
   price: string
+  isFoc: boolean   // true = 무상(Free of Charge), false = 유상
 }
 
 type TicketDocumentState = {
@@ -166,17 +167,13 @@ function documentKindHelper(kind: DocumentKind) {
   return DOCUMENT_KIND_OPTIONS.find(option => option.value === kind)?.helper ?? ''
 }
 
-function hsCodeFor(category: string) {
-  switch (category) {
-    case 'OPTICAL':
-      return '9003199000'
-    case 'CLIP':
-      return '900490000'
-    case 'ACCESSORY':
-      return '9003900000'
-    default:
-      return '9004109000'
+function hsCodeFor(category: string, material = 'ACETATE') {
+  if (category === 'OPTICAL') {
+    return material === 'ACETATE' ? '9003110000' : '9003199000'
   }
+  if (category === 'CLIP') return '9004909000'
+  if (category === 'ACCESSORY') return '9003900000'
+  return '9004109000' // SUNGLASS (METAL / ACETATE)
 }
 
 function defaultCategory(ticket: Ticket) {
@@ -185,11 +182,13 @@ function defaultCategory(ticket: Ticket) {
 
 function defaultLineItem(ticket: Ticket): DocumentLineItem {
   const category = defaultCategory(ticket)
+  const material = 'ACETATE'
   return {
     category,
-    material: 'ACETATE',
-    hsCode: hsCodeFor(category),
-    price: ticket.repairDetail === '토탈케어' ? '30' : '80',
+    material,
+    hsCode: hsCodeFor(category, material),
+    price: '70',
+    isFoc: true,
   }
 }
 
@@ -299,7 +298,12 @@ function DocumentPreview({
 }) {
   const fromBranch = log.documentKind === 'HQ' ? '1110' : log.branchCode
   const toBranch = log.documentKind === 'HQ' ? log.branchCode : '1110'
-  const total = tickets.reduce((sum, ticket) => sum + Number(log.items[ticket.ticketNo]?.price ?? 0), 0)
+  const corpTotal = tickets.length * 70
+  const hqChargedTotal = tickets.reduce((sum, ticket) => {
+    const item = log.items[ticket.ticketNo]
+    return (!item || item.isFoc) ? sum : sum + Number(item.price ?? 0)
+  }, 0)
+  const hasFoc = tickets.some(t => log.items[t.ticketNo]?.isFoc)
 
   if (tab === 'packing') {
     return (
@@ -356,30 +360,128 @@ function DocumentPreview({
     )
   }
 
+  // ── 법인 인보이스 ───────────────────────────────────────────────────────
+  if (log.documentKind === 'CORP') {
+    return (
+      <div className="invoice-packing-print bg-white p-8 text-gray-950">
+        <div className="mb-6 flex items-start justify-between border-b border-gray-900 pb-5">
+          <div>
+            <h2 className="text-xl font-bold tracking-wide">INVOICE(Repair)</h2>
+            <p className="mt-1 text-xs text-gray-500">{log.name}</p>
+          </div>
+          <div className="text-right text-[10px] text-gray-400">(Currency:USD)</div>
+        </div>
+
+        <div className="mb-6 grid grid-cols-2 gap-8 text-xs">
+          <div>
+            <p className="mb-1 font-semibold">INVOICING ADDRESS</p>
+            <p className="font-medium">{branchEnglishName(toBranch)}</p>
+            {(BRANCH_ADDRESS[toBranch] ?? []).map(line => <p key={line} className="text-gray-500">{line}</p>)}
+          </div>
+          <div>
+            <p className="mb-1 font-semibold">INVOICING NUMBER &amp; DATE</p>
+            <p>{log.name}</p>
+            <p className="mt-2 font-semibold">INCOTERMS &amp; PAYMENT TERMS</p>
+            <p>DAP, FREE OF CHARGE</p>
+          </div>
+        </div>
+
+        <div className="mb-6 grid grid-cols-2 gap-8 text-xs">
+          <div>
+            <p className="mb-1 font-semibold">SHIPPING ADDRESS</p>
+            <p className="font-medium">{branchEnglishName(toBranch)}</p>
+            {(BRANCH_ADDRESS[toBranch] ?? []).map(line => <p key={line} className="text-gray-500">{line}</p>)}
+          </div>
+          <div>
+            <p className="mb-1 font-semibold">BANK INFORMATION</p>
+          </div>
+        </div>
+
+        <table className="w-full border-collapse text-xs">
+          <thead>
+            <tr className="border-y border-gray-900">
+              <th className="py-2 text-left">Category</th>
+              <th className="py-2 text-left">Name of Model</th>
+              <th className="py-2 text-left">Material</th>
+              <th className="py-2 text-left">C/O</th>
+              <th className="py-2 text-left">HS Code</th>
+              <th className="py-2 text-left">Qty</th>
+              <th className="py-2 text-left">pcs</th>
+              <th className="py-2 text-left">Unit Price</th>
+              <th className="py-2 text-left">Total Amount</th>
+              <th className="py-2 text-left">Order Number</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tickets.map(ticket => {
+              const item = log.items[ticket.ticketNo] ?? defaultLineItem(ticket)
+              return (
+                <tr key={ticket.ticketNo} className="border-b border-gray-200">
+                  <td className="py-2">{item.category}</td>
+                  <td className="py-2">{ticket.productName}</td>
+                  <td className="py-2">{item.material}</td>
+                  <td className="py-2">CHINA</td>
+                  <td className="py-2 font-mono">{item.hsCode}</td>
+                  <td className="py-2">1</td>
+                  <td className="py-2">pcs</td>
+                  <td className="py-2">70.0</td>
+                  <td className="py-2">70.0</td>
+                  <td className="py-2 font-mono">{ticket.ticketNo}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+          <tfoot>
+            <tr className="border-t border-gray-900 font-semibold">
+              <td className="py-2" colSpan={5}>G. Total</td>
+              <td className="py-2">{tickets.length}</td>
+              <td className="py-2">pcs</td>
+              <td className="py-2" />
+              <td className="py-2">USD {corpTotal.toLocaleString()}.0</td>
+              <td className="py-2" />
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    )
+  }
+
+  // ── HQ 인보이스 ─────────────────────────────────────────────────────────
   return (
     <div className="invoice-packing-print bg-white p-8 text-gray-950">
-      <div className="mb-8 flex items-start justify-between border-b border-gray-900 pb-5">
+      <div className="mb-6 flex items-start justify-between border-b border-gray-900 pb-5">
         <div>
           <h2 className="text-xl font-bold tracking-wide">INVOICE(Repair)</h2>
           <p className="mt-1 text-xs text-gray-500">{log.name}</p>
         </div>
-        <div className="text-right text-xs text-gray-500">
-          <p>{log.createdAt.slice(0, 10)}</p>
-          <p>{documentKindShortLabel(log.documentKind)}</p>
+        <div className="text-right text-[10px] text-gray-400">(Currency:USD)</div>
+      </div>
+
+      <div className="mb-6 grid grid-cols-2 gap-8 text-xs">
+        <div>
+          <p className="mb-1 font-semibold">INVOICING ADDRESS</p>
+          <p className="font-medium">{branchEnglishName(toBranch)}</p>
+          {(BRANCH_ADDRESS[toBranch] ?? []).map(line => <p key={line} className="text-gray-500">{line}</p>)}
+        </div>
+        <div>
+          <p className="mb-1 font-semibold">INVOICING NUMBER &amp; DATE</p>
+          <p>{log.name}</p>
+          <p className="mt-2 font-semibold">INCOTERMS &amp; PAYMENT TERMS</p>
+          <p>DAP, Prepaid</p>
         </div>
       </div>
 
-      <div className="mb-8 grid grid-cols-2 gap-8 text-xs">
+      <div className="mb-6 grid grid-cols-2 gap-8 text-xs">
         <div>
-          <p className="mb-2 font-semibold">INVOICING ADDRESS</p>
+          <p className="mb-1 font-semibold">SHIPPING ADDRESS</p>
           <p className="font-medium">{branchEnglishName(toBranch)}</p>
           {(BRANCH_ADDRESS[toBranch] ?? []).map(line => <p key={line} className="text-gray-500">{line}</p>)}
         </div>
-        <div>
-          <p className="mb-2 font-semibold">SHIPPING ADDRESS</p>
-          <p className="font-medium">{branchEnglishName(toBranch)}</p>
-          {(BRANCH_ADDRESS[toBranch] ?? []).map(line => <p key={line} className="text-gray-500">{line}</p>)}
-        </div>
+        {hasFoc && (
+          <div className="flex items-start">
+            <p className="text-xs text-gray-600 italic">Note: The FOC item is declared for customs purposes only.</p>
+          </div>
+        )}
       </div>
 
       <table className="w-full border-collapse text-xs">
@@ -388,37 +490,46 @@ function DocumentPreview({
             <th className="py-2 text-left">Category</th>
             <th className="py-2 text-left">Name of Model</th>
             <th className="py-2 text-left">Material</th>
+            <th className="py-2 text-left">C/O</th>
             <th className="py-2 text-left">HS Code</th>
             <th className="py-2 text-left">Qty</th>
             <th className="py-2 text-left">Unit Price</th>
-            <th className="py-2 text-left">Total Amount</th>
-            <th className="py-2 text-left">Order Number</th>
+            <th className="py-2 text-left">Customer Name</th>
+            <th className="py-2 text-left">Description of Repair</th>
+            <th className="py-2 text-left">Remark</th>
+            <th className="py-2 text-left">Total charged price</th>
           </tr>
         </thead>
         <tbody>
           {tickets.map(ticket => {
             const item = log.items[ticket.ticketNo] ?? defaultLineItem(ticket)
+            const unitPrice = item.isFoc ? '70.0' : item.price
+            const chargedPrice = item.isFoc ? '' : item.price
+            const remark = item.isFoc ? 'Free of charge' : 'Repair charge'
+            const customerNo = ticket.ticketNo.replace(/^PS/i, '')
             return (
               <tr key={ticket.ticketNo} className="border-b border-gray-200">
                 <td className="py-2">{item.category}</td>
                 <td className="py-2">{ticket.productName}</td>
                 <td className="py-2">{item.material}</td>
-                <td className="py-2">{item.hsCode}</td>
+                <td className="py-2">CHINA</td>
+                <td className="py-2 font-mono">{item.hsCode}</td>
                 <td className="py-2">1 pcs</td>
-                <td className="py-2">{item.price}</td>
-                <td className="py-2">{item.price}</td>
-                <td className="py-2 font-mono">{ticket.ticketNo}</td>
+                <td className="py-2">{unitPrice}</td>
+                <td className="py-2 font-mono">{customerNo}</td>
+                <td className="py-2">{ticket.repairDetail ?? '-'}</td>
+                <td className={`py-2 font-semibold ${item.isFoc ? 'text-gray-500' : 'text-gray-900'}`}>{remark}</td>
+                <td className="py-2">{chargedPrice}</td>
               </tr>
             )
           })}
         </tbody>
         <tfoot>
           <tr className="border-t border-gray-900 font-semibold">
-            <td className="py-2" colSpan={4}>G. Total</td>
+            <td className="py-2" colSpan={5}>G. Total</td>
             <td className="py-2">{tickets.length} pcs</td>
-            <td className="py-2" />
-            <td className="py-2">USD {total.toLocaleString()}</td>
-            <td className="py-2" />
+            <td className="py-2" colSpan={4}>Total charged price</td>
+            <td className="py-2">USD {hqChargedTotal.toLocaleString()}</td>
           </tr>
         </tfoot>
       </table>
@@ -563,7 +674,11 @@ export function InvoicePackingPage() {
     setLineItems(prev => {
       const current = prev[ticketNo] ?? defaultLineItem(tickets.find(ticket => ticket.ticketNo === ticketNo)!)
       const next = { ...current, ...patch }
-      if (patch.category) next.hsCode = hsCodeFor(patch.category)
+      if (patch.category !== undefined || patch.material !== undefined) {
+        next.hsCode = hsCodeFor(next.category, next.material)
+      }
+      // isFoc 토글 시 price 초기화
+      if (patch.isFoc === true) next.price = '70'
       return { ...prev, [ticketNo]: next }
     })
   }
@@ -1023,7 +1138,7 @@ export function InvoicePackingPage() {
             </div>
 
             <div className="min-h-0 flex-1 overflow-auto px-6 py-5">
-              <table className="w-full min-w-[920px]">
+              <table className="w-full min-w-[1060px]">
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className={MODAL_HEADER_CLASS}>Ticket No.</th>
@@ -1032,7 +1147,8 @@ export function InvoicePackingPage() {
                     <th className={MODAL_HEADER_CLASS}>Category</th>
                     <th className={MODAL_HEADER_CLASS}>Material</th>
                     <th className={MODAL_HEADER_CLASS}>HS Code</th>
-                    <th className={MODAL_HEADER_CLASS}>Unit Price</th>
+                    {documentKind === 'HQ' && <th className={MODAL_HEADER_CLASS}>무상/유상</th>}
+                    <th className={MODAL_HEADER_CLASS}>Unit Price (USD)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -1074,12 +1190,37 @@ export function InvoicePackingPage() {
                             className="w-32 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 font-mono text-xs text-gray-700 outline-none focus:border-gray-400"
                           />
                         </td>
+                        {documentKind === 'HQ' && (
+                          <td className="px-3 py-3">
+                            <div className="flex gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => updateLineItem(ticket.ticketNo, { isFoc: true })}
+                                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${item.isFoc ? 'bg-gray-200 text-gray-800' : 'border border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                              >
+                                무상
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => updateLineItem(ticket.ticketNo, { isFoc: false })}
+                                className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${!item.isFoc ? 'bg-blue-600 text-white' : 'border border-gray-200 text-gray-400 hover:bg-gray-50'}`}
+                              >
+                                유상
+                              </button>
+                            </div>
+                          </td>
+                        )}
                         <td className="px-3 py-3">
-                          <input
-                            value={item.price}
-                            onChange={e => updateLineItem(ticket.ticketNo, { price: e.target.value.replace(/[^0-9.]/g, '') })}
-                            className="w-28 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-xs text-gray-700 outline-none focus:border-gray-400"
-                          />
+                          {documentKind === 'CORP' || item.isFoc ? (
+                            <span className="inline-block w-28 rounded-lg border border-gray-100 bg-gray-50 px-2 py-1.5 text-xs text-gray-400">70</span>
+                          ) : (
+                            <input
+                              value={item.price}
+                              onChange={e => updateLineItem(ticket.ticketNo, { price: e.target.value.replace(/[^0-9.]/g, '') })}
+                              placeholder="수리비 입력"
+                              className="w-28 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-xs text-gray-700 outline-none focus:border-gray-400"
+                            />
+                          )}
                         </td>
                       </tr>
                     )
