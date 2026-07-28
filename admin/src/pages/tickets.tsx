@@ -642,11 +642,16 @@ export function TicketsPage() {
     return () => document.removeEventListener('mousedown', closeOnOutside)
   }, [storeDropdownOpen])
 
+  const allReceptionPlaces = useMemo(() => {
+    const names = tickets.flatMap(t => [t.receptionPlace, t.receptionStoreName]).filter(Boolean) as string[]
+    return [...new Set(names)].sort()
+  }, [tickets])
+
   const storeSearchResults = useMemo(() => {
     if (storeSearched.length < 2) return []
     const term = storeSearched.toLowerCase()
-    return STORES.filter(s => s.name.toLowerCase().includes(term) || s.code.toLowerCase().includes(term))
-  }, [storeSearched])
+    return allReceptionPlaces.filter(name => name.toLowerCase().includes(term))
+  }, [storeSearched, allReceptionPlaces])
 
   const setColumn = (key: ColumnFilterKey) => (value: string) => {
     setColumnFilters(prev => ({ ...prev, [key]: value }))
@@ -789,7 +794,16 @@ export function TicketsPage() {
       if (appliedColumnFilters.shippingMethod !== 'all' && ticket.shippingMethod !== appliedColumnFilters.shippingMethod) return false
       if (!matchesText(ticket.shippedAt, appliedColumnFilters.shippedAt)) return false
       if (!matchesText(ticket.soDocumentNo, appliedColumnFilters.soDocumentNo)) return false
-      if (appliedStoreFilter.length > 0 && !appliedStoreFilter.includes(ticket.receptionPlace ?? '')) return false
+      if (appliedStoreFilter.length > 0) {
+        const isOnlineReception = /online|온라인/i.test(`${ticket.receptionTitle ?? ''} ${ticket.receptionPlace ?? ''}`)
+        const isTakbaeShipping = /택배/.test(ticket.shippingMethod ?? '')
+        // Online + 택배 = 순수 온라인 건 → 스토어 필터에서 제외 (전체에서만 노출)
+        if (isOnlineReception && isTakbaeShipping) return false
+        // 접수처(receptionPlace) OR 수령처(receptionStoreName) 중 하나라도 매칭이면 노출
+        const receptionMatch = appliedStoreFilter.includes(ticket.receptionPlace ?? '')
+        const storeMatch = appliedStoreFilter.includes(ticket.receptionStoreName ?? '')
+        if (!receptionMatch && !storeMatch) return false
+      }
       return true
     })
   }, [appliedDateFilters, branchTickets, appliedColumnFilters, appliedStoreFilter])
@@ -1354,7 +1368,7 @@ export function TicketsPage() {
               <button
                 type="button"
                 onClick={() => setStoreDropdownOpen(v => !v)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs transition-colors ${
+                className={`w-52 flex items-center justify-between gap-1.5 px-3 py-2 rounded-lg border text-xs transition-colors ${
                   appliedStoreFilter.length > 0
                     ? 'border-blue-300 bg-blue-50 text-blue-700'
                     : 'border-gray-200 bg-gray-50 text-gray-400 hover:bg-gray-100'
@@ -1400,21 +1414,20 @@ export function TicketsPage() {
                     ) : storeSearchResults.length === 0 ? (
                       <p className="px-4 py-4 text-xs text-gray-400 text-center">검색 결과가 없습니다.</p>
                     ) : (
-                      storeSearchResults.map(store => (
+                      storeSearchResults.map(name => (
                         <button
-                          key={store.code}
+                          key={name}
                           type="button"
                           onClick={() => {
-                            setAppliedStoreFilter([store.name])
+                            setAppliedStoreFilter([name])
                             setStoreDropdownOpen(false)
                             setPage(1)
                           }}
-                          className={`w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 transition-colors flex items-center justify-between gap-2 ${
-                            appliedStoreFilter.includes(store.name) ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
+                          className={`w-full text-left px-4 py-2.5 text-xs hover:bg-gray-50 transition-colors ${
+                            appliedStoreFilter.includes(name) ? 'bg-blue-50 text-blue-700' : 'text-gray-700'
                           }`}
                         >
-                          <span className="truncate">{store.name}</span>
-                          <span className="text-gray-400 flex-shrink-0">{store.code}</span>
+                          <span className="truncate">{name}</span>
                         </button>
                       ))
                     )}
