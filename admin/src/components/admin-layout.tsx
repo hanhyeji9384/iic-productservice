@@ -5,7 +5,7 @@ import {
   UserCog, Shield, Package, Wrench, ArchiveX,
   Store, Users, Ticket, Truck, PanelLeftClose, PanelLeftOpen, LogOut, ChevronRight,
   AlertTriangle, KeyRound, CalendarDays, Download, ShieldCheck, FileText,
-  ClipboardList, ArrowLeftRight, SlidersHorizontal,
+  ClipboardList, ArrowLeftRight, SlidersHorizontal, MessageSquare,
 } from 'lucide-react'
 import { useSession } from '@/lib/session-context'
 import { I18nModeToggle, I18nText } from '@/lib/i18n-inspector'
@@ -67,6 +67,7 @@ const NAV: NavGroup[] = [
     icon: Users,
     children: [
       { to: '/customers', label: '고객', i18nKey: 'nav.customer_management.customers', icon: Users },
+      { to: '/survey', label: '설문조사', i18nKey: 'nav.customer_management.survey', icon: MessageSquare },
     ],
   },
   {
