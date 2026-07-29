@@ -3857,16 +3857,6 @@ function mergeDateWithExistingTime(nextDate: string, currentValue?: string | nul
   return `${nextDate} ${currentTime ?? '00:00:00'}`
 }
 
-function TemplateMeta({ label, value }: { label: string; value?: string }) {
-  if (!value) return null
-  return (
-    <div>
-      <dt className="text-[11px] font-semibold text-gray-400">{label}</dt>
-      <dd className="mt-1 whitespace-pre-wrap text-xs leading-5 text-gray-600">{value}</dd>
-    </div>
-  )
-}
-
 function getTemplateCode(template: MessageTemplate) {
   return template.title.match(/^([A-Z]+_\d+)/)?.[1] ?? ''
 }
@@ -4125,32 +4115,6 @@ function MessageTemplatePanel({
             </div>
           )}
 
-          {selectedTemplate && (
-            <div className="mt-4 rounded-2xl border border-gray-100 bg-gray-50 px-4 py-4">
-              <div className="mb-3 flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold text-gray-900">템플릿 내용</p>
-                  <p className="mt-0.5 text-[11px] text-gray-400">
-                    {getTemplateMetaText(selectedTemplate, true)}
-                  </p>
-                </div>
-                <span className="shrink-0 rounded-md bg-white px-2 py-1 font-mono text-[11px] text-gray-400">
-                  {selectedTemplate.id}
-                </span>
-              </div>
-              <div className="max-h-72 overflow-y-auto rounded-xl bg-white px-3 py-3 text-xs leading-5 text-gray-700">
-                <p className="whitespace-pre-wrap">{selectedTemplate.body}</p>
-              </div>
-              <dl className="mt-4 grid gap-3 md:grid-cols-2">
-                <TemplateMeta label="발송시점" value={selectedTemplate.sendAt} />
-                <TemplateMeta label="조건값" value={selectedTemplate.conditions} />
-                <TemplateMeta label="사용 변수" value={selectedTemplate.variables} />
-                <TemplateMeta label="버튼" value={selectedTemplate.buttons} />
-                <TemplateMeta label="버튼 링크" value={selectedTemplate.buttonLink} />
-                <TemplateMeta label="비고" value={selectedTemplate.note} />
-              </dl>
-            </div>
-          )}
         </div>
       </div>
 
