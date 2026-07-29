@@ -1,7 +1,7 @@
 export function maskName(name: string) {
   if (name.length <= 1) return name
   if (name.length === 2) return `${name[0]}*`
-  return `${name[0]}${'*'.repeat(name.length - 2)}${name[name.length - 1]}`
+  return `${name[0]}*${name[name.length - 1]}`
 }
 
 export function maskPhone(phone: string) {
