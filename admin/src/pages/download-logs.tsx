@@ -228,7 +228,7 @@ export function DownloadLogsPage() {
                   <ColTh col="downloadType" label="유형" active={downloadType !== 'all'} sort="downloadType" />
                   <SortTh col="count" label="항목 수" />
                   <th className={TH}>IP</th>
-                  <ColTh col="reason" label="사유" active={appliedColFilters.reason !== ''} sort="reason" />
+                  <ColTh col="reason" label="사유" active={appliedColFilters.reason !== ''} />
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">

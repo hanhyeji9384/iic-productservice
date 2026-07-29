@@ -1,3 +1,4 @@
+import { Pagination } from '@/components/pagination'
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
@@ -138,14 +139,6 @@ const SHIPPING_METHOD_OPTIONS: EditableFieldOption[] = [
 const MANUAL_SHIPPING_METHOD_OPTIONS: EditableFieldOption[] = [
   { value: '자체 수령', label: '자체 수령' },
   { value: '퀵', label: '퀵' },
-]
-const COMPENSATION_COUPON_OPTIONS: EditableFieldOption[] = [
-  { value: '-', label: '-' },
-  { value: '타제품 교환', label: '타제품 교환' },
-  { value: '감가상각', label: '감가상각' },
-  { value: '전액 환불', label: '전액 환불' },
-  { value: '무상 쿠폰', label: '무상 쿠폰' },
-  { value: '긴급 쿠폰', label: '긴급 쿠폰' },
 ]
 const REPAIR_DETAIL_OPTIONS: EditableFieldOption[] = [
   { value: '-', label: '-' },

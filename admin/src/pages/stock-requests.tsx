@@ -240,13 +240,6 @@ const STO_STATUS_ACTIONS: Record<ThreePlStoRequest['status'], ThreePlStoRequest[
   CANCELED:   [],
 }
 
-const STO_ACTION_BUTTON_META: Record<ThreePlStoRequest['status'], { label: string; className: string }> = {
-  REQUESTED:  { label: '요청',     className: 'bg-indigo-600 text-white border-indigo-600 hover:bg-indigo-700' },
-  SHIPPED:    { label: '출고완료', className: 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700' },
-  SHIP_FAILED:{ label: '출고불가', className: 'bg-red-600 text-white border-red-600 hover:bg-red-700' },
-  COMPLETED:  { label: '입고완료', className: 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700' },
-  CANCELED:   { label: '취소',     className: 'bg-gray-500 text-white border-gray-500 hover:bg-gray-600' },
-}
 
 function ThreePlStoDetail({
   sto,

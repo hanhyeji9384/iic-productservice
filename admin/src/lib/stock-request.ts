@@ -1,6 +1,7 @@
 import type { StockRequestReason, StockRequestStatus } from './types'
 
 export const STOCK_REQUEST_REASONS: StockRequestReason[] = [
+  '일반 건',
   '긴급 건',
   '분배 누락',
   '분배 오류',
@@ -16,6 +17,7 @@ export const STOCK_REQUEST_REASONS: StockRequestReason[] = [
 ]
 
 export const STOCK_REQUEST_REASON_META: Record<StockRequestReason, { large: string; middle: string }> = {
+  '일반 건': { large: '일반', middle: '일반 요청' },
   '긴급 건': { large: '긴급 대응', middle: '고객 납기 대응' },
   '분배 누락': { large: '분배 이슈', middle: '출고 누락' },
   '분배 오류': { large: '분배 이슈', middle: '오출고/오분배' },

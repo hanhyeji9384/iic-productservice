@@ -5,7 +5,7 @@ import {
   UserCog, Shield, Package, Wrench, ArchiveX,
   Store, Users, Ticket, Truck, PanelLeftClose, PanelLeftOpen, LogOut, ChevronRight,
   AlertTriangle, KeyRound, CalendarDays, Download, ShieldCheck, FileText,
-  ClipboardList, ArrowLeftRight, SlidersHorizontal, MessageSquare,
+  ClipboardList, SlidersHorizontal, MessageSquare,
 } from 'lucide-react'
 import { useSession } from '@/lib/session-context'
 import { I18nModeToggle, I18nText } from '@/lib/i18n-inspector'

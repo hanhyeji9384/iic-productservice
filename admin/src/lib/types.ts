@@ -142,6 +142,7 @@ export type Ticket = {
   productSerialNumber?: string | null
   serialNumber?: string | null
   productName: string
+  discontinuedYear?: string | null
   productFactory?: string | null
   productFactory1?: string | null
   productFactory2?: string | null
@@ -259,6 +260,7 @@ export type ComponentReturn = {
 export type StockRequestStatus = 'REQUESTED' | 'STO_REQUESTED' | 'COMPLETED' | 'OUT_OF_STOCK' | 'HOLD' | 'CANCELED'
 
 export type StockRequestReason =
+  | '일반 건'
   | '긴급 건'
   | '분배 누락'
   | '분배 오류'

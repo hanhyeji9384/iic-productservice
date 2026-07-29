@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, ExternalLink, FileDown, Filter, Lock, Search, X } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronDown, ExternalLink, FileDown, Filter,  Search, X } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import {
   SURVEYS,
