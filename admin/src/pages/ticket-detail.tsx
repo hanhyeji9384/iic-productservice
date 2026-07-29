@@ -6107,7 +6107,7 @@ export function TicketDetailPage() {
                   <SectionCard title="결제 정보">
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
                       <Field label="결제 완료 여부" value={PAYMENT_META[ticket.paymentCompleted]} />
-                      <Field label="결제 일시" value={ticket.paymentDate} />
+                      <Field label="결제 일시" value={ticket.paymentDate ? `${ticket.paymentDate} (KST)` : undefined} />
                       <Field label="결제 수단" value="-" />
                       <Field label="결제 승인 번호" value={soInfo.paymentApprovalNo} />
                       <Field label="결제 만료기한" value={ticket.paymentExpiresAt} />
