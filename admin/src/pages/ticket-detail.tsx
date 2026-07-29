@@ -2,7 +2,7 @@ import { Pagination } from '@/components/pagination'
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Barcode, ChevronDown, ExternalLink, History, Mail, MessageSquare, Package, RotateCcw, Search, Send, X } from 'lucide-react'
+import { ArrowLeft, Barcode, ChevronDown, ExternalLink, History, Mail, MessageSquare, Package, Pencil, RotateCcw, Search, Send, X } from 'lucide-react'
 import { BRANCHES, MEMBERS, PRODUCTS as PRODUCT_SNAPSHOTS, STORES } from '@/lib/mock-data'
 import { appendTicketChangeLog, createComponentReturnFromTicket, createStockRequestFromTicket, getComponentReturns, getCustomersWithOverrides, getStockRequests, getTicketChangeLogs, getTicketsWithExtras, updatePrototypeTicket } from '@/lib/prototype-storage'
 import { addPrivacyLog } from '@/lib/download-logs'
@@ -2546,11 +2546,12 @@ function EditableReceptionField({
         <dd
           onDoubleClick={startEditing}
           title={disabled ? disabledReason : '더블클릭하여 수정'}
-          className={`min-h-5 whitespace-pre-wrap text-sm text-gray-800 underline-offset-4 decoration-dotted ${
+          className={`group inline-flex items-center gap-1 min-h-5 whitespace-pre-wrap text-sm text-gray-800 underline-offset-4 decoration-dotted ${
             disabled ? 'cursor-default' : 'cursor-text hover:text-gray-950 hover:underline'
           }`}
         >
           {displayValue || '-'}
+          {!disabled && <Pencil className="w-3 h-3 text-gray-300 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />}
         </dd>
       )}
     </div>
@@ -2795,9 +2796,10 @@ function EditableMetaSelect({
               setEditing(true)
             }
           }}
-          className={`${valueClassName ?? 'max-w-[220px] truncate text-xs font-semibold text-gray-800'} cursor-pointer outline-none`}
+          className={`group inline-flex items-center gap-1 ${valueClassName ?? 'max-w-[220px] truncate text-xs font-semibold text-gray-800'} cursor-pointer outline-none`}
         >
           {displayValue}
+          <Pencil className="w-3 h-3 text-gray-300 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
         </span>
       )}
     </span>
