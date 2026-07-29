@@ -3,7 +3,7 @@ import { X } from 'lucide-react'
 import { Pagination } from '@/components/pagination'
 import { getPrivacyLogs } from '@/lib/download-logs'
 import { maskName } from '@/lib/masking'
-import type { PrivacyActionStatus, PrivacyActionType, PrivacyProcessingLog } from '@/lib/download-logs'
+import type { PrivacyActionType, PrivacyProcessingLog } from '@/lib/download-logs'
 
 const ITEMS_PER_PAGE = 20
 
@@ -19,15 +19,9 @@ function monthsAgoStr(n: number) {
 const initColFilters = {
   actionType: 'all' as PrivacyActionType | 'all',
   subjectType: 'all' as '고객' | '티켓' | 'all',
-  status: 'all' as PrivacyActionStatus | 'all',
 }
 type ColFilters = typeof initColFilters
 type ColFilterKey = keyof ColFilters
-
-function statusBadgeStyle(status: PrivacyActionStatus) {
-  if (status === '완료') return 'bg-emerald-50 text-emerald-700'
-  return 'bg-red-50 text-red-600'
-}
 
 function actionTypeBadgeStyle(actionType: PrivacyActionType) {
   switch (actionType) {
@@ -52,12 +46,6 @@ const SUBJECT_TYPE_OPTIONS: { value: '고객' | '티켓' | 'all'; label: string 
   { value: '티켓', label: '티켓' },
 ]
 
-const STATUS_OPTIONS: { value: PrivacyActionStatus | 'all'; label: string }[] = [
-  { value: 'all', label: '전체' },
-  { value: '완료', label: '완료' },
-  { value: '실패', label: '실패' },
-]
-
 export function PrivacyLogsPage() {
   const [logs] = useState<PrivacyProcessingLog[]>(() => [...getPrivacyLogs()])
   const [dateFrom, setDateFrom] = useState(monthsAgoStr(1))
@@ -78,7 +66,7 @@ export function PrivacyLogsPage() {
   }
 
   const isAnyFilterActive =
-    filters.actionType !== 'all' || filters.subjectType !== 'all' || filters.status !== 'all'
+    filters.actionType !== 'all' || filters.subjectType !== 'all'
 
   const filtered = useMemo(() => {
     return logs.filter(log => {
@@ -87,14 +75,13 @@ export function PrivacyLogsPage() {
       if (dateTo && dateStr > dateTo) return false
       if (filters.actionType !== 'all' && log.actionType !== filters.actionType) return false
       if (filters.subjectType !== 'all' && log.subjectType !== filters.subjectType) return false
-      if (filters.status !== 'all' && log.status !== filters.status) return false
       return true
     })
   }, [logs, filters, dateFrom, dateTo])
 
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
 
-  const HEADERS = ['처리일시', '처리자', '계정 ID', '대상', 'No.', '처리유형', '처리항목', 'IP', '상태', '사유']
+  const HEADERS = ['처리일시', '처리자', '계정 ID', '대상', 'No.', '처리유형', '처리항목', 'IP', '사유']
 
   return (
     <div className="overflow-x-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -120,15 +107,6 @@ export function PrivacyLogsPage() {
             >
               {SUBJECT_TYPE_OPTIONS.map(opt => (
                 <option key={opt.value} value={opt.value}>{opt.value === 'all' ? '대상 전체' : opt.label}</option>
-              ))}
-            </select>
-            <select
-              value={filters.status}
-              onChange={e => setFilter('status', e.target.value)}
-              className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs text-gray-700 focus:outline-none focus:border-gray-400"
-            >
-              {STATUS_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.value === 'all' ? '상태 전체' : opt.label}</option>
               ))}
             </select>
             <div className="w-px h-4 bg-gray-200 flex-shrink-0" />
@@ -164,7 +142,7 @@ export function PrivacyLogsPage() {
               <tbody className="divide-y divide-gray-100">
                 {paginated.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="px-6 py-12 text-center text-sm text-gray-400">
+                    <td colSpan={9} className="px-6 py-12 text-center text-sm text-gray-400">
                       개인정보 처리 이력이 없습니다.
                     </td>
                   </tr>
@@ -182,11 +160,6 @@ export function PrivacyLogsPage() {
                     </td>
                     <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{log.processedFields.join(', ')}</td>
                     <td className="px-5 py-3.5 whitespace-nowrap text-sm font-mono text-gray-500">{log.ip}</td>
-                    <td className="px-5 py-3.5 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${statusBadgeStyle(log.status)}`}>
-                        {log.status}
-                      </span>
-                    </td>
                     <td className="px-5 py-3.5 text-sm text-gray-600">{log.reason}</td>
                   </tr>
                 ))}
