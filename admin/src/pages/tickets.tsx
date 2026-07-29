@@ -1375,7 +1375,7 @@ export function TicketsPage() {
                 }`}
               >
                 {appliedStoreFilter.length === 0
-                  ? '담당 스토어'
+                  ? '전체'
                   : appliedStoreFilter.length === 1
                     ? <span className="max-w-[140px] truncate text-blue-700">{appliedStoreFilter[0]}</span>
                     : <span className="text-blue-700">스토어 {appliedStoreFilter.length}개</span>
