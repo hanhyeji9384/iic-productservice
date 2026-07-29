@@ -1810,7 +1810,7 @@ export function TicketsPage() {
                           <p className="text-xs font-mono font-semibold text-gray-800">{t.ticketNo}</p>
                           <p className="text-[11px] text-gray-400 mt-0.5">
                             <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ${meta.className}`}>{meta.label}</span>
-                            <span className="ml-1.5">{t.customerName}</span>
+                            <span className="ml-1.5">{maskName(t.customerName)}</span>
                           </p>
                         </div>
                         <button onClick={() => toggleSelect(id)} className="text-gray-300 hover:text-red-400 transition-colors ml-4 flex-shrink-0">
