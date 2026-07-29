@@ -2551,7 +2551,7 @@ function EditableReceptionField({
           }`}
         >
           {displayValue || '-'}
-          {!disabled && <Pencil className="w-3 h-3 text-gray-300 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />}
+          {!disabled && <Pencil className="w-3 h-3 text-gray-300 flex-shrink-0 opacity-100" />}
         </dd>
       )}
     </div>
@@ -2799,7 +2799,7 @@ function EditableMetaSelect({
           className={`group inline-flex items-center gap-1 ${valueClassName ?? 'max-w-[220px] truncate text-xs font-semibold text-gray-800'} cursor-pointer outline-none`}
         >
           {displayValue}
-          <Pencil className="w-3 h-3 text-gray-300 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Pencil className="w-3 h-3 text-gray-300 flex-shrink-0 opacity-100" />
         </span>
       )}
     </span>
