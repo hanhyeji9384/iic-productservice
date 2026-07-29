@@ -5753,32 +5753,6 @@ export function TicketDetailPage() {
                     </SectionCard>
                   )}
 
-                  {/* 수리 정보 카드 */}
-                  <SectionCard title="보상 서비스 쿠폰">
-                    <dl>
-                      <EditableTagField
-                        label="보상 서비스 쿠폰"
-                        values={ticket.serviceCoupon ? [ticket.serviceCoupon] : []}
-                        options={['타제품 교환', '감가상각', '전액 환불', '무상 쿠폰', '긴급 쿠폰']}
-                        onChange={newValues => {
-                          const coupon = newValues.length === 0
-                            ? null
-                            : (newValues.find(v => v !== ticket.serviceCoupon) ?? newValues[0])
-                          const patch: Partial<Ticket> = { serviceCoupon: coupon }
-                          if (coupon === '타제품 교환') patch.repairDetail = '타제품교환'
-                          else if (coupon === '감가상각' || coupon === '전액 환불') patch.repairDetail = '환불'
-                          // 무상 쿠폰: repairChargeType만 직접 저장 (판정/가격결정 플로우 제외)
-                          saveRepairPatch(patch)
-                          if (coupon === '무상 쿠폰') {
-                            updatePrototypeTicket(currentTicket.ticketNo, { repairChargeType: 'FREE' })
-                            recordTicketFieldChanges({ repairChargeType: 'FREE' }, '보상 서비스 쿠폰 - 무상 적용')
-                            setTicketRevision(r => r + 1)
-                          }
-                          if (coupon === '긴급 쿠폰') saveReceptionPatch({ urgentRepairYn: 'Y' })
-                        }}
-                      />
-                    </dl>
-                  </SectionCard>
 
                   <SectionCard title="수리 정보">
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
