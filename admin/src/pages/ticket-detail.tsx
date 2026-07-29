@@ -782,7 +782,7 @@ const TICKET_CHANGE_FIELD_META: Partial<Record<keyof Ticket, TicketChangeFieldMe
     format: value => PAYMENT_META[value as PaymentCompleted] ?? formatChangeValue(value),
   },
   paymentDate: {
-    label: '결제 일자',
+    label: '결제 일시',
     changeType: 'PAYMENT',
   },
   paymentExpiresAt: {
@@ -6107,7 +6107,7 @@ export function TicketDetailPage() {
                   <SectionCard title="결제 정보">
                     <dl className="grid grid-cols-2 gap-x-6 gap-y-3.5">
                       <Field label="결제 완료 여부" value={PAYMENT_META[ticket.paymentCompleted]} />
-                      <Field label="결제 일자" value={ticket.paymentDate} />
+                      <Field label="결제 일시" value={ticket.paymentDate} />
                       <Field label="결제 수단" value="-" />
                       <Field label="결제 승인 번호" value={soInfo.paymentApprovalNo} />
                       <Field label="결제 만료기한" value={ticket.paymentExpiresAt} />

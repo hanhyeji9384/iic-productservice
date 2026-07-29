@@ -945,7 +945,7 @@ export function TicketsPage() {
     { key: 'repairDetail', label: '수리내용', sort: null },
     { key: 'trackingNo', label: '운송장 No.', sort: null },
     { key: 'paymentCompleted', label: '결제 완료 여부', sort: 'paymentCompleted' },
-    { key: 'paymentDate', label: '결제일자', sort: 'paymentDate' },
+    { key: 'paymentDate', label: '결제일시', sort: 'paymentDate' },
     { key: 'paymentExpiresAt', label: '결제 만료기한', sort: 'paymentExpiresAt' },
     { key: 'reexportCondition', label: '재수출 이행 조건 여부', sort: 'reexportCondition' },
     { key: 'shippingMethod', label: '출고방식', sort: 'shippingMethod' },
