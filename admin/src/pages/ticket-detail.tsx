@@ -4550,6 +4550,7 @@ export function TicketDetailPage() {
     if (!Object.prototype.hasOwnProperty.call(STATUS_META, nextStatusValue)) return
     const nextStatus = nextStatusValue as TicketStatus
     if (nextStatus === currentTicket.status) return
+    if (!window.confirm(`상태를 "${STATUS_META[nextStatus].label}"(으)로 변경하시겠습니까?`)) return
     if (!canApplyManualStatus(currentTicket, nextStatus)) {
       showToast(getManualStatusBlockedMessage(nextStatus), false)
       return
