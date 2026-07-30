@@ -5331,11 +5331,6 @@ export function TicketDetailPage() {
               <p className="text-[11px] text-gray-400 mb-1.5">SO 문서번호</p>
               <div className="flex items-center gap-2">
                 <p className="text-sm text-gray-800">{ticket.soDocumentNo || '-'}</p>
-                {soInfo.status !== 'NOT_READY' && (
-                  <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${soInfo.className}`}>
-                    {soInfo.label}
-                  </span>
-                )}
               </div>
             </div>
             <div className="px-8">
