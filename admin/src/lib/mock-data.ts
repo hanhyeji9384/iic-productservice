@@ -170,7 +170,7 @@ export const TICKETS: Ticket[] = [
     phone: '010-8565-9384',
     email: 'monster563@gentlemonster.com',
     receptionTitle: 'PS 온라인 접수',
-    receptionTags: ['RETURN_COMPONENTS', 'MODIFIED'],
+    receptionTags: ['MODIFIED'],
     originalTicketNo: '2606053LQY8VMBRSPKN',
     reRepairYn: 'Y',
     productName: 'HYPEOB-01',

@@ -72,7 +72,7 @@ export type TicketStatus =
   | 'PARTS_READY'
 
 export type PaymentCompleted = 'Y' | 'N' | 'C'
-export type TicketReceptionTag = 'RETURN_COMPONENTS' | 'MODIFIED' | 'PRE_RECEPTION'
+export type TicketReceptionTag = 'MODIFIED' | 'PRE_RECEPTION'
 export type RepairChargeType = 'PAID' | 'FREE'
 export type NoRepairReason = 'FAKE' | 'PURCHASE_PROOF_UNAVAILABLE' | 'PRODUCT_CONDITION' | 'OTHER'
 export type SapSendFlag = 'Y' | 'N'

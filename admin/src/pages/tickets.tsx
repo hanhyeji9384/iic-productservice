@@ -189,10 +189,6 @@ const PAYMENT_META: Record<PaymentCompleted, { label: string; className: string 
 }
 
 const RECEPTION_TAG_META: Record<TicketReceptionTag, { label: string; className: string }> = {
-  RETURN_COMPONENTS: {
-    label: '구성품 반송',
-    className: 'border-amber-200 bg-amber-50 text-amber-700',
-  },
   MODIFIED: {
     label: '수정',
     className: 'border-blue-200 bg-blue-50 text-blue-700',
