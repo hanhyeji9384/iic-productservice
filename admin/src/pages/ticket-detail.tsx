@@ -5080,7 +5080,7 @@ export function TicketDetailPage() {
   }
 
   const tabs: { id: Tab; label: string }[] = [
-    { id: 'overview', label: '개요' },
+    { id: 'overview', label: '정보' },
     { id: 'kakao',    label: '알림톡 발송내역' },
     { id: 'email',    label: '메일 발송내역' },
     { id: 'history',  label: '변경이력' },
