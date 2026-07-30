@@ -5277,8 +5277,8 @@ export function TicketDetailPage() {
                     setSelectedStockRequestReason('긴급 건')
                     setStockRequestModalOpen(true)
                   }}
-                  disabled={!['REPAIRING', 'REPAIR_DONE'].includes(ticket.status) || stockRequestCreated}
-                  title={stockRequestCreated ? '이미 재고 요청이 생성되었습니다.' : !['REPAIRING', 'REPAIR_DONE'].includes(ticket.status) ? '출고 준비 이후에는 재고 요청을 생성할 수 없습니다.' : '재고 요청 생성'}
+                  disabled={!['REPAIRING', 'REPAIR_DONE'].includes(ticket.status)}
+                  title={!['REPAIRING', 'REPAIR_DONE'].includes(ticket.status) ? '출고 준비 이후에는 재고 요청을 생성할 수 없습니다.' : '재고 요청 생성'}
                   className="flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
                 >
                   <Package className="w-3.5 h-3.5" />재고 요청
