@@ -164,7 +164,7 @@ const REPAIR_CHARGE_OPTIONS: EditableFieldOption[] = [
 const INT_FREE_REPAIR_UNAVAILABLE_MESSAGE = 'INT 티켓은 무상 판정을 선택할 수 없습니다.'
 const REPAIR_TYPE_OPTIONS = ['교체', '긴급', '도금', '용접', '일반렌즈가공', '복원', '기타', '서비스 청구']
 const KR_REPAIR_TYPE_FIXED_PRICE: Partial<Record<string, number>> = {
-  긴급: 50000,
+  긴급: 10000,
   도금: 30000,
   용접: 30000,
   일반렌즈가공: 30000,
