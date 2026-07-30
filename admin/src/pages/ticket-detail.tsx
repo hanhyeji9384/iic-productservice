@@ -5674,7 +5674,6 @@ export function TicketDetailPage() {
                               <ul className="divide-y divide-gray-100">
                                 {purchaseProofAttachmentRows.map(({ attachment, storedIndex }) => {
                                   const attachmentName = getAttachmentName(attachment)
-                                  const uploadedAt = typeof attachment === 'string' ? null : attachment.uploadedAt
                                   const canDelete = canEditPurchaseProofAttachments && storedIndex !== null && !isReadonlyAttachment(attachment)
                                   return (
                                     <li
@@ -5689,7 +5688,6 @@ export function TicketDetailPage() {
                                         {attachmentName}
                                       </button>
                                       <div className="flex shrink-0 items-center gap-2">
-                                        {uploadedAt && <span className="text-[10px] text-gray-300">{uploadedAt}</span>}
                                         {canDelete ? (
                                           <button
                                             type="button"
