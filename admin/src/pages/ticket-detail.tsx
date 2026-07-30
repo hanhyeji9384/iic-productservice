@@ -4164,7 +4164,7 @@ export function TicketDetailPage() {
   const [autoPrintBarcode, setAutoPrintBarcode] = useState(false)
   const [stockRequestModalOpen, setStockRequestModalOpen] = useState(false)
   const [selectedStockRequestReason, setSelectedStockRequestReason] = useState<StockRequestReason>('긴급 건')
-  const [stockRequestCreated, setStockRequestCreated] = useState(false)
+  const [, setStockRequestCreated] = useState(false)
   const [componentReturnModalOpen, setComponentReturnModalOpen] = useState(false)
   const [selectedComponentType, setSelectedComponentType] = useState<ComponentType>('NONE')
   const [toast, setToast] = useState<{ message: string; ok: boolean } | null>(null)
