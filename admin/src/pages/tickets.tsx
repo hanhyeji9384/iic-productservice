@@ -7,7 +7,6 @@ import { BRANCHES, MEMBERS, STORES } from '@/lib/mock-data'
 import { addDownloadLog } from '@/lib/download-logs'
 import { maskEmail, maskName, maskPhone } from '@/lib/masking'
 import { appendTicketChangeLog, getCustomersWithOverrides, getTicketsWithExtras, updatePrototypeTicket } from '@/lib/prototype-storage'
-import { getSoDocumentInfo } from '@/lib/ticket-so'
 import type { PaymentCompleted, Ticket, TicketChangeType, TicketReceptionTag, TicketStatus } from '@/lib/types'
 import { I18nText, useI18nLabel } from '@/lib/i18n-inspector'
 import { ticketStatusI18nKey } from '@/lib/ticket-status-i18n'
@@ -545,16 +544,6 @@ function ReceptionTags({ tags }: { tags?: TicketReceptionTag[] }) {
   )
 }
 
-function SoStatusBadge({ ticket }: { ticket: Ticket }) {
-  const info = getSoDocumentInfo(ticket)
-  if (info.status === 'NOT_READY') return <span className="text-gray-300">-</span>
-
-  return (
-    <span className={`inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-semibold ${info.className}`}>
-      {info.label}
-    </span>
-  )
-}
 
 export function TicketsPage() {
   const [activeBranch, setActiveBranch] = useState('')
@@ -686,7 +675,6 @@ export function TicketsPage() {
       '배송방법': t.shippingMethod,
       '출고일': t.shippedAt ?? '',
       'SO문서번호': t.soDocumentNo ?? '',
-      'SO상태': getSoDocumentInfo(t).label,
       '본사입고일': t.hqReceivedAt ?? '',
       '출고예정일': t.expectedShipAt ?? '',
     }))
@@ -951,7 +939,6 @@ export function TicketsPage() {
     { key: 'shippingMethod', label: '출고방식', sort: 'shippingMethod' },
     { key: 'shippedAt', label: '출고완료일', sort: 'shippedAt' },
     { key: 'soDocumentNo', label: 'SO문서번호', sort: 'soDocumentNo' },
-    { key: 'soStatus', label: 'SO상태', sort: null },
   ]
 
   function renderTextFilter(key: ColumnFilterKey, placeholder: string) {
@@ -1652,7 +1639,6 @@ export function TicketsPage() {
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs text-gray-700">{ticket.shippingMethod}</td>
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs text-gray-600">{displayValue(ticket.shippedAt)}</td>
                     <td className="px-4 py-3.5 whitespace-nowrap text-xs font-mono text-gray-600">{displayValue(ticket.soDocumentNo)}</td>
-                    <td className="px-4 py-3.5 whitespace-nowrap"><SoStatusBadge ticket={ticket} /></td>
                   </tr>
                 ))}
               </tbody>
