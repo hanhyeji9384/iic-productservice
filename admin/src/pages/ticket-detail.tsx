@@ -4167,6 +4167,7 @@ export function TicketDetailPage() {
   const [, setStockRequestCreated] = useState(false)
   const [componentReturnModalOpen, setComponentReturnModalOpen] = useState(false)
   const [selectedComponentType, setSelectedComponentType] = useState<ComponentType>('NONE')
+  const [useTicketDeliveryAddress, setUseTicketDeliveryAddress] = useState(false)
   const [toast, setToast] = useState<{ message: string; ok: boolean } | null>(null)
   const [componentReturnCreated, setComponentReturnCreated] = useState(false)
   const [, setTicketRevision] = useState(0)
@@ -4736,7 +4737,16 @@ export function TicketDetailPage() {
 
   function handleCreateComponentReturn() {
     if (!ticket || componentReturnCreated) return
-    const record = createComponentReturnFromTicket(ticket, selectedComponentType)
+    const ticketDeliveryAddress = formatAddressInfo({
+      country: ticket.deliveryCountry,
+      zipCode: ticket.deliveryZipCode,
+      city: ticket.deliveryCity,
+      state: ticket.deliveryState,
+      address1: ticket.deliveryAddress1,
+      address2: ticket.deliveryAddress2,
+    })
+    const deliveryAddress = useTicketDeliveryAddress ? ticketDeliveryAddress : null
+    const record = createComponentReturnFromTicket(ticket, selectedComponentType, deliveryAddress)
     setComponentReturnCreated(true)
     setComponentReturnModalOpen(false)
     navigate(`/${langCode}/shipping/component-returns`, {
@@ -5164,20 +5174,47 @@ export function TicketDetailPage() {
               <p className="text-[11px] font-medium text-gray-400">구성품 반송</p>
               <h2 className="mt-1 text-base font-bold text-gray-900">구성품 유형 선택</h2>
             </div>
-            <div className="space-y-3 px-5 py-4">
-              <label htmlFor="ticket-component-return-type" className="block text-xs font-semibold text-gray-700">
-                구성품 유형
-              </label>
-              <select
-                id="ticket-component-return-type"
-                value={selectedComponentType}
-                onChange={event => setSelectedComponentType(event.target.value as ComponentType)}
-                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 outline-none transition-colors focus:border-gray-400"
-              >
-                {COMPONENT_TYPE_OPTIONS.map(option => (
-                  <option key={option.value} value={option.value}>{option.label}</option>
-                ))}
-              </select>
+            <div className="space-y-4 px-5 py-4">
+              <div className="space-y-1.5">
+                <label htmlFor="ticket-component-return-type" className="block text-xs font-semibold text-gray-700">
+                  구성품 유형
+                </label>
+                <select
+                  id="ticket-component-return-type"
+                  value={selectedComponentType}
+                  onChange={event => setSelectedComponentType(event.target.value as ComponentType)}
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 outline-none transition-colors focus:border-gray-400"
+                >
+                  {COMPONENT_TYPE_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+              {(() => {
+                const addr = formatAddressInfo({
+                  country: ticket.deliveryCountry,
+                  zipCode: ticket.deliveryZipCode,
+                  city: ticket.deliveryCity,
+                  state: ticket.deliveryState,
+                  address1: ticket.deliveryAddress1,
+                  address2: ticket.deliveryAddress2,
+                })
+                if (!addr) return null
+                return (
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-semibold text-gray-700">배송 주소</p>
+                    <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-gray-200 px-3 py-2.5 hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={useTicketDeliveryAddress}
+                        onChange={e => setUseTicketDeliveryAddress(e.target.checked)}
+                        className="mt-0.5 shrink-0 accent-gray-900"
+                      />
+                      <span className="text-xs text-gray-700">{addr}</span>
+                    </label>
+                  </div>
+                )
+              })()}
             </div>
             <div className="flex justify-end gap-2 border-t border-gray-100 px-5 py-4">
               <button
@@ -5283,6 +5320,7 @@ export function TicketDetailPage() {
               <button
                 onClick={() => {
                   setSelectedComponentType('NONE')
+                  setUseTicketDeliveryAddress(false)
                   setComponentReturnModalOpen(true)
                 }}
                 disabled={componentReturnCreated}

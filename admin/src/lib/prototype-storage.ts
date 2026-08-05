@@ -237,7 +237,7 @@ export function getComponentReturns(): ComponentReturn[] {
   ].sort((a, b) => b.createdAt.localeCompare(a.createdAt))
 }
 
-export function createComponentReturnFromTicket(ticket: Ticket, componentType: ComponentType = 'NONE') {
+export function createComponentReturnFromTicket(ticket: Ticket, componentType: ComponentType = 'NONE', deliveryAddress?: string | null) {
   const existing = getComponentReturns().find(record => record.sourceTicketNo === ticket.ticketNo)
   if (existing) return existing
 
@@ -256,6 +256,7 @@ export function createComponentReturnFromTicket(ticket: Ticket, componentType: C
     createdAt: localTimestamp(),
     returnedAt: null,
     alimtalkSentYn: 'N',
+    deliveryAddress: deliveryAddress ?? null,
   }
 
   saveStoredComponentReturns([record, ...getStoredComponentReturns()])

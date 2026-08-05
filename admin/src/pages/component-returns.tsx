@@ -546,6 +546,11 @@ export function ComponentReturnsPage() {
                           <div className="col-span-2">
                             <Field label="제품명" value={draft.productName} />
                           </div>
+                          {draft.deliveryAddress && (
+                            <div className="col-span-2 min-w-0">
+                              <Field label="배송 주소" value={draft.deliveryAddress} />
+                            </div>
+                          )}
                         </dl>
                       </section>
 
