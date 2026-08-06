@@ -3999,6 +3999,7 @@ function MessageTemplatePanel({
 
   function handleSend() {
     if (!selectedTemplate) return
+    if (!window.confirm(`${channelLabel}을 발송하시겠습니까?`)) return
     setSentLogs(prev => [
       {
         id: `${ticket.ticketNo}-${channel}-${Date.now()}`,
@@ -4009,7 +4010,6 @@ function MessageTemplatePanel({
       },
       ...prev,
     ])
-    window.alert(`${channelLabel} '${selectedTemplate.title}' 발송 처리했습니다.`)
   }
 
   if (!enabled) {
@@ -4093,11 +4093,9 @@ function MessageTemplatePanel({
                         effectiveSelectedTemplateId === template.id ? 'bg-gray-50' : ''
                       }`}
                     >
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-medium text-gray-800">{template.title}</span>
-                        <span className="mt-0.5 block text-xs text-gray-400">
-                          {getTemplateMetaText(template)}
-                        </span>
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span className="shrink-0 rounded bg-gray-100 px-1.5 py-px font-mono text-[10px] text-gray-500">{template.id}</span>
+                        <span className="truncate text-sm font-medium text-gray-800">{template.title}</span>
                       </span>
                       <span className="shrink-0 rounded-md bg-gray-100 px-2 py-0.5 text-[11px] font-medium text-gray-500">
                         {TEMPLATE_KIND_LABEL[template.kind]}
