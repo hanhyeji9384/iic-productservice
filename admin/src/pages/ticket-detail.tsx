@@ -4737,15 +4737,16 @@ export function TicketDetailPage() {
 
   function handleCreateComponentReturn() {
     if (!ticket || componentReturnCreated) return
-    const ticketDeliveryAddress = formatAddressInfo({
-      country: ticket.deliveryCountry,
-      zipCode: ticket.deliveryZipCode,
-      city: ticket.deliveryCity,
-      state: ticket.deliveryState,
-      address1: ticket.deliveryAddress1,
-      address2: ticket.deliveryAddress2,
-    })
-    const deliveryAddress = useTicketDeliveryAddress ? ticketDeliveryAddress : null
+    const customerDeliveryAddress = fallbackReceivingAddress
+      ? formatAddressInfo({
+          country: fallbackReceivingAddress.country,
+          zipCode: fallbackReceivingAddress.zipCode,
+          city: fallbackReceivingAddress.city,
+          address1: fallbackReceivingAddress.address1,
+          address2: fallbackReceivingAddress.address2,
+        })
+      : null
+    const deliveryAddress = useTicketDeliveryAddress ? customerDeliveryAddress : null
     const record = createComponentReturnFromTicket(ticket, selectedComponentType, deliveryAddress)
     setComponentReturnCreated(true)
     setComponentReturnModalOpen(false)
@@ -5191,14 +5192,15 @@ export function TicketDetailPage() {
                 </select>
               </div>
               {(() => {
-                const addr = formatAddressInfo({
-                  country: ticket.deliveryCountry,
-                  zipCode: ticket.deliveryZipCode,
-                  city: ticket.deliveryCity,
-                  state: ticket.deliveryState,
-                  address1: ticket.deliveryAddress1,
-                  address2: ticket.deliveryAddress2,
-                })
+                const addr = fallbackReceivingAddress
+                  ? formatAddressInfo({
+                      country: fallbackReceivingAddress.country,
+                      zipCode: fallbackReceivingAddress.zipCode,
+                      city: fallbackReceivingAddress.city,
+                      address1: fallbackReceivingAddress.address1,
+                      address2: fallbackReceivingAddress.address2,
+                    })
+                  : null
                 if (!addr) return null
                 return (
                   <div className="space-y-1.5">
