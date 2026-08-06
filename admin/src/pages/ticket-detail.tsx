@@ -4138,7 +4138,7 @@ function MessageTemplatePanel({
                   <td className="px-5 py-3 text-gray-800">{log.templateTitle}</td>
                   <td className="px-5 py-3 text-gray-500">{ticket.customerName}</td>
                   <td className="px-5 py-3 text-gray-500">{receiver || '-'}</td>
-                  <td className="px-5 py-3 font-mono text-xs text-gray-500">{log.sentAt}</td>
+                  <td className="px-5 py-3 font-mono text-xs text-gray-500">{log.sentAt} (KST)</td>
                   <td className="px-5 py-3 text-gray-500">{TEMPLATE_KIND_LABEL[log.kind]}발송</td>
                   <td className="px-5 py-3">
                     <span className="inline-flex rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
