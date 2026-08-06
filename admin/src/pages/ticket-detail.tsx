@@ -4026,15 +4026,13 @@ function MessageTemplatePanel({
     <div className="space-y-4">
       <div className="rounded-2xl border border-gray-200 bg-white">
         <div className="border-b border-gray-100 px-5 py-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-gray-900 text-white">
-                <Icon className="h-4 w-4" />
-              </span>
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900">{channelLabel} 발송</h3>
-                <p className="text-xs text-gray-400">고객 수신처: {receiver || '-'}</p>
-              </div>
+          <div className="flex items-center gap-3">
+            <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-gray-900 text-white">
+              <Icon className="h-4 w-4" />
+            </span>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900">{channelLabel} 발송</h3>
+              <p className="text-xs text-gray-400">고객 수신처: {receiver || '-'}</p>
             </div>
           </div>
         </div>
@@ -4118,7 +4116,7 @@ function MessageTemplatePanel({
 
       <div className="rounded-2xl border border-gray-200 bg-white">
         <div className="border-b border-gray-100 px-5 py-3">
-          <h3 className="text-xs font-semibold text-gray-700">{channelLabel} 발송 내역</h3>
+          <h3 className="text-[13px] font-semibold text-gray-900">{channelLabel} 발송 내역</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-sm">
@@ -4141,7 +4139,11 @@ function MessageTemplatePanel({
                   <td className="px-5 py-3 font-mono text-xs text-gray-500">{log.sentAt} (KST)</td>
                   <td className="px-5 py-3 text-gray-500">{TEMPLATE_KIND_LABEL[log.kind]}발송</td>
                   <td className="px-5 py-3">
-                    <span className="inline-flex rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                    <span className={`inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold ${
+                      log.status === '성공'
+                        ? 'bg-emerald-50 text-emerald-700'
+                        : 'bg-red-50 text-red-700'
+                    }`}>
                       {log.status}
                     </span>
                   </td>
