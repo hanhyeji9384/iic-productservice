@@ -4212,7 +4212,6 @@ export function TicketDetailPage() {
 
   useEffect(() => {
     if (!ticketNo) return
-    setComponentReturnCreated(getComponentReturns().some(record => record.sourceTicketNo === ticketNo))
     setStockRequestCreated(getStockRequests().some(record => record.ticketNo === ticketNo && record.status !== 'CANCELED'))
   }, [ticketNo])
 
