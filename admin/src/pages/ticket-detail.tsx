@@ -5088,10 +5088,11 @@ export function TicketDetailPage() {
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'overview', label: '정보' },
-    { id: 'kakao',    label: '알림톡 발송내역' },
+    ...(kakaoEnabled ? [{ id: 'kakao' as Tab, label: '알림톡 발송내역' }] : []),
     { id: 'email',    label: '메일 발송내역' },
     { id: 'history',  label: '변경이력' },
   ]
+  const resolvedActiveTab: Tab = activeTab === 'kakao' && !kakaoEnabled ? 'overview' : activeTab
 
   return (
     <div className="min-w-0 w-full max-w-none animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -5386,7 +5387,7 @@ export function TicketDetailPage() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`px-5 py-3 text-xs font-medium transition-colors border-b-2 -mb-px ${
-                  activeTab === tab.id
+                  resolvedActiveTab === tab.id
                     ? 'text-gray-900 border-gray-900'
                     : 'text-gray-400 border-transparent hover:text-gray-600'
                 }`}
@@ -5398,7 +5399,7 @@ export function TicketDetailPage() {
 
           {/* 탭 콘텐츠 */}
           <div className="p-5">
-            {activeTab === 'overview' && (
+            {resolvedActiveTab === 'overview' && (
               <div className="space-y-4 xl:block xl:columns-2 xl:gap-4 xl:space-y-0">
 
                   {/* 고객 정보 카드 */}
@@ -6202,7 +6203,7 @@ export function TicketDetailPage() {
               </div>
             )}
 
-            {activeTab === 'pricing' && (
+            {resolvedActiveTab === 'pricing' && (
               <PricingDecisionPanel
                 ticket={ticket}
                 guide={pricingGuide}
@@ -6225,13 +6226,13 @@ export function TicketDetailPage() {
                 }}
               />
             )}
-            {activeTab === 'kakao' && (
+            {resolvedActiveTab === 'kakao' && (
               <MessageTemplatePanel ticket={ticket} channel="kakao" enabled={kakaoEnabled} />
             )}
-            {activeTab === 'email' && (
+            {resolvedActiveTab === 'email' && (
               <MessageTemplatePanel ticket={ticket} channel="email" />
             )}
-            {activeTab === 'history' && (
+            {resolvedActiveTab === 'history' && (
               <ChangeHistoryPanel logs={changeLogs} />
             )}
           </div>
