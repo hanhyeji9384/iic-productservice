@@ -4169,7 +4169,7 @@ export function TicketDetailPage() {
   const [selectedComponentType, setSelectedComponentType] = useState<ComponentType>('NONE')
   const [selectedDeliveryAddressId, setSelectedDeliveryAddressId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; ok: boolean } | null>(null)
-  const [componentReturnCreated, setComponentReturnCreated] = useState(false)
+
   const [, setTicketRevision] = useState(0)
   const attachmentInputRef = useRef<HTMLInputElement>(null)
   const purchaseProofInputRef = useRef<HTMLInputElement>(null)
@@ -4736,7 +4736,7 @@ export function TicketDetailPage() {
   }
 
   function handleCreateComponentReturn() {
-    if (!ticket || componentReturnCreated) return
+    if (!ticket) return
     const selectedAddress = selectedDeliveryAddressId
       ? mappedCustomer?.addresses?.find(a => a.id === selectedDeliveryAddressId)
       : null
@@ -4750,7 +4750,6 @@ export function TicketDetailPage() {
         })
       : null
     const record = createComponentReturnFromTicket(ticket, selectedComponentType, deliveryAddress)
-    setComponentReturnCreated(true)
     setComponentReturnModalOpen(false)
     navigate(`/${langCode}/shipping/component-returns`, {
       state: { componentReturnId: record.id },
@@ -5330,9 +5329,7 @@ export function TicketDetailPage() {
                   setSelectedDeliveryAddressId(fallbackReceivingAddress?.id ?? null)
                   setComponentReturnModalOpen(true)
                 }}
-                disabled={componentReturnCreated}
-                title={componentReturnCreated ? '이미 구성품 반송 건이 생성되었습니다.' : '구성품 반송 건 생성'}
-                className="flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-white"
+                className="flex items-center gap-1.5 whitespace-nowrap px-3 py-1.5 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
               >
                 <Package className="w-3.5 h-3.5" />구성품 반송
               </button>
