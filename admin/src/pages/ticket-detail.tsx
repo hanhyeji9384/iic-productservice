@@ -4167,7 +4167,7 @@ export function TicketDetailPage() {
   const [, setStockRequestCreated] = useState(false)
   const [componentReturnModalOpen, setComponentReturnModalOpen] = useState(false)
   const [selectedComponentType, setSelectedComponentType] = useState<ComponentType>('NONE')
-  const [useTicketDeliveryAddress, setUseTicketDeliveryAddress] = useState(false)
+  const [selectedDeliveryAddressId, setSelectedDeliveryAddressId] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; ok: boolean } | null>(null)
   const [componentReturnCreated, setComponentReturnCreated] = useState(false)
   const [, setTicketRevision] = useState(0)
@@ -4737,16 +4737,18 @@ export function TicketDetailPage() {
 
   function handleCreateComponentReturn() {
     if (!ticket || componentReturnCreated) return
-    const customerDeliveryAddress = fallbackReceivingAddress
+    const selectedAddress = selectedDeliveryAddressId
+      ? mappedCustomer?.addresses?.find(a => a.id === selectedDeliveryAddressId)
+      : null
+    const deliveryAddress = selectedAddress
       ? formatAddressInfo({
-          country: fallbackReceivingAddress.country,
-          zipCode: fallbackReceivingAddress.zipCode,
-          city: fallbackReceivingAddress.city,
-          address1: fallbackReceivingAddress.address1,
-          address2: fallbackReceivingAddress.address2,
+          country: selectedAddress.country,
+          zipCode: selectedAddress.zipCode,
+          city: selectedAddress.city,
+          address1: selectedAddress.address1,
+          address2: selectedAddress.address2,
         })
       : null
-    const deliveryAddress = useTicketDeliveryAddress ? customerDeliveryAddress : null
     const record = createComponentReturnFromTicket(ticket, selectedComponentType, deliveryAddress)
     setComponentReturnCreated(true)
     setComponentReturnModalOpen(false)
@@ -5191,32 +5193,35 @@ export function TicketDetailPage() {
                   ))}
                 </select>
               </div>
-              {(() => {
-                const addr = fallbackReceivingAddress
-                  ? formatAddressInfo({
-                      country: fallbackReceivingAddress.country,
-                      zipCode: fallbackReceivingAddress.zipCode,
-                      city: fallbackReceivingAddress.city,
-                      address1: fallbackReceivingAddress.address1,
-                      address2: fallbackReceivingAddress.address2,
-                    })
-                  : null
-                if (!addr) return null
-                return (
-                  <div className="space-y-1.5">
-                    <p className="text-xs font-semibold text-gray-700">배송 주소</p>
-                    <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-gray-200 px-3 py-2.5 hover:bg-gray-50">
-                      <input
-                        type="checkbox"
-                        checked={useTicketDeliveryAddress}
-                        onChange={e => setUseTicketDeliveryAddress(e.target.checked)}
-                        className="mt-0.5 shrink-0 accent-gray-900"
-                      />
-                      <span className="text-xs text-gray-700">{addr}</span>
-                    </label>
-                  </div>
-                )
-              })()}
+              {mappedCustomer?.addresses && mappedCustomer.addresses.length > 0 && (
+                <div className="space-y-1.5">
+                  <label htmlFor="ticket-component-return-address" className="block text-xs font-semibold text-gray-700">
+                    배송 주소
+                  </label>
+                  <select
+                    id="ticket-component-return-address"
+                    value={selectedDeliveryAddressId ?? ''}
+                    onChange={e => setSelectedDeliveryAddressId(e.target.value || null)}
+                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 outline-none transition-colors focus:border-gray-400"
+                  >
+                    <option value="">-</option>
+                    {mappedCustomer.addresses.map(address => {
+                      const label = formatAddressInfo({
+                        country: address.country,
+                        zipCode: address.zipCode,
+                        city: address.city,
+                        address1: address.address1,
+                        address2: address.address2,
+                      }) ?? address.address1
+                      return (
+                        <option key={address.id} value={address.id}>
+                          {address.isDefault ? '[기본] ' : ''}{label}
+                        </option>
+                      )
+                    })}
+                  </select>
+                </div>
+              )}
             </div>
             <div className="flex justify-end gap-2 border-t border-gray-100 px-5 py-4">
               <button
@@ -5322,7 +5327,7 @@ export function TicketDetailPage() {
               <button
                 onClick={() => {
                   setSelectedComponentType('NONE')
-                  setUseTicketDeliveryAddress(false)
+                  setSelectedDeliveryAddressId(fallbackReceivingAddress?.id ?? null)
                   setComponentReturnModalOpen(true)
                 }}
                 disabled={componentReturnCreated}
