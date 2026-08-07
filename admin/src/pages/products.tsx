@@ -185,7 +185,7 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
   const i18nLabel = useI18nLabel()
   const isManagementMode = mode === 'management'
   const uploadInputRef = useRef<HTMLInputElement>(null)
-  const { products, productChangeLogs, updateStockFields, updateProductManagementFields } = useProducts()
+  const { products, productChangeLogs, updateProductManagementFields } = useProducts()
 
   const branchOptions = useMemo(() => {
     const codes = [...new Set(products.map(p => p.branchCode).filter(Boolean))] as string[]

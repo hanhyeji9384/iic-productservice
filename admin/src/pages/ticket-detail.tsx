@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Barcode, ChevronDown, ExternalLink, History, Mail, MessageSquare, Package, Pencil, RotateCcw, Search, Send, X } from 'lucide-react'
 import { BRANCHES, MEMBERS, PRODUCTS as PRODUCT_SNAPSHOTS, STORES } from '@/lib/mock-data'
-import { appendTicketChangeLog, createComponentReturnFromTicket, createStockRequestFromTicket, getComponentReturns, getCustomersWithOverrides, getStockRequests, getTicketChangeLogs, getTicketsWithExtras, updatePrototypeTicket } from '@/lib/prototype-storage'
+import { appendTicketChangeLog, createComponentReturnFromTicket, createStockRequestFromTicket, getCustomersWithOverrides, getStockRequests, getTicketChangeLogs, getTicketsWithExtras, updatePrototypeTicket } from '@/lib/prototype-storage'
 import { addPrivacyLog } from '@/lib/download-logs'
 import { COMPONENT_TYPE_OPTIONS } from '@/lib/component-return'
 import { STOCK_REQUEST_REASONS } from '@/lib/stock-request'
@@ -3855,19 +3855,6 @@ function mergeDateWithExistingTime(nextDate: string, currentValue?: string | nul
   return `${nextDate} ${currentTime ?? '00:00:00'}`
 }
 
-function getTemplateCode(template: MessageTemplate) {
-  return template.title.match(/^([A-Z]+_\d+)/)?.[1] ?? ''
-}
-
-function getTemplateMetaText(template: MessageTemplate, includeKind = false) {
-  return [
-    getTemplateCode(template),
-    template.source,
-    template.locale,
-    template.stage,
-    includeKind ? TEMPLATE_KIND_LABEL[template.kind] : '',
-  ].filter(Boolean).join(' · ')
-}
 
 function getEmailTemplateSource(ticket: Ticket) {
   const branch = BRANCHES.find(item => item.code === ticket.branchCode)
