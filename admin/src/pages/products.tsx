@@ -6,7 +6,7 @@ import { downloadCsv } from '@/lib/csv'
 import { useProducts } from '@/lib/products-context'
 import { BRANCHES } from '@/lib/mock-data'
 import { I18nText, useI18nLabel } from '@/lib/i18n-inspector'
-import { PRODUCT_FACTORY_SELECT_OPTIONS, displayProductFactory, normalizeProductFactory } from '@/lib/product-factories'
+import { displayProductFactory } from '@/lib/product-factories'
 import type { Product, ProductChangeLog, SalesStatus } from '@/lib/types'
 
 function fmtRetention(dateStr: string): string {
@@ -83,25 +83,6 @@ function netWeightUnitLabel(product: Product) {
   return product.netWeightUnit || parsed.unit || 'kg'
 }
 
-function ProductFactorySelect({
-  value,
-  onChange,
-}: {
-  value?: string | null
-  onChange: (value: string) => void
-}) {
-  return (
-    <select
-      value={normalizeProductFactory(value)}
-      onChange={event => onChange(event.target.value)}
-      className="h-8 min-w-24 rounded-lg border border-gray-200 bg-white px-2 text-xs text-gray-700 outline-none transition-colors hover:border-gray-300 focus:border-gray-500"
-    >
-      {PRODUCT_FACTORY_SELECT_OPTIONS.map(option => (
-        <option key={option.value} value={option.value}>{option.label}</option>
-      ))}
-    </select>
-  )
-}
 
 function parseCsvLine(line: string) {
   const cells: string[] = []
@@ -1042,24 +1023,9 @@ export function ProductsPage({ mode = 'list' }: { mode?: ProductsPageMode }) {
                             </I18nText>
                           </span>
                         </td>
-                        <td className="px-5 py-3.5 whitespace-nowrap">
-                          <ProductFactorySelect
-                            value={p.factory1}
-                            onChange={value => updateStockFields(p.id, { factory1: value })}
-                          />
-                        </td>
-                        <td className="px-5 py-3.5 whitespace-nowrap">
-                          <ProductFactorySelect
-                            value={p.factory2}
-                            onChange={value => updateStockFields(p.id, { factory2: value })}
-                          />
-                        </td>
-                        <td className="px-5 py-3.5 whitespace-nowrap">
-                          <ProductFactorySelect
-                            value={p.factory3}
-                            onChange={value => updateStockFields(p.id, { factory3: value })}
-                          />
-                        </td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{displayProductFactory(p.factory1)}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{displayProductFactory(p.factory2)}</td>
+                        <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-500">{displayProductFactory(p.factory3)}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-sm text-gray-600">{p.releaseDate}</td>
                         <td className="px-5 py-3.5 whitespace-nowrap">
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold ${salesStatusBadgeClass(p.salesStatus)}`}>
