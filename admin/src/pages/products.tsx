@@ -6,7 +6,7 @@ import { downloadCsv } from '@/lib/csv'
 import { useProducts } from '@/lib/products-context'
 import { BRANCHES } from '@/lib/mock-data'
 import { I18nText, useI18nLabel } from '@/lib/i18n-inspector'
-import { PRODUCT_FACTORY_OPTIONS, displayProductFactory, normalizeProductFactory } from '@/lib/product-factories'
+import { PRODUCT_FACTORY_SELECT_OPTIONS, displayProductFactory, normalizeProductFactory } from '@/lib/product-factories'
 import type { Product, ProductChangeLog, SalesStatus } from '@/lib/types'
 
 function fmtRetention(dateStr: string): string {
@@ -96,7 +96,7 @@ function ProductFactorySelect({
       onChange={event => onChange(event.target.value)}
       className="h-8 min-w-24 rounded-lg border border-gray-200 bg-white px-2 text-xs text-gray-700 outline-none transition-colors hover:border-gray-300 focus:border-gray-500"
     >
-      {PRODUCT_FACTORY_OPTIONS.map(option => (
+      {PRODUCT_FACTORY_SELECT_OPTIONS.map(option => (
         <option key={option.value} value={option.value}>{option.label}</option>
       ))}
     </select>

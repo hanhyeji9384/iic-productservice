@@ -1,4 +1,4 @@
-export const PRODUCT_FACTORY_VALUES = ['GD', 'AT', 'AJ', 'SH', 'CO', 'JW', '확인불가'] as const
+export const PRODUCT_FACTORY_VALUES = ['WZ-A1', 'WZ-B2', 'SZ-C3', 'SH-D4', '확인불가'] as const
 
 export const PRODUCT_FACTORY_OPTIONS = PRODUCT_FACTORY_VALUES.map(value => ({ value, label: value }))
 
@@ -8,8 +8,7 @@ export const PRODUCT_FACTORY_SELECT_OPTIONS = [
 ]
 
 export function normalizeProductFactory(value?: string | null) {
-  if (value === '-') return '-'
-  if (!value) return '확인불가'
+  if (!value || value === '-') return '-'
   return (PRODUCT_FACTORY_VALUES as readonly string[]).includes(value) ? value : '확인불가'
 }
 

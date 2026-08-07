@@ -256,12 +256,12 @@ const TICKET_CHANGE_SECTION_META: Record<TicketChangeType, { label: string; clas
     className: 'bg-blue-50 text-blue-600 border-blue-200',
   },
   STATUS: {
-    label: '상태',
-    className: 'bg-lime-50 text-lime-700 border-lime-200',
+    label: '상태변경',
+    className: 'bg-amber-50 text-amber-700 border-amber-200',
   },
   REPAIR: {
-    label: '수리 정보',
-    className: 'bg-violet-50 text-violet-600 border-violet-200',
+    label: '수리정보',
+    className: 'bg-green-50 text-green-700 border-green-200',
   },
   PAYMENT: {
     label: '결제 정보',
@@ -4032,7 +4032,7 @@ function MessageTemplatePanel({
             </span>
             <div>
               <h3 className="text-sm font-semibold text-gray-900">{channelLabel} 발송</h3>
-              <p className="text-xs text-gray-400">고객 수신처: {receiver || '-'}</p>
+              <p className="text-xs text-gray-400">수신처: {receiver || '-'}</p>
             </div>
           </div>
         </div>
@@ -4050,14 +4050,9 @@ function MessageTemplatePanel({
               }`}
             >
               {selectedTemplate ? (
-                <span className="min-w-0">
-                  <span className="block truncate font-medium text-gray-800">{selectedTemplate.title}</span>
-                  <span className="block truncate text-[11px] text-gray-400">
-                    {getTemplateMetaText(selectedTemplate, true)}
-                  </span>
-                </span>
+                <span className="min-w-0 truncate text-sm font-medium text-gray-800">{selectedTemplate.title}</span>
               ) : (
-                <span className="text-gray-400">템플릿 선택</span>
+                <span className="text-sm text-gray-400">템플릿 선택</span>
               )}
               <ChevronDown className={`h-4 w-4 shrink-0 text-gray-300 transition-transform ${templateSelectOpen ? 'rotate-180' : ''}`} />
             </button>
@@ -4123,7 +4118,7 @@ function MessageTemplatePanel({
                 <th className="px-5 py-3">템플릿 명</th>
                 <th className="px-5 py-3">고객명</th>
                 <th className="px-5 py-3">수신처</th>
-                <th className="px-5 py-3">발송일시</th>
+                <th className="px-5 py-3">발송일시 (KST)</th>
                 <th className="px-5 py-3">유형</th>
                 <th className="px-5 py-3">상태</th>
               </tr>
@@ -4134,7 +4129,7 @@ function MessageTemplatePanel({
                   <td className="px-5 py-3 text-gray-800">{log.templateTitle}</td>
                   <td className="px-5 py-3 text-gray-500">{ticket.customerName}</td>
                   <td className="px-5 py-3 text-gray-500">{receiver || '-'}</td>
-                  <td className="px-5 py-3 font-mono text-xs text-gray-500">{log.sentAt} (KST)</td>
+                  <td className="px-5 py-3 font-mono text-xs text-gray-500">{log.sentAt}</td>
                   <td className="px-5 py-3 text-gray-500">{TEMPLATE_KIND_LABEL[log.kind]}발송</td>
                   <td className="px-5 py-3">
                     <span className={`inline-flex rounded-md px-2 py-0.5 text-[11px] font-semibold ${
