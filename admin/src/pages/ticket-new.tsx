@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { ArrowLeft, Check, ChevronDown, RotateCcw, Search, X, UserCheck } from 'lucide-react'
 import { BRANCHES, STORES, PRODUCTS, MEMBERS } from '@/lib/mock-data'
-import { addPrototypeTicket, getCustomersWithOverrides, getTicketsWithExtras, localTimestamp, saveCustomerAddresses, upsertPrototypeCustomer } from '@/lib/prototype-storage'
+import { addPrototypeTicket, getCustomersWithOverrides, getTicketsWithExtras, localTimestamp, saveCustomerAddresses } from '@/lib/prototype-storage'
 import { addPrivacyLog } from '@/lib/download-logs'
 import type { Customer, CustomerAddress, Ticket } from '@/lib/types'
 
@@ -36,10 +36,6 @@ type Form = {
   deliveryAddressId: string
   pickupStoreCode: string
   pickupStoreName: string
-  newAddressLine1: string
-  newAddressLine2: string
-  newAddressZipCode: string
-  newAddressCity: string
 }
 
 type SaveAction = 'save' | 'save_new' | 'save_open'
@@ -79,10 +75,6 @@ function createInitialForm(branchCode: string): Form {
     deliveryAddressId: '',
     pickupStoreCode: '',
     pickupStoreName: '',
-    newAddressLine1: '',
-    newAddressLine2: '',
-    newAddressZipCode: '',
-    newAddressCity: '',
   }
 }
 
@@ -511,7 +503,8 @@ function ProductSearchCombo({
   const filtered = searchedQuery.trim()
     ? PRODUCTS.filter(p =>
         p.name.toLowerCase().includes(searchedQuery.toLowerCase()) ||
-        p.productCode.toLowerCase().includes(searchedQuery.toLowerCase())
+        p.productCode.toLowerCase().includes(searchedQuery.toLowerCase()) ||
+        p.barcode.toLowerCase().includes(searchedQuery.toLowerCase())
       )
     : []
 
@@ -581,7 +574,7 @@ function ProductSearchCombo({
                 <input ref={inputRef} type="text" value={query}
                   onChange={e => setQuery(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                  placeholder="제품명 또는 코드 입력" className="flex-1 bg-transparent text-sm text-gray-800 placeholder:text-gray-300 focus:outline-none" />
+                  placeholder="제품명, 제품코드, 바코드 입력" className="flex-1 bg-transparent text-sm text-gray-800 placeholder:text-gray-300 focus:outline-none" />
                 {query && <button type="button" onClick={() => { setQuery(''); setSearchedQuery('') }} className="text-gray-300 hover:text-gray-500"><X className="w-3.5 h-3.5" /></button>}
               </div>
               <button type="button" onClick={handleSearch}
@@ -793,7 +786,7 @@ function CustomerSearchCombo({
 }: {
   customers: CustomerOption[]
   onSelect: (c: CustomerOption) => void
-  onNotFound: (query: string) => void
+  onNotFound: () => void
   onClear: () => void
 }) {
   const [query, setQuery] = useState('')
@@ -809,7 +802,7 @@ function CustomerSearchCombo({
     ) ?? null
     setResult(found)
     setSearched(true)
-    if (!found) onNotFound(q)
+    if (!found) onNotFound()
   }
 
   function handleClear() {
@@ -870,7 +863,7 @@ function CustomerSearchCombo({
             </div>
           </button>
         ) : (
-          <p className="text-xs text-gray-400 px-1">조회된 고객이 없습니다. 신규 고객 정보로 입력합니다.</p>
+          <p className="text-xs text-amber-600 px-1">조회된 고객 정보가 없습니다.</p>
         )
       )}
     </div>
@@ -982,10 +975,9 @@ export function TicketNewPage() {
   const [reRepairSourceTicket, setReRepairSourceTicket] = useState<Ticket | undefined>(() => sourceTicket)
   const [form, setForm] = useState<Form>(() => reRepairSourceTicket ? createReRepairForm(reRepairSourceTicket, sourceCustomer) : createInitialForm(initBranch))
 
-  // isFromDotCom: 신규 고객(미조회) 시 마케팅 동의 체크박스 활성화
-  const [isFromDotCom, setIsFromDotCom] = useState(false)
-  // isNewCustomer: 고객 조회 결과 없음 → 신규 등록 모드
-  const [isNewCustomer, setIsNewCustomer] = useState(false)
+  // isCustomerNotFound: 고객 조회 결과 없음 → 저장 불가 (고객 DB 등록 회원만 접수 가능)
+  const [isCustomerNotFound, setIsCustomerNotFound] = useState(false)
+  const [confirmAction, setConfirmAction] = useState<SaveAction | null>(null)
   const [customerAddresses, setCustomerAddresses] = useState<CustomerAddress[]>(() => sourceCustomer?.addresses ?? [])
   const [customers, setCustomers] = useState<Customer[]>(() => initialCustomers)
   const [addressEditMode, setAddressEditMode] = useState<'add' | 'edit' | null>(null)
@@ -1012,12 +1004,8 @@ export function TicketNewPage() {
     if (selectedPickupBranch && TICKET_BRANCH_CODES.includes(selectedPickupBranch)) return selectedPickupBranch
     return TICKET_BRANCH_CODES[0]
   }
-  const newCustomerAddressCountry = form.country || defaultCountryForBranch(resolveTicketBranchCode())
-  const isNewCustomerAddressOverseas = isOverseasCountry(newCustomerAddressCountry)
-
   function resetCustomerFields() {
-    setIsNewCustomer(false)
-    setIsFromDotCom(false)
+    setIsCustomerNotFound(false)
     setCustomerAddresses([])
     resetAddressEditor()
     setForm(p => ({
@@ -1028,7 +1016,6 @@ export function TicketNewPage() {
       marketingAgree: false,
       receptionType: '', deliveryAddressId: '',
       pickupStoreCode: '', pickupStoreName: '',
-      newAddressLine1: '', newAddressLine2: '', newAddressZipCode: '', newAddressCity: '',
     }))
   }
 
@@ -1140,8 +1127,7 @@ export function TicketNewPage() {
 
   function resetNewTicketForm() {
     setReRepairSourceTicket(undefined)
-    setIsNewCustomer(false)
-    setIsFromDotCom(false)
+    setIsCustomerNotFound(false)
     setCustomerAddresses([])
     resetAddressEditor()
     setForm(createInitialForm(form.branchCode))
@@ -1150,14 +1136,11 @@ export function TicketNewPage() {
   function handleSave(action: SaveAction) {
     const customerName = formatCustomerName(form)
     const customerId = buildCustomerId(form)
-    const addresses = [...customerAddresses]
     const ticketBranchCode = resolveTicketBranchCode()
     const selectedDeliveryAddress = customerAddresses.find(address => address.id === form.deliveryAddressId)
     const selectedPickupStore = STORES.find(store => store.code === form.pickupStoreCode)
-    const deliveryCountry = isNewCustomer
-      ? (form.country || defaultCountryForBranch(ticketBranchCode))
-      : (selectedDeliveryAddress?.country || form.country || defaultCountryForBranch(ticketBranchCode))
-    const deliveryCity = isNewCustomer ? form.newAddressCity.trim() : selectedDeliveryAddress?.city?.trim()
+    const deliveryCountry = selectedDeliveryAddress?.country || form.country || defaultCountryForBranch(ticketBranchCode)
+    const deliveryCity = selectedDeliveryAddress?.city?.trim()
     const receptionMethod = form.receptionType === 'STORE'
       ? 'store'
       : form.receptionType === 'HOME'
@@ -1173,34 +1156,6 @@ export function TicketNewPage() {
       return
     }
 
-    if (isNewCustomer && form.receptionType === 'HOME' && form.newAddressLine1.trim()) {
-      addresses.push({
-        id: `addr-${Date.now()}`,
-        isDefault: addresses.length === 0,
-        address1: form.newAddressLine1.trim(),
-        address2: form.newAddressLine2.trim() || undefined,
-        zipCode: form.newAddressZipCode.trim() || undefined,
-        country: form.country || defaultCountryForBranch(ticketBranchCode),
-        city: isOverseasCountry(deliveryCountry) ? form.newAddressCity.trim() : undefined,
-      })
-    }
-
-    if (isNewCustomer && (form.phone || form.email || customerName)) {
-      upsertPrototypeCustomer({
-        id: customerId,
-        name: customerName,
-        email: form.email.trim(),
-        phone: form.phone.trim(),
-        country: form.country || defaultCountryForBranch(ticketBranchCode),
-        branchCode: ticketBranchCode,
-        ticketYn: 'Y',
-        marketingAgree: form.marketingAgree ? 'Y' : 'N',
-        registeredAt: localTimestamp(),
-        addresses,
-      })
-      setCustomers(getCustomersWithOverrides())
-    }
-
     const ticketNo = generateTicketNo()
     const ticket: Ticket = {
       id: `ticket-${ticketNo}`,
@@ -1214,13 +1169,13 @@ export function TicketNewPage() {
       customerName: customerName || '-',
       phone: form.phone.trim(),
       email: form.email.trim(),
-      receptionTitle: reRepairSourceTicket ? '재수리 접수' : undefined,
+      receptionTitle: reRepairSourceTicket ? '티켓 복제 접수' : undefined,
       originalTicketNo: reRepairSourceTicket?.ticketNo,
       reRepairYn: 'N',
       pickupTrackingNo: shouldCreatePickup ? pickupTrackingNo(ticketNo, deliveryCountry) : null,
       serviceCoupon: null,
       urgentRepairYn: 'N',
-      purchaseProofType: isNewCustomer ? '-' : 'MEMBERSHIP',
+      purchaseProofType: customerId ? 'MEMBERSHIP' : '-',
       purchaseInfoSource: 'ADMIN',
       componentType: null,
       customerRequest: null,
@@ -1229,15 +1184,9 @@ export function TicketNewPage() {
       receptionStoreCode: isStoreReception ? form.pickupStoreCode || form.receptionStoreCode || null : null,
       receptionStoreName: isStoreReception ? form.pickupStoreName || selectedPickupStore?.name || form.receptionStoreName || null : null,
       deliveryCountry: isHomeReception ? deliveryCountry : null,
-      deliveryZipCode: isHomeReception
-        ? (isNewCustomer ? form.newAddressZipCode.trim() : selectedDeliveryAddress?.zipCode) || null
-        : null,
-      deliveryAddress1: isHomeReception
-        ? (isNewCustomer ? form.newAddressLine1.trim() : selectedDeliveryAddress?.address1) || null
-        : null,
-      deliveryAddress2: isHomeReception
-        ? (isNewCustomer ? form.newAddressLine2.trim() : selectedDeliveryAddress?.address2) || null
-        : null,
+      deliveryZipCode: isHomeReception ? selectedDeliveryAddress?.zipCode || null : null,
+      deliveryAddress1: isHomeReception ? selectedDeliveryAddress?.address1 || null : null,
+      deliveryAddress2: isHomeReception ? selectedDeliveryAddress?.address2 || null : null,
       deliveryCity: isHomeReception ? deliveryCity || null : null,
       deliveryState: null,
       productName: form.productName || '-',
@@ -1295,20 +1244,23 @@ export function TicketNewPage() {
                 {branchContextLabel}
               </div>
               <button
-                onClick={() => handleSave('save')}
-                className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                disabled={isCustomerNotFound}
+                onClick={() => setConfirmAction('save')}
+                className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
               >
                 저장
               </button>
               <button
-                onClick={() => handleSave('save_new')}
-                className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                disabled={isCustomerNotFound}
+                onClick={() => setConfirmAction('save_new')}
+                className="px-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-xs font-medium hover:bg-gray-50 hover:border-gray-300 transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
               >
                 저장 후 신규생성
               </button>
               <button
-                onClick={() => handleSave('save_open')}
-                className="flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white rounded-lg text-xs font-medium hover:bg-gray-700 transition-colors"
+                disabled={isCustomerNotFound}
+                onClick={() => setConfirmAction('save_open')}
+                className="flex items-center gap-1.5 px-4 py-2 bg-gray-900 text-white rounded-lg text-xs font-medium hover:bg-gray-700 transition-colors disabled:opacity-35 disabled:cursor-not-allowed"
               >
                 <Check className="w-3.5 h-3.5" />저장 후 열기
               </button>
@@ -1324,9 +1276,9 @@ export function TicketNewPage() {
                   <RotateCcw className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-blue-900">재수리 접수</p>
+                  <p className="text-sm font-semibold text-blue-900">티켓 복제 접수</p>
                   <p className="mt-1 text-xs text-blue-700">
-                    기존 티켓번호 <span className="font-mono font-semibold">{reRepairSourceTicket.ticketNo}</span> 기준으로 고객 정보와 제품 정보를 불러왔습니다.
+                    원본 티켓 정보를 기반으로 폼이 사전 입력되었습니다. <span className="font-mono font-semibold">{reRepairSourceTicket.ticketNo}</span>
                   </p>
                 </div>
               </div>
@@ -1399,28 +1351,7 @@ export function TicketNewPage() {
                     ))}
                   </div>
                   {form.receptionType === 'HOME' && (
-                    isNewCustomer
-                      ? (
-                        <div className="space-y-2">
-                          <input type="text" value={form.newAddressLine1}
-                            onChange={e => set('newAddressLine1', e.target.value)}
-                            placeholder="주소" className={inputCls} />
-                          <div className="grid grid-cols-2 gap-2">
-                            <input type="text" value={form.newAddressZipCode}
-                              onChange={e => set('newAddressZipCode', e.target.value)}
-                              placeholder="우편번호" className={inputCls} />
-                            <input type="text" value={form.newAddressLine2}
-                              onChange={e => set('newAddressLine2', e.target.value)}
-                              placeholder="상세주소" className={inputCls} />
-                          </div>
-                          {isNewCustomerAddressOverseas && (
-                            <input type="text" value={form.newAddressCity}
-                              onChange={e => set('newAddressCity', e.target.value)}
-                              placeholder="City *" className={inputCls} />
-                          )}
-                        </div>
-                      )
-                      : customerAddresses.length === 0
+                    customerAddresses.length === 0
                         ? (
                           <div className="space-y-2">
                             <p className="text-xs text-gray-400 px-1">등록된 주소가 없습니다. 아래에서 주소를 추가해 주세요.</p>
@@ -1511,8 +1442,7 @@ export function TicketNewPage() {
                     onSelect={c => {
                       const { lastName, firstName } = splitName(c.name)
                       const addrs = c.addresses ?? []
-                      setIsNewCustomer(false)
-                      setIsFromDotCom(false)
+                      setIsCustomerNotFound(false)
                       setCustomerAddresses(addrs)
                       resetAddressEditor()
                       setForm(p => ({
@@ -1527,47 +1457,40 @@ export function TicketNewPage() {
                         deliveryAddressId: p.receptionType === 'HOME'
                           ? (addrs.find(a => a.isDefault)?.id ?? '')
                           : '',
-                        newAddressLine1: '', newAddressLine2: '', newAddressZipCode: '', newAddressCity: '',
                       }))
                     }}
-                    onNotFound={q => {
-                      setIsNewCustomer(true)
-                      setIsFromDotCom(true)
+                    onNotFound={() => {
+                      setIsCustomerNotFound(true)
                       setCustomerAddresses([])
                       resetAddressEditor()
-                      const isEmail = q.includes('@')
                       setForm(p => ({
                         ...p,
                         customerId: '',
-                        phone: isEmail ? '' : q,
-                        email: isEmail ? q : '',
+                        phone: '', email: '',
                         customerLastName: '', customerFirstName: '',
-                        country: defaultCountryForBranch(p.branchCode), marketingAgree: false,
+                        country: '', marketingAgree: false,
                         receptionType: '', deliveryAddressId: '',
                         pickupStoreCode: '', pickupStoreName: '',
-                        newAddressLine1: '', newAddressLine2: '', newAddressZipCode: '', newAddressCity: '',
                       }))
                     }}
                     onClear={resetCustomerFields}
                   />
                 </dd>
-                {/* 고객 관리에 등록된 회원 기준으로 검색. 검색되지 않는 경우 gentlemonster.com에서 회원 조회 후 등록해주세요. */}
+                <p className="mt-1.5 text-[11px] text-gray-400 px-1">고객 관리에 등록된 회원 기준으로 검색. 검색되지 않는 경우 gentlemonster.com에서 회원 조회 후 등록해주세요.</p>
               </div>
               <div>
                 <FieldLabel>이름</FieldLabel>
                 <dd className="grid grid-cols-2 gap-2">
                   <input type="text"
-                    readOnly={!isNewCustomer}
+                    readOnly
                     value={form.customerLastName}
-                    onChange={e => set('customerLastName', e.target.value)}
                     placeholder="성 (Last Name)"
-                    className={isNewCustomer ? inputCls : `${inputCls} bg-gray-50 text-gray-500 cursor-not-allowed`} />
+                    className={`${inputCls} bg-gray-50 text-gray-500 cursor-not-allowed`} />
                   <input type="text"
-                    readOnly={!isNewCustomer}
+                    readOnly
                     value={form.customerFirstName}
-                    onChange={e => set('customerFirstName', e.target.value)}
                     placeholder="이름 (First Name)"
-                    className={isNewCustomer ? inputCls : `${inputCls} bg-gray-50 text-gray-500 cursor-not-allowed`} />
+                    className={`${inputCls} bg-gray-50 text-gray-500 cursor-not-allowed`} />
                 </dd>
               </div>
               <div>
@@ -1575,7 +1498,7 @@ export function TicketNewPage() {
                 <dd>
                   <CountrySearchSelect
                     value={form.country}
-                    onChange={country => setForm(p => ({ ...p, country, newAddressCity: !country || country === 'KR' ? '' : p.newAddressCity }))}
+                    onChange={country => setForm(p => ({ ...p, country }))}
                   />
                 </dd>
               </div>
@@ -1583,40 +1506,33 @@ export function TicketNewPage() {
                 <FieldLabel>전화번호</FieldLabel>
                 <dd>
                   <input type="tel"
-                    readOnly={!isNewCustomer}
+                    readOnly
                     value={form.phone}
-                    onChange={e => set('phone', e.target.value)}
                     placeholder="010-0000-0000"
-                    className={isNewCustomer ? inputCls : `${inputCls} bg-gray-50 text-gray-500 cursor-not-allowed`} />
+                    className={`${inputCls} bg-gray-50 text-gray-500 cursor-not-allowed`} />
                 </dd>
               </div>
               <div>
                 <FieldLabel>이메일</FieldLabel>
                 <dd>
                   <input type="email"
-                    readOnly={!isNewCustomer}
+                    readOnly
                     value={form.email}
-                    onChange={e => set('email', e.target.value)}
                     placeholder="example@email.com"
-                    className={isNewCustomer ? inputCls : `${inputCls} bg-gray-50 text-gray-500 cursor-not-allowed`} />
+                    className={`${inputCls} bg-gray-50 text-gray-500 cursor-not-allowed`} />
                 </dd>
               </div>
               <div>
                 <FieldLabel>마케팅 동의</FieldLabel>
-                {/* 고객 DB 검색 고객은 기존 동의 값만 표시하고, .com 신규 고객은 저장 시 고객 DB에 신규 등록 */}
                 <dd>
-                  <label className={`flex items-center gap-2.5 cursor-${isFromDotCom ? 'pointer' : 'not-allowed'}`}>
+                  <label className="flex items-center gap-2.5 cursor-not-allowed">
                     <input
                       type="checkbox"
                       checked={form.marketingAgree}
-                      disabled={!isFromDotCom}
-                      onChange={e => setForm(p => ({ ...p, marketingAgree: e.target.checked }))}
+                      disabled
                       className="w-4 h-4 rounded accent-gray-900 disabled:opacity-40"
                     />
-                    <span className={`text-sm ${isFromDotCom ? 'text-gray-700' : 'text-gray-400'}`}>
-                      마케팅 수신 동의
-                    </span>
-                    {/* .com 신규 고객일 때만 마케팅 동의 체크 가능 */}
+                    <span className="text-sm text-gray-400">마케팅 수신 동의</span>
                   </label>
                 </dd>
               </div>
@@ -1647,6 +1563,38 @@ export function TicketNewPage() {
 
         </div>
       </div>
+
+      {/* ── 저장 확인 다이얼로그 ── */}
+      {confirmAction && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/30" onClick={() => setConfirmAction(null)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl shadow-black/20 border border-gray-200 w-80 p-6">
+            <h2 className="text-sm font-semibold text-gray-900 mb-1.5">티켓을 저장하시겠습니까?</h2>
+            <p className="text-xs text-gray-500 mb-5">
+              {confirmAction === 'save' && '저장 후 티켓 목록으로 이동합니다.'}
+              {confirmAction === 'save_new' && '저장 후 입력 폼을 초기화합니다.'}
+              {confirmAction === 'save_open' && '저장 후 생성된 티켓 상세로 이동합니다.'}
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmAction(null)}
+                className="px-4 py-2 rounded-lg border border-gray-200 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={() => { const action = confirmAction; setConfirmAction(null); handleSave(action) }}
+                className="px-4 py-2 rounded-lg bg-gray-900 text-xs font-medium text-white hover:bg-gray-700 transition-colors"
+              >
+                확인
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   )
 }
