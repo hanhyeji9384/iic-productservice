@@ -77,7 +77,7 @@ const NAV: NavGroup[] = [
     children: [
       { to: '/tickets',         label: '티켓 관리',             i18nKey: 'nav.ticket_management.tickets', icon: Ticket },
       { to: '/shipping',        label: '출고 관리',             i18nKey: 'nav.ticket_management.shipping', icon: Truck },
-      { to: '/shipping/component-returns', label: '구성품 반송', i18nKey: 'nav.ticket_management.component_returns', icon: Package },
+      { to: '/component-returns', label: '구성품 반송', i18nKey: 'nav.ticket_management.component_returns', icon: Package },
       { to: '/invoice-packing', label: '인보이스/패킹리스트', i18nKey: 'nav.ticket_management.invoice_packing', icon: FileText },
     ],
   },

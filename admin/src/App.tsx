@@ -116,7 +116,7 @@ export default function App() {
           <Route path="tickets/new" element={<TicketNewPage />} />
           <Route path="tickets/:ticketNo" element={<TicketDetailPage />} />
           <Route path="shipping" element={<ShippingPage />} />
-          <Route path="shipping/component-returns" element={<ComponentReturnsPage />} />
+          <Route path="component-returns" element={<ComponentReturnsPage />} />
           <Route path="invoice-packing" element={<InvoicePackingPage />} />
           <Route path="global-tickets" element={<PlaceholderPage title="국가별 티켓 관리" />} />
 

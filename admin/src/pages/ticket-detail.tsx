@@ -4732,7 +4732,7 @@ export function TicketDetailPage() {
       : null
     const record = createComponentReturnFromTicket(ticket, selectedComponentType, deliveryAddress)
     setComponentReturnModalOpen(false)
-    navigate(`/${langCode}/shipping/component-returns`, {
+    navigate(`/${langCode}/component-returns`, {
       state: { componentReturnId: record.id },
     })
   }
