@@ -11,7 +11,6 @@ import type { ComponentReturn, ComponentReturnStatus, TicketStatus } from '@/lib
 
 const STATUS_OPTIONS: { value: ComponentReturnStatus; label: string; className: string }[] = [
   { value: 'WAITING', label: '출고준비', className: 'bg-amber-50 text-amber-700 border-amber-200' },
-  { value: 'IN_PROGRESS', label: '송장등록', className: 'bg-blue-50 text-blue-700 border-blue-200' },
   { value: 'COMPLETED', label: '반송완료', className: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
 ]
 
@@ -20,8 +19,6 @@ type FilterColumn =
   | 'ticketStatus'
   | 'customerName'
   | 'phone'
-  | 'returnStatus'
-  | 'courier'
 
 const TICKET_STATUS_META: Record<TicketStatus, { label: string; className: string }> = {
   RECEIVED: { label: '접수', className: 'bg-sky-50 text-sky-700' },
@@ -114,8 +111,7 @@ export function ComponentReturnsPage() {
   const [records] = useState<ComponentReturn[]>(() => getComponentReturns())
   const [branch, setBranch] = useState('all')
   const [ticketStatusFilter, setTicketStatusFilter] = useState<'all' | TicketStatus>('all')
-  const [returnStatusFilter, setReturnStatusFilter] = useState<'all' | ComponentReturnStatus>('all')
-  const [courierFilter, setCourierFilter] = useState('all')
+
   const [ticketNoFilter, setTicketNoFilter] = useState('')
   const [customerNameFilter, setCustomerNameFilter] = useState('')
   const [phoneFilter, setPhoneFilter] = useState('')
@@ -128,17 +124,11 @@ export function ComponentReturnsPage() {
     return new Map(getTicketsWithExtras().map(ticket => [ticket.ticketNo, ticket]))
   }, [records])
 
-  const courierOptions = useMemo(() => {
-    return Array.from(new Set(records.map(record => record.courier).filter(Boolean))).sort()
-  }, [records])
-
   const filtered = useMemo(() => {
     return records.filter(record => {
       const sourceTicket = ticketByNo.get(record.sourceTicketNo)
       if (branch !== 'all' && record.branchCode !== branch) return false
       if (ticketStatusFilter !== 'all' && sourceTicket?.status !== ticketStatusFilter) return false
-      if (returnStatusFilter !== 'all' && record.status !== returnStatusFilter) return false
-      if (courierFilter !== 'all' && record.courier !== courierFilter) return false
       if (!matchesText(record.sourceTicketNo, ticketNoFilter)) return false
       if (!matchesText(record.customerName, customerNameFilter)) return false
       if (!matchesDigits(record.phone, phoneFilter)) return false
@@ -146,11 +136,9 @@ export function ComponentReturnsPage() {
     })
   }, [
     branch,
-    courierFilter,
     customerNameFilter,
     phoneFilter,
     records,
-    returnStatusFilter,
     ticketByNo,
     ticketNoFilter,
     ticketStatusFilter,
@@ -209,8 +197,6 @@ export function ComponentReturnsPage() {
       case 'ticketStatus': setTicketStatusFilter('all'); break
       case 'customerName': setCustomerNameFilter(''); break
       case 'phone': setPhoneFilter(''); break
-      case 'returnStatus': setReturnStatusFilter('all'); break
-      case 'courier': setCourierFilter('all'); break
     }
     setFilterPopover(null)
   }
@@ -221,8 +207,6 @@ export function ComponentReturnsPage() {
       case 'ticketStatus': return ticketStatusFilter !== 'all'
       case 'customerName': return customerNameFilter.trim() !== ''
       case 'phone': return phoneFilter.trim() !== ''
-      case 'returnStatus': return returnStatusFilter !== 'all'
-      case 'courier': return courierFilter !== 'all'
     }
   }
 
@@ -232,8 +216,6 @@ export function ComponentReturnsPage() {
       case 'ticketStatus': return ticketStatusFilter === 'all' ? '' : TICKET_STATUS_META[ticketStatusFilter].label
       case 'customerName': return customerNameFilter
       case 'phone': return phoneFilter
-      case 'returnStatus': return returnStatusFilter === 'all' ? '' : statusMeta(returnStatusFilter).label
-      case 'courier': return courierFilter === 'all' ? '' : courierFilter
     }
   }
 
@@ -370,20 +352,6 @@ export function ComponentReturnsPage() {
         return renderTextFilter(customerNameFilter, setCustomerNameFilter, '고객명', 'customerName')
       case 'phone':
         return renderTextFilter(phoneFilter, setPhoneFilter, '연락처', 'phone')
-      case 'returnStatus':
-        return renderSelectFilter(
-          returnStatusFilter,
-          value => setReturnStatusFilter(value as 'all' | ComponentReturnStatus),
-          STATUS_OPTIONS.map(option => ({ value: option.value, label: option.label })),
-          'returnStatus',
-        )
-      case 'courier':
-        return renderSelectFilter(
-          courierFilter,
-          setCourierFilter,
-          courierOptions.map(value => ({ value, label: value })),
-          'courier',
-        )
     }
   }
 
@@ -416,19 +384,17 @@ export function ComponentReturnsPage() {
                     <HeaderCell label="티켓 상태" col="ticketStatus" />
                     <HeaderCell label="고객명" col="customerName" />
                     <HeaderCell label="연락처" col="phone" />
-                    <HeaderCell label="반송 상태" col="returnStatus" />
                     <HeaderCell label="구성품 유형" />
-                    <HeaderCell label="운송사" col="courier" />
                     <HeaderCell label="생성일시" />
+                    <HeaderCell label="생성자" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="px-5 py-12 text-center text-xs text-gray-400">구성품 반송 건이 없습니다.</td>
+                      <td colSpan={7} className="px-5 py-12 text-center text-xs text-gray-400">구성품 반송 건이 없습니다.</td>
                     </tr>
                   ) : filtered.map(record => {
-                    const meta = statusMeta(record.status)
                     const sourceTicket = ticketByNo.get(record.sourceTicketNo)
                     const active = selected?.id === record.id
                     return (
@@ -455,15 +421,9 @@ export function ComponentReturnsPage() {
                         </td>
                         <td className="px-4 py-3 text-xs font-semibold text-gray-900">{maskName(record.customerName)}</td>
                         <td className="px-4 py-3 text-xs text-gray-500">{maskPhone(record.phone)}</td>
-                        <td className="px-4 py-3">
-                          <span className={`inline-flex rounded-md border px-2 py-0.5 text-[11px] font-semibold ${meta.className}`}>
-                            {meta.label}
-                          </span>
-                        </td>
                         <td className="px-4 py-3 text-xs text-gray-700">{componentTypeLabel(record.componentType)}</td>
-                        <td className="px-4 py-3 text-xs text-gray-700">{record.courier}</td>
                         <td className="px-4 py-3 text-xs font-mono text-gray-500 whitespace-nowrap">{record.createdAt} <span className="font-sans text-gray-400">(KST)</span></td>
-
+                        <td className="px-4 py-3 text-xs text-gray-700">{record.createdBy || '-'}</td>
                       </tr>
                     )
                   })}
@@ -545,11 +505,10 @@ export function ComponentReturnsPage() {
                       <section className="rounded-xl border border-gray-100 p-4">
                         <h3 className="mb-4 text-xs font-semibold text-gray-700">반송 정보</h3>
                         <dl className="grid grid-cols-2 gap-x-5 gap-y-4">
-                          <Field label="반송 상태" value={statusMeta(draft.status).label} />
                           <Field label="구성품 유형" value={componentTypeLabel(draft.componentType)} />
-                          <Field label="운송사" value={draft.courier} />
                           <Field label="생성일시" value={`${draft.createdAt} (KST)`} />
                           <Field label="반송일시" value={draft.returnedAt ? `${draft.returnedAt} (KST)` : '-'} />
+                          <Field label="생성자" value={draft.createdBy} />
                         </dl>
                       </section>
                     </div>

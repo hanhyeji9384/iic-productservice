@@ -257,6 +257,7 @@ export function createComponentReturnFromTicket(ticket: Ticket, componentType: C
     returnedAt: null,
     alimtalkSentYn: 'N',
     deliveryAddress: deliveryAddress ?? null,
+    createdBy: '한혜지(monster563)',
   }
 
   saveStoredComponentReturns([record, ...getStoredComponentReturns()])

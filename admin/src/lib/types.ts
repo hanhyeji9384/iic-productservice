@@ -256,6 +256,7 @@ export type ComponentReturn = {
   returnedAt: string | null
   alimtalkSentYn: 'Y' | 'N'
   deliveryAddress?: string | null
+  createdBy?: string | null
 }
 
 export type StockRequestStatus = 'REQUESTED' | 'STO_REQUESTED' | 'COMPLETED' | 'OUT_OF_STOCK' | 'HOLD' | 'CANCELED'
