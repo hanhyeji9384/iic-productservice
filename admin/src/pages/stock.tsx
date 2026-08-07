@@ -28,8 +28,8 @@ const VISIBLE_STOCK_SOURCES = [
   {
     branchCode: '1110',
     branchName: 'GM 본사',
-    storeCode: 'E1008',
-    storeName: 'GM_PS_국내',
+    storeCode: '1110',
+    storeName: 'GM 본사',
     locationCode: '1110',
     locationName: '가용창고',
     quantityKey: 'psQuantity',
