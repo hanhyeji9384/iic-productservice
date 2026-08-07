@@ -1476,7 +1476,6 @@ export function TicketNewPage() {
                     onClear={resetCustomerFields}
                   />
                 </dd>
-                <p className="mt-1.5 text-[11px] text-gray-400 px-1">고객 관리에 등록된 회원 기준으로 검색. 검색되지 않는 경우 gentlemonster.com에서 회원 조회 후 등록해주세요.</p>
               </div>
               <div>
                 <FieldLabel>이름</FieldLabel>
