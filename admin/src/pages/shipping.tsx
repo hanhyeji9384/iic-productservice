@@ -23,7 +23,7 @@ const BRANCH_TABS: Record<string, Tab[]> = {
 
 const TBD_TABS: Tab[] = []
 
-type ColKey = 'tag' | 'ticketNo' | 'customerName' | 'productName' | 'productCode' | 'receptionPlace' | 'receivedAt'
+type ColKey = 'tag' | 'ticketNo' | 'customerName' | 'productName' | 'productCode' | 'receptionPlace' | 'receivedAt' | 'trackingNo'
 
 const TABLE_COLS: { key: ColKey; label: string; sort: SortKey; filterable: boolean }[] = [
   { key: 'tag',           label: '태그',         sort: 'ticketNo',       filterable: false },
@@ -33,6 +33,7 @@ const TABLE_COLS: { key: ColKey; label: string; sort: SortKey; filterable: boole
   { key: 'productCode',   label: '제품코드',     sort: 'productName',    filterable: false },
   { key: 'receptionPlace',label: '접수처',       sort: 'receptionPlace', filterable: false },
   { key: 'receivedAt',    label: '접수일시',     sort: 'receivedAt',     filterable: false },
+  { key: 'trackingNo',    label: 'Tracking No.',sort: 'receivedAt',     filterable: false },
 ]
 
 const initFilters: Record<string, string> = { ticketNo: '', customerName: '' }
@@ -55,6 +56,7 @@ type ShippingRow = {
   customerRequest?: string | null
   deliveryCountry?: string | null
   shippingMethod?: string | null
+  trackingNo?: string | null
 }
 
 function ticketToRow(ticket: Ticket): ShippingRow {
@@ -75,6 +77,7 @@ function ticketToRow(ticket: Ticket): ShippingRow {
     customerRequest: ticket.customerRequest,
     deliveryCountry: ticket.deliveryCountry,
     shippingMethod: ticket.shippingMethod,
+    trackingNo: ticket.trackingNo,
   }
 }
 
@@ -91,6 +94,7 @@ function componentReturnToRow(record: ComponentReturn): ShippingRow {
     receptionPlace: '구성품 반송 출고',
     receivedAt: record.createdAt,
     repairDetail: null,
+    trackingNo: record.trackingNo,
   }
 }
 
@@ -545,6 +549,7 @@ export function ShippingPage() {
                       <td className="px-4 py-3 text-xs font-mono text-gray-500 whitespace-nowrap">
                         {row.receivedAt} <span className="font-sans text-gray-400">(KST)</span>
                       </td>
+                      <td className="px-4 py-3 text-xs font-mono text-gray-600">{row.trackingNo || '-'}</td>
                     </tr>
                   ))}
                 </tbody>

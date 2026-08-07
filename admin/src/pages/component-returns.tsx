@@ -22,7 +22,6 @@ type FilterColumn =
   | 'phone'
   | 'returnStatus'
   | 'courier'
-  | 'trackingNo'
 
 const TICKET_STATUS_META: Record<TicketStatus, { label: string; className: string }> = {
   RECEIVED: { label: '접수', className: 'bg-sky-50 text-sky-700' },
@@ -120,7 +119,6 @@ export function ComponentReturnsPage() {
   const [ticketNoFilter, setTicketNoFilter] = useState('')
   const [customerNameFilter, setCustomerNameFilter] = useState('')
   const [phoneFilter, setPhoneFilter] = useState('')
-  const [trackingNoFilter, setTrackingNoFilter] = useState('')
   const [filterPopover, setFilterPopover] = useState<{ col: FilterColumn; rect: DOMRect } | null>(null)
   const [selectedId, setSelectedId] = useState(locationState?.componentReturnId ?? '')
   const [detailOpen, setDetailOpen] = useState(Boolean(locationState?.componentReturnId))
@@ -144,7 +142,6 @@ export function ComponentReturnsPage() {
       if (!matchesText(record.sourceTicketNo, ticketNoFilter)) return false
       if (!matchesText(record.customerName, customerNameFilter)) return false
       if (!matchesDigits(record.phone, phoneFilter)) return false
-      if (!matchesText(record.trackingNo, trackingNoFilter)) return false
       return true
     })
   }, [
@@ -157,7 +154,6 @@ export function ComponentReturnsPage() {
     ticketByNo,
     ticketNoFilter,
     ticketStatusFilter,
-    trackingNoFilter,
   ])
 
   const selected = records.find(record => record.id === selectedId) ?? null
@@ -215,7 +211,6 @@ export function ComponentReturnsPage() {
       case 'phone': setPhoneFilter(''); break
       case 'returnStatus': setReturnStatusFilter('all'); break
       case 'courier': setCourierFilter('all'); break
-      case 'trackingNo': setTrackingNoFilter(''); break
     }
     setFilterPopover(null)
   }
@@ -228,7 +223,6 @@ export function ComponentReturnsPage() {
       case 'phone': return phoneFilter.trim() !== ''
       case 'returnStatus': return returnStatusFilter !== 'all'
       case 'courier': return courierFilter !== 'all'
-      case 'trackingNo': return trackingNoFilter.trim() !== ''
     }
   }
 
@@ -240,7 +234,6 @@ export function ComponentReturnsPage() {
       case 'phone': return phoneFilter
       case 'returnStatus': return returnStatusFilter === 'all' ? '' : statusMeta(returnStatusFilter).label
       case 'courier': return courierFilter === 'all' ? '' : courierFilter
-      case 'trackingNo': return trackingNoFilter
     }
   }
 
@@ -391,8 +384,6 @@ export function ComponentReturnsPage() {
           courierOptions.map(value => ({ value, label: value })),
           'courier',
         )
-      case 'trackingNo':
-        return renderTextFilter(trackingNoFilter, setTrackingNoFilter, '운송장 No.', 'trackingNo')
     }
   }
 
@@ -428,7 +419,6 @@ export function ComponentReturnsPage() {
                     <HeaderCell label="반송 상태" col="returnStatus" />
                     <HeaderCell label="구성품 유형" />
                     <HeaderCell label="운송사" col="courier" />
-                    <HeaderCell label="운송장 No." col="trackingNo" />
                     <HeaderCell label="생성일시" />
                     <HeaderCell label="알림톡" />
                   </tr>
@@ -436,7 +426,7 @@ export function ComponentReturnsPage() {
                 <tbody className="divide-y divide-gray-100">
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={10} className="px-5 py-12 text-center text-xs text-gray-400">구성품 반송 건이 없습니다.</td>
+                      <td colSpan={9} className="px-5 py-12 text-center text-xs text-gray-400">구성품 반송 건이 없습니다.</td>
                     </tr>
                   ) : filtered.map(record => {
                     const meta = statusMeta(record.status)
@@ -473,7 +463,6 @@ export function ComponentReturnsPage() {
                         </td>
                         <td className="px-4 py-3 text-xs text-gray-700">{componentTypeLabel(record.componentType)}</td>
                         <td className="px-4 py-3 text-xs text-gray-700">{record.courier}</td>
-                        <td className="px-4 py-3 text-xs font-mono text-gray-600">{record.trackingNo || '-'}</td>
                         <td className="px-4 py-3 text-xs font-mono text-gray-500 whitespace-nowrap">{record.createdAt} <span className="font-sans text-gray-400">(KST)</span></td>
                         <td className="px-4 py-3 text-xs text-gray-500">{record.alimtalkSentYn}</td>
                       </tr>
@@ -560,7 +549,6 @@ export function ComponentReturnsPage() {
                           <Field label="반송 상태" value={statusMeta(draft.status).label} />
                           <Field label="구성품 유형" value={componentTypeLabel(draft.componentType)} />
                           <Field label="운송사" value={draft.courier} />
-                          <Field label="운송장 No." value={draft.trackingNo} />
                           <Field label="알림톡 발송" value={draft.alimtalkSentYn} />
                           <Field label="생성일시" value={`${draft.createdAt} (KST)`} />
                           <Field label="반송일시" value={draft.returnedAt ? `${draft.returnedAt} (KST)` : '-'} />
